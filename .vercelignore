@@ -1,0 +1,8 @@
+﻿node_modules
+scratch
+*.bak*
+*.sqlite*
+.git
+.github
+prisma
+src

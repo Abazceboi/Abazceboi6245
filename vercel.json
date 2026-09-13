@@ -1,9 +1,9 @@
 {
   "version": 2,
   "functions": {
-    "api/**/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.7.3",
-      "includeFiles": "**"
+      "includeFiles": "{*.php,config/**,includes/**,controllers/**,models/**,database/**,data/**,api/**}"
     }
   },
   "routes": [
@@ -22,10 +22,6 @@
     {
       "src": "/images/(.*)",
       "dest": "/images/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
     },
     {
       "src": "/(.*)",
