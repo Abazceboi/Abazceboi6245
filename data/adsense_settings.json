@@ -1,0 +1,36 @@
+{
+  "enabled": false,
+  "master_status": "disabled",
+  "configured": false,
+  "publisher_id": "",
+  "auto_ads": false,
+  "test_mode": false,
+  "custom_script": "",
+  "slots": {
+    "header_leaderboard": {
+      "enabled": false,
+      "slot_id": "",
+      "format": "auto",
+      "name": "Header Top Leaderboard"
+    },
+    "dashboard_sidebar": {
+      "enabled": false,
+      "slot_id": "",
+      "format": "rectangle",
+      "name": "Dashboard Sidebar Unit"
+    },
+    "task_completion_reward": {
+      "enabled": false,
+      "slot_id": "",
+      "format": "responsive",
+      "name": "Post-Task Reward Interstitial"
+    },
+    "footer_banner": {
+      "enabled": false,
+      "slot_id": "",
+      "format": "horizontal",
+      "name": "Footer Sticky / Anchor Ad"
+    }
+  },
+  "updated_at": "2026-09-09T18:51:25.556Z"
+}

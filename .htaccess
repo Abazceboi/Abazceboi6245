@@ -1,0 +1,20 @@
+# INNOVATIONX — Apache Configuration for Railway & Docker
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to sensitive config, database, and repository files
+    RewriteRule ^(\.env|database\.sql|database\.sqlite|Dockerfile|\.dockerignore|package.*\.json|tsconfig\.json) - [F,L]
+    RewriteRule ^(config/.*\.json|data/.*\.json) - [F,L]
+
+    # Enable clean URLs without .php extension (e.g. /dashboard -> dashboard.php)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.*)$ $1.php [L,QSA]
+</IfModule>
+
+# Protect hidden dotfiles (.git, .env, etc.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

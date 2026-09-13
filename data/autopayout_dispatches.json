@@ -1,0 +1,12 @@
+[
+  {
+    "txn_id": "TXN-TEST-52418",
+    "amount": 7500,
+    "bank": "Guaranty Trust Bank (GTBank)",
+    "account": "0123456789",
+    "service_type": "task",
+    "dispatch_time": "Just now",
+    "app_status": "TRANSFER_SUCCESSFUL",
+    "completed": true
+  }
+]

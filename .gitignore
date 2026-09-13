@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Backup and temp files
+*.bak
+*.bak2
+*.tmp
+*.log
+scratch/
+
+# Database files
+database.sqlite
+database.sqlite-journal
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor files
+.vscode/
+.idea/

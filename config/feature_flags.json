@@ -1,0 +1,12 @@
+{
+  "jobbers_tasks": true,
+  "advertisements": true,
+  "spin_wheel": true,
+  "vtu_airtime": true,
+  "sme_data": true,
+  "crypto_update": true,
+  "referrals": true,
+  "withdrawals": true,
+  "forecaster": true,
+  "vendors": true
+}

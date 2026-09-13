@@ -1,0 +1,26 @@
+[
+  {
+    "id": "DVA-62773",
+    "user_id": "Abas6245",
+    "username": "Abas6245",
+    "bank_name": "Wema Bank",
+    "account_number": "9457307829",
+    "account_name": "INNOVATIONX - ABAS6245",
+    "provider": "monnify",
+    "created_at": "2026-08-30T19:14:01.803Z",
+    "total_deposited": 0,
+    "status": "active"
+  },
+  {
+    "id": "DVA-94590",
+    "user_id": "Member",
+    "username": "Member",
+    "bank_name": "Wema Bank",
+    "account_number": "9500557916",
+    "account_name": "INNOVATIONX - MEMBER",
+    "provider": "monnify",
+    "created_at": "2026-09-09T20:29:38.069Z",
+    "total_deposited": 0,
+    "status": "active"
+  }
+]

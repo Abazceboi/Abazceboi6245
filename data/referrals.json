@@ -1,0 +1,90 @@
+[
+  {
+    "id": "REF-7801",
+    "upline_username": "Member",
+    "full_name": "Chidiebere Okoro",
+    "username": "chidi_earner",
+    "email": "chidi.okoro.dev@gmail.com",
+    "joined_date": "12 Sep 2026",
+    "downline_referrals_count": 6,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7802",
+    "upline_username": "Member",
+    "full_name": "Amina Bello",
+    "username": "amina_b",
+    "email": "amina.bello99@gmail.com",
+    "joined_date": "11 Sep 2026",
+    "downline_referrals_count": 4,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7803",
+    "upline_username": "Member",
+    "full_name": "David Adebayo",
+    "username": "dave_kush",
+    "email": "adebayo.david.fx@gmail.com",
+    "joined_date": "10 Sep 2026",
+    "downline_referrals_count": 9,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7804",
+    "upline_username": "Member",
+    "full_name": "Blessing Nwachukwu",
+    "username": "blessing_nw",
+    "email": "blessing.nwachukwu24@gmail.com",
+    "joined_date": "09 Sep 2026",
+    "downline_referrals_count": 3,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7805",
+    "upline_username": "Member",
+    "full_name": "Ibrahim Musa",
+    "username": "ibro_musa",
+    "email": "ibrahim.musa.trade@gmail.com",
+    "joined_date": "08 Sep 2026",
+    "downline_referrals_count": 5,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7806",
+    "upline_username": "Member",
+    "full_name": "Emeka Chukwu",
+    "username": "emmy_chukz",
+    "email": "chukwu.emeka.online@gmail.com",
+    "joined_date": "07 Sep 2026",
+    "downline_referrals_count": 2,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7807",
+    "upline_username": "Member",
+    "full_name": "Folashade Adeleke",
+    "username": "shade_ade",
+    "email": "folashade.adeleke01@gmail.com",
+    "joined_date": "05 Sep 2026",
+    "downline_referrals_count": 7,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  },
+  {
+    "id": "REF-7808",
+    "upline_username": "Member",
+    "full_name": "Tariq Usman",
+    "username": "tariq_u",
+    "email": "tariq.usman.pro@gmail.com",
+    "joined_date": "03 Sep 2026",
+    "downline_referrals_count": 1,
+    "bonus_earned": 250,
+    "status": "Verified Active"
+  }
+]

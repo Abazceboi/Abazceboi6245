@@ -1,0 +1,31 @@
+[
+  {
+    "id": "UPG-2420",
+    "user_id": "Abas6245",
+    "username": "Abas6245",
+    "full_name": "Abas6245",
+    "phone": "N/A",
+    "email": "Abas6245@innovationx.internal",
+    "amount_paid": 10000,
+    "payment_channel": "referral_cash",
+    "screenshot_url": "INTERNAL_WALLET_REFERRAL_CASH",
+    "status": "approved",
+    "admin_note": "Auto-approved via Referral Cash Wallet",
+    "created_at": "2026-09-09T19:51:09.031Z",
+    "reviewed_at": "2026-09-09T19:51:09.031Z"
+  },
+  {
+    "id": "UPG-8821",
+    "user_id": "Abas6245",
+    "username": "Abas6245",
+    "full_name": "Abasifreke Johnson",
+    "phone": "+2348012345678",
+    "email": "abas6245@gmail.com",
+    "amount_paid": 10000,
+    "screenshot_url": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
+    "status": "pending",
+    "admin_note": null,
+    "created_at": "2026-08-29T12:45:00.000Z",
+    "reviewed_at": null
+  }
+]

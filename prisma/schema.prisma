@@ -1,0 +1,100 @@
+// Prisma Schema for INNOVATIONX Platform
+// Database: PostgreSQL (Optimized for Railway & Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  fullName        String
+  username        String         @unique
+  email           String         @unique
+  phone           String
+  passwordHash    String
+  pointsBalance   Int            @default(100) // 100 PTS Welcome Bonus
+  cashBalance     Float          @default(0.0) // Naira Referral Cash
+  referralCode    String         @unique
+  referredBy      String?
+  isPro           Boolean        @default(true) // Lifetime ₦500 Access
+  couponPinUsed   String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  transactions    Transaction[]
+  taskCompletions TaskLog[]
+
+  @@map("users")
+}
+
+model Vendor {
+  id          String   @id @default(uuid())
+  name        String
+  location    String
+  rating      Float    @default(5.0)
+  codesSold   Int      @default(0)
+  phone       String
+  avatarBg    String   @default("#9333EA")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("vendors")
+}
+
+model CouponPin {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  amount      Float     @default(500.0)
+  isUsed      Boolean   @default(false)
+  usedBy      String?
+  vendorId    String?
+  createdAt   DateTime  @default(now())
+  usedAt      DateTime?
+
+  @@map("coupon_pins")
+}
+
+model Task {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  category      String    @default("social") // social, video, mining, app
+  rewardPoints  Int       @default(150)
+  targetUrl     String?
+  dailyLimit    Int       @default(10)
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  taskLogs      TaskLog[]
+
+  @@map("tasks")
+}
+
+model TaskLog {
+  id          String   @id @default(uuid())
+  userId      String
+  taskId      String
+  pointsEarned Int
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("task_logs")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String   // "REFERRAL_BONUS", "TASK_REWARD", "WITHDRAWAL", "SPIN_BONUS"
+  amount      Float
+  status      String   @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  reference   String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
