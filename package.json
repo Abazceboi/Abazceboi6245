@@ -4,7 +4,7 @@
   "description": "INNOVATIONX — Luxury High-Yield Daily Earnings Platform",
   "main": "server.js",
   "scripts": {
-    "build": "tsc && node scripts/build.js",
+    "build": "node scripts/build.js",
     "dev": "tsc -w",
     "start": "node server.js",
     "prisma:generate": "prisma generate",
