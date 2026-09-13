@@ -10,7 +10,7 @@ function getDbConnection(): ?PDO {
         return $pdo;
     }
 
-    $databaseUrl = getenv('DATABASE_URL');
+    $databaseUrl = getenv('DATABASE_URL') ?: getenv('STORAGE_URL') ?: getenv('POSTGRES_URL') ?: getenv('STORAGE_POSTGRES_URL');
 
     try {
         if ($databaseUrl) {
