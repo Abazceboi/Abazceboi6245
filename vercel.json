@@ -2,10 +2,8 @@
   "version": 2,
   "functions": {
     "api/**/*.php": {
-      "runtime": "vercel-php@0.7.3"
-    },
-    "*.php": {
-      "runtime": "vercel-php@0.7.3"
+      "runtime": "vercel-php@0.7.3",
+      "includeFiles": "**"
     }
   },
   "routes": [
@@ -30,16 +28,8 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/(dashboard|admin|login|register|advertise|jobbers|forecaster)",
-      "dest": "/$1.php"
-    },
-    {
-      "src": "/",
-      "dest": "/index.php"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/api/index.php"
     }
   ]
 }
