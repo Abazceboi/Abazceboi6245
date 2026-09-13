@@ -1557,7 +1557,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div>
                         <label style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px">Inbound Credit Webhook Callback URL</label>
                         <div style="display:flex;gap:8px">
-                            <input type="text" id="vaWebhookUrl" readonly class="admin-input" value="https://lakes-abs-point-bought.trycloudflare.com/api/virtual_accounts.php?action=webhook" style="width:100%;padding:10px 12px;background:rgba(0,0,0,0.3);color:var(--text-muted);font-size:0.8rem">
+                            <input type="text" id="vaWebhookUrl" readonly class="admin-input" value="<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') ?>/api/virtual_accounts.php?action=webhook" style="width:100%;padding:10px 12px;background:rgba(0,0,0,0.3);color:var(--text-muted);font-size:0.8rem">
                             <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('vaWebhookUrl').value);alert('Webhook URL Copied!')" class="btn-dash-action btn-dash-secondary" style="padding:10px 14px;white-space:nowrap">Copy</button>
                         </div>
                     </div>
