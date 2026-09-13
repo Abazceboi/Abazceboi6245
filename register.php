@@ -403,11 +403,37 @@ $refFromQuery = $_GET['ref'] ?? '';
 
         
         btn.disabled = true;
-        btn.innerHTML = `<span>Activating Account...</span>`;
+        btn.innerHTML = `<span>Activating Account & Syncing Referrals...</span>`;
+
+        const fullName = document.getElementById('fullName').value.trim();
+        const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
+
+        // If referrer entered, credit referral bonus and add to downline
+        if (refCode) {
+            try {
+                fetch('api/referrals.php?action=add_referral', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        upline_username: refCode,
+                        full_name: fullName || username,
+                        username: username,
+                        email: email,
+                        bonus_earned: 250
+                    })
+                }).catch(() => {});
+            } catch(e) {}
+        }
+
+        // Save session / local user
+        try {
+            localStorage.setItem('ix_current_user', username);
+            sessionStorage.setItem('ix_user', username);
+        } catch(e) {}
 
         setTimeout(() => {
-            alert(`Account Activated!\n\nWelcome @${username}. Your membership has been activated successfully.\nYou can configure your bank account and withdrawal PIN anytime in your dashboard settings.`);
-            window.location.href = 'dashboard.php';
+            alert(`Account Activated!\n\nWelcome @${username}. Your membership has been activated successfully.\nYour referral link is ready, and you can withdraw earnings directly to your bank.`);
+            window.location.href = 'dashboard.php?username=' + encodeURIComponent(username);
         }, 800);
     }
     </script>

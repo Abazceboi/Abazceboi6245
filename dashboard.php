@@ -4351,6 +4351,19 @@ renderDashboardNotifications();
     // Default to Overview tab on initial load
     switchDashTab('overview');
 
+    window.fetchServerWithdrawalSettings = async function() {
+        try {
+            const res = await fetch('api/withdrawals.php?action=get_settings&t=' + Date.now());
+            const data = await res.json();
+            if (data && data.status === 'success' && data.settings) {
+                localStorage.setItem('ix_withdrawal_settings', JSON.stringify(data.settings));
+                if (typeof window.refreshWithdrawPortal === 'function') {
+                    window.refreshWithdrawPortal();
+                }
+            }
+        } catch(e) {}
+    };
+
     // Initialize Jobbers Feed, Referrals, Feature Flags, Saved Bank & Site Content on load
     renderJobbersOpportunities();
     loadReferralsData();
@@ -4360,6 +4373,7 @@ renderDashboardNotifications();
     loadSavedBankAccount();
     initRealtimeBankSync();
     loadWithdrawalPinStatus();
+    fetchServerWithdrawalSettings();
 
     // Initialize balance mask state from preference / storage
     if (localStorage.getItem('ix_balance_masked') === 'true') {

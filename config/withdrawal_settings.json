@@ -1,0 +1,21 @@
+﻿{
+  "task_status": "active",
+  "task_mode": "manual",
+  "task_min": 1000,
+  "task_max": 100000,
+  "referral_status": "active",
+  "referral_mode": "manual",
+  "referral_min": 1000,
+  "referral_max": 100000,
+  "manual_mode_type": "always_open",
+  "manual_window_start": "",
+  "manual_window_end": "",
+  "manual_recurring_days": "fri_sat",
+  "manual_recurring_time_start": "08:00",
+  "manual_recurring_time_end": "22:00",
+  "auto_mode_type": "instant",
+  "auto_scheduled_datetime": "",
+  "auto_recurring_day": "friday",
+  "auto_recurring_time": "18:00",
+  "updated_at": "2026-09-13 20:00:00"
+}

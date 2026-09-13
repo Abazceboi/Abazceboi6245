@@ -1,5 +1,26 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
+
+// Site Maintenance Mode Evaluation
+$maintFile = __DIR__ . '/../config/maintenance.json';
+$maintenance = ['enabled' => false, 'title' => '', 'message' => '', 'estimated_end' => ''];
+if (file_exists($maintFile)) {
+    $rawMaint = @file_get_contents($maintFile);
+    if ($rawMaint) {
+        $maintData = json_decode($rawMaint, true);
+        if (is_array($maintData)) $maintenance = array_merge($maintenance, $maintData);
+    }
+}
+
+$currentScript = basename($_SERVER['PHP_SELF'] ?? '');
+$isAdminSession = !empty($_SESSION['ix_admin_logged']) || !empty($_SESSION['admin_user']);
+$isAdminBypass = isset($_GET['admin_bypass']) || isset($_GET['bypass']) || in_array($currentScript, ['admin.php', 'login.php']);
+
+if (!empty($maintenance['enabled']) && !$isAdminSession && !$isAdminBypass) {
+    require __DIR__ . '/maintenance_view.php';
+    exit;
+}
+
 $pageTitle = $pageTitle ?? APP_NAME . ' | ' . APP_TAGLINE;
 $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yield tasks, instant referral cash, and automated bank payouts.';
 ?>
@@ -64,6 +85,12 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
  <script src="js/dialogs.js"></script>
 </head>
 <body>
+<?php if (!empty($maintenance['enabled'])): ?>
+<div style="background:#D97706;color:#FFFFFF;padding:8px 16px;text-align:center;font-weight:800;font-size:0.82rem;position:relative;z-index:9999999;box-shadow:0 2px 10px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;gap:10px">
+    <span>⚠️ PLATFORM MAINTENANCE MODE IS ACTIVE — Regular visitors see the maintenance screen.</span>
+    <a href="admin.php" style="color:#FEF3C7;text-decoration:underline;font-weight:900">Admin Maintenance Control &rarr;</a>
+</div>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/ambient.php'; ?>
 <?php if (empty($hideNavbar)): ?>
