@@ -14,8 +14,8 @@ require_once __DIR__ . '/includes/header.php';
         <div class="container hero-grid">
             <div class="hero-text">
                 <div class="hero-tag" style="margin-bottom:18px">
-                    <span class="hero-tag-badge" style="display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:9999px;background:rgba(2, 132, 199, 0.18);border:1.5px solid rgba(56, 189, 248, 0.45);color:#BAE6FD;font-size:0.82rem;font-weight:800;letter-spacing:0.5px;box-shadow:0 0 20px rgba(56, 189, 248, 0.25)">
-                        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38BDF8;box-shadow:0 0 8px #38BDF8"></span>
+                    <span class="hero-tag-badge">
+                        <span class="hero-tag-dot"></span>
                         NIGERIA'S PREMIER DIGITAL EARNING ECOSYSTEM
                     </span>
                 </div>

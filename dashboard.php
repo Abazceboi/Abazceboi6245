@@ -1579,7 +1579,7 @@ require_once __DIR__ . '/includes/header.php';
                         <span>Menu</span>
                     </button>
                 </div>
-                <div class="dash-panel reveal" id="withdrawSection" data-feature="withdrawals" style="border-color:rgba(56, 189, 248, 0.3);box-shadow:0 18px 50px rgba(0,0,0,0.5),0 0 60px rgba(56, 189, 248, 0.1)">
+                <div class="dash-panel visible" id="withdrawSection" data-feature="withdrawals" style="border-color:rgba(56, 189, 248, 0.3);box-shadow:0 18px 50px rgba(0,0,0,0.5),0 0 60px rgba(56, 189, 248, 0.1)">
                     <div class="dash-panel-header">
                         <div class="dash-panel-title">
                             <span data-content-key="withdraw_card_title">Request Bank Payout</span>
@@ -2049,8 +2049,8 @@ require_once __DIR__ . '/includes/header.php';
  }
  function fmtN(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
  function mask(a) { return a.length > 4 ? '••••••' + a.slice(-4) : a; }
- function open(el) { if (el) { el.classList.add('open'); el.style.display = 'flex'; document.body.style.overflow='hidden'; } }
-    function close(el) { if (el) { el.classList.remove('open'); el.style.display = 'none'; document.body.style.overflow=''; } }
+ function open(el) { if (el) { el.classList.add('open'); el.style.display = 'flex'; el.style.opacity = '1'; el.style.visibility = 'visible'; document.body.style.overflow='hidden'; } }
+    function close(el) { if (el) { el.classList.remove('open'); el.style.display = 'none'; el.style.opacity = '0'; document.body.style.overflow=''; } }
 
  // ==========================================
  // BESPOKE CUSTOM DROPDOWNS ENGINE
@@ -4231,11 +4231,20 @@ renderDashboardNotifications();
         const activePane = document.getElementById('dashPane_' + tabName);
         if (activePane) {
             activePane.style.display = 'block';
+            activePane.querySelectorAll('.reveal, .dash-panel').forEach(el => {
+                el.classList.add('visible');
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+                el.style.visibility = 'visible';
+            });
             if (tabName === 'uploader' && typeof window.loadUserVirtualAccount === 'function') {
                 window.loadUserVirtualAccount();
             }
             if (tabName === 'referrals' && typeof window.loadReferralsData === 'function') {
                 window.loadReferralsData();
+            }
+            if (tabName === 'withdraw' && typeof window.refreshWithdrawPortal === 'function') {
+                window.refreshWithdrawPortal();
             }
         } else {
             const fallback = document.getElementById('dashPane_overview');
@@ -4254,11 +4263,8 @@ renderDashboardNotifications();
             }
         }
 
-        // 4. Smoothly bring the active pane area into view if scrolled far down
-        const mainContent = document.querySelector('.dash-content');
-        if (mainContent && window.scrollY > 300 && typeof mainContent.scrollIntoView === 'function') {
-            mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        // 4. Smoothly bring the active pane area into full view on mobile and desktop
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.selectDashDrawerTab = function(tabName) {
