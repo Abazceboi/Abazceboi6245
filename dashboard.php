@@ -985,29 +985,7 @@ require_once __DIR__ . '/includes/header.php';
                     </form>
                 </div>
             </div>
-                <!-- In-App Withdrawal Security PIN Controller Card -->
-                <div class="dash-panel reveal" id="withdrawalPinSection" style="border-color:rgba(56, 189, 248, 0.35);margin-top:20px;margin-bottom:20px">
-                    <div class="dash-panel-header" style="margin-bottom:14px">
-                        <div class="dash-panel-title">
-                            <span>Withdrawal Security PIN</span>
-                        </div>
-                        <span class="dash-panel-badge" id="withdrawalPinStatusBadge" style="background:rgba(56, 189, 248, 0.15);color:#7DD3FC;font-weight:700">
-                            Checking Status...
-                        </span>
-                    </div>
 
-                    <div id="withdrawalPinDisplayBox" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
-                            <div style="max-width:480px">
-                                <div style="font-weight:800;color:var(--white-pure);font-size:0.95rem;margin-bottom:4px">4-Digit Payout Authorization PIN</div>
-                                <div style="font-size:0.82rem;color:var(--text-gray);line-height:1.4">Required to authorize withdrawals and transfer funds safely to your verified bank account. Keep this confidential.</div>
-                            </div>
-                            <button type="button" class="btn-dash-action btn-dash-primary" onclick="toggleSetWithdrawalPinModal()" id="btnOpenSetPin" style="padding:9px 20px;font-size:0.82rem;background:linear-gradient(135deg, #0284C7, #38BDF8)">
-                                Set / Change PIN
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
             <!-- ======================================================== -->
             <!-- 5. UPLOADER UPGRADE ACCREDITATION PANE                    -->

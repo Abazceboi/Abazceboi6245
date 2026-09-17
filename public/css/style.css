@@ -10070,3 +10070,53 @@ html, body {
   color: #0284C7 !important;
 }
 
+
+
+/* ---------------------------------------------------------------------- */
+/* LIGHT MODE EXPLICIT FIXES FOR ACTIVITY FEED AND CREDIT CARD            */
+/* ---------------------------------------------------------------------- */
+[data-theme="light"] .bento-card div[style*="background:rgba(255,255,255,0.03)"],
+[data-theme="light"] .terminal-feed-list div[style*="background:rgba(255,255,255,0.03)"] {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .terminal-feed-list div[style*="color:#F1F5F9"] {
+  color: #0F172A !important;
+}
+[data-theme="light"] .terminal-feed-list div[style*="color:#38BDF8"] {
+  color: #0284C7 !important;
+}
+[data-theme="light"] .terminal-feed-list div[style*="color:#7DD3FC"] {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .deck-credit-card {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%) !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 10px 30px rgba(2, 132, 199, 0.25) !important;
+}
+[data-theme="light"] .deck-credit-card .credit-card-mesh-bg {
+  background-image: 
+    linear-gradient(rgba(2, 132, 199, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2, 132, 199, 0.1) 1px, transparent 1px) !important;
+}
+[data-theme="light"] .deck-credit-card .credit-card-sheen {
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 60%) !important;
+}
+[data-theme="light"] .credit-card-site-name,
+[data-theme="light"] .credit-card-number-lbl,
+[data-theme="light"] .credit-card-bank-name {
+  color: #475569 !important;
+}
+[data-theme="light"] .credit-card-number,
+[data-theme="light"] .credit-card-holder-name {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .credit-card-tier-tag {
+  color: #0284C7 !important;
+}
+[data-theme="light"] .credit-card-chip-row .credit-card-emv-chip {
+  opacity: 0.8;
+}
+
