@@ -68,10 +68,23 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                 try {
                     var current = document.documentElement.getAttribute('data-theme') || 'dark';
                     var next = (current === 'light') ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-theme', next);
-                    localStorage.setItem('ix_theme', next);
-                    localStorage.setItem('theme', next);
-                    syncThemeUI(next);
+                    
+                    var updateTheme = function() {
+                        document.documentElement.setAttribute('data-theme', next);
+                        localStorage.setItem('ix_theme', next);
+                        localStorage.setItem('theme', next);
+                        syncThemeUI(next);
+                    };
+
+                    if (document.startViewTransition) {
+                        document.documentElement.setAttribute('data-animating-theme', next);
+                        var transition = document.startViewTransition(updateTheme);
+                        transition.finished.then(function() {
+                            document.documentElement.removeAttribute('data-animating-theme');
+                        });
+                    } else {
+                        updateTheme();
+                    }
                 } catch(e) {}
             };
 

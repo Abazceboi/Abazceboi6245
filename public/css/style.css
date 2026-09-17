@@ -10120,3 +10120,116 @@ html, body {
   opacity: 0.8;
 }
 
+
+
+/* ---------------------------------------------------------------------- */
+/* ATM CARD LIGHT MODE PLATINUM OVERRIDES & HUD MEMBER TEXT FIX         */
+/* ---------------------------------------------------------------------- */
+[data-theme="light"] .hud-user-info h2,
+[data-theme="light"] .dash-user-name,
+[data-theme="light"] #hudUsername {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .deck-credit-card {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%) !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .deck-credit-card .credit-card-mesh-bg {
+  background-image: 
+    linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.2) 1px, transparent 1px) !important;
+}
+[data-theme="light"] .deck-credit-card .credit-card-sheen {
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 60%) !important;
+}
+[data-theme="light"] .credit-card-site-name {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .credit-card-tier-tag {
+  color: #64748B !important;
+}
+[data-theme="light"] .credit-card-bank-badge {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .credit-card-bank-badge .credit-bank-icon {
+  stroke: #475569 !important;
+}
+[data-theme="light"] .credit-card-bank-name {
+  color: #334155 !important;
+}
+[data-theme="light"] .credit-card-number-lbl,
+[data-theme="light"] .credit-card-holder-lbl,
+[data-theme="light"] .credit-card-status-lbl {
+  color: #64748B !important;
+}
+[data-theme="light"] .credit-card-number {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .credit-card-holder-name {
+  color: #0F172A !important;
+}
+[data-theme="light"] .credit-card-status-badge {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+[data-theme="light"] .credit-card-status-badge .status-dot {
+  background: #10B981 !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4) !important;
+}
+[data-theme="light"] .deck-credit-card .btn-dash-action {
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+  border: none !important;
+}
+[data-theme="light"] .deck-credit-card .credit-card-logo-icon {
+  background: linear-gradient(135deg, #0F172A, #334155) !important;
+  color: #FFF !important;
+}
+
+
+/* ---------------------------------------------------------------------- */
+/* THEME TOGGLE VIEW TRANSITION ANIMATIONS                                */
+/* ---------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+[data-animating-theme="light"]::view-transition-old(root) {
+  animation: themeFade 0.8s ease forwards;
+}
+[data-animating-theme="light"]::view-transition-new(root) {
+  animation: revealLight 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  z-index: 9999;
+}
+@keyframes revealLight {
+  0% { clip-path: circle(0% at 50% 100%); }
+  100% { clip-path: circle(150% at 50% 100%); }
+}
+
+[data-animating-theme="dark"]::view-transition-old(root) {
+  animation: themeFade 0.8s ease forwards;
+}
+[data-animating-theme="dark"]::view-transition-new(root) {
+  animation: revealDark 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  z-index: 9999;
+}
+@keyframes revealDark {
+  0% { clip-path: circle(0% at 100% 0%); }
+  100% { clip-path: circle(150% at 100% 0%); }
+}
+@keyframes themeFade {
+  to { opacity: 0; }
+}
+
