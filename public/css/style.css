@@ -9015,18 +9015,19 @@ select.dash-input:focus {
 /* ======================================================== */
 .coupon-table-header {
   display: grid;
-  grid-template-columns: 155px 145px 1fr 56px;
-  gap: 8px;
+  grid-template-columns: 170px 145px 1fr 65px;
+  gap: 10px;
   align-items: center;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(56, 189, 248, 0.18);
-  border-radius: 8px 8px 0 0;
-  font-size: 0.67rem;
+  padding: 10px 14px;
+  background: #0E1A33;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: 10px 10px 0 0;
+  font-size: 0.72rem;
   font-weight: 800;
   color: #7DD3FC;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 [data-theme="light"] .coupon-table-header {
@@ -9037,20 +9038,20 @@ select.dash-input:focus {
 
 .coupon-item {
   display: grid;
-  grid-template-columns: 155px 145px 1fr 56px;
-  gap: 8px;
+  grid-template-columns: 170px 145px 1fr 65px;
+  gap: 10px;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: rgba(10, 16, 32, 0.7);
-  border: 1px solid rgba(56, 189, 248, 0.12);
-  font-size: 0.74rem;
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: rgba(14, 26, 51, 0.55);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  font-size: 0.76rem;
   transition: all 0.15s ease;
 }
 
 .coupon-item:hover {
-  background: rgba(14, 22, 44, 0.9);
-  border-color: rgba(56, 189, 248, 0.28);
+  background: rgba(14, 26, 51, 0.9);
+  border-color: rgba(56, 189, 248, 0.35);
 }
 
 [data-theme="light"] .coupon-item {

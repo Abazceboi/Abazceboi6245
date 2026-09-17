@@ -444,30 +444,30 @@ require_once __DIR__ . '/includes/header.php';
                     <!-- Live Member Roster -->
                     <div>
                         <div style="font-size:0.72rem;font-weight:800;color:#38BDF8;text-transform:uppercase;margin-bottom:10px;letter-spacing:0.05em;display:flex;align-items:center;justify-content:space-between">
-                            <span>Live Member Roster</span>
-                            <span style="font-size:0.68rem;color:#7DD3FC;font-weight:600">4 Synced</span>
+                            <span>Recent Members</span>
+                            <span style="font-size:0.68rem;color:#7DD3FC;font-weight:600;white-space:nowrap">4 Active</span>
                         </div>
                         <div style="display:flex;flex-direction:column;gap:8px">
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.12)">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.82rem;color:#FFFFFF;font-weight:700">member</span>
+                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">member</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#7DD3FC;background:rgba(56,189,248,0.12);padding:3px 8px;border-radius:6px;font-weight:700">Verified Earner</span>
+                                <span style="font-size:0.7rem;color:#38BDF8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);padding:3px 10px;border-radius:6px;font-weight:700">Verified Earner</span>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.12)">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.82rem;color:#FFFFFF;font-weight:700">superadmin</span>
+                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">superadmin</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#FFFFFF;background:rgba(56,189,248,0.25);padding:3px 8px;border-radius:6px;font-weight:800">Master Admin</span>
+                                <span style="font-size:0.7rem;color:#F8FAFC;background:rgba(56,189,248,0.25);border:1px solid rgba(56,189,248,0.4);padding:3px 10px;border-radius:6px;font-weight:800">Master Admin</span>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.12)">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.82rem;color:#FFFFFF;font-weight:700">task_pro_99</span>
+                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">task_pro_99</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#7DD3FC;background:rgba(56,189,248,0.12);padding:3px 8px;border-radius:6px;font-weight:700">Verified Jobber</span>
+                                <span style="font-size:0.7rem;color:#38BDF8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);padding:3px 10px;border-radius:6px;font-weight:700">Verified Jobber</span>
                             </div>
                         </div>
                     </div>
@@ -482,18 +482,18 @@ require_once __DIR__ . '/includes/header.php';
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="7" y2="8.01"></line><line x1="7" y1="12" x2="7" y2="12.01"></line><line x1="7" y1="16" x2="7" y2="16.01"></line><line x1="11" y1="8" x2="17" y2="8"></line><line x1="11" y1="12" x2="17" y2="12"></line><line x1="11" y1="16" x2="17" y2="16"></line></svg>
                         </div>
                         <div>
-                            <div style="font-size:1.02rem;font-weight:800;color:#FFFFFF;line-height:1.2">Coupon Generator &amp; Vendor PINs</div>
-                            <div style="font-size:0.72rem;color:#7DD3FC;font-weight:600">Uploaders &amp; affiliate activation codes</div>
+                            <div style="font-size:1.02rem;font-weight:800;color:#FFFFFF;line-height:1.2">PIN Generator &amp; Allocations</div>
+                            <div style="font-size:0.72rem;color:#7DD3FC;font-weight:600">Create and assign activation codes</div>
                         </div>
                     </div>
-                    <div style="font-size:0.74rem;color:#38BDF8;font-weight:800;background:rgba(56,189,248,0.1);padding:4px 10px;border-radius:8px;border:1px solid rgba(56,189,248,0.25)">
+                    <div style="font-size:0.74rem;color:#38BDF8;font-weight:800;background:rgba(56,189,248,0.1);padding:4px 10px;border-radius:8px;border:1px solid rgba(56,189,248,0.25);white-space:nowrap">
                         <span id="lblCouponsAvailableCount">85</span> Avail • <span id="lblCouponsGenCount" style="color:#FFF">120</span> Tot
                     </div>
                 </div>
 
                 <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
                     <!-- Direct Vendor Assignment Selector -->
-                    <div style="margin-bottom:12px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;padding:8px 12px">
+                    <div style="margin-bottom:12px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:10px;padding:8px 12px">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                             <label style="font-size:0.7rem;color:#7DD3FC;font-weight:800;text-transform:uppercase;letter-spacing:0.04em">Assign Directly To Vendor</label>
                             <span style="font-size:0.68rem;color:#38BDF8;font-weight:700">Exclusive Wholesale</span>
@@ -507,7 +507,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Segmented Channel Selector -->
-                    <div style="display:flex;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:4px;margin-bottom:12px;gap:4px">
+                    <div style="display:flex;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:10px;padding:4px;margin-bottom:12px;gap:4px">
                         <button type="button" id="btnChannelTabUpl" onclick="switchAdminGenChannel('UPLOADER')" style="flex:1;height:34px;font-size:0.76rem;font-weight:800;border-radius:8px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFFFFF;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(2,132,199,0.35)">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             <span>Task Uploaders (₦2k)</span>
@@ -519,14 +519,14 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Channel 1: Task Uploaders (Active View) -->
-                    <div id="channelPaneUploader" style="background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:12px;margin-bottom:12px">
+                    <div id="channelPaneUploader" style="background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:12px;margin-bottom:12px">
                         <div style="display:flex;gap:8px;margin-bottom:10px">
                             <select id="uploaderCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
                                 <option value="UPL">Uploader Upgrade PIN (₦2,000)</option>
                                 <option value="JOB">Jobber Task Quota PIN (5 Gigs)</option>
                                 <option value="VIP_UPL">VIP Unlimited Uploader PIN</option>
                             </select>
-                            <select id="uploaderCouponQty" class="admin-select" style="width:80px;height:34px;font-size:0.76rem">
+                            <select id="uploaderCouponQty" class="admin-select" style="width:85px;height:34px;font-size:0.76rem">
                                 <option value="5">5 PINs</option>
                                 <option value="10">10 PINs</option>
                                 <option value="20">20 PINs</option>
@@ -540,13 +540,13 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Channel 2: Affiliates (Hidden by default) -->
-                    <div id="channelPaneAffiliate" style="display:none;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:12px;padding:12px;margin-bottom:12px">
+                    <div id="channelPaneAffiliate" style="display:none;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:12px;margin-bottom:12px">
                         <div style="display:flex;gap:8px;margin-bottom:10px">
                             <select id="affiliateCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
                                 <option value="AFF">Affiliate Registration PIN</option>
                                 <option value="VIP_AFF">Affiliate VIP Promo PIN</option>
                             </select>
-                            <select id="affiliateCouponQty" class="admin-select" style="width:80px;height:34px;font-size:0.76rem">
+                            <select id="affiliateCouponQty" class="admin-select" style="width:85px;height:34px;font-size:0.76rem">
                                 <option value="5">5 PINs</option>
                                 <option value="10">10 PINs</option>
                                 <option value="20">20 PINs</option>
@@ -561,13 +561,13 @@ require_once __DIR__ . '/includes/header.php';
 
                     <!-- Filter pills & Copy controls -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px;flex-wrap:wrap">
-                        <div style="display:flex;gap:5px;flex-wrap:wrap">
-                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('ALL', this)" style="padding:4px 10px;font-size:0.72rem;background:rgba(56,189,248,0.22);color:#FFFFFF;border:1px solid rgba(56,189,248,0.45);border-radius:6px;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
-                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:4px 10px;font-size:0.72rem;background:rgba(56,189,248,0.08);color:#7DD3FC;border:1px solid rgba(56,189,248,0.2);border-radius:6px;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
-                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:4px 10px;font-size:0.72rem;background:rgba(56,189,248,0.08);color:#7DD3FC;border:1px solid rgba(56,189,248,0.2);border-radius:6px;font-weight:700">Affiliates (<span id="cntFilterAff">0</span>)</button>
-                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:4px 10px;font-size:0.72rem;background:rgba(56,189,248,0.08);color:#7DD3FC;border:1px solid rgba(56,189,248,0.2);border-radius:6px;font-weight:700">Vendors (<span id="cntFilterVendor">0</span>)</button>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('ALL', this)" style="padding:5px 12px;font-size:0.72rem;background:#0E1A33;color:#FFFFFF;border:1px solid #38BDF8;border-radius:8px;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
+                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
+                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Affiliates (<span id="cntFilterAff">0</span>)</button>
+                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Vendors (<span id="cntFilterVendor">0</span>)</button>
                         </div>
-                        <button type="button" class="btn-dash-action btn-dash-secondary" onclick="copyAllActiveCoupons()" style="padding:4px 12px;font-size:0.72rem;font-weight:700">
+                        <button type="button" class="btn-dash-action btn-dash-secondary" onclick="copyAllActiveCoupons()" style="padding:5px 14px;font-size:0.72rem;font-weight:700;border-radius:8px">
                             <span>Copy PINs</span>
                         </button>
                     </div>
@@ -581,37 +581,37 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Scrollable Coupons List with Sky Blue accents -->
-                    <div id="overviewCouponsList" style="display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;padding:6px;background:#0A1428;border:1px solid rgba(59,130,246,0.2);border-top:none;border-radius:0 0 8px 8px">
+                    <div id="overviewCouponsList" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding:8px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-top:none;border-radius:0 0 10px 10px">
                     </div>
                 </div>
             </div>
             </div>
         </div>
 
-        <!-- 4. Platform Health & Operations Quick Bar -->
-        <div class="admin-card reveal" style="padding:16px 20px !important">
+        <!-- 4. Platform Status & Operations Quick Bar -->
+        <div class="admin-card reveal" style="padding:14px 20px !important;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                     <div style="display:flex;align-items:center;gap:8px">
                         <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 8px #38BDF8"></span>
-                        <span style="font-size:0.8rem;color:#FFFFFF;font-weight:800">Pending Payout Approvals:</span>
-                        <span style="font-size:0.8rem;color:#38BDF8;font-weight:800;font-variant-numeric:tabular-nums;">2 Due (₦18,500.00)</span>
+                        <span style="font-size:0.82rem;color:#FFFFFF;font-weight:800">Pending Payouts:</span>
+                        <span style="font-size:0.82rem;color:#38BDF8;font-weight:800;font-variant-numeric:tabular-nums;">2 Due (₦18,500.00)</span>
                     </div>
-                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="switchAdminTab('withdrawals')" style="padding:4px 12px;font-size:0.74rem">
+                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="switchAdminTab('withdrawals')" style="padding:5px 14px;font-size:0.75rem;border-radius:8px">
                         Process Payouts →
                     </button>
                 </div>
 
                 <!-- Subsystem Diagnostics Badges -->
                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:0.75rem">
-                    <span style="color:#7DD3FC;font-weight:700">System Status:</span>
-                    <span style="color:#38BDF8;font-weight:800">MySQL: Active</span>
+                    <span style="color:#7DD3FC;font-weight:700">Status:</span>
+                    <span style="color:#38BDF8;font-weight:700">Database: Active</span>
                     <span style="color:rgba(56,189,248,0.4)">•</span>
-                    <span style="color:#FFFFFF;font-weight:800">NUBAN API: 2.4s</span>
+                    <span style="color:#FFFFFF;font-weight:700">Fast Bank Transfers</span>
                     <span style="color:rgba(56,189,248,0.4)">•</span>
-                    <span style="color:#38BDF8;font-weight:800">VTU Engine: OmaLive</span>
+                    <span style="color:#38BDF8;font-weight:700">Airtime &amp; Data: Active</span>
                     <span style="color:rgba(56,189,248,0.4)">•</span>
-                    <span style="color:#34D399;font-weight:800">Security Guard: Operational</span>
+                    <span style="color:#34D399;font-weight:700">Protected</span>
                 </div>
             </div>
         </div>
