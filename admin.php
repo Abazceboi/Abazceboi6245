@@ -50,98 +50,6 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <!-- Admin Streamlined Navigation Bar -->
-        <div class="admin-nav-header-bar reveal">
-            <nav class="admin-quick-nav-pills" aria-label="Admin Navigation">
-                <!-- 1. Overview -->
-                <button type="button" class="admin-nav-pill active" data-tab="overview" onclick="switchAdminTab('overview', this)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    <span>Overview</span>
-                </button>
-                <!-- 2. Payouts -->
-                <button type="button" class="admin-nav-pill" data-tab="withdrawals" onclick="switchAdminTab('withdrawals', this)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <span>Payouts</span>
-                </button>
-                <!-- 3. Users & Ledgers -->
-                <button type="button" class="admin-nav-pill" data-tab="users" onclick="switchAdminTab('users', this)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    <span>Users &amp; Ledgers</span>
-                </button>
-                <!-- 4. Tasks & Gigs -->
-                <button type="button" class="admin-nav-pill" data-tab="opportunities" onclick="switchAdminTab('opportunities', this)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    <span>Tasks &amp; Gigs</span>
-                </button>
-                <!-- 5. VTU Telecoms -->
-                <button type="button" class="admin-nav-pill" data-tab="vtu" onclick="switchAdminTab('vtu', this)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
-                    <span>VTU Hub</span>
-                </button>
-            </nav>
-
-            <!-- More Modules Action Dropdown (Unclipped outside horizontal scroll) -->
-            <div class="admin-nav-dropdown-wrap" id="moreModulesDropdownWrap">
-                <button type="button" class="admin-nav-pill-more" id="adminMoreModulesBtn" onclick="toggleMoreModulesDropdown(event)" aria-expanded="false" aria-haspopup="true">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle></svg>
-                    <span id="adminMoreModulesLabel" style="font-weight:900;letter-spacing:0.04em">MORE</span>
-                    <svg class="dropdown-arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-
-                <div class="admin-nav-dropdown-menu" id="adminMoreModulesMenu">
-                    <div class="admin-dropdown-group-title">Growth &amp; Monetization</div>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('uploaders')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <span>Uploader Requests</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('adverts')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                        <span>Member Adverts</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('adsense')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                        <span>Google AdSense</span>
-                    </button>
-
-                    <div class="admin-dropdown-group-title" style="margin-top:10px">Finance &amp; Gateways</div>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('gateways')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                        <span>Payment Gateways</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('autopayout')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span>Auto-Payout App (24/7)</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('virtual-accounts')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        <span>Virtual Accounts &amp; DVA</span>
-                    </button>
-
-                    <div class="admin-dropdown-group-title" style="margin-top:10px">Platform Administration</div>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('broadcasts')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12A10 10 0 0 0 12 2v10z"></path><path d="M12 12L2.5 7.5"></path></svg>
-                        <span>Broadcast Engine</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('notifications')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        <span>In-App Notifications</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('team')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
-                        <span>Staff Permissions &amp; Roles</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('features')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        <span>Feature Toggles</span>
-                    </button>
-                    <button type="button" class="admin-dropdown-item" onclick="selectMoreModule('content')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span>Cards &amp; Placeholders</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Admin Slide-Out Navigation Drawer -->
         <div class="drawer-backdrop" id="adminDrawerBackdrop" onclick="toggleAdminNavDrawer()"></div>
         <aside class="mobile-drawer" id="adminNavDrawer">
@@ -1810,6 +1718,16 @@ require_once __DIR__ . '/includes/header.php';
                 </select>
                 <button onclick="seedNewDemoUser()" class="btn-dash-action btn-dash-secondary" style="padding:6px 12px;font-size:0.78rem">+ Add User</button>
             </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+            <span style="font-size:0.76rem;font-weight:700;color:#7DD3FC">Filter by Role:</span>
+            <button type="button" class="admin-role-filter-btn active" onclick="filterUsersByRole('all')" data-role="all">All Roles</button>
+            <button type="button" class="admin-role-filter-btn" onclick="filterUsersByRole('member')" data-role="member">Members</button>
+            <button type="button" class="admin-role-filter-btn" onclick="filterUsersByRole('uploader')" data-role="uploader">Uploaders</button>
+            <button type="button" class="admin-role-filter-btn" onclick="filterUsersByRole('sub_admin')" data-role="sub_admin">Sub-Admins</button>
+            <button type="button" class="admin-role-filter-btn" onclick="filterUsersByRole('moderator')" data-role="moderator">Moderators</button>
+            <button type="button" class="admin-role-filter-btn" onclick="filterUsersByRole('super_admin')" data-role="super_admin">Super Admins</button>
         </div>
 
         <div class="admin-table-responsive" style="overflow-x:auto">
@@ -6524,10 +6442,19 @@ saveWithdrawalSettings = function() {
         }
 
         tbody.innerHTML = list.map(u => {
-            const isUploader = u.role === 'uploader' || u.mode === 'uploader';
-            const statusBadge = isUploader 
-                ? '<span style="background:rgba(59, 130, 246, 0.18);color:#60A5FA;padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:800">Verified Uploader</span>'
-                : '<span style="background:rgba(56,189,248,0.15);color:#38BDF8;padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:800">Active Member</span>';
+            const role = u.role || 'member';
+            const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
+            const roleColors = {
+                member: { bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)', text: '#38BDF8' },
+                uploader: { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', text: '#4ADE80' },
+                moderator: { bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)', text: '#FBBF24' },
+                sub_admin: { bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.3)', text: '#818CF8' },
+                super_admin: { bg: 'rgba(244,63,94,0.12)', border: 'rgba(244,63,94,0.3)', text: '#FB7185' }
+            };
+            const rc = roleColors[role] || roleColors.member;
+            const rl = roleLabels[role] || roleLabels.member;
+            
+            const statusBadge = `<span class="user-role-badge" style="background:${rc.bg};border:1px solid ${rc.border};color:${rc.text};padding:3px 8px;border-radius:4px;font-size:0.7rem;font-weight:800">${rl}</span>`;
 
             const initials = (u.full_name || u.username).substring(0, 2).toUpperCase();
 
@@ -6567,7 +6494,14 @@ saveWithdrawalSettings = function() {
                         <div style="color:#7DD3FC;font-weight:700">${u.remaining_pts.toLocaleString()} PTS</div>
                     </td>
                     <td style="padding:14px 16px;text-align:right">
-                        <button type="button" onclick="openUserActivityLedger('${u.username}')" class="btn-dash-action btn-dash-secondary" style="padding:6px 12px;font-size:0.74rem">
+                        <select class="admin-select admin-role-select" onchange="updateUserRole('${u.username}', this.value)" style="font-size:0.72rem;padding:4px 8px;min-width:120px;background:#0C162D;border:1px solid rgba(56,189,248,0.25);color:#BAE6FD;border-radius:6px;margin-bottom:6px">
+                            <option value="member" ${role === 'member' ? 'selected' : ''}>Member</option>
+                            <option value="uploader" ${role === 'uploader' ? 'selected' : ''}>Uploader</option>
+                            <option value="moderator" ${role === 'moderator' ? 'selected' : ''}>Moderator</option>
+                            <option value="sub_admin" ${role === 'sub_admin' ? 'selected' : ''}>Sub-Admin</option>
+                            <option value="super_admin" ${role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
+                        </select><br>
+                        <button type="button" onclick="openUserActivityLedger('${u.username}')" class="btn-dash-action btn-dash-secondary" style="padding:6px 12px;font-size:0.74rem;width:120px">
                             Audit Ledger
                         </button>
                     </td>
@@ -6705,14 +6639,16 @@ saveWithdrawalSettings = function() {
         }
     };
 
-    window.selectAdminDrawerTab = function(tabId) {
+    window.selectAdminDrawerTab = function(tabName) {
+        switchAdminTab(tabName);
         toggleAdminNavDrawer();
-        const btn = document.getElementById('tabBtn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)) || document.querySelector(`[data-tab="tab-${tabId}"]`);
-        if (btn) {
-            btn.click();
-        } else {
-            switchAdminTab(tabId, null);
-        }
+        // Highlight active drawer link
+        document.querySelectorAll('#adminNavDrawer .drawer-link').forEach(link => {
+            link.classList.remove('drawer-link-active');
+            if (link.getAttribute('onclick') && link.getAttribute('onclick').includes("'" + tabName + "'")) {
+                link.classList.add('drawer-link-active');
+            }
+        });
     };
 
     // Initialize engines
@@ -6728,6 +6664,77 @@ saveWithdrawalSettings = function() {
     loadAdminUploaders();
     calculatePlatformFinancials();
     setInterval(renderPayoutQueue, 1500);
+
+    // ─── User Role Management ────────────────────────
+    window.updateUserRole = function(username, newRole) {
+        const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
+        const roleColors = {
+            member: { bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)', text: '#38BDF8' },
+            uploader: { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', text: '#4ADE80' },
+            moderator: { bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)', text: '#FBBF24' },
+            sub_admin: { bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.3)', text: '#818CF8' },
+            super_admin: { bg: 'rgba(244,63,94,0.12)', border: 'rgba(244,63,94,0.3)', text: '#FB7185' }
+        };
+
+        // Update localStorage
+        try {
+            const users = JSON.parse(localStorage.getItem('ix_admin_users') || '[]');
+            const user = users.find(u => u.username === username);
+            if (user) {
+                user.role = newRole;
+                user.mode = newRole === 'uploader' ? 'uploader' : (newRole === 'member' ? 'active' : newRole);
+                user.status_label = roleLabels[newRole] || 'Active Member';
+                localStorage.setItem('ix_admin_users', JSON.stringify(users));
+            }
+        } catch(e) {}
+
+        // Update the role badge in the same row
+        const allRows = document.querySelectorAll('#adminUsersTableBody tr');
+        allRows.forEach(row => {
+            const nameCell = row.querySelector('td:first-child');
+            if (nameCell && nameCell.textContent.includes(username)) {
+                const badge = row.querySelector('.user-role-badge');
+                if (badge) {
+                    const colors = roleColors[newRole];
+                    badge.textContent = roleLabels[newRole];
+                    badge.style.background = colors.bg;
+                    badge.style.borderColor = colors.border;
+                    badge.style.color = colors.text;
+                }
+            }
+        });
+
+        // Persist to server
+        fetch('api/users.php?action=update_role', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, new_role: newRole })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+            }
+        }).catch(() => {});
+    };
+
+    window.filterUsersByRole = function(role) {
+        document.querySelectorAll('.admin-role-filter-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector('.admin-role-filter-btn[data-role="' + role + '"]');
+        if (activeBtn) activeBtn.classList.add('active');
+
+        const rows = document.querySelectorAll('#adminUsersTableBody tr');
+        rows.forEach(row => {
+            if (role === 'all') {
+                row.style.display = '';
+                return;
+            }
+            const select = row.querySelector('.admin-role-select');
+            if (select && select.value === role) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    };
 
     })();
     </script>

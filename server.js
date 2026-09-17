@@ -429,6 +429,77 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
+            // User Role Management API
+            if (cleanUrl.includes('users.php')) {
+                const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                let usersData = { users: [] };
+                if (fs.existsSync(usersFile)) {
+                    try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                }
+
+                const validRoles = ['member', 'uploader', 'moderator', 'sub_admin', 'super_admin'];
+                const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
+                const roleColors = {
+                    member: { bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)', text: '#38BDF8' },
+                    uploader: { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', text: '#4ADE80' },
+                    moderator: { bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)', text: '#FBBF24' },
+                    sub_admin: { bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.3)', text: '#818CF8' },
+                    super_admin: { bg: 'rgba(244,63,94,0.12)', border: 'rgba(244,63,94,0.3)', text: '#FB7185' }
+                };
+
+                if (action === 'get_users') {
+                    res.end(JSON.stringify({ success: true, users: usersData.users || [], valid_roles: validRoles, role_labels: roleLabels, role_colors: roleColors }));
+                    return;
+                }
+
+                if (action === 'update_role' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const newRole = (parsed.new_role || '').trim();
+                    if (!username || !validRoles.includes(newRole)) {
+                        res.end(JSON.stringify({ success: false, error: 'Invalid username or role' }));
+                        return;
+                    }
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if (u.username.toLowerCase() === username.toLowerCase()) {
+                            const oldRole = u.role || 'member';
+                            u.role = newRole;
+                            u.role_label = roleLabels[newRole];
+                            u.role_updated_at = new Date().toISOString();
+                            u.role_history = u.role_history || [];
+                            u.role_history.push({ from: oldRole, to: newRole, changed_at: new Date().toISOString(), changed_by: 'super_admin' });
+                            found = true;
+                        }
+                    });
+                    if (!found) {
+                        usersData.users.push({
+                            username: username, role: newRole, role_label: roleLabels[newRole],
+                            role_updated_at: new Date().toISOString(),
+                            role_history: [{ from: 'member', to: newRole, changed_at: new Date().toISOString(), changed_by: 'super_admin' }]
+                        });
+                    }
+                    const dataDir = path.dirname(usersFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    res.end(JSON.stringify({ success: true, message: `User '${username}' promoted to ${roleLabels[newRole]}`, username, new_role: newRole, role_label: roleLabels[newRole], role_colors: roleColors[newRole] }));
+                    return;
+                }
+
+                if (action === 'get_role') {
+                    const uname = urlObj.searchParams.get('username') || '';
+                    const user = usersData.users.find(u => u.username.toLowerCase() === uname.toLowerCase());
+                    if (user) {
+                        res.end(JSON.stringify({ success: true, username: user.username, role: user.role, role_label: user.role_label || roleLabels[user.role], role_colors: roleColors[user.role], permissions: user.permissions || [] }));
+                    } else {
+                        res.end(JSON.stringify({ success: true, username: uname, role: 'member', role_label: 'Active Member', role_colors: roleColors.member, permissions: [] }));
+                    }
+                    return;
+                }
+
+                res.end(JSON.stringify({ success: false, error: 'Invalid action', valid_roles: validRoles, role_labels: roleLabels }));
+                return;
+            }
+
             // Referrals & Network Directory API
             if (cleanUrl.includes('referrals.php')) {
                 const refFile = path.join(PUBLIC_DIR, 'data', 'referrals.json');

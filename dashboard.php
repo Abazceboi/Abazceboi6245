@@ -42,12 +42,6 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                 </div>
 
-                <!-- Settings Action -->
-                <button type="button" class="btn-dash-action btn-dash-settings" onclick="switchDashTab('settings')" title="Account Settings & Customization">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    <span>Settings</span>
-                </button>
-
                 <!-- Theme Switcher -->
                 <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme()" aria-label="Toggle Theme" title="Toggle Theme">
                     <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -72,80 +66,74 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Slide-Out Navigation Drawer -->
         <div class="drawer-backdrop" id="dashDrawerBackdrop" onclick="toggleDashDrawer()"></div>
         <aside class="mobile-drawer" id="dashNavDrawer">
-            <div class="drawer-head" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-                <div style="font-weight:900;font-size:1.05rem;color:#FFF;letter-spacing:0.02em;display:flex;align-items:center;gap:8px">
-                    <span style="width:8px;height:8px;border-radius:50%;background:#0284C7;box-shadow:0 0 10px #0284C7"></span>
-                    Dashboard Menu
+            <div class="drawer-head" style="padding:16px 18px 14px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.15)">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div id="drawerUserAvatar" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#0284C7,#38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;font-size:0.8rem;flex-shrink:0">IX</div>
+                    <div>
+                        <div id="drawerUsername" style="font-size:0.95rem;font-weight:800;color:#FFFFFF">Member</div>
+                        <div style="font-size:0.7rem;color:#7DD3FC">Active Member</div>
+                    </div>
                 </div>
-                <button type="button" onclick="toggleDashDrawer()" style="background:none;border:none;color:#94A3B8;font-size:1.4rem;cursor:pointer;line-height:1">&times;</button>
-            </div>
-            
-            <!-- Quick Actions in Drawer -->
-            <div style="display:flex;gap:8px;margin-bottom:16px">
-                <button type="button" onclick="selectDashDrawerTab('withdraw')" class="btn-dash-action btn-tech-primary" style="flex:1;height:38px;border-radius:8px;font-size:0.82rem">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                    Withdraw
-                </button>
-                <button type="button" onclick="selectDashDrawerTab('tasks')" class="btn-dash-action btn-tech-ghost" style="flex:1;height:38px;border-radius:8px;font-size:0.82rem">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    Daily Tasks
-                </button>
+                <button type="button" onclick="toggleDashDrawer()" style="background:none;border:none;color:#BAE6FD;font-size:1.4rem;cursor:pointer;padding:4px">&times;</button>
             </div>
 
-            <!-- Group 1: Core -->
-            <div style="font-size:0.7rem;font-weight:800;color:#64748B;letter-spacing:0.04em;margin:8px 0 4px;padding:0 8px">
-                MAIN MENU
-            </div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('overview')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Overview &amp; Balances
+            <!-- MAIN -->
+            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">MAIN</div>
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('overview')" class="drawer-link drawer-link-active" id="drawerLink_overview">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Overview & Balances</span>
             </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('tasks')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Jobbers Tasks &amp; Videos
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('withdraw')" class="drawer-link" id="drawerLink_withdraw">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Withdraw Funds</span>
             </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('withdraw')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Request Bank Payout
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('tasks')" class="drawer-link" id="drawerLink_tasks">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Jobbers Tasks & Gigs</span>
             </a>
 
-            <!-- Group 2: Utilities -->
-            <div style="font-size:0.7rem;font-weight:800;color:#64748B;letter-spacing:0.04em;margin:12px 0 4px;padding:0 8px">
-                TELECOMS &amp; BANKING
-            </div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('vtu')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-                VTU Airtime &amp; Cheap Data
+            <!-- SERVICES -->
+            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">SERVICES</div>
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('vtu')" class="drawer-link" id="drawerLink_vtu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
+                <span>VTU Telecoms & Data</span>
             </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('bank')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                Bank Account &amp; PIN
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('bank')" class="drawer-link" id="drawerLink_bank">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <span>Bank & Security PIN</span>
             </a>
 
-            <!-- Group 3: Growth -->
-            <div style="font-size:0.7rem;font-weight:800;color:#64748B;letter-spacing:0.04em;margin:12px 0 4px;padding:0 8px">
-                GROW &amp; EARN
-            </div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
-                Upgrade to Task Uploader
+            <!-- GROW & EARN -->
+            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">GROW & EARN</div>
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-link" id="drawerLink_uploader">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Become an Uploader</span>
             </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('advert')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                Place Member Adverts
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('advert')" class="drawer-link" id="drawerLink_advert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                <span>Place Adverts</span>
             </a>
-                        <a href="javascript:void(0)" onclick="selectDashDrawerTab('settings')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Profile &amp; Bank Settings
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('referrals')" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                Referral Link (₦250 Bonus)
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('referrals')" class="drawer-link" id="drawerLink_referrals">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span>Referral Accelerator</span>
             </a>
 
-            <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">
-                <a href="admin.php" class="drawer-link" style="color:#FBBF24;font-size:0.85rem">Admin Portal</a>
-                <a href="login.php" class="drawer-link" style="color:#F87171;font-size:0.85rem">Sign Out</a>
+            <!-- ACCOUNT -->
+            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">ACCOUNT</div>
+            <a href="javascript:void(0)" onclick="selectDashDrawerTab('settings')" class="drawer-link" id="drawerLink_settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Settings & Preferences</span>
+            </a>
+            <a href="admin.php" class="drawer-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Admin Panel</span>
+            </a>
+
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(56,189,248,0.15)">
+                <a href="login.php" class="drawer-link" style="color:#F87171">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span>Sign Out</span>
+                </a>
             </div>
         </aside>
 
@@ -4265,6 +4253,11 @@ renderDashboardNotifications();
 
         // 4. Smoothly bring the active pane area into full view on mobile and desktop
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Highlight active drawer link
+        document.querySelectorAll('#dashNavDrawer .drawer-link').forEach(link => link.classList.remove('drawer-link-active'));
+        const activeDrawerLink = document.getElementById('drawerLink_' + tabName);
+        if (activeDrawerLink) activeDrawerLink.classList.add('drawer-link-active');
     };
 
     window.selectDashDrawerTab = function(tabName) {
@@ -4272,6 +4265,11 @@ renderDashboardNotifications();
             toggleDashDrawer();
         }
         switchDashTab(tabName);
+        
+        // Highlight active drawer link
+        document.querySelectorAll('#dashNavDrawer .drawer-link').forEach(link => link.classList.remove('drawer-link-active'));
+        const activeLink = document.getElementById('drawerLink_' + tabName);
+        if (activeLink) activeLink.classList.add('drawer-link-active');
     };
 
     window.togglePassVisibility = function(inputId, btn) {

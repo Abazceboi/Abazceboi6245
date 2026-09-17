@@ -5,6 +5,11 @@
    Alternating section rhythm: dark purple <-> cream white.
    ================================================ */
 
+/* Global smooth transitions for interactive elements */
+button, a, input, select, textarea, .admin-card, .dash-panel {
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+}
+
 /* ===== CSS Variables ===== */
 :root {
   /* Sky Blue & White Master Brand Palette */
@@ -806,7 +811,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 850px;
   height: 480px;
   background: radial-gradient(ellipse at 50% 10%, rgba(255, 255, 255, 0.09) 0%, rgba(241, 237, 253, 0.04) 45%, transparent 70%);
-  filter: blur(85px);
+  filter: blur(50px);
 }
 .bg-glow-1 {
   position: absolute;
@@ -815,7 +820,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 700px;
   height: 700px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.38), transparent 70%);
-  filter: blur(85px);
+  filter: blur(50px);
 }
 .bg-glow-blue {
   position: absolute;
@@ -824,7 +829,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 650px;
   height: 650px;
   background: radial-gradient(circle, rgba(2, 132, 199, 0.35), transparent 70%);
-  filter: blur(95px);
+  filter: blur(50px);
 }
 .bg-glow-gold {
   position: absolute;
@@ -833,7 +838,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 650px;
   height: 650px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.30), transparent 70%);
-  filter: blur(95px);
+  filter: blur(50px);
 }
 .bg-glow-2 {
   position: absolute;
@@ -842,7 +847,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 650px;
   height: 650px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 70%);
-  filter: blur(95px);
+  filter: blur(50px);
 }
 .bg-glow-3 {
   position: absolute;
@@ -851,7 +856,7 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   width: 700px;
   height: 700px;
   background: radial-gradient(circle, rgba(2, 132, 199, 0.22), transparent 70%);
-  filter: blur(90px);
+  filter: blur(50px);
 }
 
 /* ===== NAVIGATION ===== */
@@ -3741,6 +3746,10 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   display: none;
   animation: fadeIn 0.3s ease;
 }
+.admin-tab-pane:not(.active) {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+}
 .admin-tab-pane.active {
   display: block;
 }
@@ -5644,6 +5653,113 @@ select.dash-input:focus {
 [data-theme="light"] .drawer-link:hover {
   color: #0F172A;
   background: rgba(99, 102, 241, 0.06);
+}
+
+/* Drawer Active Link State */
+.drawer-link-active {
+    background: rgba(56, 189, 248, 0.12) !important;
+    color: #38BDF8 !important;
+    border-left: 3px solid #38BDF8;
+    font-weight: 700;
+}
+
+.drawer-link-active svg {
+    color: #38BDF8 !important;
+    stroke: #38BDF8 !important;
+}
+
+/* Drawer Section Titles */
+.drawer-section-title {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #7DD3FC;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 12px 18px 4px;
+    margin-top: 4px;
+}
+
+[data-theme="light"] .drawer-section-title {
+    color: #0284C7;
+}
+
+[data-theme="light"] .drawer-link-active {
+    background: rgba(2, 132, 199, 0.08) !important;
+    color: #0284C7 !important;
+    border-left-color: #0284C7;
+}
+
+/* Admin Role Filter Buttons */
+.admin-role-filter-btn {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(56, 189, 248, 0.06);
+    color: #BAE6FD;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin-role-filter-btn:hover {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.35);
+}
+
+.admin-role-filter-btn.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: #38BDF8;
+    color: #38BDF8;
+    font-weight: 800;
+}
+
+[data-theme="light"] .admin-role-filter-btn {
+    background: #F0F9FF;
+    border-color: #BAE6FD;
+    color: #0284C7;
+}
+
+[data-theme="light"] .admin-role-filter-btn.active {
+    background: #E0F2FE;
+    border-color: #0284C7;
+    color: #0369A1;
+}
+
+/* Role Badge in User Table */
+.user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Role Select Dropdown */
+.admin-role-select {
+    font-size: 0.72rem !important;
+    padding: 4px 8px !important;
+    min-width: 120px;
+    background: #0C162D;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    color: #BAE6FD;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.admin-role-select:hover,
+.admin-role-select:focus {
+    border-color: #38BDF8;
+}
+
+[data-theme="light"] .admin-role-select {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+    color: #0F172A;
 }
 
 .drawer-buttons {
@@ -9607,6 +9723,10 @@ select.dash-input:focus {
   position: relative;
   z-index: 10;
   width: 100%;
+}
+.dash-service-pane:not(.active) {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
 }
 .dash-service-pane .reveal,
 .dash-service-pane .dash-panel,

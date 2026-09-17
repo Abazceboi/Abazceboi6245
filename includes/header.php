@@ -41,7 +41,7 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
+ <link rel="stylesheet" href="css/style.css?v=2.1">
     <script>
         (function() {
             var savedTheme = 'dark';
@@ -82,7 +82,7 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
         })();
     </script>
  <!-- Custom Luxury Dialog & Alert Engine -->
- <script src="js/dialogs.js"></script>
+ <script src="js/dialogs.js" defer></script>
 </head>
 <body>
 <?php if (!empty($maintenance['enabled'])): ?>
