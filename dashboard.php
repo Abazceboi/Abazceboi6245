@@ -50,13 +50,11 @@ require_once __DIR__ . '/includes/header.php';
                 <!-- Navigation Menu Toggle -->
                 <button type="button" class="btn-dash-action btn-dash-menu" id="btnDashHamburger" onclick="toggleDashDrawer()" title="Open Navigation Menu">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                    <span style="font-weight:800;letter-spacing:0.02em">MENU</span>
                 </button>
 
                 <!-- Logout Action -->
                 <a href="login.php" class="btn-dash-action btn-dash-logout" title="Sign Out">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span>Exit</span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </a>
             </div>
         </header>
@@ -751,15 +749,11 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
 
                 <!-- Settings Header Banner -->
-                <div class="dash-panel reveal" style="margin-bottom:22px;border-left:3px solid #6366F1">
-                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-                        <div style="width:46px;height:46px;border-radius:12px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;color:#818CF8;flex-shrink:0">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        </div>
-                        <div>
-                            <h2 style="font-size:1.2rem;font-weight:900;color:#FFF;margin:0 0 4px 0">Account Settings &amp; Customization</h2>
-                            <p style="font-size:0.82rem;color:#94A3B8;margin:0">Set and customize your personal profile, bank settlement details, withdrawal PIN, and preferences.</p>
-                        </div>
+                <div class="admin-card reveal" style="padding:24px;border:1px solid rgba(99,102,241,0.25);background:linear-gradient(135deg,rgba(17,19,32,0.9),rgba(30,32,48,0.95));margin-bottom:20px;display:flex;align-items:center;gap:18px">
+                    <div id="settingsProfileAvatar" style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-size:1.6rem;font-weight:900;box-shadow:0 8px 25px rgba(56,189,248,0.35);border:2px solid rgba(255,255,255,0.2)"><?= htmlspecialchars($initials) ?></div>
+                    <div>
+                        <h3 id="settingsProfileName" style="margin:0;font-size:1.3rem;font-weight:900;color:#F1F5F9;letter-spacing:-0.01em"><?= htmlspecialchars($username) ?></h3>
+                        <span style="font-size:0.75rem;font-weight:700;color:#38BDF8;background:rgba(56,189,248,0.15);padding:3px 10px;border-radius:8px;display:inline-block;margin-top:6px;border:1px solid rgba(56,189,248,0.3)">Verified Member</span>
                     </div>
                 </div>
 
@@ -775,6 +769,39 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
                         </div>
                         <form id="settingsProfileForm" onsubmit="handleSaveProfileSettings(event)">
+                            <div style="margin-bottom:20px">
+                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:10px">Choose Avatar Style</label>
+                                <div style="display:flex;gap:12px;flex-wrap:wrap">
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="blue" checked style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="purple" style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #7C3AED, #C084FC);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="emerald" style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #059669, #34D399);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="rose" style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #E11D48, #FB7185);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="gold" style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #D97706, #FBBF24);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                    <label class="avatar-option">
+                                        <input type="radio" name="avatar_choice" value="dark" style="display:none">
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #1E293B, #475569);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                    </label>
+                                </div>
+                                <style>
+                                    .avatar-option input:checked + .avatar-preview { border-color: #FFF !important; box-shadow: 0 0 15px rgba(255,255,255,0.4); transform: scale(1.05); }
+                                    [data-theme="light"] .avatar-option input:checked + .avatar-preview { border-color: #0F172A !important; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
+                                </style>
+                            </div>
                             <div style="margin-bottom:14px">
                                 <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Display Name</label>
                                 <input type="text" id="settingsInputName" class="admin-input" placeholder="e.g. Member" value="<?= htmlspecialchars($username) ?>" required>
@@ -3645,20 +3672,65 @@ renderDashboardNotifications();
     // Settings Profile Form Handler
     window.handleSaveProfileSettings = function(e) {
         if (e) e.preventDefault();
-        const name = document.getElementById('settingsInputName') ? document.getElementById('settingsInputName').value.trim() : '';
-        const email = document.getElementById('settingsInputEmail') ? document.getElementById('settingsInputEmail').value.trim() : '';
-        const phone = document.getElementById('settingsInputPhone') ? document.getElementById('settingsInputPhone').value.trim() : '';
-
-        const profile = { name, email, phone };
-        localStorage.setItem('ix_user_profile', JSON.stringify(profile));
-
-        // Update greeting & displayed username
-        document.querySelectorAll('.dash-user-name, #overviewSavedAccountName').forEach(el => {
-            if (name) el.textContent = name;
-        });
-
-        alert('Profile information updated successfully!');
+        
+        // Find button to show saving state if possible, though not required to fail if missing
+        const btn = document.querySelector('#settingsProfileForm button[type="submit"]') || document.createElement('button');
+        const og = btn.innerHTML;
+        btn.innerHTML = 'Saving...';
+        
+        setTimeout(() => {
+            const nameVal = document.getElementById('settingsInputName') ? document.getElementById('settingsInputName').value.trim() : 'Member';
+            const init = nameVal.substring(0, 2).toUpperCase() || 'IX';
+            const email = document.getElementById('settingsInputEmail') ? document.getElementById('settingsInputEmail').value.trim() : '';
+            const phone = document.getElementById('settingsInputPhone') ? document.getElementById('settingsInputPhone').value.trim() : '';
+            
+            // Find selected avatar gradient
+            const selectedRadio = document.querySelector('input[name="avatar_choice"]:checked');
+            const selectedGradient = selectedRadio ? selectedRadio.nextElementSibling.style.background : 'linear-gradient(135deg, #0284C7, #38BDF8)';
+            
+            // Save to localStorage
+            localStorage.setItem('ix_user_name', nameVal);
+            localStorage.setItem('ix_user_avatar_bg', selectedGradient);
+            
+            const profile = { name: nameVal, email, phone };
+            localStorage.setItem('ix_user_profile', JSON.stringify(profile));
+            
+            // Update DOM elements
+            document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = nameVal; });
+            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => {
+                if(el) {
+                    el.textContent = init;
+                    el.style.background = selectedGradient;
+                }
+            });
+            
+            btn.innerHTML = og;
+            if(window.showDialog) {
+                window.showDialog('Profile Updated', 'Your display name and avatar have been instantly synchronized across the dashboard.', 'success');
+            } else {
+                alert('Profile updated successfully!');
+            }
+        }, 600);
     };
+
+    // Also add a quick init function right after it to load the saved avatar on page load:
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedName = localStorage.getItem('ix_user_name');
+        const savedBg = localStorage.getItem('ix_user_avatar_bg');
+        if(savedName) {
+            document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = savedName; });
+            const init = savedName.substring(0, 2).toUpperCase();
+            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => { if(el) el.textContent = init; });
+            const input = document.getElementById('settingsInputName');
+            if(input) input.value = savedName;
+        }
+        if(savedBg) {
+            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => { if(el) el.style.background = savedBg; });
+            document.querySelectorAll('.avatar-option input').forEach(rad => {
+                if(rad.nextElementSibling.style.background === savedBg || rad.nextElementSibling.style.background.includes(savedBg)) rad.checked = true;
+            });
+        }
+    });
 
     // Settings PIN Form Handler
     window.handleSavePinSettings = function(e) {

@@ -3180,9 +3180,10 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 9px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -3250,14 +3251,14 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   color: #FFFFFF;
 }
 .btn-dash-logout {
-  background: rgba(248, 113, 113, 0.08);
-  color: var(--mt-danger);
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--mt-text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .btn-dash-logout:hover {
-  background: rgba(248, 113, 113, 0.15);
-  border-color: rgba(248, 113, 113, 0.35);
-  color: #FCA5A5;
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFF;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Notification Bell Button */
@@ -3362,11 +3363,11 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   stroke: #FFFFFF;
 }
 [data-theme="light"] .btn-dash-logout {
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  color: #DC2626;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
 }
-[data-theme="light"] .btn-dash-logout svg { stroke: #DC2626; }
+[data-theme="light"] .btn-dash-logout svg { stroke: #475569; }
 [data-theme="light"] .btn-notif-bell {
   background: #FFFFFF !important;
   border: 1.5px solid #CBD5E1 !important;
@@ -4782,16 +4783,16 @@ select.dash-input:focus {
   right: 0 !important;
   width: 340px !important;
   max-width: 90vw !important;
-  background: #0E1626 !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.3) !important;
+  background: rgba(14, 22, 38, 0.95) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1) !important;
   border-top: 2px solid #0284C7 !important;
-  border-radius: 16px !important;
+  border-radius: 18px !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.25) !important;
   padding: 16px;
   z-index: 999999 !important;
   display: none;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
 }
 .notif-dropdown.show {
   display: block !important;
@@ -6533,15 +6534,16 @@ select.dash-input:focus {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 20px;
+  padding: 8px 16px;
   background: rgba(22, 24, 38, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: 1px solid rgba(56, 189, 248, 0.5);
-  border-radius: 16px;
+  border-radius: 50px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+  margin-top: 10px;
   position: relative;
   z-index: 1000;
   overflow: visible !important;
@@ -7463,6 +7465,9 @@ select.dash-input:focus {
   border-color: #E2E8F0 !important;
   border-top: 2px solid #0284C7 !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 50px !important;
+  margin-top: 10px !important;
+  padding: 8px 16px !important;
 }
 [data-theme="light"] .hud-user-info h2 { color: #0F172A !important; }
 [data-theme="light"] .hud-tag-tier {
@@ -7844,9 +7849,9 @@ select.dash-input:focus {
 
 /* Light Theme Notification Popover */
 [data-theme="light"] .notif-dropdown {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
 }
 [data-theme="light"] .notif-item {
   background: #F8FAFC !important;
@@ -9523,11 +9528,11 @@ select.admin-select option {
 /* ======================================================== */
 .admin-main-workspace .admin-kpi-card.kpi-withdrawal-card,
 .telemetry-item.telemetry-withdrawal {
-  background: linear-gradient(135deg, #3B0A18 0%, #540D22 100%) !important;
-  border: 1.5px solid #F43F5E !important;
-  border-left: 4px solid #FB7185 !important;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  border-left: 4px solid #38BDF8 !important;
   border-radius: 14px !important;
-  box-shadow: 0 6px 25px rgba(225, 29, 72, 0.35) !important;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.2) !important;
   position: relative !important;
   overflow: hidden !important;
 }
@@ -9567,9 +9572,9 @@ select.admin-select option {
 }
 
 #withdrawSection {
-  background: linear-gradient(180deg, #220812 0%, #350B1B 100%) !important;
-  border: 1.5px solid #F43F5E !important;
-  border-top: 3.5px solid #FB7185 !important;
+  background: linear-gradient(180deg, rgba(14, 26, 51, 0.8) 0%, rgba(12, 22, 45, 0.9) 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  border-top: 3px solid #38BDF8 !important;
   box-shadow: 0 10px 35px rgba(225, 29, 72, 0.25) !important;
 }
 #withdrawSection .dash-panel-title span {
@@ -9577,9 +9582,9 @@ select.admin-select option {
   font-weight: 900 !important;
 }
 #withdrawMinBadge {
-  background: #540D22 !important;
-  color: #FECDD3 !important;
-  border: 1px solid #F43F5E !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  color: #38BDF8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
   font-weight: 800 !important;
 }
 

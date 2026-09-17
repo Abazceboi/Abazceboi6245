@@ -103,19 +103,12 @@ require_once __DIR__ . '/includes/header.php';
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adverts')" class="drawer-link">Member Adverts</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adsense')" class="drawer-link">Google AdSense</a>
 
-            <!-- Category 3: Finance & Gateways -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Finance &amp; Gateways</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('gateways')" class="drawer-link">Payment Gateways</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('autopayout')" class="drawer-link">Auto-Payout App (24/7)</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('virtual-accounts')" class="drawer-link">Virtual Accounts &amp; DVA</a>
-
-            <!-- Category 4: Platform Administration -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Platform Administration</div>
+            <!-- Category 3: System & Platform -->
+            <div class="admin-drawer-section-title" style="margin-top:10px">System &amp; Platform</div>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('team')" class="drawer-link">Staff Permissions &amp; Roles</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('features')" class="drawer-link">Master Feature Toggles</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('settings')" class="drawer-link">Master Settings &amp; Config</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-link">In-App Notifications</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-link">Broadcast Engine</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('content')" class="drawer-link">Cards &amp; Placeholders</a>
 
             <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(56, 189, 248, 0.15)">
                 <a href="dashboard.php" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;text-decoration:none">Go to Member Dashboard →</a>
@@ -300,10 +293,10 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <!-- 6. Payout to be Made (Withdrawal Card - Distinct High Visibility Accent) -->
-            <div class="admin-kpi-card kpi-withdrawal-card" style="--kpi-accent: #F87171">
+            <div class="admin-kpi-card kpi-withdrawal-card" style="--kpi-accent: #38BDF8">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                     <span class="admin-kpi-title">Payout to be Made</span>
-                    <button type="button" class="btn-dash-action" onclick="switchAdminTab('withdrawals')" style="background:linear-gradient(135deg,#EF4444,#DC2626);color:#FFF;font-weight:800;border:none;border-radius:6px;font-size:0.68rem;padding:3px 8px">Process →</button>
+                    <button type="button" class="btn-dash-action" onclick="switchAdminTab('withdrawals')" style="background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFF;font-weight:800;border:none;border-radius:6px;font-size:0.68rem;padding:3px 8px">Process →</button>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewPendingPayoutVal">₦18,500.00</div>
                 <div style="font-size:0.72rem;margin-top:6px;font-weight:700"><span id="kpiPayoutCountBadge">2 Requests Pending</span> • Due Now</div>
@@ -1100,7 +1093,16 @@ require_once __DIR__ . '/includes/header.php';
     <!-- ======================================================== -->
     <!-- TAB 12: PAYMENT GATEWAYS & DEPOSIT HUB                  -->
     <!-- ======================================================== -->
-    <div id="tab-gateways" class="admin-tab-pane">
+    <div id="tab-settings" class="admin-tab-pane">
+        <div class="admin-view-mode-bar" style="display:flex;align-items:center;gap:12px;margin-bottom:20px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:10px 16px;overflow-x:auto">
+            <button type="button" class="admin-chart-tab-btn active" onclick="switchSettingsSubTab('gateways')" id="btnSubGateways">Gateways</button>
+            <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('autopayout')" id="btnSubAutopayout">Auto-Payout</button>
+            <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('virtual-accounts')" id="btnSubVirtualaccounts">Virtual Accounts</button>
+            <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('features')" id="btnSubFeatures">Features</button>
+            <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('content')" id="btnSubContent">Content</button>
+        </div>
+
+        <div id="sub-gateways" class="settings-sub-pane active">
         <!-- Module Navigation Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
             <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
@@ -1391,7 +1393,7 @@ require_once __DIR__ . '/includes/header.php';
     <!-- ======================================================== -->
     <!-- TAB 13: AUTONOMOUS INSTANT AUTO-PAYOUT APP & WEBHOOK    -->
     <!-- ======================================================== -->
-    <div id="tab-autopayout" class="admin-tab-pane">
+    <div id="sub-autopayout" class="settings-sub-pane" style="display:none">
         <!-- Module Navigation Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
             <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
@@ -1551,7 +1553,7 @@ require_once __DIR__ . '/includes/header.php';
     <!-- ======================================================== -->
     <!-- TAB: VIRTUAL DEDICATED ACCOUNTS & UNIQUE NUBAN ENGINE    -->
     <!-- ======================================================== -->
-    <div id="tab-virtual-accounts" class="admin-tab-pane">
+    <div id="sub-virtual-accounts" class="settings-sub-pane" style="display:none">
         <!-- Module Navigation Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
             <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
@@ -2512,7 +2514,7 @@ require_once __DIR__ . '/includes/header.php';
  <!-- ======================================================== -->
  <!-- TAB 7: MASTER FEATURE TOGGLES (SUPER ADMIN ONLY) -->
  <!-- ======================================================== -->
- <div id="tab-features" class="admin-tab-pane">
+ <div id="sub-features" class="settings-sub-pane" style="display:none">
         <!-- Module Navigation Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
             <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
@@ -2750,7 +2752,7 @@ require_once __DIR__ . '/includes/header.php';
  <!-- ======================================================== -->
  <!-- TAB 8: CARDS & PLACEHOLDER CUSTOMIZER (SUPER ADMIN) -->
  <!-- ======================================================== -->
- <div id="tab-content" class="admin-tab-pane">
+ <div id="sub-content" class="settings-sub-pane" style="display:none">
         <!-- Module Navigation Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
             <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
@@ -3029,6 +3031,7 @@ require_once __DIR__ . '/includes/header.php';
  <button type="button" class="btn-dash-action btn-dash-primary" style="background:linear-gradient(135deg, #0284C7, #38BDF8);padding:12px 32px" onclick="saveAllSiteContent()">
  Save &amp; Broadcast Live Changes
  </button>
+ </div>
  </div>
  </div>
  </div>
@@ -6734,6 +6737,16 @@ saveWithdrawalSettings = function() {
                 row.style.display = 'none';
             }
         });
+    };
+    window.switchSettingsSubTab = function(subName) {
+        document.querySelectorAll('.settings-sub-pane').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('#tab-settings .admin-chart-tab-btn').forEach(b => b.classList.remove('active'));
+        
+        const target = document.getElementById('sub-' + subName);
+        if(target) target.style.display = 'block';
+        
+        const btn = document.getElementById('btnSub' + subName.charAt(0).toUpperCase() + subName.slice(1).replace('-',''));
+        if(btn) btn.classList.add('active');
     };
 
     })();

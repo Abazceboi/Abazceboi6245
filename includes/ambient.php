@@ -10,7 +10,7 @@
 
 <?php
 $currentScript = basename($_SERVER['PHP_SELF'] ?? '');
-if (!in_array($currentScript, ['admin.php', 'login.php'])):
+if ($currentScript === 'index.php' || $currentScript === ''):
 ?>
 <div class="payout-toast-container" aria-live="polite"></div>
 <script>
