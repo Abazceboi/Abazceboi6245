@@ -9386,7 +9386,7 @@ select.admin-select option {
 .dash-hud-bar {
   background: #0E1A33 !important;
   border: 1px solid rgba(59, 130, 246, 0.22) !important;
-  border-radius: 16px !important;
+  border-radius: 50px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
 }
 .admin-brand-icon,
@@ -9808,9 +9808,11 @@ html, body {
     flex-shrink: 0 !important;
   }
   .hud-actions .btn-dash-action {
-    height: 34px !important;
-    padding: 0 8px !important;
-    font-size: 0.75rem !important;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    justify-content: center !important;
   }
   .hud-actions .btn-dash-action span {
     display: none !important;
@@ -9819,11 +9821,10 @@ html, body {
     margin: 0 !important;
   }
   .hud-actions .btn-dash-menu {
-    padding: 0 10px !important;
+    padding: 0 !important;
   }
   .hud-actions .btn-dash-menu span {
-    display: inline !important;
-    font-size: 0.72rem !important;
+    display: none !important;
   }
 
   /* 4. Admin Top Command Bar Balance */

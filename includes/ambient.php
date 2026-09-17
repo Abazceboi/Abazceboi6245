@@ -9,8 +9,9 @@
 </div>
 
 <?php
-$currentScript = basename($_SERVER['PHP_SELF'] ?? '');
-if ($currentScript === 'index.php' || $currentScript === ''):
+$reqUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$reqUri = trim($reqUri, '/');
+if ($reqUri === '' || $reqUri === 'index' || $reqUri === 'index.php'):
 ?>
 <div class="payout-toast-container" aria-live="polite"></div>
 <script>
