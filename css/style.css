@@ -10233,3 +10233,22 @@ html, body {
   to { opacity: 0; }
 }
 
+
+
+/* ---------------------------------------------------------------------- */
+/* LIGHT MODE MODULE BADGES FIX                                           */
+/* ---------------------------------------------------------------------- */
+[data-theme="light"] .module-badge,
+[data-theme="light"] .bento-badge,
+[data-theme="light"] .dash-panel-badge,
+[data-theme="light"] .module-tag {
+  background: #F1F5F9 !important;
+  color: #334155 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+[data-theme="light"] .module-icon-wrap {
+  background: #F8FAFC !important;
+  color: #0369A1 !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
