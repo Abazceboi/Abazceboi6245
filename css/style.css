@@ -10207,24 +10207,27 @@ html, body {
   animation: none;
   mix-blend-mode: normal;
 }
+::view-transition-group(root) {
+  animation-duration: 1.2s;
+}
 
 [data-animating-theme="light"]::view-transition-old(root) {
-  animation: themeFade 1.6s ease forwards;
+  animation: themeFade 1.2s ease forwards;
 }
 [data-animating-theme="light"]::view-transition-new(root) {
-  animation: revealLight 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: revealLight 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   z-index: 9999;
 }
 @keyframes revealLight {
-  0% { clip-path: circle(0% at 50% 100%); }
-  100% { clip-path: circle(150% at 50% 100%); }
+  0% { clip-path: circle(0% at 100% 100%); }
+  100% { clip-path: circle(150% at 100% 100%); }
 }
 
 [data-animating-theme="dark"]::view-transition-old(root) {
-  animation: themeFade 1.6s ease forwards;
+  animation: themeFade 1.2s ease forwards;
 }
 [data-animating-theme="dark"]::view-transition-new(root) {
-  animation: revealDark 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: revealDark 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   z-index: 9999;
 }
 @keyframes revealDark {

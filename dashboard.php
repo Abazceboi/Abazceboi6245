@@ -302,7 +302,7 @@ require_once __DIR__ . '/includes/header.php';
                         <span class="module-badge">Active Tasks</span>
                     </div>
                     <div class="module-title">Jobbers Tasks &amp; Gigs</div>
-                    <div class="module-desc">Complete daily sponsored video views, app testing, and social campaigns to earn instant task points.</div>
+                    <div class="module-desc">Watch videos, test apps, and do simple social tasks to earn points for withdrawal.</div>
                     <div class="module-card-footer">
                         <span class="module-tag">Earn Points</span>
                         <button type="button" onclick="switchDashTab('tasks')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
@@ -320,7 +320,7 @@ require_once __DIR__ . '/includes/header.php';
                         <span class="module-badge">Instant Top-Up</span>
                     </div>
                     <div class="module-title">VTU Airtime &amp; Data</div>
-                    <div class="module-desc">Discounted SME data bundles and instant airtime top-up on MTN, Airtel, Glo, and 9mobile using points or cash.</div>
+                    <div class="module-desc">Buy cheap data bundles and airtime directly using your dashboard balance.</div>
                     <div class="module-card-footer">
                         <span class="module-tag">1GB from ₦250</span>
                         <button type="button" onclick="switchDashTab('vtu')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
@@ -375,8 +375,8 @@ require_once __DIR__ . '/includes/header.php';
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                             </div>
                             <div>
-                                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;letter-spacing:-0.01em">Recent Activity &amp; Live Ledger</div>
-                                <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;text-transform:none">Real-time audit log of your earnings, task completions, and bank payouts</div>
+                                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;letter-spacing:-0.01em">Recent Activity</div>
+                                <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;text-transform:none">Your recent earnings, tasks, and withdrawals.</div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:10px">
@@ -1513,7 +1513,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <span>Referred Persons Directory</span>
                             </div>
                             <div style="font-size:0.76rem;color:#94A3B8;margin-top:2px">
-                                Live upline audit of your direct invitees, their registered Gmail, and their downline performance.
+                                See everyone you've invited and track their progress.
                             </div>
                         </div>
 
@@ -3692,7 +3692,7 @@ renderDashboardNotifications();
             
             btn.innerHTML = og;
             if(window.showDialog) {
-                window.showDialog('Profile Updated', 'Your display name and avatar have been instantly synchronized across the dashboard.', 'success');
+                window.showDialog('Profile Updated', 'Your profile details have been saved.', 'success');
             } else {
                 alert('Profile updated successfully!');
             }
