@@ -10021,3 +10021,52 @@ html, body {
 }
 
 
+
+
+/* ---------------------------------------------------------------------- */
+/* FINAL LIGHT MODE OVERRIDES FOR CARDS TO BEAT LATE !IMPORTANT RULES   */
+/* ---------------------------------------------------------------------- */
+[data-theme="light"] .admin-main-workspace .admin-kpi-card,
+[data-theme="light"] .telemetry-item {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  border-left: 3.5px solid #0284C7 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-card:hover,
+[data-theme="light"] .telemetry-item:hover {
+  border-color: #0284C7 !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-val,
+[data-theme="light"] .telemetry-val {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-title,
+[data-theme="light"] .telemetry-lbl {
+  color: #64748B !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-sub,
+[data-theme="light"] .telemetry-item span:last-child {
+  color: #94A3B8 !important;
+}
+
+[data-theme="light"] .admin-main-workspace .admin-kpi-card.kpi-withdrawal-card,
+[data-theme="light"] .telemetry-item.telemetry-withdrawal {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  border-left: 4px solid #0369A1 !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-title,
+[data-theme="light"] .telemetry-item.telemetry-withdrawal .telemetry-lbl {
+  color: #475569 !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-val,
+[data-theme="light"] .telemetry-item.telemetry-withdrawal .telemetry-val {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-main-workspace .admin-kpi-card.kpi-withdrawal-card #kpiPayoutCountBadge,
+[data-theme="light"] .telemetry-item.telemetry-withdrawal span:last-child {
+  color: #0284C7 !important;
+}
+
