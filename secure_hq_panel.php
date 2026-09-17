@@ -91,7 +91,7 @@ require_once __DIR__ . '/includes/header.php';
                     <h1>
                         <span>Admin Center</span>
                     </h1>
-                    <p>Platform Administration</p>
+                    <p>Admin Dashboard</p>
                 </div>
             </div>
 
@@ -141,7 +141,7 @@ require_once __DIR__ . '/includes/header.php';
             <div style="margin-bottom:12px">
                 <label style="font-size:0.7rem;font-weight:700;color:#7DD3FC;margin-bottom:4px;display:block">Quick Jump</label>
                 <select id="adminModuleSelector" class="admin-select" onchange="switchAdminTab(this.value);toggleAdminNavDrawer()">
-                    <option value="overview" selected>Executive Overview</option>
+                    <option value="overview" selected>Overview & Statistics</option>
                     <option value="withdrawals">Payout Approvals</option>
                     <option value="users">Users &amp; Ledgers</option>
                     <option value="opportunities">Upload Opportunities &amp; Tasks</option>
@@ -191,85 +191,41 @@ require_once __DIR__ . '/includes/header.php';
         
 
     <!-- ======================================================== -->
-    <!-- TAB 0: EXECUTIVE OVERVIEW HUB (DEFAULT VIEW ON LOGIN)    -->
+    <!-- TAB 0: Overview & Statistics HUB (DEFAULT VIEW ON LOGIN)    -->
     <!-- ======================================================== -->
     <div id="tab-overview" class="admin-tab-pane active">
 
-        <!-- MASTER PLATFORM MAINTENANCE MODE SWITCH (Super Admin Control) -->
-        <div class="admin-card reveal" style="border:1.5px solid rgba(245, 158, 11, 0.4);margin-bottom:20px;background:linear-gradient(180deg, rgba(30, 24, 15, 0.85) 0%, rgba(14, 11, 8, 0.95) 100%);box-shadow:0 8px 30px rgba(0,0,0,0.45)">
-            <div class="admin-card-header" style="flex-wrap:wrap;gap:14px;border-bottom:1px solid rgba(245, 158, 11, 0.25)">
-                <div class="admin-card-title">
-                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(245, 158, 11, 0.15);border:1px solid rgba(245, 158, 11, 0.35);display:flex;align-items:center;justify-content:center;color:#FBBF24;flex-shrink:0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                    </div>
-                    <div>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                            <span style="font-size:1.02rem;font-weight:900;color:#FFF">Site Maintenance Mode Switch</span>
-                            <span id="maintenanceStatusPill" class="live-pill" style="background:rgba(34, 197, 94, 0.15);border:1px solid rgba(34, 197, 94, 0.35);color:#4ADE80;font-size:0.74rem;padding:3px 10px">
-                                <span class="live-dot" style="background:#22C55E"></span>
-                                <span id="maintenanceStatusText">PLATFORM LIVE</span>
-                            </span>
-                        </div>
-                        <div style="font-size:0.73rem;color:var(--text-muted)">Toggle whole-site maintenance mode. Regular visitors are blocked with a maintenance notice screen while Super Admins retain full bypass access.</div>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:12px">
-                    <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;gap:8px;padding:6px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(245, 158, 11, 0.3);border-radius:10px">
-                        <input type="checkbox" id="maintenanceMasterToggle" onchange="toggleMaintenanceSwitch(this.checked)" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer">
-                        <span style="font-size:0.84rem;font-weight:800;color:#F8FAFC">Master Switch</span>
-                    </label>
-                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="saveMaintenanceSettings()" style="padding:7px 18px;font-size:0.8rem;background:linear-gradient(135deg, #D97706, #F59E0B)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                        <span>Save Notice Settings</span>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Maintenance Notice Details Form -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:14px;margin-top:16px">
-                <div>
-                    <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Notice Headline Title</label>
-                    <input type="text" id="maintTitle" class="admin-input" placeholder="e.g. Platform Infrastructure Optimization" value="Platform Infrastructure Optimization">
-                </div>
-                <div>
-                    <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Estimated Duration / Downtime</label>
-                    <input type="text" id="maintDuration" class="admin-input" placeholder="e.g. 15 Minutes / 1 Hour" value="15 Minutes">
-                </div>
-                <div style="grid-column:1 / -1">
-                    <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Public Maintenance Announcement Message</label>
-                    <input type="text" id="maintMessage" class="admin-input" placeholder="Explain the maintenance reason clearly to users..." value="INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.">
-                </div>
-            </div>
-        </div>
+        <!-- Maintenance mode has been moved to Settings tab -->
 
-        <!-- Executive Overview Mode Switcher Bar -->
+        <!-- Overview View Mode Switcher Bar -->
         <div class="admin-view-mode-bar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 8px 24px rgba(0,0,0,0.35);border-radius:12px;padding:10px 16px">
             <div style="display:flex;align-items:center;gap:10px">
                 <div style="width:32px;height:32px;border-radius:8px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);color:#38BDF8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                 </div>
                 <div>
-                    <div style="font-size:0.92rem;font-weight:800;color:#F8FAFC;line-height:1.2">Site Analytics &amp; Metrics Display</div>
-                    <div style="font-size:0.72rem;color:#7DD3FC">Toggle graphical bar chart vs numerical KPI cards</div>
+                    <div style="font-size:0.92rem;font-weight:800;color:#F8FAFC;line-height:1.2">Statistics &amp; Metrics</div>
+                    <div style="font-size:0.72rem;color:#7DD3FC">Switch between cards and chart view</div>
                 </div>
             </div>
 
             <!-- View Switcher Controls -->
             <div style="display:flex;align-items:center;gap:6px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.25);border-radius:9px;padding:3px">
-                <button type="button" id="btnViewSplit" onclick="switchOverviewMetricView('SPLIT')" class="admin-chart-tab-btn active">
+                <button type="button" id="btnViewCards" onclick="switchOverviewMetricView('CARDS')" class="admin-chart-tab-btn active">
+                    KPI Cards Only
+                </button>
+                <button type="button" id="btnViewSplit" onclick="switchOverviewMetricView('SPLIT')" class="admin-chart-tab-btn">
                     Split View (Both)
                 </button>
                 <button type="button" id="btnViewChart" onclick="switchOverviewMetricView('CHART')" class="admin-chart-tab-btn">
                     Bar Chart View
                 </button>
-                <button type="button" id="btnViewCards" onclick="switchOverviewMetricView('CARDS')" class="admin-chart-tab-btn">
-                    KPI Cards Only
-                </button>
             </div>
         </div>
 
-        <!-- 1. Interactive Graphical Bar Chart Card -->
-        <div id="overviewBarChartContainer" class="admin-chart-card reveal">
+        <!-- 1. Interactive Graphical Bar Chart Card (Hidden by default, shown when user switches view) -->
+        <div id="overviewBarChartContainer" class="admin-chart-card reveal" style="display:none">
             <div class="admin-chart-header">
                 <div style="display:flex;align-items:center;gap:12px">
                     <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(56, 189, 248, 0.35)">
@@ -287,10 +243,10 @@ require_once __DIR__ . '/includes/header.php';
                         Financial Inflows
                     </button>
                     <button type="button" id="tabChartWeekly" onclick="switchChartTab('WEEKLY', this)" class="admin-chart-tab-btn">
-                        7-Day Velocity
+                        7-Day Activity
                     </button>
                     <button type="button" id="tabChartPLATFORM" onclick="switchChartTab('PLATFORM', this)" class="admin-chart-tab-btn">
-                        PLATFORM Growth
+                        User Growth
                     </button>
                 </div>
             </div>
@@ -313,24 +269,24 @@ require_once __DIR__ . '/includes/header.php';
             <div id="tooltipCatMeta" style="font-size:0.72rem;color:#38BDF8;font-weight:600">Details</div>
         </div>
 
-        <!-- 2. Executive Metric Summary Grid (8 Symmetrical KPI Cards) -->
-        <div id="overviewKpiGridContainer" class="admin-kpi-grid-8 reveal">
+        <!-- 2. Executive Metric Summary Grid (8 Symmetrical KPI Cards - Shown by default) -->
+        <div id="overviewKpiGridContainer" class="admin-kpi-grid-8 reveal" style="display:grid">
             <!-- 1. Platform Net Profit -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Platform Net Profit</span>
+                    <span class="admin-kpi-title">Net Profit</span>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewNetProfit">₦684,500.00</div>
                 <div style="font-size:0.72rem;color:#38BDF8;margin-top:6px;display:flex;align-items:center;gap:4px">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                    <span id="overviewNetProfitSub">Regs Profit + Real Cash Inflow</span>
+                    <span id="overviewNetProfitSub">Registrations + Direct Earnings</span>
                 </div>
             </div>
 
             <!-- 2. Money Available / Reserves -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Money Available</span>
+                    <span class="admin-kpi-title">Available Balance</span>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewReserveBal">₦2,450,000.00</div>
                 <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px">Available for instant payouts</div>
@@ -339,34 +295,34 @@ require_once __DIR__ . '/includes/header.php';
             <!-- 3. Real Cash from Uploaders -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Cash from Uploaders</span>
+                    <span class="admin-kpi-title">Uploader Earnings</span>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewUploaderCash">₦40,000.00</div>
-                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px" id="overviewUploaderCashSub">Direct Cash • Excl. Pts/Wallet</div>
+                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px" id="overviewUploaderCashSub">Direct payments received</div>
             </div>
 
             <!-- 4. Real Cash from Advertisers -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Cash from Advertisers</span>
+                    <span class="admin-kpi-title">Advertiser Earnings</span>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewAdvertiserCash">₦125,000.00</div>
-                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px" id="overviewAdvertiserCashSub">Direct Deposits • Excl. Pts/Wallet</div>
+                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px" id="overviewAdvertiserCashSub">Direct payments received</div>
             </div>
 
             <!-- 5. Total Accumulated Points Sitewide -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Total Points Accumulated</span>
+                    <span class="admin-kpi-title">Total Member Points</span>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewTotalPoints">19,450 PTS</div>
-                <div style="font-size:0.72rem;color:#38BDF8;margin-top:6px;font-weight:700" id="overviewTotalPointsSub">≈ ₦19,450 Value • Sitewide Members</div>
+                <div style="font-size:0.72rem;color:#38BDF8;margin-top:6px;font-weight:700" id="overviewTotalPointsSub">≈ ₦19,450 Total Value</div>
             </div>
 
             <!-- 6. Payout to be Made (Withdrawal Card - Distinct High Visibility Accent) -->
             <div class="admin-kpi-card kpi-withdrawal-card" style="--kpi-accent: #38BDF8">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                    <span class="admin-kpi-title">Payout to be Made</span>
+                    <span class="admin-kpi-title">Pending Payouts</span>
                     <button type="button" class="btn-dash-action" onclick="switchAdminTab('withdrawals')" style="background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFF;font-weight:800;border:none;border-radius:6px;font-size:0.68rem;padding:3px 8px">Process →</button>
                 </div>
                 <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;" id="overviewPendingPayoutVal">₦18,500.00</div>
@@ -376,20 +332,21 @@ require_once __DIR__ . '/includes/header.php';
             <!-- 7. Active Users -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Active Users</span>
+                    <span class="admin-kpi-title">Active Members</span>
                 </div>
-                <div class="admin-kpi-val" id="kpiEarnersCountVal">5 Active Users</div>
-                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px">5 Total Accounts • KYC Verified</div>
+                <div class="admin-kpi-val" id="kpiEarnersCountVal">5 Active Members</div>
+                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px">5 Total Registered Accounts</div>
             </div>
 
             <!-- 8. Jobber & Vendor PINs -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
-                    <span class="admin-kpi-title">Jobber &amp; Vendor PINs</span>
+                    <span class="admin-kpi-title">Registration PINs</span>
                 </div>
                 <div class="admin-kpi-val" id="overviewJobberCouponsActive">42 Active PINs</div>
-                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px"><span id="overviewCouponsUnused" style="color:#38BDF8;font-weight:700">85 Total Available</span> • 120 Gen</div>
+                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px"><span id="overviewCouponsUnused" style="color:#38BDF8;font-weight:700">85 Available</span> • 120 Generated</div>
             </div>
+        </div>
         </div>
 
         <!-- 2. Interactive Platform Financial Engine & Dynamic Profit Margins (Dedicated Card) -->
@@ -1060,7 +1017,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <span style="font-size:0.68rem;padding:1px 6px;border-radius:4px;background:#EA4335;color:#FFF;font-weight:900">Ad</span>
                                 <span style="font-size:0.72rem;color:var(--text-muted);font-weight:700">Sponsored by Google • Verified Publisher</span>
                             </div>
-                            <div style="font-size:0.95rem;font-weight:800;color:var(--white-pure);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Global Fintech &amp; Digital Earnings Infrastructure</div>
+                            <div style="font-size:0.95rem;font-weight:800;color:var(--white-pure);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Official Platform Earnings Network</div>
                             <div style="font-size:0.75rem;color:#94A3B8;line-height:1.4">Fast, secure 24/7 automated payouts and verified member rewards.</div>
                         </div>
                     </div>
@@ -1171,6 +1128,7 @@ require_once __DIR__ . '/includes/header.php';
             <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('virtual-accounts')" id="btnSubVirtualaccounts">Virtual Accounts</button>
             <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('features')" id="btnSubFeatures">Features</button>
             <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('content')" id="btnSubContent">Content</button>
+            <button type="button" class="admin-chart-tab-btn" onclick="switchSettingsSubTab('maintenance')" id="btnSubMaintenance">Maintenance Mode</button>
         </div>
 
         <div id="sub-gateways" class="settings-sub-pane active">
@@ -1363,7 +1321,7 @@ require_once __DIR__ . '/includes/header.php';
                         <div style="width:32px;height:32px;border-radius:8px;background:rgba(2, 132, 199, 0.2);display:flex;align-items:center;justify-content:center;color:#60A5FA;font-weight:900">OP</div>
                         <div>
                             <h3 style="margin:0;font-size:0.95rem;font-weight:900;color:#FFF">OPay / Palmpay Merchant API</h3>
-                            <div style="font-size:0.72rem;color:var(--text-muted)">High-Velocity Mobile Wallet, POS &amp; Instant Merchant Processing</div>
+                            <div style="font-size:0.72rem;color:var(--text-muted)">Mobile Wallets, Bank Transfers & Instant Payments</div>
                         </div>
                     </div>
                     <div style="display:flex;gap:10px;align-items:center">
@@ -1479,7 +1437,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     </div>
-                    <span>Autonomous Instant Auto-Payout App Engine</span>
+                    <span>Automatic Payout System</span>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
                     <button type="button" class="btn-dash-action" onclick="testAppHandshake()" style="padding:7px 14px;font-size:0.8rem;background:rgba(37, 99, 235, 0.15);color:#93C5FD;border:1px solid rgba(37, 99, 235, 0.3)">
@@ -1496,7 +1454,7 @@ require_once __DIR__ . '/includes/header.php';
             <div style="background:rgba(37, 99, 235, 0.08);border:1px solid rgba(37, 99, 235, 0.25);border-radius:12px;padding:14px 18px;margin-bottom:20px">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
                     <span style="font-size:1.1rem"></span>
-                    <span style="font-weight:900;font-size:0.88rem;color:#93C5FD">Autonomous Payout Rule (Active Even When You Are Offline / Asleep)</span>
+                    <span style="font-weight:900;font-size:0.88rem;color:#93C5FD">Automatic Payouts (Runs Even While Offline)</span>
                 </div>
                 <p style="font-size:0.82rem;color:var(--text-gray);margin:0;line-height:1.5">
                     Connect an external payout application, Python daemon, or automated bot. During your configured schedule, whenever a member places a withdrawal within the amount range, this engine immediately dispatches the exact amount to your connected app. 
@@ -1530,9 +1488,9 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <div class="admin-form-group" style="margin-bottom:0">
-                        <label for="appMasterToggle">Autonomous Daemon Dispatcher Status</label>
+                        <label for="appMasterToggle">Automatic Payout Status</label>
                         <select id="appMasterToggle" class="admin-select">
-                            <option value="enabled"> Active &amp; Autonomous (Auto-Dispatch Enabled)</option>
+                            <option value="enabled"> Active (Automatic Payouts Enabled)</option>
                             <option value="disabled"> Disabled (Require Manual Super Admin Approval)</option>
                         </select>
                     </div>
@@ -1547,7 +1505,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div>
                         <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px">Schedule Operating Mode</label>
                         <select id="appScheduleMode" class="admin-select" onchange="toggleScheduleHoursWrap()">
-                            <option value="24_7"> 24 Hours / 7 Days Continuous Autonomous Mode</option>
+                            <option value="24_7"> 24/7 Automatic Processing</option>
                             <option value="custom_hours" selected> Scheduled Time Window (e.g. Night / Off-Hours)</option>
                         </select>
                     </div>
@@ -1589,7 +1547,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Live Dispatch Log & Callback Simulator -->
             <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                    <h4 style="font-size:0.88rem;font-weight:800;color:var(--white-pure);margin:0">3. Live Connected App Dispatch Activity &amp; Simulation</h4>
+                    <h4 style="font-size:0.88rem;font-weight:800;color:var(--white-pure);margin:0">3. Live Payout Activity & Test Logs</h4>
                     <div style="display:flex;gap:8px">
                         <button type="button" class="btn-dash-action" onclick="simulateAppCallbackDemo()" style="font-size:0.75rem;padding:5px 12px;background:rgba(56,189,248,0.15);color:#38BDF8;border:1px solid rgba(56,189,248,0.3)">
                             + Simulate App Completion Callback
@@ -3105,7 +3063,64 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  </div>
  </div>
- </div>
+
+        <!-- SUB-TAB 6: SITE MAINTENANCE MODE -->
+        <div id="sub-maintenance" class="settings-sub-pane" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+                <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    <span>← Back to Overview</span>
+                </button>
+                <span style="font-size:0.8rem;color:#60A5FA;font-weight:700">Settings: Maintenance Mode</span>
+            </div>
+            
+            <div class="admin-card" style="border:1.5px solid rgba(245, 158, 11, 0.4);background:linear-gradient(180deg, rgba(30, 24, 15, 0.85) 0%, rgba(14, 11, 8, 0.95) 100%);box-shadow:0 8px 30px rgba(0,0,0,0.45)">
+                <div class="admin-card-header" style="flex-wrap:wrap;gap:14px;border-bottom:1px solid rgba(245, 158, 11, 0.25)">
+                    <div class="admin-card-title">
+                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(245, 158, 11, 0.15);border:1px solid rgba(245, 158, 11, 0.35);display:flex;align-items:center;justify-content:center;color:#FBBF24;flex-shrink:0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                                <span style="font-size:1.02rem;font-weight:900;color:#FFF">Site Maintenance Mode</span>
+                                <span id="maintenanceStatusPill" class="live-pill" style="background:rgba(34, 197, 94, 0.15);border:1px solid rgba(34, 197, 94, 0.35);color:#4ADE80;font-size:0.74rem;padding:3px 10px">
+                                    <span class="live-dot" style="background:#22C55E"></span>
+                                    <span id="maintenanceStatusText">SITE ONLINE</span>
+                                </span>
+                            </div>
+                            <div style="font-size:0.73rem;color:var(--text-muted)">Turn maintenance mode on or off. When active, regular visitors see your maintenance message while you stay logged in.</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;gap:8px;padding:6px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(245, 158, 11, 0.3);border-radius:10px">
+                            <input type="checkbox" id="maintenanceMasterToggle" onchange="toggleMaintenanceSwitch(this.checked)" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer">
+                            <span style="font-size:0.84rem;font-weight:800;color:#F8FAFC">Turn On Maintenance</span>
+                        </label>
+                        <button type="button" class="btn-dash-action btn-dash-primary" onclick="saveMaintenanceSettings()" style="padding:7px 18px;font-size:0.8rem;background:linear-gradient(135deg, #D97706, #F59E0B)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Maintenance Notice Details Form -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:14px;margin-top:16px">
+                    <div>
+                        <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Notice Title</label>
+                        <input type="text" id="maintTitle" class="admin-input" placeholder="e.g. Scheduled System Upgrade" value="Scheduled System Upgrade">
+                    </div>
+                    <div>
+                        <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Estimated Duration</label>
+                        <input type="text" id="maintDuration" class="admin-input" placeholder="e.g. 15 Minutes / 1 Hour" value="15 Minutes">
+                    </div>
+                    <div style="grid-column:1 / -1">
+                        <label style="font-size:0.74rem;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:700">Message to Show Visitors</label>
+                        <input type="text" id="maintMessage" class="admin-input" placeholder="Explain why the site is temporarily unavailable..." value="We are currently performing routine system upgrades. We will be back online shortly.">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
  <!-- ======================================================== -->
  <!-- TAB 9: MEMBER ADVERTS & CAMPAIGNS (TASKCASH MODEL) -->
@@ -3476,7 +3491,7 @@ require_once __DIR__ . '/includes/header.php';
             if (titleEl) titleEl.textContent = 'Site Revenue & Reserve Distribution';
             if (subEl) subEl.textContent = 'Comparative bar chart visualization of platform cash inflows and obligations';
         } else if (tabMode === 'WEEKLY') {
-            if (titleEl) titleEl.textContent = '7-Day Platform Velocity Trend';
+            if (titleEl) titleEl.textContent = '7-Day Activity Trend';
             if (subEl) subEl.textContent = 'Daily comparative volume and cash generation over the past 7 days';
         } else if (tabMode === 'PLATFORM') {
             if (titleEl) titleEl.textContent = 'Platform Growth & Member Capacity';
@@ -3595,7 +3610,7 @@ require_once __DIR__ . '/includes/header.php';
             ];
 
             summaryPills = [
-                { title: '7-Day Total Velocity', val: '₦912,000.00', sub: '+18.4% vs prev week' },
+                { title: '7-Day Total Volume', val: '₦912,000.00', sub: '+18.4% vs prev week' },
                 { title: 'Peak Daily Volume', val: '₦195,000.00', sub: 'Friday evening surge' },
                 { title: 'Average Daily Intake', val: '₦130,285.00', sub: 'Consistent inflow' },
                 { title: 'Run Rate Trend', val: 'Upward +24%', sub: 'Accelerating growth' }
@@ -3614,7 +3629,7 @@ require_once __DIR__ . '/includes/header.php';
                 { title: 'Platform Capacity', val: 'High Velocity', sub: 'Fast & reliable platform' },
                 { title: 'Task Fulfillment', val: '98.6%', sub: 'Within 2 hours avg' },
                 { title: 'Vendor Distribution', val: '3 Major Hubs', sub: 'Nationwide coverage' },
-                { title: 'PLATFORM Health', val: '100% Operational', sub: 'All services nominal' }
+                { title: 'PLATFORM Health', val: '100% Operational', sub: 'All systems running smoothly' }
             ];
         }
 
@@ -4535,7 +4550,7 @@ require_once __DIR__ . '/includes/header.php';
             return;
         }
 
-        if (!confirm(`Execute Automated Wave now for ${pending.length} pending request(s)? Funds will be dispatched via active payment gateway.`)) {
+        if (!confirm(`Execute Automated Wave now for ${pending.length} pending request(s)? Funds will be sent to users' bank accounts.`)) {
             return;
         }
 
@@ -4546,7 +4561,7 @@ require_once __DIR__ . '/includes/header.php';
 
         localStorage.setItem('ix_withdrawals', JSON.stringify(reqs));
         renderPayoutQueue();
-        alert(`Automated batch payout wave executed successfully! ${pending.length} transactions approved and marked dispatched.`);
+        alert(`Automated batch payout wave executed successfully! ${pending.length} transactions approved and marked as paid.`);
     };
 
 saveWithdrawalSettings = function() {
@@ -5017,7 +5032,7 @@ saveWithdrawalSettings = function() {
     };
 
  // ==========================================
- // AUTONOMOUS INSTANT AUTO-PAYOUT APP ENGINE
+ // Automatic Payout System
  // ==========================================
  window.toggleScheduleHoursWrap = function() {
  const mode = (document.getElementById('appScheduleMode') || {}).value;
@@ -5660,7 +5675,7 @@ saveWithdrawalSettings = function() {
  document.getElementById('notifTitle').value = '';
  document.getElementById('notifMsg').value = '';
  renderNotifications();
- alert('Notification dispatched to all users successfully!');
+ alert('Notification sent to all users successfully!');
  };
 
  function renderNotifications() {
@@ -6737,6 +6752,8 @@ saveWithdrawalSettings = function() {
     loadAdminAdverts();
     loadAdminUploaders();
     calculatePlatformFinancials();
+    const initialMetricView = localStorage.getItem('ix_overview_view_mode') || 'CARDS';
+    if (window.switchOverviewMetricView) window.switchOverviewMetricView(initialMetricView);
     setInterval(renderPayoutQueue, 1500);
 
     // ─── User Role Management ────────────────────────

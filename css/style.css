@@ -3195,13 +3195,25 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   border: 1px solid var(--mt-border);
 }
 
-/* Specific 40x40 circular overrides for top HUD bars */
-.hud-actions .btn-dash-action,
-.admin-command-actions .btn-dash-action {
+/* Specific circular overrides for top HUD bars */
+.hud-actions .btn-dash-action.btn-dash-icon-only,
+.admin-command-actions .btn-dash-action.btn-dash-icon-only {
   width: 40px !important;
   height: 40px !important;
   padding: 0 !important;
   border-radius: 12px !important;
+}
+.admin-command-actions .btn-dash-action:not(.btn-dash-icon-only) {
+  width: auto !important;
+  height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
 }
 .btn-dash-action svg {
   width: 15px;
