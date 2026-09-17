@@ -424,7 +424,7 @@ require_once __DIR__ . '/includes/header.php';
  `Campaign: ${title}\n` +
  `Budget: ₦${cost.toLocaleString()} (${users} Users)\n` +
  `Status: Pending Super Admin Approval\n\n` +
- `Once approved, it will be automatically dispatched to all active members on the Jobbers Earning Hub.`
+ `Once approved, it will be automatically visible to all active members on the Jobbers Earning Hub.`
  );
  } catch(err) {
  alert('Campaign recorded successfully!');

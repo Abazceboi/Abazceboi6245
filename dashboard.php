@@ -145,7 +145,7 @@ require_once __DIR__ . '/includes/header.php';
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 </div>
                 <h3 class="new-user-title" id="appNuTitle">Welcome to INNOVATIONX!</h3>
-                <p class="new-user-text" id="appNuBody">Congratulations on joining Nigeria's #1 digital earning ecosystem. Access 24/7 customer support and join our official community below.</p>
+                <p class="new-user-text" id="appNuBody">Congratulations on joining Nigeria's #1 earning platform. Access 24/7 customer support and join our official community below.</p>
                 
                 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
                     <a href="https://wa.me/2348012345678" id="appNuCta" class="new-user-cta" target="_blank" style="margin:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-weight:800;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border-radius:12px">
@@ -716,7 +716,7 @@ require_once __DIR__ . '/includes/header.php';
 
                             <button type="submit" id="btnSubmitData" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;padding:14px;font-size:0.95rem;background:linear-gradient(135deg, #0284C7, #38BDF8);box-shadow:0 8px 25px rgba(56, 189, 248, 0.35)">
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
-                                <span>Recharge Data Bundle Instantly (API Dispatch)</span>
+                                <span>Recharge Data Bundle Instantly </span>
                             </button>
                         </form>
                     </div>
@@ -1403,7 +1403,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
 
                         <button type="submit" id="btnSubmitAdvert" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;padding:12px;background:linear-gradient(135deg, #0284C7, #38BDF8)">
-                            Launch Advert &amp; Dispatch to Members
+                            Launch Advert
                         </button>
                     </form>
                 </div>
@@ -2285,7 +2285,7 @@ require_once __DIR__ . '/includes/header.php';
  } finally {
  if (submitBtn) {
  submitBtn.disabled = false;
- submitBtn.innerHTML = '<span> Recharge Airtime Now (API Dispatch)</span>';
+ submitBtn.innerHTML = '<span> Recharge Airtime Now </span>';
  }
  }
  };
@@ -2311,7 +2311,7 @@ require_once __DIR__ . '/includes/header.php';
 
  if (submitBtn) {
  submitBtn.disabled = true;
- submitBtn.innerHTML = '<span>Dispatching Data Bundle...</span>';
+ submitBtn.innerHTML = '<span>Processing Data Bundle...</span>';
  }
 
  try {
@@ -2342,7 +2342,7 @@ require_once __DIR__ . '/includes/header.php';
  alert('Data Recharge Error: ' + (data.message || 'Provider failed.'));
  }
  } catch (err) {
- alert(` Instant Delivery Successful!\n\n${netUpper} ${selectedVtuPlan.size} 30-Day Data bundle dispatched to ${phone}.`);
+ alert(` Instant Delivery Successful!\n\n${netUpper} ${selectedVtuPlan.size} 30-Day Data bundle sent to ${phone}.`);
  document.getElementById('vtuRechargeForm').reset();
  } finally {
  if (submitBtn) {
@@ -2452,7 +2452,7 @@ require_once __DIR__ . '/includes/header.php';
     g('rStatus').textContent = 'Request Submitted';
     g('rStatus').className = 'receipt-value receipt-status status-processing';
     g('receiptBadge').className = 'receipt-badge badge-processing';
-    g('receiptBadge').querySelector('.badge-text').textContent = isAutonomousApp ? 'App Dispatching' : 'Processing';
+    g('receiptBadge').querySelector('.badge-text').textContent = isAutonomousApp ? 'Processing Payment' : 'Processing';
 
     // Reset tracker
     document.querySelectorAll('.tc-step').forEach(s => s.classList.remove('active','done'));
@@ -2505,7 +2505,7 @@ require_once __DIR__ . '/includes/header.php';
         setTimeout(() => {
             g('tl2').classList.add('active');
             g('ts3').classList.add('active');
-            g('rStatus').textContent = 'Dispatched to Connected App (Awaiting Callback...)';
+            g('rStatus').textContent = 'Processing Payment...';
             g('receiptBadge').className = 'receipt-badge badge-processing';
             g('receiptBadge').querySelector('.badge-text').textContent = 'App Executing';
 
@@ -2526,7 +2526,7 @@ require_once __DIR__ . '/includes/header.php';
         setTimeout(() => {
             g('tl2').classList.add('active');
             g('ts3').classList.add('active', 'done');
-            g('rStatus').textContent = 'NUBAN Dispatching...';
+            g('rStatus').textContent = 'Sending to Bank...';
         }, 1600);
 
         setTimeout(() => {
@@ -3222,7 +3222,7 @@ renderDashboardNotifications();
  `Type: ${type}\n` +
  `Target Reach: ${selectedAdReach} Verified Members\n` +
  `Total Payable: ${costText} (${source === 'points' ? 'Task Points' : 'Referral Cash'})\n\n` +
- `Your advert will be dispatched to the Jobbers Opportunities queue immediately.`
+ `Your advert will be posted to the Tasks Opportunities queue immediately.`
  );
 
  if (!confirmAd) return;
@@ -3249,7 +3249,7 @@ renderDashboardNotifications();
  ` Campaign Launched Successfully!\n\n` +
  `Ref: ADV-${Math.floor(Math.random()*900000+100000)}\n` +
  `Title: ${title}\n` +
- `Status: Active & Dispatched to ${selectedAdReach} Members\n\n` +
+ `Status: Active \& Visible to ${selectedAdReach} Members\n\n` +
  `Thank you for advertising with INNOVATIONX!`
  );
  };

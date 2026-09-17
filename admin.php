@@ -218,8 +218,8 @@ require_once __DIR__ . '/includes/header.php';
                     <button type="button" id="tabChartWeekly" onclick="switchChartTab('WEEKLY', this)" class="admin-chart-tab-btn">
                         7-Day Velocity
                     </button>
-                    <button type="button" id="tabChartEcosystem" onclick="switchChartTab('ECOSYSTEM', this)" class="admin-chart-tab-btn">
-                        Ecosystem Growth
+                    <button type="button" id="tabChartPLATFORM" onclick="switchChartTab('PLATFORM', this)" class="admin-chart-tab-btn">
+                        PLATFORM Growth
                     </button>
                 </div>
             </div>
@@ -2276,7 +2276,7 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  <div class="admin-form-group">
  <label>Pop-up Message Description</label>
- <textarea id="popupBody" class="admin-textarea" style="min-height:100px">Congratulations on joining Nigeria's #1 digital earning ecosystem. Join our VIP WhatsApp channel for daily tasks and giveaways!</textarea>
+ <textarea id="popupBody" class="admin-textarea" style="min-height:100px">Congratulations on joining Nigeria's #1 earning platform. Join our VIP WhatsApp channel for daily tasks and giveaways!</textarea>
  </div>
  </div>
  <div>
@@ -2938,7 +2938,7 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  <div class="admin-form-group" style="margin-bottom:0">
  <label style="font-size:0.75rem">Pop-Up Welcome Body</label>
- <textarea id="cnt_nu_body" class="admin-textarea" style="min-height:50px">Congratulations on joining Nigeria's #1 digital earning ecosystem. Access 24/7 official customer support and join our official community below.</textarea>
+ <textarea id="cnt_nu_body" class="admin-textarea" style="min-height:50px">Congratulations on joining Nigeria's #1 earning platform. Access 24/7 official customer support and join our official community below.</textarea>
  </div>
  </div>
 
@@ -3157,7 +3157,7 @@ require_once __DIR__ . '/includes/header.php';
  <div class="new-user-modal">
  <div class="new-user-icon-box" id="pvIcon"></div>
  <h3 class="new-user-title" id="pvTitle">Welcome to INNOVATIONX!</h3>
- <p class="new-user-text" id="pvBody">Congratulations on joining Nigeria's #1 digital earning ecosystem.</p>
+ <p class="new-user-text" id="pvBody">Congratulations on joining Nigeria's #1 earning platform.</p>
  <a href="#" id="pvCta" class="new-user-cta" target="_blank">Join Official WhatsApp Channel</a>
  <div>
  <button type="button" class="new-user-dismiss" onclick="document.getElementById('newUserOverlay').classList.remove('open')">
@@ -3407,8 +3407,8 @@ require_once __DIR__ . '/includes/header.php';
         } else if (tabMode === 'WEEKLY') {
             if (titleEl) titleEl.textContent = '7-Day Platform Velocity Trend';
             if (subEl) subEl.textContent = 'Daily comparative volume and cash generation over the past 7 days';
-        } else if (tabMode === 'ECOSYSTEM') {
-            if (titleEl) titleEl.textContent = 'Ecosystem Growth & Member Capacity';
+        } else if (tabMode === 'PLATFORM') {
+            if (titleEl) titleEl.textContent = 'Platform Growth & Member Capacity';
             if (subEl) subEl.textContent = 'Active accounts, task inventory, vouchers in circulation and verified staff';
         }
 
@@ -3530,7 +3530,7 @@ require_once __DIR__ . '/includes/header.php';
                 { title: 'Run Rate Trend', val: 'Upward +24%', sub: 'Accelerating growth' }
             ];
         } else {
-            // ECOSYSTEM
+            // PLATFORM
             chartData = [
                 { label: 'Active Earners', value: activeUsers, formattedVal: activeUsers + ' Users', exactVal: activeUsers + ' Verified Users', sub: 'KYC Verified', grad: 'chartGradSky', tooltipMeta: 'Active accounts on platform' },
                 { label: 'Live Tasks', value: 12, formattedVal: '12 Gigs', exactVal: '12 Active Opportunities', sub: 'Jobbers Pool', grad: 'chartGradCyan', tooltipMeta: 'Published active tasks & gigs' },
@@ -3540,10 +3540,10 @@ require_once __DIR__ . '/includes/header.php';
             ];
 
             summaryPills = [
-                { title: 'Platform Capacity', val: 'High Velocity', sub: 'Zero latency infrastructure' },
+                { title: 'Platform Capacity', val: 'High Velocity', sub: 'Fast & reliable platform' },
                 { title: 'Task Fulfillment', val: '98.6%', sub: 'Within 2 hours avg' },
                 { title: 'Vendor Distribution', val: '3 Major Hubs', sub: 'Nationwide coverage' },
-                { title: 'Ecosystem Health', val: '100% Operational', sub: 'All services nominal' }
+                { title: 'PLATFORM Health', val: '100% Operational', sub: 'All services nominal' }
             ];
         }
 
@@ -3569,7 +3569,7 @@ require_once __DIR__ . '/includes/header.php';
             const y = plotBottom - (s / gridSteps) * plotH;
             const ratio = s / gridSteps;
             let valLabel = '';
-            if (tabMode === 'ECOSYSTEM') {
+            if (tabMode === 'PLATFORM') {
                 valLabel = Math.round(maxVal * ratio).toString();
             } else {
                 const scaled = maxVal * ratio;

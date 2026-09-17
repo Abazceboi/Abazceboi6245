@@ -16,7 +16,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="hero-tag" style="margin-bottom:18px">
                     <span class="hero-tag-badge">
                         <span class="hero-tag-dot"></span>
-                        NIGERIA'S PREMIER DIGITAL EARNING ECOSYSTEM
+                        NIGERIA'S PREMIER DIGITAL EARNING PLATFORM
                     </span>
                 </div>
                 <h1 class="hero-title">
@@ -41,7 +41,7 @@ require_once __DIR__ . '/includes/header.php';
                         <div class="trust-avatar" style="background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;font-weight:900">IX</div>
                     </div>
                     <div class="trust-text">
-                        <strong>Nigeria's Premier Digital Earning Ecosystem</strong> with verified daily settlements.
+                        <strong>Nigeria's Premier Digital Earning PLATFORM</strong> with verified daily settlements.
                     </div>
                 </div>
             </div>
@@ -159,7 +159,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="stats-grid">
                 <div class="stat-item reveal">
                     <div class="stat-number">24/7</div>
-                    <div class="stat-label">Instant Task Dispatch</div>
+                    <div class="stat-label">Instant Task Delivery</div>
                 </div>
                 <div class="stat-item reveal">
                     <div class="stat-number">₦1,000</div>
@@ -269,7 +269,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">BUILT FOR <span class="text-purple">TRANSPARENCY &amp; SPEED</span></h2>
-                <p class="section-subtitle">A secure digital earning infrastructure designed for reliable performance.</p>
+                <p class="section-subtitle">A secure digital earning platform designed for reliable performance.</p>
             </div>
 
             <div class="testimonials-grid">
