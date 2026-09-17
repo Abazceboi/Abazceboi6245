@@ -1,6 +1,13 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
 require_once __DIR__ . '/config/app.php';
-$pageTitle = 'Master Super Admin Control Center | ' . APP_NAME;
+$username = $_SESSION['username'] ?? 'Admin';
+
+$pageTitle = 'Control Panel | ' . APP_NAME;
 $hideNavbar = true;
 $hideFooter = true;
 require_once __DIR__ . '/includes/header.php';

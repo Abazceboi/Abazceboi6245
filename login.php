@@ -292,17 +292,36 @@ require_once __DIR__ . '/config/app.php';
         e.preventDefault();
         const btn = document.getElementById('btnLoginSubmit');
         const user = document.getElementById('loginUser').value.trim();
+        const pass = document.getElementById('loginPass').value;
 
         btn.disabled = true;
         btn.innerHTML = `<span>Signing In...</span>`;
 
-        setTimeout(() => {
-            if (user.toLowerCase() === 'admin' || user.toLowerCase() === 'superadmin') {
-                window.location.href = 'admin.php';
+        fetch('api/auth.php?action=login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                localStorage.setItem('ix_current_user', data.username);
+                if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
+                    window.location.href = 'admin.php';
+                } else {
+                    window.location.href = 'dashboard.php';
+                }
             } else {
-                window.location.href = 'dashboard.php';
+                alert(data.message || 'Login failed.');
+                btn.disabled = false;
+                btn.innerHTML = `<span>Secure Sign In</span>`;
             }
-        }, 500);
+        })
+        .catch(err => {
+            alert('A network error occurred. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = `<span>Secure Sign In</span>`;
+        });
     }
     </script>
 </body>

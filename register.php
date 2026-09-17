@@ -408,33 +408,40 @@ $refFromQuery = $_GET['ref'] ?? '';
         const fullName = document.getElementById('fullName').value.trim();
         const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
 
-        // If referrer entered, credit referral bonus and add to downline
-        if (refCode) {
-            try {
-                fetch('api/referrals.php?action=add_referral', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        upline_username: refCode,
-                        full_name: fullName || username,
-                        username: username,
-                        email: email,
-                        bonus_earned: 250
-                    })
-                }).catch(() => {});
-            } catch(e) {}
-        }
-
-        // Save session / local user
-        try {
-            localStorage.setItem('ix_current_user', username);
-            sessionStorage.setItem('ix_user', username);
-        } catch(e) {}
-
-        setTimeout(() => {
-            alert(`Account Activated!\n\nWelcome @${username}. Your membership has been activated successfully.\nYour referral link is ready, and you can withdraw earnings directly to your bank.`);
-            window.location.href = 'dashboard.php?username=' + encodeURIComponent(username);
-        }, 800);
+        // Register via real backend API
+        fetch('api/auth.php?action=register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fullName: fullName,
+                username: username,
+                email: email,
+                phone: phone,
+                password: password,
+                ref: refCode
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                try {
+                    localStorage.setItem('ix_current_user', data.username);
+                    sessionStorage.setItem('ix_user', data.username);
+                } catch(e) {}
+                
+                alert(`Account Activated!\n\nWelcome @${data.username}. Your membership has been activated successfully.\nYour referral link is ready, and you can withdraw earnings directly to your bank.`);
+                window.location.href = 'dashboard.php';
+            } else {
+                alert(data.message || 'Registration failed.');
+                btn.disabled = false;
+                btn.innerHTML = `<span>Create Member Account</span>`;
+            }
+        })
+        .catch(err => {
+            alert('A network error occurred. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = `<span>Create Member Account</span>`;
+        });
     }
     </script>
 </body>

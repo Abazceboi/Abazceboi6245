@@ -1,6 +1,14 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 require_once __DIR__ . '/config/app.php';
-$username = $_GET['username'] ?? $_GET['user'] ?? 'Member';
+
+// Try to grab username from session, fallback to GET (for backwards compatibility if needed during transition)
+$username = $_SESSION['username'] ?? $_GET['username'] ?? $_GET['user'] ?? 'Member';
 $initials = strtoupper(substr($username, 0, 2));
 $pageTitle = 'Member Dashboard | ' . APP_NAME;
 $hideNavbar = true;
