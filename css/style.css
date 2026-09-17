@@ -3180,10 +3180,9 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -3194,6 +3193,15 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   background: rgba(255, 255, 255, 0.05);
   color: var(--mt-text-secondary);
   border: 1px solid var(--mt-border);
+}
+
+/* Specific 40x40 circular overrides for top HUD bars */
+.hud-actions .btn-dash-action,
+.admin-command-actions .btn-dash-action {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
 }
 .btn-dash-action svg {
   width: 15px;
@@ -6535,7 +6543,14 @@ select.dash-input:focus {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 16px;
+  margin: 10px auto 24px auto;
+  max-width: 1000px;
+  position: relative;
+  z-index: 1000;
+  overflow: visible !important;
+}
+
+.hud-left, .hud-actions {
   background: rgba(22, 24, 38, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: 1px solid rgba(56, 189, 248, 0.5);
@@ -6543,11 +6558,7 @@ select.dash-input:focus {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  margin: 10px auto 24px auto;
-  max-width: 900px;
-  position: relative;
-  z-index: 1000;
-  overflow: visible !important;
+  padding: 8px 16px;
 }
 
 .hud-left {
@@ -9383,8 +9394,13 @@ select.admin-select option {
 }
 
 /* 2. Top Command Bars: Deep Sapphire Blue Glass Surfaces */
-.admin-command-bar,
-.dash-hud-bar {
+.admin-command-bar {
+  background: #0E1A33 !important;
+  border: 1px solid rgba(59, 130, 246, 0.22) !important;
+  border-radius: 50px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45) !important;
+}
+.hud-left, .hud-actions {
   background: #0E1A33 !important;
   border: 1px solid rgba(59, 130, 246, 0.22) !important;
   border-radius: 50px !important;
@@ -9779,10 +9795,12 @@ html, body {
 
   /* 3. Dashboard Top Command Bar (HUD Bar) Balance */
   .dash-hud-bar {
-    padding: 10px 12px !important;
     gap: 8px !important;
     margin-bottom: 16px !important;
     justify-content: space-between !important;
+  }
+  .hud-left, .hud-actions {
+    padding: 6px 10px !important;
   }
   .hud-left {
     gap: 10px !important;

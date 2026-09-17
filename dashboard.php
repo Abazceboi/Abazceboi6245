@@ -194,11 +194,6 @@ require_once __DIR__ . '/includes/header.php';
                         <span class="deck-amount" id="deckTotalLiquidVal">0.00</span>
                     </div>
 
-                    <div class="deck-trend">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                        <span>Live Wallet Portfolio</span>
-                    </div>
-
                     <!-- 3 Wallet Cards -->
                     <div class="deck-telemetry-row">
                         <div class="telemetry-item">
@@ -209,7 +204,6 @@ require_once __DIR__ . '/includes/header.php';
                         <div class="telemetry-item">
                             <span class="telemetry-lbl">Task Points Wallet</span>
                             <span class="telemetry-val accent-cyan dash-maskable-val" id="deckTaskPtsVal">0 PTS</span>
-                            <span style="font-size:0.68rem;color:#64748B" class="dash-maskable-val" id="deckTaskPtsSub">≈ ₦0 Value</span>
                         </div>
                         <div class="telemetry-item telemetry-withdrawal">
                             <span class="telemetry-lbl">Total Paid Out</span>
@@ -774,27 +768,39 @@ require_once __DIR__ . '/includes/header.php';
                                 <div style="display:flex;gap:12px;flex-wrap:wrap">
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="blue" checked style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        </div>
                                     </label>
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="purple" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #7C3AED, #C084FC);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #7C3AED, #C084FC);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><path d="M9 15h6"/><path d="M6.5 5.5a2.5 2.5 0 0 0 3.5 0"/><path d="M14 5.5a2.5 2.5 0 0 1 3.5 0"/></svg>
+                                        </div>
                                     </label>
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="emerald" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #059669, #34D399);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #059669, #34D399);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+                                        </div>
                                     </label>
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="rose" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #E11D48, #FB7185);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #E11D48, #FB7185);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
+                                        </div>
                                     </label>
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="gold" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #D97706, #FBBF24);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #D97706, #FBBF24);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20"/><circle cx="10" cy="12" r="1" fill="currentColor"/><circle cx="14" cy="12" r="1" fill="currentColor"/></svg>
+                                        </div>
                                     </label>
                                     <label class="avatar-option">
                                         <input type="radio" name="avatar_choice" value="dark" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #1E293B, #475569);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;cursor:pointer;border:2px solid transparent;transition:all 0.2s">IX</div>
+                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #1E293B, #475569);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                                        </div>
                                     </label>
                                 </div>
                                 <style>
@@ -3687,10 +3693,12 @@ renderDashboardNotifications();
             // Find selected avatar gradient
             const selectedRadio = document.querySelector('input[name="avatar_choice"]:checked');
             const selectedGradient = selectedRadio ? selectedRadio.nextElementSibling.style.background : 'linear-gradient(135deg, #0284C7, #38BDF8)';
+            const selectedIconHTML = selectedRadio ? selectedRadio.nextElementSibling.innerHTML : 'IX';
             
             // Save to localStorage
             localStorage.setItem('ix_user_name', nameVal);
             localStorage.setItem('ix_user_avatar_bg', selectedGradient);
+            localStorage.setItem('ix_user_avatar_html', selectedIconHTML);
             
             const profile = { name: nameVal, email, phone };
             localStorage.setItem('ix_user_profile', JSON.stringify(profile));
@@ -3699,7 +3707,7 @@ renderDashboardNotifications();
             document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = nameVal; });
             document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => {
                 if(el) {
-                    el.textContent = init;
+                    el.innerHTML = selectedIconHTML;
                     el.style.background = selectedGradient;
                 }
             });
@@ -3717,15 +3725,21 @@ renderDashboardNotifications();
     document.addEventListener('DOMContentLoaded', () => {
         const savedName = localStorage.getItem('ix_user_name');
         const savedBg = localStorage.getItem('ix_user_avatar_bg');
+        const savedIcon = localStorage.getItem('ix_user_avatar_html');
+        
         if(savedName) {
             document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = savedName; });
-            const init = savedName.substring(0, 2).toUpperCase();
-            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => { if(el) el.textContent = init; });
             const input = document.getElementById('settingsInputName');
             if(input) input.value = savedName;
         }
-        if(savedBg) {
-            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => { if(el) el.style.background = savedBg; });
+        
+        if(savedBg && savedIcon) {
+            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => {
+                if(el) {
+                    el.innerHTML = savedIcon;
+                    el.style.background = savedBg;
+                }
+            });
             document.querySelectorAll('.avatar-option input').forEach(rad => {
                 if(rad.nextElementSibling.style.background === savedBg || rad.nextElementSibling.style.background.includes(savedBg)) rad.checked = true;
             });
