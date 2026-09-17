@@ -74,8 +74,11 @@ if ($action === 'login') {
         
         echo json_encode(['status' => 'success', 'username' => $user['username']]);
     } else {
-        // Fallback for admin prototyping before DB is fully active
-        if (($username === 'admin' || $username === 'superadmin') && $password === 'admin123') {
+        // Secure Admin Login using Environment Variables
+        $adminUser = getenv('ADMIN_USERNAME') ?: 'admin';
+        $adminPass = getenv('ADMIN_PASSWORD') ?: 'ADMIN_NOT_CONFIGURED';
+        
+        if ($username === $adminUser && $password === $adminPass) {
             $_SESSION['user_id'] = 'admin-dev-id';
             $_SESSION['username'] = $username;
             echo json_encode(['status' => 'success', 'username' => $username, 'isAdmin' => true]);

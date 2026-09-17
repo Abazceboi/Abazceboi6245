@@ -6,15 +6,15 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Strict Admin-Only Verification
-$allowedAdmins = ['admin', 'superadmin'];
-if (!in_array(strtolower($_SESSION['username']), $allowedAdmins)) {
+$adminUser = getenv('ADMIN_USERNAME') ?: 'admin';
+if (strtolower($_SESSION['username']) !== strtolower($adminUser)) {
     // If a normal user somehow guesses this secret URL, give them a fake 404 to throw them off
     header("HTTP/1.0 404 Not Found");
     die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
 }
 
 // Layer 2: Secondary Master PIN Challenge
-$MASTER_PIN = '7492'; // Secondary security PIN
+$MASTER_PIN = getenv('ADMIN_PIN') ?: '9999'; // Securely fetch PIN from server environment
 
 if (isset($_GET['logout_admin'])) {
     unset($_SESSION['admin_auth_step']);
