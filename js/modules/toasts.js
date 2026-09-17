@@ -34,6 +34,13 @@ export class PayoutToastManager {
             // Ambient toast engine already initialized and running
             return;
         }
+        
+        // ONLY run on the landing page
+        const path = window.location.pathname;
+        if (path !== '/' && path !== '/index' && path !== '/index.php' && path !== '') {
+            return;
+        }
+
         window.__ixPayoutToastActive = true;
 
         if (!this.container) {

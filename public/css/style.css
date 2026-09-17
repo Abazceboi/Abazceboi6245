@@ -4363,9 +4363,10 @@ select.dash-input:focus {
   padding: 12px 20px;
   background: var(--mt-surface);
   border: 1px solid var(--mt-border);
-  border-radius: 14px;
+  border-radius: 50px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  margin-bottom: 20px;
+  margin: 10px auto 20px auto;
+  max-width: 900px;
 }
 .admin-brand-block {
   display: flex;
@@ -6542,8 +6543,8 @@ select.dash-input:focus {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  margin-bottom: 24px;
-  margin-top: 10px;
+  margin: 10px auto 24px auto;
+  max-width: 900px;
   position: relative;
   z-index: 1000;
   overflow: visible !important;
