@@ -13,6 +13,61 @@ if (!in_array(strtolower($_SESSION['username']), $allowedAdmins)) {
     die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
 }
 
+// Layer 2: Secondary Master PIN Challenge
+$MASTER_PIN = '7492'; // Secondary security PIN
+
+if (isset($_GET['logout_admin'])) {
+    unset($_SESSION['admin_auth_step']);
+    header("Location: login.php");
+    exit;
+}
+
+if (($_SESSION['admin_auth_step'] ?? 0) !== 2) {
+    $pinError = '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['master_pin'])) {
+        if ($_POST['master_pin'] === $MASTER_PIN) {
+            $_SESSION['admin_auth_step'] = 2;
+            header("Location: secure_hq_panel.php");
+            exit;
+        } else {
+            $pinError = "CRITICAL ERROR: UNAUTHORIZED PIN DETECTED. ACCESS DENIED.";
+        }
+    }
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Terminal Access | Restricted</title>
+        <style>
+            body { background-color: #050505; color: #10B981; font-family: 'Courier New', Courier, monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            .terminal-box { background: #0A0A0A; border: 1px solid #10B981; padding: 40px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); width: 100%; max-width: 400px; text-align: center; }
+            h2 { color: #10B981; letter-spacing: 2px; text-transform: uppercase; margin-top: 0; font-size: 1.2rem; }
+            p { font-size: 0.85rem; color: #64748B; margin-bottom: 30px; }
+            input[type="password"] { background: #000; border: 1px solid #334155; color: #10B981; padding: 15px; width: 100%; box-sizing: border-box; text-align: center; font-size: 1.5rem; letter-spacing: 10px; margin-bottom: 20px; outline: none; }
+            input[type="password"]:focus { border-color: #10B981; box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2); }
+            button { background: #10B981; color: #000; border: none; padding: 15px; width: 100%; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; }
+            button:hover { background: #059669; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+            .error { color: #EF4444; font-size: 0.8rem; margin-bottom: 20px; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
+        </style>
+    </head>
+    <body>
+        <div class="terminal-box">
+            <h2>System Override Required</h2>
+            <p>Awaiting Secondary Authentication Protocol...</p>
+            <?php if ($pinError): ?><div class="error"><?= $pinError ?></div><?php endif; ?>
+            <form method="POST">
+                <input type="password" name="master_pin" maxlength="6" autofocus required autocomplete="off" placeholder="****">
+                <button type="submit">Verify Identity</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
 require_once __DIR__ . '/config/app.php';
 $username = $_SESSION['username'] ?? 'Admin';
 
