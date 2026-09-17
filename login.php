@@ -307,7 +307,7 @@ require_once __DIR__ . '/config/app.php';
             if (data.status === 'success') {
                 localStorage.setItem('ix_current_user', data.username);
                 if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
-                    window.location.href = 'admin.php';
+                    window.location.href = 'secure_hq_panel.php';
                 } else {
                     window.location.href = 'dashboard.php';
                 }

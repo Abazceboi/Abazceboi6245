@@ -4,6 +4,15 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
+
+// Strict Admin-Only Verification
+$allowedAdmins = ['admin', 'superadmin'];
+if (!in_array(strtolower($_SESSION['username']), $allowedAdmins)) {
+    // If a normal user somehow guesses this secret URL, give them a fake 404 to throw them off
+    header("HTTP/1.0 404 Not Found");
+    die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
+}
+
 require_once __DIR__ . '/config/app.php';
 $username = $_SESSION['username'] ?? 'Admin';
 
