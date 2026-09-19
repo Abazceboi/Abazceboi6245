@@ -3,6 +3,9 @@ $pageTitle = 'Verified Vendors | INNOVATIONX Code Distributors';
 $pageDesc = 'Purchase your activation coupon PIN from certified WhatsApp vendors across Nigeria or access your vendor inventory vault.';
 require_once __DIR__ . '/includes/header.php';
 
+$vendorsConfigFile = __DIR__ . '/config/vendors.json';
+$telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
+
 $vendors = [
     [
         'id' => 'v1',
@@ -11,6 +14,7 @@ $vendors = [
         'rating' => 5.0,
         'codes' => '2,400+ Codes Sold',
         'phone' => '2348012345678',
+        'telegram' => 'https://t.me/emmanuel_vtu',
         'avatar' => '#0284C7'
     ],
     [
@@ -20,6 +24,7 @@ $vendors = [
         'rating' => 4.9,
         'codes' => '1,850+ Codes Sold',
         'phone' => '2348023456789',
+        'telegram' => 'https://t.me/fatima_pins',
         'avatar' => '#38BDF8'
     ],
     [
@@ -29,9 +34,29 @@ $vendors = [
         'rating' => 4.9,
         'codes' => '1,420+ Codes Sold',
         'phone' => '2348034567890',
+        'telegram' => 'https://t.me/tunde_codes',
         'avatar' => '#0369A1'
     ]
 ];
+
+if (file_exists($vendorsConfigFile)) {
+    $loadedVendors = json_decode(file_get_contents($vendorsConfigFile), true);
+    if (is_array($loadedVendors) && !empty($loadedVendors)) {
+        $vendors = $loadedVendors;
+    }
+}
+
+$telegramConfig = [
+    'channel_link' => 'https://t.me/innovationx_official',
+    'popup_title' => 'Join Official Telegram Community',
+    'popup_description' => 'Get daily coupon codes, task drop alerts, and instant direct admin support.'
+];
+if (file_exists($telegramConfigFile)) {
+    $loadedTel = json_decode(file_get_contents($telegramConfigFile), true);
+    if (is_array($loadedTel)) {
+        $telegramConfig = array_merge($telegramConfig, $loadedTel);
+    }
+}
 ?>
 
 <!-- Page Hero -->
@@ -45,11 +70,17 @@ $vendors = [
             Official Verified <span class="glow-word">Vendors.</span>
         </h1>
         <p class="hero-desc" style="max-width:640px;margin:0 auto 24px">
-            Purchase your activation coupon PIN directly from certified distributors via WhatsApp. Instant delivery guaranteed.
+            Purchase your activation coupon PIN directly from certified distributors via WhatsApp or Telegram. Instant delivery guaranteed.
         </p>
 
-        <!-- Vendor Inventory Vault Trigger Button -->
-        <div style="display:flex;justify-content:center;margin-bottom:10px">
+        <!-- Official Telegram & Vault Action Bar -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+            <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="btn-dash-action" style="background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;padding:10px 22px;border-radius:12px;font-size:0.85rem;font-weight:800;gap:8px;box-shadow:0 4px 16px rgba(56,189,248,0.35);text-decoration:none">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                <span>Join Official Telegram Community ↗</span>
+            </a>
+
+            <!-- Vendor Inventory Vault Trigger Button -->
             <button type="button" onclick="openVendorVaultModal()" class="btn-dash-action" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);padding:10px 22px;border-radius:12px;font-size:0.85rem;font-weight:800;gap:8px;box-shadow:0 4px 16px rgba(56,189,248,0.2)">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 <span>Vendor Private PIN Vault (Vendors Only)</span>
@@ -71,11 +102,13 @@ $vendors = [
 
         <!-- Vendors Grid -->
         <div class="vendors-grid reveal" id="vendorsGrid" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px">
-            <?php foreach ($vendors as $v): ?>
+            <?php foreach ($vendors as $v): 
+                $tgLink = !empty($v['telegram']) ? (strpos($v['telegram'], 'http') === 0 ? $v['telegram'] : 'https://t.me/' . ltrim($v['telegram'], '@')) : '';
+            ?>
             <div class="vendor-card" data-search="<?= strtolower($v['name'] . ' ' . $v['location']) ?>" style="background:rgba(13,21,40,0.92);border:1px solid rgba(56,189,248,0.2);border-radius:16px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 30px rgba(2,6,23,0.3)">
                 <div>
                     <div class="vendor-top" style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-                        <div class="vendor-avatar" style="width:48px;height:48px;border-radius:12px;background:<?= htmlspecialchars($v['avatar']) ?>;color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem">
+                        <div class="vendor-avatar" style="width:48px;height:48px;border-radius:12px;background:<?= htmlspecialchars($v['avatar'] ?? '#0284C7') ?>;color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem">
                             <?= strtoupper(substr($v['name'], 0, 1)) ?>
                         </div>
                         <div class="vendor-meta">
@@ -87,16 +120,24 @@ $vendors = [
                     <div class="vendor-stats-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(10,16,32,0.6);border:1px solid rgba(56,189,248,0.12);border-radius:10px;margin-bottom:18px">
                         <div class="vendor-rating" style="display:flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:800;color:#38BDF8">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8" stroke="#38BDF8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span><?= number_format($v['rating'], 1) ?> Rating</span>
+                            <span><?= number_format((float)($v['rating'] ?? 5.0), 1) ?> Rating</span>
                         </div>
-                        <div class="vendor-sales" style="font-size:0.75rem;font-weight:700;color:#94A3B8"><?= htmlspecialchars($v['codes']) ?></div>
+                        <div class="vendor-sales" style="font-size:0.75rem;font-weight:700;color:#94A3B8"><?= htmlspecialchars($v['codes'] ?? 'Certified Vendor') ?></div>
                     </div>
                 </div>
 
-                <a href="https://wa.me/<?= htmlspecialchars($v['phone']) ?>?text=Hello%20<?= urlencode($v['name']) ?>,%20I%20want%20to%20buy%20an%20INNOVATIONX%20Activation%20Coupon%20Code" target="_blank" rel="noopener noreferrer" class="btn-vendor-chat" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;border-radius:10px;font-weight:800;font-size:0.85rem;text-decoration:none;box-shadow:0 4px 14px rgba(56,189,248,0.3)">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                    <span>Buy PIN on WhatsApp</span>
-                </a>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <a href="https://wa.me/<?= htmlspecialchars($v['phone']) ?>?text=Hello%20<?= urlencode($v['name']) ?>,%20I%20want%20to%20buy%20an%20INNOVATIONX%20Activation%20Coupon%20Code" target="_blank" rel="noopener noreferrer" class="btn-vendor-chat" style="flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;border-radius:10px;font-weight:800;font-size:0.82rem;text-decoration:none;box-shadow:0 4px 14px rgba(56,189,248,0.3)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <span>WhatsApp</span>
+                    </a>
+                    <?php if (!empty($tgLink)): ?>
+                    <a href="<?= htmlspecialchars($tgLink) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-chat" style="flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:rgba(56,189,248,0.12);color:#7DD3FC;border:1px solid rgba(56,189,248,0.3);border-radius:10px;font-weight:800;font-size:0.82rem;text-decoration:none">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                        <span>Telegram</span>
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -283,6 +324,34 @@ function copyToClipboard(text) {
         document.body.removeChild(ta);
     }
 }
+
+// Live Vendor directory sync with admin configuration
+async function syncLiveVendors() {
+    try {
+        let vList = null;
+        try {
+            const res = await fetch('api/vendors.php?action=get_vendors&t=' + Date.now());
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.vendors)) {
+                vList = data.vendors;
+                localStorage.setItem('ix_vendors', JSON.stringify(vList));
+            }
+        } catch(e) {}
+
+        if (!vList) {
+            vList = JSON.parse(localStorage.getItem('ix_vendors') || 'null');
+        }
+
+        if (vList && Array.isArray(vList) && vList.length > 0) {
+            const sel = document.getElementById('vaultVendorSelect');
+            if (sel) {
+                sel.innerHTML = '<option value="">-- Choose Your Official Profile --</option>' +
+                    vList.map(v => `<option value="${v.id}">${v.name} (${v.location} • ${v.phone})</option>`).join('');
+            }
+        }
+    } catch(err) {}
+}
+syncLiveVendors();
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

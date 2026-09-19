@@ -10627,5 +10627,24 @@ html, body {
   color: #0284C7 !important;
 }
 
+/* Telegram Community Pop-up Modal Styles */
+[data-theme="light"] .ix-telegram-modal-card {
+  background: #FFFFFF !important;
+  border-color: #BAE6FD !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+}
+[data-theme="light"] #tgModalTitle {
+  color: #0F172A !important;
+}
+[data-theme="light"] #tgModalDesc {
+  color: #475569 !important;
+}
+[data-theme="light"] #tgModalBadge {
+  background: #E0F2FE !important;
+  color: #0369A1 !important;
+  border-color: #7DD3FC !important;
+}
+
+
 
 

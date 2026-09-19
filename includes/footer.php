@@ -27,6 +27,8 @@
  </footer>
 <?php endif; ?>
 
+<?php require_once __DIR__ . '/telegram_modal.php'; ?>
+
  <!-- Compiled Pure TypeScript Application Engine -->
  <script type="module" src="js/main.js"></script>
 </body>

@@ -160,7 +160,8 @@ require_once __DIR__ . '/includes/header.php';
                         <option value="autopayout">Auto-Payout App (24/7)</option>
                         <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
                     </optgroup>
-                    <optgroup label="Communications">
+                    <optgroup label="Communications &amp; Community">
+                        <option value="vendors">Vendors &amp; Telegram Hub</option>
                         <option value="broadcasts">Broadcast Engine</option>
                         <option value="notifications">In-App Notifications</option>
                     </optgroup>
@@ -193,8 +194,9 @@ require_once __DIR__ . '/includes/header.php';
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('autopayout')" class="drawer-link">Auto-Payout App (24/7)</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('virtual-accounts')" class="drawer-link">Virtual Accounts &amp; DVA</a>
 
-            <!-- Category 4: Communications -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Communications</div>
+            <!-- Category 4: Communications & Community -->
+            <div class="admin-drawer-section-title" style="margin-top:10px">Communications &amp; Community</div>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('vendors')" class="drawer-link">Vendors &amp; Telegram Pop-up</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-link">Broadcast Engine</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-link">In-App Notifications</a>
 
@@ -218,6 +220,7 @@ require_once __DIR__ . '/includes/header.php';
                 <button type="button" class="admin-cat-pill" onclick="switchAdminTab('users')">Users</button>
                 <button type="button" class="admin-cat-pill" onclick="switchAdminTab('opportunities')">Tasks</button>
                 <button type="button" class="admin-cat-pill" onclick="switchAdminTab('vtu')">VTU Hub</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('vendors')">Vendors &amp; Telegram</button>
                 <button type="button" class="admin-cat-pill" onclick="switchAdminTab('gateways')">Gateways</button>
                 <button type="button" class="admin-cat-pill" onclick="switchAdminTab('settings')">Settings</button>
             </div>
@@ -241,7 +244,8 @@ require_once __DIR__ . '/includes/header.php';
                         <option value="autopayout">Auto-Payout App (24/7)</option>
                         <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
                     </optgroup>
-                    <optgroup label="Communications">
+                    <optgroup label="Communications &amp; Community">
+                        <option value="vendors">Vendors &amp; Telegram Hub</option>
                         <option value="broadcasts">Broadcast Engine</option>
                         <option value="notifications">In-App Notifications</option>
                     </optgroup>
@@ -2506,6 +2510,230 @@ require_once __DIR__ . '/includes/header.php';
 
  </div>
  </div>
+
+ <!-- ======================================================== -->
+ <!-- TAB: VERIFIED VENDORS & TELEGRAM POP-UP CONTROL HUB -->
+ <!-- ======================================================== -->
+ <div id="tab-vendors" class="admin-tab-pane">
+        <!-- Module Navigation Header Bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <button type="button" class="btn-dash-action btn-dash-secondary" onclick="switchAdminTab('overview')" style="padding:8px 16px;font-size:0.82rem;display:inline-flex;align-items:center;gap:8px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <span>← Back to Overview</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:0.8rem;color:#38BDF8;font-weight:700">Module: Verified Vendors &amp; Telegram Pop-up Hub</span>
+                <button type="button" class="btn-dash-action" onclick="openTelegramCommunityModal()" style="background:rgba(56,189,248,0.15);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);padding:6px 14px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:6px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    <span>Preview Telegram Pop-up</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 Top KPI Cards -->
+        <div class="admin-kpi-grid-8" style="margin-bottom:20px">
+            <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
+                <span class="admin-kpi-title">Active Certified Vendors</span>
+                <div class="admin-kpi-val" id="adminTotalVendorsCount">3</div>
+                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px">Authorized WhatsApp &amp; Telegram distributors</div>
+            </div>
+            <div class="admin-kpi-card" style="--kpi-accent: #34D399">
+                <span class="admin-kpi-title">Telegram Pop-up Status</span>
+                <div class="admin-kpi-val" style="font-size:1.25rem;color:#34D399" id="adminTgPopupStatusBadge">● Active &amp; Broadcasting</div>
+                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px" id="adminTgDelayDisplay">Pops up after 2s on visits</div>
+            </div>
+            <div class="admin-kpi-card" style="--kpi-accent: #0284C7">
+                <span class="admin-kpi-title">Official Community Channel</span>
+                <div class="admin-kpi-val" style="font-size:1.05rem;color:#BAE6FD;word-break:break-all" id="adminTgChannelDisplay">t.me/innovationx_official</div>
+                <div style="font-size:0.72rem;color:#7DD3FC;margin-top:6px">Direct member recruitment channel</div>
+            </div>
+            <div class="admin-kpi-card" style="--kpi-accent: #818CF8">
+                <span class="admin-kpi-title">Distributor Vault Access</span>
+                <div class="admin-kpi-val" style="font-size:1.2rem;color:#818CF8">PINs Inventory</div>
+                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px">Segregated vendor vault enabled</div>
+            </div>
+        </div>
+
+        <!-- 2-Column Controls Grid -->
+        <div class="admin-grid-2" style="margin-bottom:22px">
+            
+            <!-- COLUMN 1: TELEGRAM COMMUNITY & POP-UP ANNOUNCEMENT SETTINGS -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                        <span>Telegram Community &amp; Pop-up Controls</span>
+                    </div>
+                    <label class="admin-switch-label">
+                        <input type="checkbox" id="adminTgEnabled" class="admin-switch-input" checked onchange="saveAdminTelegramSettings()">
+                        <span class="admin-switch-slider"></span>
+                    </label>
+                </div>
+                <p style="font-size:0.78rem;color:#94A3B8;margin-bottom:16px">
+                    Configure your official Telegram channel, direct support links, and customize the announcement pop-up modal displayed to visitors and active members.
+                </p>
+
+                <div class="admin-form-group" style="margin-bottom:14px">
+                    <label class="admin-label">Official Telegram Community / Channel Link</label>
+                    <input type="url" id="adminTgChannelLink" class="admin-input" placeholder="https://t.me/your_official_channel" value="https://t.me/innovationx_official" style="width:100%">
+                    <span style="font-size:0.7rem;color:#7DD3FC;display:block;margin-top:4px">This link opens when visitors click the "Join Telegram Channel" button in the pop-up modal.</span>
+                </div>
+
+                <div class="admin-form-group" style="margin-bottom:14px">
+                    <label class="admin-label">Admin Direct Support Telegram Link (Optional)</label>
+                    <input type="text" id="adminTgSupportLink" class="admin-input" placeholder="https://t.me/admin_username or @admin_username" value="https://t.me/innovationx_support" style="width:100%">
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                    <div>
+                        <label class="admin-label">Pop-up Headline Title</label>
+                        <input type="text" id="adminTgPopupTitle" class="admin-input" placeholder="Join Our Official Telegram Community" value="Join Our Official Telegram Community" style="width:100%">
+                    </div>
+                    <div>
+                        <label class="admin-label">Pop-up Tag / Badge</label>
+                        <input type="text" id="adminTgPopupBadge" class="admin-input" placeholder="Official Community" value="Official Community" style="width:100%">
+                    </div>
+                </div>
+
+                <div class="admin-form-group" style="margin-bottom:14px">
+                    <label class="admin-label">Pop-up Description / Announcement Copy</label>
+                    <textarea id="adminTgPopupDesc" class="admin-textarea" rows="3" style="width:100%;min-height:75px" placeholder="Explain the benefits of joining your Telegram group (e.g. daily task drops, coupon code drops, airtime giveaways)...">Get instant daily task drops, vendor coupon codes, free airtime flash giveaways, and 24/7 direct admin support. Join over 50,000+ active Nigerian earners!</textarea>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                    <div>
+                        <label class="admin-label">Action Button Text</label>
+                        <input type="text" id="adminTgButtonText" class="admin-input" placeholder="Join Telegram Channel ↗" value="Join Telegram Channel ↗" style="width:100%">
+                    </div>
+                    <div>
+                        <label class="admin-label">Pop-up Delay (Seconds)</label>
+                        <input type="number" id="adminTgDelay" class="admin-input" min="1" max="60" value="2" style="width:100%">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#BAE6FD;cursor:pointer">
+                        <input type="checkbox" id="adminTgShowHomepage" checked style="accent-color:#0284C7">
+                        <span>Show on Public Landing Page</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#BAE6FD;cursor:pointer">
+                        <input type="checkbox" id="adminTgShowDashboard" checked style="accent-color:#0284C7">
+                        <span>Show on Member Dashboard</span>
+                    </label>
+                </div>
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="saveAdminTelegramSettings()" style="flex:1;justify-content:center;background:linear-gradient(135deg, #0284C7, #38BDF8);padding:11px 18px">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span>Save Telegram &amp; Pop-up Settings</span>
+                    </button>
+                    <button type="button" class="btn-dash-action btn-dash-secondary" onclick="openTelegramCommunityModal()" style="padding:11px 16px">
+                        <span>Preview Modal</span>
+                    </button>
+                    <a href="https://t.me/innovationx_official" id="adminTgTestLinkBtn" target="_blank" rel="noopener noreferrer" class="btn-dash-action" style="background:rgba(255,255,255,0.06);color:#BAE6FD;padding:11px 14px;border:1px solid rgba(255,255,255,0.12);text-decoration:none" title="Test Telegram Channel in new tab">
+                        <span>Test Link ↗</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- COLUMN 2: ADD NEW CERTIFIED VENDOR & CONTACT -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        <span>Add Certified PIN Vendor / Distributor</span>
+                    </div>
+                    <span style="font-size:0.72rem;color:#7DD3FC;font-weight:700">Official Directory</span>
+                </div>
+                <p style="font-size:0.78rem;color:#94A3B8;margin-bottom:16px">
+                    Register a verified coupon vendor with their official WhatsApp phone number and Telegram handle. They will appear immediately on the public Vendors page and user dashboards.
+                </p>
+
+                <form id="adminAddVendorForm" onsubmit="submitAddAdminVendor(event)">
+                    <div class="admin-form-group" style="margin-bottom:14px">
+                        <label class="admin-label">Vendor Full Name *</label>
+                        <input type="text" id="vendorAddName" class="admin-input" placeholder="e.g. Emmanuel Eze" required style="width:100%">
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                        <div>
+                            <label class="admin-label">WhatsApp Phone Number *</label>
+                            <input type="tel" id="vendorAddPhone" class="admin-input" placeholder="e.g. 2348012345678" required style="width:100%">
+                            <span style="font-size:0.68rem;color:#94A3B8;margin-top:2px;display:block">Country code format without +</span>
+                        </div>
+                        <div>
+                            <label class="admin-label">Telegram Handle / Direct Link</label>
+                            <input type="text" id="vendorAddTelegram" class="admin-input" placeholder="e.g. @emmanuel_vtu or https://t.me/..." style="width:100%">
+                            <span style="font-size:0.68rem;color:#7DD3FC;margin-top:2px;display:block">Allows members to chat on Telegram</span>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group" style="margin-bottom:14px">
+                        <label class="admin-label">Location / Coverage &amp; Bank Partners</label>
+                        <input type="text" id="vendorAddLocation" class="admin-input" placeholder="e.g. Lagos / National (GTBank, OPay, Kuda)" value="Lagos / National (OPay, Kuda)" required style="width:100%">
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+                        <div>
+                            <label class="admin-label">Rating</label>
+                            <input type="number" id="vendorAddRating" class="admin-input" step="0.1" min="1.0" max="5.0" value="5.0" style="width:100%">
+                        </div>
+                        <div>
+                            <label class="admin-label">Sales Volume Badge</label>
+                            <input type="text" id="vendorAddCodes" class="admin-input" placeholder="e.g. 2,500+ Sold" value="1,000+ Codes Sold" style="width:100%">
+                        </div>
+                        <div>
+                            <label class="admin-label">Status</label>
+                            <select id="vendorAddStatus" class="admin-select" style="width:100%">
+                                <option value="active">Active &amp; Ready</option>
+                                <option value="break">On Break</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;background:linear-gradient(135deg, #0284C7, #38BDF8);padding:12px;font-size:0.88rem">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Publish Certified Vendor to Public Directory</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- FULL-WIDTH CARD: LIVE VERIFIED VENDORS DIRECTORY TABLE -->
+        <div class="admin-card">
+            <div class="admin-card-header" style="flex-wrap:wrap;gap:12px">
+                <div class="admin-card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Active Certified Vendors &amp; Contact Ledger</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <input type="text" id="adminVendorsSearchInput" placeholder="Filter vendors by name, location, phone..." oninput="filterAdminVendorsTable(this.value)" class="admin-input" style="padding:6px 12px;font-size:0.78rem;min-width:240px">
+                    <button type="button" class="btn-dash-action btn-dash-secondary" onclick="loadAdminVendorsTable()" style="padding:6px 12px;font-size:0.75rem">
+                        <span>↻ Refresh Directory</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto">
+                <table class="admin-table" style="width:100%;font-size:0.82rem">
+                    <thead>
+                        <tr>
+                            <th style="padding:12px 14px;text-align:left">Vendor Profile</th>
+                            <th style="padding:12px 14px;text-align:left">Location &amp; Region</th>
+                            <th style="padding:12px 14px;text-align:left">WhatsApp Contact</th>
+                            <th style="padding:12px 14px;text-align:left">Telegram Link</th>
+                            <th style="padding:12px 14px;text-align:left">Sales / Rating</th>
+                            <th style="padding:12px 14px;text-align:left">Status</th>
+                            <th style="padding:12px 14px;text-align:right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminVendorsTableBody">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
  <!-- ======================================================== -->
  <!-- TAB 6: STAFF, SUB-ADMINS & PERMISSION CHECKBOX MATRIX -->
@@ -6974,6 +7202,8 @@ saveWithdrawalSettings = function() {
     if (typeof window.fetchVtuLiveBalance === 'function') {
         window.fetchVtuLiveBalance(false);
     }
+    loadAdminTelegramSettings();
+    loadAdminVendorsTable();
     const initialMetricView = localStorage.getItem('ix_overview_view_mode') || 'CARDS';
     if (window.switchOverviewMetricView) window.switchOverviewMetricView(initialMetricView);
     setInterval(renderPayoutQueue, 1500);
@@ -7087,6 +7317,310 @@ saveWithdrawalSettings = function() {
         
         const btn = document.getElementById('btnSub' + subName.charAt(0).toUpperCase() + subName.slice(1).replace('-',''));
         if(btn) btn.classList.add('active');
+    };
+
+    // ==========================================
+    // 10. VERIFIED VENDORS & TELEGRAM POP-UP ENGINE
+    // ==========================================
+    window.loadAdminTelegramSettings = async function() {
+        try {
+            let tg = null;
+            try {
+                const res = await fetch('api/vendors.php?action=get_telegram_settings&t=' + Date.now());
+                const data = await res.json();
+                if (data && data.success && data.data) {
+                    tg = data.data;
+                    localStorage.setItem('ix_telegram_settings', JSON.stringify(tg));
+                }
+            } catch(e) {}
+
+            if (!tg) {
+                tg = JSON.parse(localStorage.getItem('ix_telegram_settings') || 'null');
+            }
+
+            if (!tg) {
+                tg = {
+                    enabled: true,
+                    channel_link: 'https://t.me/innovationx_official',
+                    support_link: 'https://t.me/innovationx_support',
+                    popup_title: 'Join Our Official Telegram Community',
+                    popup_badge: 'Official Community',
+                    popup_description: 'Get instant daily task drops, vendor coupon codes, free airtime flash giveaways, and 24/7 direct admin support.',
+                    popup_button_text: 'Join Telegram Channel ↗',
+                    popup_delay_seconds: 2,
+                    show_on_dashboard: true,
+                    show_on_homepage: true
+                };
+            }
+
+            const enEl = document.getElementById('adminTgEnabled');
+            if (enEl) enEl.checked = tg.enabled !== false;
+
+            const chEl = document.getElementById('adminTgChannelLink');
+            if (chEl) chEl.value = tg.channel_link || '';
+
+            const supEl = document.getElementById('adminTgSupportLink');
+            if (supEl) supEl.value = tg.support_link || '';
+
+            const titEl = document.getElementById('adminTgPopupTitle');
+            if (titEl) titEl.value = tg.popup_title || '';
+
+            const badEl = document.getElementById('adminTgPopupBadge');
+            if (badEl) badEl.value = tg.popup_badge || '';
+
+            const descEl = document.getElementById('adminTgPopupDesc');
+            if (descEl) descEl.value = tg.popup_description || '';
+
+            const btnEl = document.getElementById('adminTgButtonText');
+            if (btnEl) btnEl.value = tg.popup_button_text || '';
+
+            const delEl = document.getElementById('adminTgDelay');
+            if (delEl) delEl.value = tg.popup_delay_seconds || 2;
+
+            const hpEl = document.getElementById('adminTgShowHomepage');
+            if (hpEl) hpEl.checked = tg.show_on_homepage !== false;
+
+            const dbEl = document.getElementById('adminTgShowDashboard');
+            if (dbEl) dbEl.checked = tg.show_on_dashboard !== false;
+
+            // Update KPI & display cards
+            const dispCh = document.getElementById('adminTgChannelDisplay');
+            if (dispCh) dispCh.textContent = (tg.channel_link || 't.me/innovationx_official').replace(/^https?:\/\//, '');
+
+            const delayDisp = document.getElementById('adminTgDelayDisplay');
+            if (delayDisp) delayDisp.textContent = `Pops up after ${tg.popup_delay_seconds || 2}s on visits`;
+
+            const statBadge = document.getElementById('adminTgPopupStatusBadge');
+            if (statBadge) {
+                statBadge.textContent = (tg.enabled !== false) ? '● Active & Broadcasting' : '○ Paused (Inactive)';
+                statBadge.style.color = (tg.enabled !== false) ? '#34D399' : '#F87171';
+            }
+
+            const testBtn = document.getElementById('adminTgTestLinkBtn');
+            if (testBtn && tg.channel_link) testBtn.href = tg.channel_link;
+
+            if (window.ixTelegramConfig) {
+                window.ixTelegramConfig = Object.assign({}, window.ixTelegramConfig, tg);
+            }
+        } catch(e) {}
+    };
+
+    window.saveAdminTelegramSettings = async function() {
+        const payload = {
+            enabled: document.getElementById('adminTgEnabled') ? document.getElementById('adminTgEnabled').checked : true,
+            channel_link: document.getElementById('adminTgChannelLink') ? document.getElementById('adminTgChannelLink').value.trim() : '',
+            support_link: document.getElementById('adminTgSupportLink') ? document.getElementById('adminTgSupportLink').value.trim() : '',
+            popup_title: document.getElementById('adminTgPopupTitle') ? document.getElementById('adminTgPopupTitle').value.trim() : '',
+            popup_badge: document.getElementById('adminTgPopupBadge') ? document.getElementById('adminTgPopupBadge').value.trim() : '',
+            popup_description: document.getElementById('adminTgPopupDesc') ? document.getElementById('adminTgPopupDesc').value.trim() : '',
+            popup_button_text: document.getElementById('adminTgButtonText') ? document.getElementById('adminTgButtonText').value.trim() : '',
+            popup_delay_seconds: document.getElementById('adminTgDelay') ? parseInt(document.getElementById('adminTgDelay').value) || 2 : 2,
+            show_on_homepage: document.getElementById('adminTgShowHomepage') ? document.getElementById('adminTgShowHomepage').checked : true,
+            show_on_dashboard: document.getElementById('adminTgShowDashboard') ? document.getElementById('adminTgShowDashboard').checked : true
+        };
+
+        localStorage.setItem('ix_telegram_settings', JSON.stringify(payload));
+        if (window.ixTelegramConfig) {
+            window.ixTelegramConfig = Object.assign({}, window.ixTelegramConfig, payload);
+        }
+
+        try {
+            await fetch('api/vendors.php?action=save_telegram_settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch(e) {}
+
+        loadAdminTelegramSettings();
+        alert('✅ Telegram Community link and Pop-up Announcement settings saved successfully!');
+    };
+
+    window.loadAdminVendorsTable = async function() {
+        try {
+            let list = null;
+            try {
+                const res = await fetch('api/vendors.php?action=get_vendors&t=' + Date.now());
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.vendors)) {
+                    list = data.vendors;
+                    localStorage.setItem('ix_vendors', JSON.stringify(list));
+                }
+            } catch(e) {}
+
+            if (!list) {
+                list = JSON.parse(localStorage.getItem('ix_vendors') || 'null');
+            }
+
+            if (!list || !Array.isArray(list)) {
+                list = [
+                    { id: 'v1', name: 'Emmanuel Eze', location: 'Lagos / National (GTBank, OPay, Kuda)', rating: 5.0, codes: '2,400+ Codes Sold', phone: '2348012345678', telegram: 'https://t.me/emmanuel_vtu', status: 'active', avatar: '#0284C7' },
+                    { id: 'v2', name: 'Fatima Bello', location: 'Abuja / Northern Region (Access Bank, Palmpay)', rating: 4.9, codes: '1,850+ Codes Sold', phone: '2348023456789', telegram: 'https://t.me/fatima_pins', status: 'active', avatar: '#38BDF8' },
+                    { id: 'v3', name: 'Tunde Adeyemi', location: 'Ibadan / South West (Zenith, Moniepoint)', rating: 4.9, codes: '1,420+ Codes Sold', phone: '2348034567890', telegram: 'https://t.me/tunde_codes', status: 'active', avatar: '#0369A1' }
+                ];
+                localStorage.setItem('ix_vendors', JSON.stringify(list));
+            }
+
+            window.adminVendorsList = list;
+            const countEl = document.getElementById('adminTotalVendorsCount');
+            if (countEl) countEl.textContent = list.length;
+
+            renderAdminVendorsRows(list);
+        } catch(e) {}
+    };
+
+    window.renderAdminVendorsRows = function(vendors) {
+        const tbody = document.getElementById('adminVendorsTableBody');
+        if (!tbody) return;
+
+        if (!vendors || vendors.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:24px;text-align:center;color:#94A3B8">No certified vendors found. Use the form above to add an official vendor.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = vendors.map(v => {
+            const tgLink = v.telegram ? (v.telegram.startsWith('http') ? v.telegram : 'https://t.me/' + v.telegram.replace('@', '')) : '';
+            const isActive = (v.status !== 'break');
+            return `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                    <td style="padding:12px 14px">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:34px;height:34px;border-radius:10px;background:${v.avatar || '#0284C7'};color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem">
+                                ${(v.name || 'V').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <strong style="color:#FFF;display:block">${v.name}</strong>
+                                <span style="font-size:0.7rem;color:#7DD3FC">ID: ${v.id}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding:12px 14px;color:#CBD5E1;font-size:0.78rem">${v.location || 'National'}</td>
+                    <td style="padding:12px 14px">
+                        <a href="https://wa.me/${v.phone}?text=Hello%20${encodeURIComponent(v.name)},%20I%20want%20to%20buy%20an%20INNOVATIONX%20Activation%20Coupon%20Code" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:#38BDF8;font-weight:700;text-decoration:none">
+                            <span>+${v.phone}</span>
+                            <span style="font-size:0.7rem">↗</span>
+                        </a>
+                    </td>
+                    <td style="padding:12px 14px">
+                        ${tgLink ? `<a href="${tgLink}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:#38BDF8;font-weight:700;text-decoration:none"><span>${v.telegram.replace('https://t.me/','@')}</span><span style="font-size:0.7rem">↗</span></a>` : '<span style="color:#64748B;font-size:0.75rem">None</span>'}
+                    </td>
+                    <td style="padding:12px 14px">
+                        <span style="display:inline-block;font-size:0.75rem;color:#FBBF24;font-weight:800">★ ${Number(v.rating || 5.0).toFixed(1)}</span>
+                        <div style="font-size:0.7rem;color:#94A3B8">${v.codes || 'Vendor'}</div>
+                    </td>
+                    <td style="padding:12px 14px">
+                        <span style="font-size:0.72rem;padding:2px 8px;border-radius:6px;font-weight:700;background:${isActive ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'};color:${isActive ? '#34D399' : '#F87171'};border:1px solid ${isActive ? 'rgba(52,211,153,0.3)' : 'rgba(248,113,113,0.3)'}">
+                            ${isActive ? 'Active' : 'On Break'}
+                        </span>
+                    </td>
+                    <td style="padding:12px 14px;text-align:right">
+                        <div style="display:inline-flex;gap:6px">
+                            <button type="button" class="btn-dash-action" onclick="toggleAdminVendorStatus('${v.id}')" style="padding:4px 10px;font-size:0.72rem;background:rgba(255,255,255,0.06);color:#BAE6FD" title="Toggle Active / Break Status">
+                                ${isActive ? 'Pause' : 'Activate'}
+                            </button>
+                            <button type="button" class="btn-dash-action" onclick="deleteAdminVendor('${v.id}')" style="padding:4px 10px;font-size:0.72rem;background:rgba(244,63,94,0.15);color:#F43F5E;border-color:rgba(244,63,94,0.3)" title="Remove Vendor">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    };
+
+    window.filterAdminVendorsTable = function(query) {
+        const q = (query || '').toLowerCase().trim();
+        const list = window.adminVendorsList || [];
+        if (!q) {
+            renderAdminVendorsRows(list);
+            return;
+        }
+        const filtered = list.filter(v => 
+            (v.name && v.name.toLowerCase().includes(q)) ||
+            (v.location && v.location.toLowerCase().includes(q)) ||
+            (v.phone && v.phone.includes(q)) ||
+            (v.telegram && v.telegram.toLowerCase().includes(q))
+        );
+        renderAdminVendorsRows(filtered);
+    };
+
+    window.submitAddAdminVendor = async function(e) {
+        if (e) e.preventDefault();
+        const name = document.getElementById('vendorAddName').value.trim();
+        const phone = document.getElementById('vendorAddPhone').value.trim();
+        const telegram = document.getElementById('vendorAddTelegram').value.trim();
+        const location = document.getElementById('vendorAddLocation').value.trim();
+        const rating = parseFloat(document.getElementById('vendorAddRating').value) || 5.0;
+        const codes = document.getElementById('vendorAddCodes').value.trim() || '1,000+ Codes Sold';
+        const status = document.getElementById('vendorAddStatus').value;
+
+        if (!name || !phone) {
+            alert('Please enter the vendor name and WhatsApp phone number.');
+            return;
+        }
+
+        const newVendor = {
+            id: 'v' + Date.now().toString().slice(-4),
+            name,
+            phone: phone.replace(/[^0-9]/g, ''),
+            telegram,
+            location,
+            rating,
+            codes,
+            status,
+            avatar: '#0284C7'
+        };
+
+        const current = window.adminVendorsList || [];
+        current.push(newVendor);
+        localStorage.setItem('ix_vendors', JSON.stringify(current));
+
+        try {
+            await fetch('api/vendors.php?action=add_vendor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newVendor)
+            });
+        } catch(e) {}
+
+        document.getElementById('adminAddVendorForm').reset();
+        loadAdminVendorsTable();
+        alert(`✅ Official Vendor "${name}" published successfully!`);
+    };
+
+    window.deleteAdminVendor = async function(id) {
+        if (!confirm('Are you sure you want to remove this vendor from the verified directory?')) return;
+        const current = window.adminVendorsList || [];
+        const filtered = current.filter(v => v.id !== id);
+        window.adminVendorsList = filtered;
+        localStorage.setItem('ix_vendors', JSON.stringify(filtered));
+
+        try {
+            await fetch('api/vendors.php?action=delete_vendor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+        } catch(e) {}
+
+        loadAdminVendorsTable();
+    };
+
+    window.toggleAdminVendorStatus = async function(id) {
+        const current = window.adminVendorsList || [];
+        const v = current.find(item => item.id === id);
+        if (v) {
+            v.status = (v.status === 'break') ? 'active' : 'break';
+            localStorage.setItem('ix_vendors', JSON.stringify(current));
+            try {
+                await fetch('api/vendors.php?action=save_vendors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vendors: current })
+                });
+            } catch(e) {}
+            loadAdminVendorsTable();
+        }
     };
 
     })();
