@@ -120,8 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const notifCount = document.getElementById('notifBadgeCount');
     const notifList = document.getElementById('notifDropdownList');
     if (notifBell && notifDrop) {
+        notifBell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDrop.classList.toggle('show');
+        });
         document.addEventListener('click', (e) => {
-            if (!notifDrop.contains(e.target) && !notifBell.contains(e.target)) {
+            if (!notifDrop.contains(e.target) && e.target !== notifBell) {
                 notifDrop.classList.remove('show');
             }
         });

@@ -63,7 +63,7 @@ $defaultTelegram = [
     'popup_button_text' => 'Join Telegram Channel ↗',
     'popup_delay_seconds' => 2,
     'show_on_dashboard' => true,
-    'show_on_homepage' => true
+    'show_on_homepage' => false
 ];
 
 // Load vendors

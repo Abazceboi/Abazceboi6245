@@ -25,6 +25,10 @@ export class PayoutToastManager {
     }
 
     public init(): void {
+        const path = window.location.pathname;
+        if (path === '/' || path === '/index' || path === '/index.php' || path === '' || path.endsWith('index.php')) {
+            return;
+        }
         if (!this.container) return;
         // Trigger initial toast after 3 seconds, then every 12 seconds
         setTimeout(() => this.showRandomToast(), 3000);

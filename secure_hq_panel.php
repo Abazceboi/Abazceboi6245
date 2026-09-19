@@ -2948,7 +2948,7 @@ require_once __DIR__ . '/includes/header.php';
 
                 <div style="display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap">
                     <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#BAE6FD;cursor:pointer">
-                        <input type="checkbox" id="adminTgShowHomepage" checked style="accent-color:#0284C7">
+                        <input type="checkbox" id="adminTgShowHomepage" style="accent-color:#0284C7">
                         <span>Show on Public Landing Page</span>
                     </label>
                     <label style="display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#BAE6FD;cursor:pointer">
@@ -7838,7 +7838,7 @@ saveWithdrawalSettings = function() {
                     popup_button_text: 'Join Telegram Channel ↗',
                     popup_delay_seconds: 2,
                     show_on_dashboard: true,
-                    show_on_homepage: true
+                    show_on_homepage: false
                 };
             }
 
@@ -7867,7 +7867,7 @@ saveWithdrawalSettings = function() {
             if (delEl) delEl.value = tg.popup_delay_seconds || 2;
 
             const hpEl = document.getElementById('adminTgShowHomepage');
-            if (hpEl) hpEl.checked = tg.show_on_homepage !== false;
+            if (hpEl) hpEl.checked = tg.show_on_homepage === true;
 
             const dbEl = document.getElementById('adminTgShowDashboard');
             if (dbEl) dbEl.checked = tg.show_on_dashboard !== false;
@@ -7904,7 +7904,7 @@ saveWithdrawalSettings = function() {
             popup_description: document.getElementById('adminTgPopupDesc') ? document.getElementById('adminTgPopupDesc').value.trim() : '',
             popup_button_text: document.getElementById('adminTgButtonText') ? document.getElementById('adminTgButtonText').value.trim() : '',
             popup_delay_seconds: document.getElementById('adminTgDelay') ? parseInt(document.getElementById('adminTgDelay').value) || 2 : 2,
-            show_on_homepage: document.getElementById('adminTgShowHomepage') ? document.getElementById('adminTgShowHomepage').checked : true,
+            show_on_homepage: document.getElementById('adminTgShowHomepage') ? document.getElementById('adminTgShowHomepage').checked : false,
             show_on_dashboard: document.getElementById('adminTgShowDashboard') ? document.getElementById('adminTgShowDashboard').checked : true
         };
 

@@ -15,7 +15,7 @@ $telegramConfig = [
     'popup_button_text' => 'Join Telegram Channel ↗',
     'popup_delay_seconds' => 2,
     'show_on_dashboard' => true,
-    'show_on_homepage' => true
+    'show_on_homepage' => false
 ];
 
 if (file_exists($telegramConfigFile)) {
@@ -143,15 +143,15 @@ if (file_exists($telegramConfigFile)) {
     };
 
     // Auto-display pop-up based on admin configuration
-    const isHomepage = window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/') || window.location.pathname === '';
+    const isHomepage = window.location.pathname.endsWith('index.php') || window.location.pathname.endsWith('/') || window.location.pathname === '' || window.location.pathname.endsWith('/index');
     const isDashboard = window.location.pathname.includes('dashboard.php');
     const isAdmin = window.location.pathname.includes('admin.php') || window.location.pathname.includes('secure_hq_panel.php');
 
-    if (!isAdmin && window.ixTelegramConfig && window.ixTelegramConfig.enabled) {
-        const shouldShow = (isHomepage && window.ixTelegramConfig.show_on_homepage) || (isDashboard && window.ixTelegramConfig.show_on_dashboard);
+    // Never auto-display notification pop-up on the landing page
+    if (!isAdmin && !isHomepage && isDashboard && window.ixTelegramConfig && window.ixTelegramConfig.enabled && window.ixTelegramConfig.show_on_dashboard) {
         const alreadySeen = sessionStorage.getItem('ix_telegram_popup_seen');
 
-        if (shouldShow && !alreadySeen) {
+        if (!alreadySeen) {
             const delayMs = (window.ixTelegramConfig.popup_delay_seconds || 2) * 1000;
             setTimeout(() => {
                 if (typeof window.openTelegramCommunityModal === 'function') {
