@@ -448,12 +448,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;text-transform:none">Your recent earnings, tasks, and withdrawals.</div>
                             </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:10px">
-                            <span class="bento-badge" style="background:rgba(56, 189, 248, 0.12);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.25);display:inline-flex;align-items:center;gap:5px">
-                                <span class="hud-pulse-dot" style="width:5px;height:5px"></span>
-                                Live Sync
-                            </span>
-                        </div>
+                        <div></div>
                     </div>
 
                     <div class="terminal-feed-list" id="dashboardActivityFeed">
