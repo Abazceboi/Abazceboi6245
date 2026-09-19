@@ -6767,10 +6767,9 @@ select.dash-input:focus {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
   margin-bottom: 20px;
 }
 @media (max-width: 640px) {
@@ -6781,6 +6780,8 @@ select.dash-input:focus {
 .telemetry-item {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 4px;
 }
 .telemetry-lbl {
   font-size: 0.7rem;
@@ -6799,6 +6800,13 @@ select.dash-input:focus {
 .telemetry-val.accent-cyan { color: #7DD3FC; }
 .telemetry-val.accent-gold { color: #7DD3FC; }
 .telemetry-val.accent-indigo { color: #818CF8; }
+.telemetry-sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #94A3B8 !important;
+  margin-top: 2px;
+  line-height: 1.3;
+}
 
 /* Uploader Multi-Channel Payment Selector */
 .uploader-pay-grid {
@@ -7129,6 +7137,7 @@ select.dash-input:focus {
   color: #7DD3FC;
   text-transform: uppercase;
   margin-bottom: 6px;
+  text-align: center;
 }
 
 .credit-card-number-val-row {
@@ -7139,6 +7148,7 @@ select.dash-input:focus {
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 /* Non-copyable, Embossed Credit Card Digits */
@@ -7159,19 +7169,32 @@ select.dash-input:focus {
   line-height: 1;
 }
 
-/* Card Footer: Holder, Status, Manage Bank */
+/* Card Footer: Structured 2-Row Balanced Layout */
 .credit-card-footer {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 12px;
+  margin-top: 14px;
   position: relative;
   z-index: 3;
+}
+
+.credit-card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 .credit-card-meta-col {
   display: flex;
   flex-direction: column;
+}
+
+.credit-card-meta-col.credit-card-meta-right {
+  align-items: flex-end;
+  text-align: right;
 }
 
 .credit-card-sub-lbl {
@@ -7216,26 +7239,29 @@ select.dash-input:focus {
   animation: pulseDot 2s infinite ease-in-out;
 }
 
-.credit-card-action-col {
-  flex-shrink: 0;
+.credit-card-action-row {
+  width: 100%;
 }
 
 .btn-credit-manage {
+  width: 100%;
+  justify-content: center;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 50px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
   background: rgba(56, 189, 248, 0.14);
   color: #FFFFFF;
   border: 1.5px solid rgba(56, 189, 248, 0.45);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
   text-decoration: none;
+  box-sizing: border-box;
 }
 
 .btn-credit-manage:hover {
@@ -9719,8 +9745,7 @@ select.admin-select option {
 /* 5. THE WITHDRAWAL CARD EXCEPTION: DISTINCT RUBY / CRIMSON */
 /* (High Contrast Red / Crimson Accent Standing Out on Dark) */
 /* ======================================================== */
-.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card,
-.telemetry-item.telemetry-withdrawal {
+.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card {
   background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(56, 189, 248, 0.05) 100%) !important;
   border: 1px solid rgba(56, 189, 248, 0.3) !important;
   border-left: 4px solid #38BDF8 !important;
@@ -9729,24 +9754,20 @@ select.admin-select option {
   position: relative !important;
   overflow: hidden !important;
 }
-.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card:hover,
-.telemetry-item.telemetry-withdrawal:hover {
+.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card:hover {
   border-color: #FB7185 !important;
   box-shadow: 0 8px 30px rgba(225, 29, 72, 0.5) !important;
   transform: translateY(-2px);
 }
-.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-title,
-.telemetry-item.telemetry-withdrawal .telemetry-lbl {
+.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-title {
   color: #FECDD3 !important;
   font-weight: 900 !important;
 }
-.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-val,
-.telemetry-item.telemetry-withdrawal .telemetry-val {
+.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card .admin-kpi-val {
   color: #FDA4AF !important;
   font-weight: 900 !important;
 }
-.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card #kpiPayoutCountBadge,
-.telemetry-item.telemetry-withdrawal span:last-child {
+.admin-main-workspace .admin-kpi-card.kpi-withdrawal-card #kpiPayoutCountBadge {
   color: #FB7185 !important;
   font-weight: 800 !important;
 }
@@ -10173,15 +10194,20 @@ html, body {
   }
   .deck-telemetry-row {
     grid-template-columns: 1fr !important;
-    gap: 8px !important;
-    padding: 12px 14px !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
   }
   .telemetry-item {
-    padding: 6px 0 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 14px 18px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-left: 3.5px solid #38BDF8 !important;
+    background: linear-gradient(180deg, #101F3D 0%, #0C172E 100%) !important;
   }
   .telemetry-item:last-child {
-    border-bottom: none !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
   }
   .btn-withdraw-action {
     width: 100% !important;
@@ -10192,14 +10218,40 @@ html, body {
 
   /* 8. Credit Card Terminal Balance */
   .deck-credit-card {
-    padding: 18px 14px !important;
+    padding: 18px 16px !important;
     min-height: auto !important;
     border-radius: 18px !important;
     width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .credit-card-header {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+  .credit-card-number-val-row {
+    padding: 10px 12px !important;
+    justify-content: center !important;
   }
   .credit-card-number-digits {
-    font-size: clamp(1.1rem, 5vw, 1.35rem) !important;
-    letter-spacing: 2px !important;
+    font-size: clamp(1.15rem, 5vw, 1.45rem) !important;
+    letter-spacing: 2.5px !important;
+    text-align: center !important;
+  }
+  .credit-card-meta-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .credit-card-action-row {
+    width: 100% !important;
+  }
+  .btn-credit-manage {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 0.8rem !important;
   }
 
   /* 9. Bento Grid & 6-Tile Tech Dispatch Grid */

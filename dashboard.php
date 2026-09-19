@@ -265,16 +265,17 @@ require_once __DIR__ . '/includes/header.php';
                         <div class="telemetry-item">
                             <span class="telemetry-lbl">Referral Cash Wallet</span>
                             <span class="telemetry-val accent-gold dash-maskable-val" id="deckRefCashVal">₦<?= number_format($userCash, 2) ?></span>
-                            <span style="font-size:0.68rem;color:#64748B">Available for Withdrawal</span>
+                            <span class="telemetry-sub">Available for Withdrawal</span>
                         </div>
                         <div class="telemetry-item">
                             <span class="telemetry-lbl">Task Points Wallet</span>
                             <span class="telemetry-val accent-cyan dash-maskable-val" id="deckTaskPtsVal"><?= number_format($userPoints) ?> PTS</span>
+                            <span class="telemetry-sub">1 PTS = ₦1.00 Value</span>
                         </div>
                         <div class="telemetry-item telemetry-withdrawal">
                             <span class="telemetry-lbl">Total Paid Out</span>
                             <span class="telemetry-val accent-indigo dash-maskable-val" id="deckPaidOutVal">₦0.00</span>
-                            <span style="font-size:0.68rem;color:#64748B">Transferred to Bank</span>
+                            <span class="telemetry-sub">Transferred to Bank</span>
                         </div>
                     </div>
 
@@ -318,10 +319,10 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <!-- Contactless NFC Wave Symbol -->
                         <div class="credit-card-contactless" aria-hidden="true" title="Contactless Payout Terminal">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                                <path d="M7 16a6 6 0 0 1 0-8"/>
-                                <path d="M10.5 19a10 10 0 0 1 0-14"/>
-                                <path d="M14 22a14 14 0 0 1 0-20"/>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" stroke-width="2.2" stroke-linecap="round">
+                                <path d="M8.5 9.5a3.5 3.5 0 0 1 0 5"/>
+                                <path d="M12 7a7 7 0 0 1 0 10"/>
+                                <path d="M15.5 4.5a10.5 10.5 0 0 1 0 15"/>
                             </svg>
                         </div>
                     </div>
@@ -336,21 +337,23 @@ require_once __DIR__ . '/includes/header.php';
 
                     <!-- CARD FOOTER: Account Holder + Status + Manage Bank Button -->
                     <div class="credit-card-footer">
-                        <div class="credit-card-meta-col">
-                            <span class="credit-card-sub-lbl">ACCOUNT HOLDER</span>
-                            <span id="overviewSavedAccountName" class="credit-card-holder-name"><?= htmlspecialchars($username) ?></span>
-                        </div>
-                        <div class="credit-card-meta-col">
-                            <span class="credit-card-sub-lbl">SECURITY / STATUS</span>
-                            <div class="credit-card-status-pill">
-                                <span class="credit-status-dot"></span>
-                                <span>ACTIVE PAYOUT</span>
+                        <div class="credit-card-meta-row">
+                            <div class="credit-card-meta-col">
+                                <span class="credit-card-sub-lbl">ACCOUNT HOLDER</span>
+                                <span id="overviewSavedAccountName" class="credit-card-holder-name"><?= htmlspecialchars($username) ?></span>
+                            </div>
+                            <div class="credit-card-meta-col credit-card-meta-right">
+                                <span class="credit-card-sub-lbl">SECURITY / STATUS</span>
+                                <div class="credit-card-status-pill">
+                                    <span class="credit-status-dot"></span>
+                                    <span>ACTIVE PAYOUT</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="credit-card-action-col">
+                        <div class="credit-card-action-row">
                             <button type="button" onclick="manageBankDetailsFromCard()" class="btn-credit-manage" title="Update receiving bank and account number">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                <span>Manage Bank</span>
+                                <span>Manage Bank Account</span>
                             </button>
                         </div>
                     </div>
