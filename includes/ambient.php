@@ -66,6 +66,10 @@ if ($reqUri === '' || $reqUri === 'index' || $reqUri === 'index.php'):
                 <div style="font-weight:800;color:#38BDF8;font-size:0.86rem;margin-top:2px">withdrew ${item.amount}</div>
             </div>
         `;
+        toast.addEventListener('click', () => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        });
         container.appendChild(toast);
         setTimeout(() => {
             toast.classList.add('show');

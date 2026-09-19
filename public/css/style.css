@@ -4429,14 +4429,17 @@ select.dash-input:focus {
 }
 @media (max-width: 900px) {
   .admin-command-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 16px;
   }
   .admin-command-actions {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 }
 
@@ -5483,16 +5486,48 @@ select.dash-input:focus {
   gap: 12px !important;
   pointer-events: none !important;
 }
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .payout-toast-container {
-    bottom: 20px !important;
-    left: 14px !important;
-    right: 14px !important;
-    max-width: calc(100vw - 28px) !important;
+    bottom: 16px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: max-content !important;
+    max-width: calc(100vw - 32px) !important;
+    align-items: center !important;
   }
   .payout-toast {
-    max-width: 100% !important;
-    width: 100% !important;
+    width: auto !important;
+    max-width: 320px !important;
+    border-radius: 9999px !important;
+    padding: 6px 14px 6px 8px !important;
+    gap: 9px !important;
+    background: rgba(10, 18, 38, 0.94) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(56, 189, 248, 0.2) !important;
+    transform: translateY(24px) !important;
+    cursor: pointer !important;
+  }
+  .payout-toast.show {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+  }
+  .payout-toast .toast-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    font-size: 0.65rem !important;
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.4) !important;
+  }
+  .payout-toast .toast-content {
+    font-size: 0.74rem !important;
+    line-height: 1.25 !important;
+  }
+  .payout-toast .toast-name {
+    font-size: 0.74rem !important;
+  }
+  .payout-toast .toast-time {
+    font-size: 0.65rem !important;
   }
 }
 .payout-toast {
@@ -6331,15 +6366,6 @@ select.dash-input:focus {
     flex-direction: column;
   }
   .verify-btn {
-    width: 100%;
-  }
-
-  .payout-toast-container {
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-  }
-  .payout-toast {
     width: 100%;
   }
 }
@@ -9011,8 +9037,142 @@ select.dash-input:focus {
 }
 
 /* ======================================================== */
+/* FINANCIAL PRICING ENGINE: DYNAMIC PROFIT MARGINS MATRIX   */
+/* ======================================================== */
+.admin-margins-strip {
+  background: #081226;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 16px rgba(0, 0, 0, 0.25);
+  margin-top: 14px;
+}
+
+.margin-strip-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7DD3FC;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.margin-strip-title svg {
+  color: #38BDF8;
+}
+
+.margin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.margin-metric-card {
+  background: rgba(14, 26, 51, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.margin-metric-card:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(14, 26, 51, 0.95);
+}
+
+.margin-metric-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.margin-metric-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #38BDF8;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.margin-metric-value.accent {
+  color: #60A5FA;
+}
+
+.margin-metric-sub {
+  font-size: 0.68rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+[data-theme="light"] .admin-margins-strip {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .margin-strip-title {
+  color: #0369A1;
+}
+
+[data-theme="light"] .margin-metric-card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .margin-metric-label {
+  color: #475569;
+}
+
+[data-theme="light"] .margin-metric-value {
+  color: #0284C7;
+}
+
+[data-theme="light"] .margin-metric-value.accent {
+  color: #2563EB;
+}
+
+[data-theme="light"] .margin-metric-sub {
+  color: #64748B;
+}
+
+@media (max-width: 768px) {
+  .margin-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .margin-metric-card {
+    padding: 10px 12px;
+  }
+  .margin-metric-value {
+    font-size: 1.1rem;
+  }
+}
+
+/* ======================================================== */
 /* COUPON GENERATOR & PIN REPOSITORY TABLE ALIGNMENT        */
 /* ======================================================== */
+.admin-pin-gen-form {
+  background: rgba(14, 26, 51, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .admin-pin-gen-form {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
 .coupon-table-header {
   display: grid;
   grid-template-columns: 170px 145px 1fr 65px;
@@ -9862,37 +10022,102 @@ html, body {
     display: none !important;
   }
 
-  /* 4. Admin Top Command Bar Balance */
+  /* 4. Admin Top Command Bar Balance (Mobile Single-Row App Header) */
   .admin-command-bar {
-    padding: 12px 14px !important;
-    gap: 10px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 12px !important;
+    gap: 8px !important;
     margin-bottom: 16px !important;
+    border-radius: 14px !important;
   }
   .admin-brand-block {
-    gap: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
   }
   .admin-brand-icon {
     width: 32px !important;
     height: 32px !important;
+    border-radius: 9px !important;
+    flex-shrink: 0 !important;
+  }
+  .admin-brand-meta {
+    min-width: 0 !important;
   }
   .admin-brand-meta h1 {
-    font-size: 1rem !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .admin-brand-meta p {
+    display: none !important;
   }
   .admin-command-actions {
-    gap: 6px !important;
-    width: 100% !important;
     display: flex !important;
-    justify-content: space-between !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 5px !important;
+    width: auto !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
   }
   .admin-command-actions .btn-dash-action {
-    flex: 1 !important;
-    justify-content: center !important;
+    flex: 0 0 auto !important;
     height: 34px !important;
-    padding: 0 8px !important;
-    font-size: 0.75rem !important;
+    padding: 0 10px !important;
+    font-size: 0.74rem !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .admin-command-actions .btn-dash-menu {
+    gap: 4px !important;
+  }
+  .admin-command-actions .btn-dash-menu span {
+    display: inline !important;
+  }
+  .admin-command-actions a[href="dashboard.php"] {
+    width: 34px !important;
+    padding: 0 !important;
+  }
+  .admin-command-actions a[href="dashboard.php"] span {
+    display: none !important;
   }
   .admin-command-actions .btn-dash-theme {
+    width: 34px !important;
+    padding: 0 !important;
     flex: 0 0 34px !important;
+  }
+  .admin-command-actions .btn-dash-logout {
+    width: 34px !important;
+    padding: 0 !important;
+    flex: 0 0 34px !important;
+    background: rgba(244, 63, 94, 0.12) !important;
+    border: 1px solid rgba(244, 63, 94, 0.28) !important;
+  }
+  .admin-command-actions .btn-dash-logout span {
+    display: none !important;
+  }
+  .admin-command-actions .btn-dash-logout svg {
+    stroke: #FB7185 !important;
+    margin: 0 !important;
+  }
+  [data-theme="light"] .admin-command-actions .btn-dash-logout {
+    background: #FFE4E6 !important;
+    border-color: #FDA4AF !important;
+  }
+  [data-theme="light"] .admin-command-actions .btn-dash-logout svg {
+    stroke: #E11D48 !important;
   }
 
   /* 5. Admin Analytics View Switcher Bar */
@@ -10468,28 +10693,6 @@ html, body {
   color: #0F172A !important;
 }
 
-/* 12. Admin Categories & Top Navigation Bar in Light Mode */
-[data-theme="light"] .admin-modules-nav-bar {
-  background: #FFFFFF !important;
-  border-color: #CBD5E1 !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
-}
-[data-theme="light"] .admin-cat-pill {
-  background: #F1F5F9 !important;
-  color: #334155 !important;
-  border: 1px solid #CBD5E1 !important;
-}
-[data-theme="light"] .admin-cat-pill:hover,
-[data-theme="light"] .admin-cat-pill.active {
-  background: linear-gradient(135deg, #0284C7, #38BDF8) !important;
-  color: #FFFFFF !important;
-  border-color: #0284C7 !important;
-}
-[data-theme="light"] #adminTopModuleSelector {
-  background: #FFFFFF !important;
-  color: #0F172A !important;
-  border-color: #CBD5E1 !important;
-}
 [data-theme="light"] .admin-view-controls-pill {
   background: #F1F5F9 !important;
   border: 1px solid #CBD5E1 !important;

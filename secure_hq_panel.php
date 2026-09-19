@@ -212,53 +212,6 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </aside>
 
-        <!-- Admin Categories & Modules Quick Navigation Bar -->
-        <div class="admin-modules-nav-bar reveal" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;padding:8px 14px;background:#0C162D;border:1px solid rgba(56,189,248,0.22);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.35);flex-wrap:wrap">
-            <div class="admin-category-pills" style="display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;max-width:100%">
-                <button type="button" class="admin-cat-pill active" onclick="switchAdminTab('overview')">Overview</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('withdrawals')">Payouts</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('users')">Users</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('opportunities')">Tasks</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('vtu')">VTU Hub</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('vendors')">Vendors &amp; Telegram</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('gateways')">Gateways</button>
-                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('settings')">Settings</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-                <label for="adminTopModuleSelector" style="font-size:0.75rem;font-weight:700;color:#7DD3FC;white-space:nowrap">Jump To:</label>
-                <select id="adminTopModuleSelector" class="admin-select" onchange="switchAdminTab(this.value)" style="font-size:0.8rem;padding:6px 12px;min-width:180px;background:#060C1B;border:1px solid rgba(56,189,248,0.3);color:#BAE6FD;border-radius:8px">
-                    <optgroup label="Core Operations">
-                        <option value="overview" selected>Overview &amp; Intelligence</option>
-                        <option value="withdrawals">Payout Approvals</option>
-                        <option value="users">Users &amp; Ledgers</option>
-                        <option value="opportunities">Tasks &amp; Gigs Hub</option>
-                        <option value="vtu">VTU Telecoms &amp; Data</option>
-                    </optgroup>
-                    <optgroup label="Growth &amp; Monetization">
-                        <option value="uploaders">Uploader Requests</option>
-                        <option value="adverts">Member Adverts</option>
-                        <option value="adsense">Google AdSense</option>
-                    </optgroup>
-                    <optgroup label="Financial Systems &amp; Gateways">
-                        <option value="gateways">Payment Gateways</option>
-                        <option value="autopayout">Auto-Payout App (24/7)</option>
-                        <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
-                    </optgroup>
-                    <optgroup label="Communications &amp; Community">
-                        <option value="vendors">Vendors &amp; Telegram Hub</option>
-                        <option value="broadcasts">Broadcast Engine</option>
-                        <option value="notifications">In-App Notifications</option>
-                    </optgroup>
-                    <optgroup label="System &amp; Settings">
-                        <option value="team">Staff Permissions &amp; Roles</option>
-                        <option value="features">Feature Toggles</option>
-                        <option value="content">Cards &amp; Text</option>
-                        <option value="settings">Master Settings &amp; Maintenance</option>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-
     <!-- ======================================================== -->
     <!-- TAB 0: Overview & Statistics HUB (DEFAULT VIEW ON LOGIN)    -->
     <!-- ======================================================== -->
@@ -475,17 +428,28 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <!-- Dynamic Real-time Margins Summary Strip -->
-            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.18);border-radius:10px;padding:10px 16px;font-size:0.78rem">
-                <span style="color:#94A3B8;font-weight:700">Calculated Margins:</span>
-                <span style="color:#FFFFFF;background:rgba(56,189,248,0.12);padding:4px 10px;border-radius:6px;border:1px solid rgba(56,189,248,0.25)">
-                    Standard Member Profit: <strong id="finLblMemberMargin" style="color:#38BDF8">₦500.00</strong>
-                </span>
-                <span style="color:#FFFFFF;background:rgba(56,189,248,0.12);padding:4px 10px;border-radius:6px;border:1px solid rgba(56,189,248,0.25)">
-                    Vendor PIN Profit: <strong id="finLblVendorMargin" style="color:#38BDF8">₦300.00</strong>
-                </span>
-                <span style="color:#FFFFFF;background:rgba(56,189,248,0.06);padding:4px 10px;border-radius:6px;border:1px solid rgba(56,189,248,0.18)">
-                    Vendor Wholesale Discount: <strong id="finLblVendorDiscount" style="color:#7DD3FC">₦200.00 / PIN</strong>
-                </span>
+            <div class="admin-margins-strip">
+                <div class="margin-strip-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Calculated Profit &amp; Margin Matrix</span>
+                </div>
+                <div class="margin-metrics-grid">
+                    <div class="margin-metric-card">
+                        <span class="margin-metric-label">Direct Registration Profit</span>
+                        <div class="margin-metric-value" id="finLblMemberMargin">₦500.00</div>
+                        <span class="margin-metric-sub">Net per user registration</span>
+                    </div>
+                    <div class="margin-metric-card">
+                        <span class="margin-metric-label">Wholesale Vendor Profit</span>
+                        <div class="margin-metric-value" id="finLblVendorMargin">₦300.00</div>
+                        <span class="margin-metric-sub">Net per wholesale PIN batch</span>
+                    </div>
+                    <div class="margin-metric-card">
+                        <span class="margin-metric-label">Vendor Wholesale Discount</span>
+                        <div class="margin-metric-value accent" id="finLblVendorDiscount">₦200.00 / PIN</div>
+                        <span class="margin-metric-sub">Distributor price margin</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -556,100 +520,76 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <!-- SECTION B: COUPON GENERATOR: UPLOADERS & AFFILIATES -->
+            <!-- SECTION B: ACTIVATION CODES & PIN MANAGEMENT -->
             <div class="admin-card">
                 <div class="admin-card-header" style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid rgba(56, 189, 248, 0.15)">
                     <div class="admin-card-title" style="display:flex;align-items:center;gap:10px">
-                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(56, 189, 248, 0.35)">
+                        <div style="width:36px;height:36px;border-radius:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);color:#38BDF8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="7" y2="8.01"></line><line x1="7" y1="12" x2="7" y2="12.01"></line><line x1="7" y1="16" x2="7" y2="16.01"></line><line x1="11" y1="8" x2="17" y2="8"></line><line x1="11" y1="12" x2="17" y2="12"></line><line x1="11" y1="16" x2="17" y2="16"></line></svg>
                         </div>
                         <div>
                             <div style="font-size:1.02rem;font-weight:800;color:#FFFFFF;line-height:1.2">PIN Generator &amp; Allocations</div>
-                            <div style="font-size:0.72rem;color:#7DD3FC;font-weight:600">Create and assign activation codes</div>
+                            <div style="font-size:0.72rem;color:#7DD3FC;font-weight:600">Issue and distribute membership activation vouchers</div>
                         </div>
                     </div>
-                    <div style="font-size:0.74rem;color:#38BDF8;font-weight:800;background:rgba(56,189,248,0.1);padding:4px 10px;border-radius:8px;border:1px solid rgba(56,189,248,0.25);white-space:nowrap">
-                        <span id="lblCouponsAvailableCount">85</span> Avail • <span id="lblCouponsGenCount" style="color:#FFF">120</span> Tot
+                    <div style="font-size:0.74rem;color:#38BDF8;font-weight:700;background:rgba(56,189,248,0.1);padding:4px 12px;border-radius:8px;border:1px solid rgba(56,189,248,0.25);white-space:nowrap">
+                        <span id="lblCouponsAvailableCount">85</span> Available • <span id="lblCouponsGenCount" style="color:#FFF">120</span> Total
                     </div>
                 </div>
 
                 <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
-                    <!-- Direct Vendor Assignment Selector -->
-                    <div class="admin-vendor-box" style="margin-bottom:12px;border-radius:10px;padding:8px 12px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                            <label style="font-size:0.7rem;color:#7DD3FC;font-weight:800;text-transform:uppercase;letter-spacing:0.04em">Assign Directly To Vendor</label>
-                            <span style="font-size:0.68rem;color:#38BDF8;font-weight:700">Exclusive Wholesale</span>
+                    <!-- Clean 3-Field Generation Form -->
+                    <div class="admin-pin-gen-form" style="border-radius:12px;padding:14px;margin-bottom:14px">
+                        <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px">
+                            <div>
+                                <label style="display:block;font-size:0.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">PIN Purpose / Tier</label>
+                                <select id="genPinType" class="admin-select" style="width:100%;height:38px;font-size:0.8rem">
+                                    <option value="AFF">Member Registration PIN (₦1,000)</option>
+                                    <option value="UPL">Task Uploader Upgrade (₦2,000)</option>
+                                    <option value="JOB">Jobber Task Quota PIN (5 Gigs)</option>
+                                    <option value="VIP_AFF">Affiliate VIP Promo PIN</option>
+                                    <option value="VIP_UPL">VIP Unlimited Uploader PIN</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:0.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">Quantity</label>
+                                <select id="genPinQty" class="admin-select" style="width:100%;height:38px;font-size:0.8rem">
+                                    <option value="5">5 PINs</option>
+                                    <option value="10" selected>10 PINs</option>
+                                    <option value="20">20 PINs</option>
+                                    <option value="50">50 PINs</option>
+                                    <option value="100">100 PINs</option>
+                                </select>
+                            </div>
                         </div>
-                        <select id="couponTargetVendor" class="admin-select" style="width:100%;height:34px;font-size:0.78rem">
-                            <option value="">-- General Pool (Public / Unassigned) --</option>
-                            <option value="v1:Emmanuel Eze">Emmanuel Eze (Lagos • 2,400+ Sold)</option>
-                            <option value="v2:Fatima Bello">Fatima Bello (Abuja • 1,850+ Sold)</option>
-                            <option value="v3:Tunde Adeyemi">Tunde Adeyemi (Ibadan • 1,420+ Sold)</option>
-                        </select>
+
+                        <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+                            <div>
+                                <label style="display:block;font-size:0.7rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px">Assign To Vendor (Wholesale Partner)</label>
+                                <select id="genPinVendor" class="admin-select" style="width:100%;height:38px;font-size:0.8rem">
+                                    <option value="">General Pool (Public / Unassigned)</option>
+                                    <option value="v1:Emmanuel Eze">Emmanuel Eze (Lagos • 2,400+ Sold)</option>
+                                    <option value="v2:Fatima Bello">Fatima Bello (Abuja • 1,850+ Sold)</option>
+                                    <option value="v3:Tunde Adeyemi">Tunde Adeyemi (Ibadan • 1,420+ Sold)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn-dash-action btn-dash-primary" onclick="generatePinCodes()" style="height:38px;padding:0 20px;font-weight:800;font-size:0.8rem;white-space:nowrap">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+                                <span>Generate PINs</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Segmented Channel Selector -->
-                    <div class="admin-channel-bar" style="display:flex;border-radius:10px;padding:4px;margin-bottom:12px;gap:4px">
-                        <button type="button" id="btnChannelTabUpl" onclick="switchAdminGenChannel('UPLOADER')" style="flex:1;height:34px;font-size:0.76rem;font-weight:800;border-radius:8px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFFFFF;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(2,132,199,0.35)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <span>Task Uploaders (₦2k)</span>
-                        </button>
-                        <button type="button" id="btnChannelTabAff" onclick="switchAdminGenChannel('AFFILIATE')" style="flex:1;height:34px;font-size:0.76rem;font-weight:700;border-radius:8px;background:transparent;color:#94A3B8;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            <span>Affiliates (₦1k)</span>
-                        </button>
-                    </div>
-
-                    <!-- Channel 1: Task Uploaders (Active View) -->
-                    <div id="channelPaneUploader" class="admin-channel-pane" style="border-radius:12px;padding:12px;margin-bottom:12px">
-                        <div style="display:flex;gap:8px;margin-bottom:10px">
-                            <select id="uploaderCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
-                                <option value="UPL">Uploader Upgrade PIN (₦2,000)</option>
-                                <option value="JOB">Jobber Task Quota PIN (5 Gigs)</option>
-                                <option value="VIP_UPL">VIP Unlimited Uploader PIN</option>
-                            </select>
-                            <select id="uploaderCouponQty" class="admin-select" style="width:85px;height:34px;font-size:0.76rem">
-                                <option value="5">5 PINs</option>
-                                <option value="10">10 PINs</option>
-                                <option value="20">20 PINs</option>
-                                <option value="50">50 PINs</option>
-                            </select>
+                    <!-- Clean Ledger Controls: Segmented Filter + Copy Action -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap">
+                        <div class="pin-filter-group" style="display:flex;gap:5px;flex-wrap:wrap">
+                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action admin-filter-pill active" onclick="filterOverviewCoupons('ALL', this)" style="padding:5px 12px;font-size:0.74rem;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
+                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:5px 12px;font-size:0.74rem;font-weight:700">Registration (<span id="cntFilterAff">0</span>)</button>
+                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:5px 12px;font-size:0.74rem;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
+                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:5px 12px;font-size:0.74rem;font-weight:700">Assigned (<span id="cntFilterVendor">0</span>)</button>
                         </div>
-                        <button type="button" class="btn-dash-action btn-dash-primary" onclick="generateUploaderCoupons()" style="width:100%;height:36px;font-weight:800;font-size:0.78rem;gap:6px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                            <span>Generate Uploader PINs</span>
-                        </button>
-                    </div>
-
-                    <!-- Channel 2: Affiliates (Hidden by default) -->
-                    <div id="channelPaneAffiliate" class="admin-channel-pane" style="display:none;border-radius:12px;padding:12px;margin-bottom:12px">
-                        <div style="display:flex;gap:8px;margin-bottom:10px">
-                            <select id="affiliateCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
-                                <option value="AFF">Affiliate Registration PIN</option>
-                                <option value="VIP_AFF">Affiliate VIP Promo PIN</option>
-                            </select>
-                            <select id="affiliateCouponQty" class="admin-select" style="width:85px;height:34px;font-size:0.76rem">
-                                <option value="5">5 PINs</option>
-                                <option value="10">10 PINs</option>
-                                <option value="20">20 PINs</option>
-                                <option value="50">50 PINs</option>
-                            </select>
-                        </div>
-                        <button type="button" class="btn-dash-action btn-dash-primary" onclick="generateAffiliateCoupons()" style="width:100%;height:36px;font-weight:800;font-size:0.78rem;gap:6px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                            <span>Generate Affiliate PINs</span>
-                        </button>
-                    </div>
-
-                    <!-- Filter pills & Copy controls -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px;flex-wrap:wrap">
-                        <div style="display:flex;gap:6px;flex-wrap:wrap">
-                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action admin-filter-pill active" onclick="filterOverviewCoupons('ALL', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
-                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
-                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Affiliates (<span id="cntFilterAff">0</span>)</button>
-                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Vendors (<span id="cntFilterVendor">0</span>)</button>
-                        </div>
-                        <button type="button" class="btn-dash-action btn-dash-secondary" onclick="copyAllActiveCoupons()" style="padding:5px 14px;font-size:0.72rem;font-weight:700;border-radius:8px">
+                        <button type="button" class="btn-dash-action btn-dash-secondary" onclick="copyAllActiveCoupons()" style="padding:5px 14px;font-size:0.74rem;font-weight:700;border-radius:8px">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             <span>Copy PINs</span>
                         </button>
                     </div>
@@ -657,16 +597,15 @@ require_once __DIR__ . '/includes/header.php';
                     <!-- Column Header -->
                     <div class="coupon-table-header">
                         <div>PIN Code</div>
-                        <div>Category / Type</div>
-                        <div>Vendor Allocation</div>
+                        <div>Purpose / Tier</div>
+                        <div>Allocation</div>
                         <div style="text-align:right">Action</div>
                     </div>
 
-                    <!-- Scrollable Coupons List with Sky Blue accents -->
-                    <div id="overviewCouponsList" class="admin-coupons-scroll-wrap" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding:8px;border-top:none;border-radius:0 0 10px 10px">
+                    <!-- Scrollable Coupons List -->
+                    <div id="overviewCouponsList" class="admin-coupons-scroll-wrap" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;padding:8px;border-radius:0 0 10px 10px">
                     </div>
                 </div>
-            </div>
             </div>
         </div>
 
@@ -4275,77 +4214,14 @@ require_once __DIR__ . '/includes/header.php';
         }
     };
 
-    // Generate Uploader / Jobber Coupons (With Vendor Assignment)
-    window.generateUploaderCoupons = function() {
-        const typeEl = document.getElementById('uploaderCouponType');
-        const qtyEl = document.getElementById('uploaderCouponQty');
-        const vendorEl = document.getElementById('couponTargetVendor');
-        const type = typeEl ? typeEl.value : 'UPL';
-        const qty = parseInt(qtyEl ? qtyEl.value : '5', 10) || 5;
+    // Modern Unified Financial PIN Generator
+    window.generatePinCodes = function() {
+        const typeEl = document.getElementById('genPinType') || document.getElementById('uploaderCouponType') || document.getElementById('affiliateCouponType');
+        const qtyEl = document.getElementById('genPinQty') || document.getElementById('uploaderCouponQty') || document.getElementById('affiliateCouponQty');
+        const vendorEl = document.getElementById('genPinVendor') || document.getElementById('couponTargetVendor');
 
-        let vendorId = '';
-        let vendorName = '';
-        if (vendorEl && vendorEl.value) {
-            const parts = vendorEl.value.split(':');
-            vendorId = parts[0] || '';
-            vendorName = parts[1] || '';
-        }
-
-        const pricing = JSON.parse(localStorage.getItem('ix_pricing_settings') || '{}');
-        const wholesalePrice = Number(pricing.vendor_wholesale || 800);
-
-        let typeLabel = 'Uploader Upgrade PIN';
-        let prefix = 'UPL';
-        if (type === 'JOB') {
-            typeLabel = 'Jobber Task Quota PIN (5 Gigs)';
-            prefix = 'JOB';
-        } else if (type === 'VIP_UPL') {
-            typeLabel = 'VIP Unlimited Uploader PIN';
-            prefix = 'VIPUPL';
-        }
-
-        const storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
-
-        for (let i = 0; i < qty; i++) {
-            const p1 = Math.floor(1000 + Math.random() * 9000);
-            const p2 = Math.floor(1000 + Math.random() * 9000);
-            const code = `INX-${prefix}-${p1}-${p2}`;
-
-            const couponObj = {
-                code: code,
-                channel: 'UPLOADER',
-                type: type,
-                typeLabel: typeLabel,
-                vendorId: vendorId,
-                vendorName: vendorName,
-                wholesalePrice: vendorId ? wholesalePrice : 2000,
-                created_at: new Date().toISOString()
-            };
-            storedCoupons.unshift(couponObj);
-        }
-
-        localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
-        const savedMetricView = localStorage.getItem('ix_overview_view_mode') || 'SPLIT';
-    if (window.switchOverviewMetricView) window.switchOverviewMetricView(savedMetricView);
-    if (window.renderOverviewBarChart) window.renderOverviewBarChart();
-    renderOverviewCouponsList();
-    if (window.switchAdminGenChannel) window.switchAdminGenChannel('UPLOADER');
-        calculatePlatformFinancials();
-
-        const toastMsg = vendorName 
-            ? `Generated ${qty} ${typeLabel}s assigned exclusively to ${vendorName}!`
-            : `Generated ${qty} ${typeLabel}s in General Pool!`;
-        if (window.showToast) window.showToast(toastMsg, 'success');
-        else alert(toastMsg);
-    };
-
-    // Generate Affiliate & Member Registration Coupons (With Vendor Assignment)
-    window.generateAffiliateCoupons = function() {
-        const typeEl = document.getElementById('affiliateCouponType');
-        const qtyEl = document.getElementById('affiliateCouponQty');
-        const vendorEl = document.getElementById('couponTargetVendor');
         const type = typeEl ? typeEl.value : 'AFF';
-        const qty = parseInt(qtyEl ? qtyEl.value : '5', 10) || 5;
+        const qty = parseInt(qtyEl ? qtyEl.value : '10', 10) || 10;
 
         let vendorId = '';
         let vendorName = '';
@@ -4359,11 +4235,31 @@ require_once __DIR__ . '/includes/header.php';
         const regPrice = Number(pricing.reg_fee || 1000);
         const wholesalePrice = Number(pricing.vendor_wholesale || 800);
 
+        let channel = 'AFFILIATE';
         let typeLabel = 'Member Registration PIN';
         let prefix = 'AFF';
-        if (type === 'VIP_AFF') {
+        let wholesaleVal = vendorId ? wholesalePrice : regPrice;
+
+        if (type === 'UPL') {
+            channel = 'UPLOADER';
+            typeLabel = 'Uploader Upgrade PIN';
+            prefix = 'UPL';
+            wholesaleVal = vendorId ? wholesalePrice : 2000;
+        } else if (type === 'JOB') {
+            channel = 'UPLOADER';
+            typeLabel = 'Jobber Task Quota PIN';
+            prefix = 'JOB';
+            wholesaleVal = vendorId ? wholesalePrice : 1000;
+        } else if (type === 'VIP_UPL') {
+            channel = 'UPLOADER';
+            typeLabel = 'VIP Unlimited Uploader PIN';
+            prefix = 'VIPUPL';
+            wholesaleVal = vendorId ? wholesalePrice : 5000;
+        } else if (type === 'VIP_AFF') {
+            channel = 'AFFILIATE';
             typeLabel = 'Affiliate VIP Promo PIN';
             prefix = 'VIP';
+            wholesaleVal = vendorId ? wholesalePrice : 2500;
         }
 
         const storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
@@ -4375,27 +4271,32 @@ require_once __DIR__ . '/includes/header.php';
 
             const couponObj = {
                 code: code,
-                channel: 'AFFILIATE',
+                channel: channel,
                 type: type,
                 typeLabel: typeLabel,
                 vendorId: vendorId,
                 vendorName: vendorName,
-                wholesalePrice: vendorId ? wholesalePrice : regPrice,
+                wholesalePrice: wholesaleVal,
                 created_at: new Date().toISOString()
             };
             storedCoupons.unshift(couponObj);
         }
 
         localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
-        renderOverviewCouponsList();
-        calculatePlatformFinancials();
+        if (window.renderOverviewCouponsList) window.renderOverviewCouponsList();
+        if (window.renderOverviewBarChart) window.renderOverviewBarChart();
+        if (window.calculatePlatformFinancials) window.calculatePlatformFinancials();
 
         const toastMsg = vendorName 
-            ? `Generated ${qty} ${typeLabel}s assigned exclusively to ${vendorName}!`
-            : `Generated ${qty} ${typeLabel}s in General Pool!`;
+            ? `Generated ${qty} × ${typeLabel} assigned to ${vendorName}!`
+            : `Generated ${qty} × ${typeLabel} in General Pool!`;
         if (window.showToast) window.showToast(toastMsg, 'success');
         else alert(toastMsg);
     };
+
+    // Backward compatibility aliases
+    window.generateUploaderCoupons = window.generatePinCodes;
+    window.generateAffiliateCoupons = window.generatePinCodes;
 
     // Render overview coupons list from stored coupons
     window.renderOverviewCouponsList = function() {
@@ -4487,7 +4388,7 @@ require_once __DIR__ . '/includes/header.php';
         const codes = [];
         document.querySelectorAll('#overviewCouponsList .coupon-item').forEach(it => {
             if (it.style.display !== 'none') {
-                const sp = it.querySelector('span[style*="monospace"]');
+                const sp = it.querySelector('.coupon-col-code') || it.querySelector('span[style*="monospace"]');
                 if (sp) codes.push(sp.textContent.trim());
             }
         });

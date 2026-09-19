@@ -90,6 +90,11 @@ export class PayoutToastManager {
             </div>
         `;
 
+        toast.addEventListener('click', () => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        });
+
         this.container.appendChild(toast);
 
         // Trigger CSS transition by adding .show after mount
