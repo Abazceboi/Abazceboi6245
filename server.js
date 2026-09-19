@@ -599,14 +599,14 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            // Autonomous Auto-Payout App Engine API
+            // Automatic Payout App Engine API
             if (cleanUrl.includes('autopayout_app.php')) {
                 const appConfigFile = path.join(PUBLIC_DIR, 'data', 'autopayout_app_settings.json');
                 const logFile = path.join(PUBLIC_DIR, 'data', 'autopayout_dispatches.json');
                 let appConfig = {
                     status: 'enabled',
                     endpoint: 'https://api.omanuban-core.net/v2/dispatch',
-                    bearer: 'bot_sec_live_98472948729103847192',
+                    bearer: 'app_sec_live_98472948729103847192',
                     schedule_mode: 'custom_hours',
                     start_hour: '00:00',
                     end_hour: '23:59',
@@ -628,9 +628,9 @@ const server = http.createServer((req, res) => {
                         status: 'success',
                         app_status: 'ONLINE_ACTIVE',
                         latency_ms: Math.floor(Math.random() * 80 + 70),
-                        protocol: 'HTTPS / REST Webhook Daemon',
-                        handshake_ack: 'IX_DAEMON_PONG_' + Math.floor(Math.random() * 90000 + 10000),
-                        message: 'Successfully connected to external Payout App! Daemon is active.'
+                        protocol: 'HTTPS / REST Webhook',
+                        handshake_ack: 'IX_PAYOUT_PONG_' + Math.floor(Math.random() * 90000 + 10000),
+                        message: 'Successfully connected to external Payout Service! Service is active.'
                     }));
                     return;
                 }
@@ -691,7 +691,7 @@ const server = http.createServer((req, res) => {
                     const dataDir = path.dirname(appConfigFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(appConfigFile, JSON.stringify(appConfig, null, 2));
-                    res.end(JSON.stringify({ status: 'success', message: 'Autonomous Auto-Payout App settings saved.', config: appConfig }));
+                    res.end(JSON.stringify({ status: 'success', message: 'Automatic Payout App settings saved.', config: appConfig }));
                     return;
                 }
 

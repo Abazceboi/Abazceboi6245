@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -187,15 +187,24 @@
         <div class="maint-grid">
             <div class="maint-grid-item">
                 <div class="maint-grid-title">Settlement Engine</div>
-                <div class="maint-grid-val" style="color:#34D399">🟢 Operational / Queuing</div>
+                <div class="maint-grid-val" style="color:#34D399;display:flex;align-items:center;gap:6px">
+                    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 6px #34D399"></span>
+                    <span>Operational / Queuing</span>
+                </div>
             </div>
             <div class="maint-grid-item">
                 <div class="maint-grid-title">Member Balances</div>
-                <div class="maint-grid-val" style="color:#38BDF8">🟢 100% Secured & Intact</div>
+                <div class="maint-grid-val" style="color:#38BDF8;display:flex;align-items:center;gap:6px">
+                    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
+                    <span>100% Secured &amp; Intact</span>
+                </div>
             </div>
             <div class="maint-grid-item">
                 <div class="maint-grid-title">Security Enclave</div>
-                <div class="maint-grid-val" style="color:#34D399">🟢 256-Bit SSL Active</div>
+                <div class="maint-grid-val" style="color:#34D399;display:flex;align-items:center;gap:6px">
+                    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 6px #34D399"></span>
+                    <span>256-Bit SSL Active</span>
+                </div>
             </div>
             <div class="maint-grid-item">
                 <div class="maint-grid-title">Estimated Restoration</div>
@@ -225,7 +234,7 @@
             const data = await res.json();
             if (data && data.maintenance) {
                 if (!data.maintenance.enabled) {
-                    if (span) span.textContent = '🟢 System Live! Redirecting...';
+                    if (span) span.textContent = 'System Live! Redirecting...';
                     setTimeout(() => { window.location.href = 'index.php'; }, 800);
                     return;
                 } else {

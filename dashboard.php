@@ -1281,7 +1281,7 @@ require_once __DIR__ . '/includes/header.php';
                                     <span id="userVaBank">Providus Bank</span>
                                 </div>
                                 <span style="background:rgba(56, 189, 248, 0.12);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3);padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:800;letter-spacing:0.04em">
-                                    Dedicated Dynamic NUBAN
+                                    Dedicated Virtual Account
                                 </span>
                             </div>
 
@@ -2479,7 +2479,7 @@ require_once __DIR__ . '/includes/header.php';
     return;
  }
 
- // Determine payout mode & check Autonomous Auto-Payout App Engine
+ // Determine payout mode & check Automatic Payout Service
  const walletType = currentTxn.service_type || 'task';
  const amount = parseFloat(currentTxn.amount) || 0;
 
@@ -2567,7 +2567,7 @@ require_once __DIR__ . '/includes/header.php';
     open(receiptOv);
 
     if (isAutonomousApp) {
-        // AUTONOMOUS PAYOUT APP ENGINE DISPATCH
+        // AUTO-PAYOUT SERVICE DISPATCH
         // Dispatch to external app via API
         fetch('api/autopayout_app.php?action=dispatch_withdrawal', {
             method: 'POST',
@@ -2651,7 +2651,7 @@ require_once __DIR__ . '/includes/header.php';
     if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
 });
 
-// Strict Autonomous App Completion Poller
+// Payout Service Completion Poller
 function pollAutonomousAppCompletion(txnId) {
     if (pollTimer) clearInterval(pollTimer);
     let attempts = 0;

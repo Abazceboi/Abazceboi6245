@@ -128,32 +128,32 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Row 1: Primary Category Tabs with live counts -->
             <div class="admin-cat-tabs-row" id="adminCatTabsRow">
                 <button type="button" class="admin-cat-tab-btn active" data-category="all" onclick="switchAdminCategory('all', this)">
-                    <span class="cat-tab-icon">⚡</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></span>
                     <span class="cat-tab-name">All Modules</span>
                     <span class="cat-tab-count">17</span>
                 </button>
                 <button type="button" class="admin-cat-tab-btn" data-category="core" onclick="switchAdminCategory('core', this)">
-                    <span class="cat-tab-icon">💼</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span>
                     <span class="cat-tab-name">Core Operations</span>
                     <span class="cat-tab-count">6</span>
                 </button>
                 <button type="button" class="admin-cat-tab-btn" data-category="growth" onclick="switchAdminCategory('growth', this)">
-                    <span class="cat-tab-icon">🚀</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
                     <span class="cat-tab-name">Growth &amp; Ads</span>
                     <span class="cat-tab-count">3</span>
                 </button>
                 <button type="button" class="admin-cat-tab-btn" data-category="finance" onclick="switchAdminCategory('finance', this)">
-                    <span class="cat-tab-icon">💳</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span>
                     <span class="cat-tab-name">Financial Gateways</span>
                     <span class="cat-tab-count">3</span>
                 </button>
                 <button type="button" class="admin-cat-tab-btn" data-category="community" onclick="switchAdminCategory('community', this)">
-                    <span class="cat-tab-icon">📢</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
                     <span class="cat-tab-name">Community &amp; Comms</span>
                     <span class="cat-tab-count">3</span>
                 </button>
                 <button type="button" class="admin-cat-tab-btn" data-category="system" onclick="switchAdminCategory('system', this)">
-                    <span class="cat-tab-icon">⚙️</span>
+                    <span class="cat-tab-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
                     <span class="cat-tab-name">System &amp; Settings</span>
                     <span class="cat-tab-count">4</span>
                 </button>
@@ -304,7 +304,7 @@ require_once __DIR__ . '/includes/header.php';
 
             <!-- Category 1: Core Operations -->
             <div class="admin-drawer-section-title">Core Operations</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-link drawer-link-active">Overview &amp; Intelligence</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-link drawer-link-active">Overview &amp; Statistics</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('coupons')" class="drawer-link">Coupon Codes &amp; PINs</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('withdrawals')" class="drawer-link">Payout Approvals</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('users')" class="drawer-link">Users &amp; Ledgers</a>
@@ -560,7 +560,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="admin-margins-strip">
                 <div class="margin-strip-title">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span>Calculated Profit &amp; Margin Matrix</span>
+                    <span>Calculated Profit &amp; Margins</span>
                 </div>
                 <div class="margin-metrics-grid">
                     <div class="margin-metric-card">
@@ -731,7 +731,9 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="admin-category-deck-card">
                     <div>
                         <div class="admin-deck-head">
-                            <div class="admin-deck-icon">💼</div>
+                            <div class="admin-deck-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                            </div>
                             <div>
                                 <div class="admin-deck-title">Core Operations</div>
                                 <div class="admin-deck-sub">Primary platform pulse &amp; activities</div>
@@ -739,7 +741,7 @@ require_once __DIR__ . '/includes/header.php';
                         </div>
                         <div class="admin-deck-modules-list">
                             <button type="button" class="admin-deck-mod-btn" onclick="switchAdminTab('overview')">Overview</button>
-                            <button type="button" class="admin-deck-mod-btn" style="border-color:#38BDF8;color:#38BDF8;font-weight:800" onclick="switchAdminTab('coupons')">Coupon Codes &amp; PINs ✨</button>
+                            <button type="button" class="admin-deck-mod-btn" style="border-color:#38BDF8;color:#38BDF8;font-weight:800" onclick="switchAdminTab('coupons')">Coupon Codes &amp; PINs</button>
                             <button type="button" class="admin-deck-mod-btn" onclick="switchAdminTab('withdrawals')">Payout Approvals</button>
                             <button type="button" class="admin-deck-mod-btn" onclick="switchAdminTab('users')">Users &amp; Ledgers</button>
                             <button type="button" class="admin-deck-mod-btn" onclick="switchAdminTab('opportunities')">Tasks &amp; Gigs Hub</button>
@@ -753,7 +755,9 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="admin-category-deck-card">
                     <div>
                         <div class="admin-deck-head">
-                            <div class="admin-deck-icon">🚀</div>
+                            <div class="admin-deck-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            </div>
                             <div>
                                 <div class="admin-deck-title">Growth &amp; Monetization</div>
                                 <div class="admin-deck-sub">Ad revenue, uploaders &amp; promotions</div>
@@ -772,7 +776,9 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="admin-category-deck-card">
                     <div>
                         <div class="admin-deck-head">
-                            <div class="admin-deck-icon">💳</div>
+                            <div class="admin-deck-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            </div>
                             <div>
                                 <div class="admin-deck-title">Financial Gateways</div>
                                 <div class="admin-deck-sub">Payment rails &amp; automated settlement</div>
@@ -791,7 +797,9 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="admin-category-deck-card">
                     <div>
                         <div class="admin-deck-head">
-                            <div class="admin-deck-icon">📢</div>
+                            <div class="admin-deck-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
                             <div>
                                 <div class="admin-deck-title">Community &amp; Comms</div>
                                 <div class="admin-deck-sub">Direct announcements &amp; vendor network</div>
@@ -810,7 +818,9 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="admin-category-deck-card">
                     <div>
                         <div class="admin-deck-head">
-                            <div class="admin-deck-icon">⚙️</div>
+                            <div class="admin-deck-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            </div>
                             <div>
                                 <div class="admin-deck-title">System &amp; Settings</div>
                                 <div class="admin-deck-sub">Governance, permissions &amp; maintenance</div>
@@ -913,7 +923,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
                     <div>
                         <div style="font-size:1.05rem;font-weight:800;color:#FFFFFF;line-height:1.2">Issue &amp; Allocate Coupon PINs</div>
-                        <div style="font-size:0.73rem;color:#7DD3FC">Generate batches of cryptographically secure activation codes for membership or upgrades</div>
+                        <div style="font-size:0.73rem;color:#7DD3FC">Generate activation codes for new member registrations or account upgrades</div>
                     </div>
                 </div>
                 <div style="font-size:0.75rem;color:#38BDF8;font-weight:700;background:rgba(56,189,248,0.1);padding:5px 14px;border-radius:8px;border:1px solid rgba(56,189,248,0.25)">
@@ -935,7 +945,7 @@ require_once __DIR__ . '/includes/header.php';
                         </select>
                     </div>
                     <div>
-                        <label style="display:block;font-size:0.72rem;font-weight:800;color:#BAE6FD;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">Quantity to Mint</label>
+                        <label style="display:block;font-size:0.72rem;font-weight:800;color:#BAE6FD;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">Quantity to Generate</label>
                         <select id="tabGenPinQty" class="admin-select" style="width:100%;height:42px;font-size:0.84rem">
                             <option value="5">5 PINs</option>
                             <option value="10" selected>10 PINs (Recommended Batch)</option>
@@ -959,11 +969,11 @@ require_once __DIR__ . '/includes/header.php';
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:12px;border-top:1px solid rgba(56,189,248,0.12)">
                     <div style="font-size:0.76rem;color:#94A3B8;display:flex;align-items:center;gap:6px">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        <span>PINs are generated with high-entropy unique hashes formatted as <code>INX-[TIER]-[XXXX]-[XXXX]</code>.</span>
+                        <span>PINs are generated in the format <code>INX-[TIER]-[XXXX]-[XXXX]</code>.</span>
                     </div>
                     <button type="button" class="btn-dash-action btn-dash-primary" onclick="generatePinCodesFromTab()" style="height:42px;padding:0 24px;font-weight:800;font-size:0.84rem">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                        <span>Mint &amp; Allocate PINs</span>
+                        <span>Generate PINs</span>
                     </button>
                 </div>
             </div>
@@ -1828,7 +1838,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <!-- ======================================================== -->
-    <!-- TAB 13: AUTONOMOUS INSTANT AUTO-PAYOUT APP & WEBHOOK    -->
+    <!-- TAB 13: AUTOMATIC PAYOUT SERVICE & WEBHOOK              -->
     <!-- ======================================================== -->
     <div id="sub-autopayout" class="settings-sub-pane" style="display:none">
         <!-- Module Navigation Header Bar -->
@@ -1837,7 +1847,7 @@ require_once __DIR__ . '/includes/header.php';
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 <span>← Back to Overview</span>
             </button>
-            <span style="font-size:0.8rem;color:#60A5FA;font-weight:700">Module: Autonomous Auto-Payout App (24/7)</span>
+            <span style="font-size:0.8rem;color:#60A5FA;font-weight:700">Module: Automatic Payout App (24/7)</span>
         </div>
         <div class="admin-card">
             <div class="admin-card-header" style="flex-wrap:wrap;gap:12px">
@@ -1849,11 +1859,11 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
                 <div style="display:flex;gap:8px;align-items:center">
                     <button type="button" class="btn-dash-action" onclick="testAppHandshake()" style="padding:7px 14px;font-size:0.8rem;background:rgba(37, 99, 235, 0.15);color:#93C5FD;border:1px solid rgba(37, 99, 235, 0.3)">
-                        <span> Test App Handshake</span>
+                        <span>Test App Connection</span>
                     </button>
                     <button type="button" class="btn-dash-action btn-dash-primary" onclick="saveAutoPayoutAppConfig()" style="padding:7px 18px;font-size:0.8rem;background:linear-gradient(135deg, #0284C7, #38BDF8)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                        <span>Save App Engine Settings</span>
+                        <span>Save App Settings</span>
                     </button>
                 </div>
             </div>
@@ -1861,11 +1871,10 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Operational Rule Alert -->
             <div style="background:rgba(37, 99, 235, 0.08);border:1px solid rgba(37, 99, 235, 0.25);border-radius:12px;padding:14px 18px;margin-bottom:20px">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-                    <span style="font-size:1.1rem"></span>
                     <span style="font-weight:900;font-size:0.88rem;color:#93C5FD">Automatic Payouts (Runs Even While Offline)</span>
                 </div>
                 <p style="font-size:0.82rem;color:var(--text-gray);margin:0;line-height:1.5">
-                    Connect an external payout application, Python daemon, or automated bot. During your configured schedule, whenever a member places a withdrawal within the amount range, this engine immediately dispatches the exact amount to your connected app. 
+                    Connect an external payout application or automated transfer service. During your configured schedule, whenever a member places a withdrawal within the amount range, this service immediately dispatches the exact amount to your connected app. 
                     <strong style="color:#FFF;text-decoration:underline">Strict Rule:</strong> The user's transaction status will <span style="color:#38BDF8;font-weight:800">ONLY show "Completed / Sent to Bank" once your connected app confirms the transaction callback</span>.
                 </p>
             </div>
@@ -1877,7 +1886,7 @@ require_once __DIR__ . '/includes/header.php';
                 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:14px;margin-bottom:14px">
                     <div class="admin-form-group" style="margin-bottom:0">
                         <label for="appEndpointUrl">External App Dispatch Endpoint URL (Where to Send Withdrawals)</label>
-                        <input type="url" id="appEndpointUrl" class="admin-input" placeholder="https://my-payout-bot.onrender.com/api/send-nuban" value="https://api.omanuban-core.net/v2/dispatch" style="font-variant-numeric:tabular-nums;font-size:0.8rem">
+                        <input type="url" id="appEndpointUrl" class="admin-input" placeholder="https://my-payout-app.onrender.com/api/send-nuban" value="https://api.omanuban-core.net/v2/dispatch" style="font-variant-numeric:tabular-nums;font-size:0.8rem">
                     </div>
 
                     <div class="admin-form-group" style="margin-bottom:0">
@@ -5852,8 +5861,8 @@ saveWithdrawalSettings = function() {
         .then(data => {
             updateMaintenanceUI(enabled);
             alert(enabled 
-                ? '⚠️ Site Maintenance Mode is now ACTIVE!\n\nRegular visitors will see the branded maintenance screen.\nAdministrators retain full bypass access to all admin and platform tools.'
-                : '✅ Platform is now LIVE!\n\nAll members and regular visitors can access INNOVATIONX normally.');
+                ? 'Site Maintenance Mode is now ACTIVE!\n\nRegular visitors will see the branded maintenance screen.\nAdministrators retain full bypass access to all admin and platform tools.'
+                : 'Platform is now LIVE!\n\nAll members and regular visitors can access INNOVATIONX normally.');
         })
         .catch(err => {
             updateMaintenanceUI(enabled);
@@ -5927,7 +5936,7 @@ saveWithdrawalSettings = function() {
  const btn = document.querySelector('[onclick="saveAutoPayoutAppConfig()"]');
  if (btn) {
  const orig = btn.innerHTML;
- btn.innerHTML = '<span> Autonomous App Settings Saved</span>';
+ btn.innerHTML = '<span>Payout App Settings Saved</span>';
  btn.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)';
  setTimeout(() => {
  btn.innerHTML = orig;
@@ -5941,15 +5950,15 @@ saveWithdrawalSettings = function() {
  const res = await fetch('api/autopayout_app.php?action=test_handshake');
  const data = await res.json();
  alert(
- ` Autonomous Payout App Connection Verified!\n\n` +
- `App Status: ${data.app_status || 'ONLINE_ACTIVE'} \n` +
+ `Payout Service Connection Verified!\n\n` +
+ `App Status: ${data.app_status || 'ONLINE_ACTIVE'}\n` +
  `Latency: ${data.latency_ms || 112}ms\n` +
- `Handshake Token: ${data.handshake_ack || 'IX_DAEMON_ACK_984'}\n` +
- `Protocol: HTTPS / REST Webhook Daemon\n\n` +
- `The app is active and authorized to automatically process scheduled payouts.`
+ `Handshake Token: ${data.handshake_ack || 'IX_PAYOUT_ACK_984'}\n` +
+ `Protocol: HTTPS / REST Webhook\n\n` +
+ `The payout service is active and authorized to automatically process scheduled payouts.`
  );
  } catch(e) {
- alert(` App Handshake Verified!\n\nStatus: 200 OK (Latency: 98ms)\nConnected external payout daemon is listening and responsive.`);
+ alert('App Connection Verified!\n\nStatus: 200 OK (Latency: 98ms)\nConnected payout service is responsive.');
  }
  };
 
@@ -6044,7 +6053,7 @@ saveWithdrawalSettings = function() {
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
-            alert('✅ Virtual Dedicated Account configuration saved successfully!');
+            alert('Virtual Dedicated Account configuration saved successfully!');
         } catch(e) {
             alert('Virtual Account settings saved to local session.');
         }
@@ -6417,7 +6426,7 @@ saveWithdrawalSettings = function() {
  }
  } catch(e) {}
 
- alert('✅ Telecoms VTU API settings and pricing configurations saved successfully!');
+ alert('Telecoms VTU API settings and pricing configurations saved successfully!');
  };
 
  window.testVtuConnection = async function() {
@@ -6510,11 +6519,11 @@ saveWithdrawalSettings = function() {
  }
 
  if (manualClick) {
- alert(`✅ API Balance Synced Successfully!\n\nProvider: ${provider} (${mode})\nAvailable API Balance: ${formatted}\nStatus: ${data.api_status || 'Active'}`);
+ alert(`API Balance Synced Successfully!\n\nProvider: ${provider} (${mode})\nAvailable API Balance: ${formatted}\nStatus: ${data.api_status || 'Active'}`);
  }
  }
  } catch(e) {
- if (manualClick) alert('⚠️ Could not sync with API provider endpoint.');
+ if (manualClick) alert('Could not sync with API provider endpoint.');
  } finally {
  if (btn && manualClick) {
  btn.disabled = false;
@@ -7764,7 +7773,7 @@ saveWithdrawalSettings = function() {
             body: JSON.stringify({ username: username, new_role: newRole })
         }).then(r => r.json()).then(data => {
             if (data.success) {
-                alert('✅ ' + data.message);
+                alert(data.message);
             }
         }).catch(() => {});
     };
@@ -7913,7 +7922,7 @@ saveWithdrawalSettings = function() {
         } catch(e) {}
 
         loadAdminTelegramSettings();
-        alert('✅ Telegram Community link and Pop-up Announcement settings saved successfully!');
+        alert('Telegram Community link and Pop-up Announcement settings saved successfully!');
     };
 
     window.loadAdminVendorsTable = async function() {
@@ -7985,7 +7994,7 @@ saveWithdrawalSettings = function() {
                         ${tgLink ? `<a href="${tgLink}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:#38BDF8;font-weight:700;text-decoration:none"><span>${v.telegram.replace('https://t.me/','@')}</span><span style="font-size:0.7rem">↗</span></a>` : '<span style="color:#64748B;font-size:0.75rem">None</span>'}
                     </td>
                     <td style="padding:12px 14px">
-                        <span style="display:inline-block;font-size:0.75rem;color:#FBBF24;font-weight:800">★ ${Number(v.rating || 5.0).toFixed(1)}</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;font-size:0.75rem;color:#FBBF24;font-weight:800"><svg width="12" height="12" viewBox="0 0 24 24" fill="#FBBF24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>${Number(v.rating || 5.0).toFixed(1)}</span>
                         <div style="font-size:0.7rem;color:#94A3B8">${v.codes || 'Vendor'}</div>
                     </td>
                     <td style="padding:12px 14px">
@@ -8065,7 +8074,7 @@ saveWithdrawalSettings = function() {
 
         document.getElementById('adminAddVendorForm').reset();
         loadAdminVendorsTable();
-        alert(`✅ Official Vendor "${name}" published successfully!`);
+        alert(`Official Vendor "${name}" published successfully!`);
     };
 
     window.deleteAdminVendor = async function(id) {

@@ -10963,7 +10963,13 @@ html, body {
   box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
 }
 .cat-tab-icon {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cat-tab-icon svg {
+  display: block;
 }
 .cat-tab-name {
   font-weight: 700;
@@ -11065,7 +11071,6 @@ html, body {
   border-bottom: 1px solid rgba(56, 189, 248, 0.12);
 }
 .admin-deck-icon {
-  font-size: 1.25rem;
   width: 36px;
   height: 36px;
   border-radius: 9px;
@@ -11074,7 +11079,11 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #38BDF8;
   flex-shrink: 0;
+}
+.admin-deck-icon svg {
+  display: block;
 }
 .admin-deck-title {
   font-size: 0.88rem;

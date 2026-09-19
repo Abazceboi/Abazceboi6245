@@ -100,7 +100,10 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
 <body>
 <?php if (!empty($maintenance['enabled'])): ?>
 <div style="background:#D97706;color:#FFFFFF;padding:8px 16px;text-align:center;font-weight:800;font-size:0.82rem;position:relative;z-index:9999999;box-shadow:0 2px 10px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;gap:10px">
-    <span>⚠️ PLATFORM MAINTENANCE MODE IS ACTIVE — Regular visitors see the maintenance screen.</span>
+    <div style="display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <span>PLATFORM MAINTENANCE MODE IS ACTIVE — Regular visitors see the maintenance screen.</span>
+    </div>
     <a href="admin.php" style="color:#FEF3C7;text-decoration:underline;font-weight:900">Admin Maintenance Control &rarr;</a>
 </div>
 <?php endif; ?>

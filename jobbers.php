@@ -72,18 +72,18 @@ require_once __DIR__ . '/includes/header.php';
  </a>
  </div>
 
- <!-- Web3 Bounty: Telegram Bot -->
+ <!-- Web3 Bounty: Telegram Community -->
  <div class="job-card reveal" data-category="web3">
  <div class="job-card-top">
- <span class="job-badge job-badge-web3">Web3 Bounty</span>
+ <span class="job-badge job-badge-web3">Community Bounty</span>
  <span class="job-posted-time">3 hours ago</span>
  </div>
- <h3 class="job-title">Telegram Mini-App Token Tap & Quest Bounty</h3>
- <p class="job-desc">Connect Telegram bot, complete simple daily social subscriptions, and accumulate on-chain tokens ahead of the upcoming Q3 tier-1 exchange listing.</p>
+ <h3 class="job-title">Telegram Mini-App Token Tap &amp; Quest Bounty</h3>
+ <p class="job-desc">Connect with the official Telegram channel, complete daily social subscriptions, and accumulate bonus tokens for verified rewards.</p>
  
  <div class="job-ref-box">
  <div class="job-ref-header">
- <span class="job-ref-label">Bot Invite Code</span>
+ <span class="job-ref-label">Invite Code</span>
  <span style="font-size:0.72rem;color:var(--sky-light);font-weight:700">500 Bonus PTS</span>
  </div>
  <div class="job-ref-code-wrap">
@@ -100,7 +100,7 @@ require_once __DIR__ . '/includes/header.php';
  <span class="job-reward-val">$50 - $200 / Month</span>
  </div>
  <div class="job-meta-row">
- <span class="job-meta-tag">Telegram Bot</span>
+ <span class="job-meta-tag">Telegram Quest</span>
  <span class="job-meta-tag">Fast Verification</span>
  <span class="job-meta-tag">Zero Fee</span>
  </div>

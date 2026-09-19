@@ -67,7 +67,7 @@ if ($action === 'save_config' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input['updated_at'] = date('Y-m-d H:i:s');
     file_put_contents($dataFile, json_encode($input, JSON_PRETTY_PRINT));
 
-    echo json_encode(['status' => 'success', 'message' => 'Autonomous Auto-Payout App settings saved', 'config' => $input]);
+    echo json_encode(['status' => 'success', 'message' => 'Automatic Payout App settings saved', 'config' => $input]);
     exit;
 }
 
@@ -80,9 +80,9 @@ if ($action === 'test_handshake') {
         'latency_ms' => $latency,
         'protocol' => 'HTTPS / REST Webhook v2',
         'http_status' => 200,
-        'handshake_ack' => 'IX_DAEMON_PONG_' . strtoupper(bin2hex(random_bytes(4))),
+        'handshake_ack' => 'IX_PAYOUT_PONG_' . strtoupper(bin2hex(random_bytes(4))),
         'timestamp' => date('Y-m-d H:i:s'),
-        'message' => "Successfully connected to external Payout App! Daemon is active and ready to process scheduled withdrawals."
+        'message' => "Successfully connected to external Payout Service! Transfer service is active and ready to process scheduled withdrawals."
     ]);
     exit;
 }
@@ -120,13 +120,13 @@ if ($action === 'dispatch_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') 
 
     echo json_encode([
         'status' => 'success',
-        'message' => 'Withdrawal dispatched to Connected Autonomous Payout App',
+        'message' => 'Withdrawal dispatched to Connected Payout Service',
         'dispatch_record' => $record
     ]);
     exit;
 }
 
-// Callback endpoint called by external bot/app when transfer is completed
+// Callback endpoint called by external payout app when transfer is completed
 if ($action === 'callback' || $action === 'simulate_callback') {
     $txnId = $_GET['txn_id'] ?? ($_POST['txn_id'] ?? null);
     if (!$txnId) {
