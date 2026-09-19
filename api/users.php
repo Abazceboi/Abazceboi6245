@@ -18,6 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+require_once __DIR__ . '/../config/db.php';
+
+$pdo = getDbConnection();
+if ($pdo) {
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'member'");
+    } catch (Exception $e) {}
+}
+
 $DATA_FILE = __DIR__ . '/../data/users.json';
 
 // Valid roles in hierarchy order (lowest → highest)
@@ -64,9 +73,83 @@ switch ($action) {
 
     case 'get_users':
         $data = loadUsers();
+        $usersMap = [];
+        foreach (($data['users'] ?? []) as $u) {
+            $usersMap[strtolower($u['username'])] = $u;
+        }
+
+        // Fetch registered users from PostgreSQL database if available
+        if ($pdo) {
+            try {
+                $stmt = $pdo->query('SELECT id, "fullName", username, email, phone, "pointsBalance", "cashBalance", "referralCode", "referredBy", role, "createdAt" FROM users ORDER BY "createdAt" DESC');
+                $dbRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($dbRows as $r) {
+                    $unLower = strtolower($r['username']);
+                    $role = !empty($r['role']) ? $r['role'] : ($usersMap[$unLower]['role'] ?? 'member');
+                    $dbEntry = [
+                        'id' => $r['id'],
+                        'username' => $r['username'],
+                        'full_name' => $r['fullName'] ?? $r['fullname'] ?? $r['username'],
+                        'email' => $r['email'] ?? '',
+                        'phone' => $r['phone'] ?? '',
+                        'role' => $role,
+                        'mode' => ($role === 'uploader') ? 'uploader' : 'active',
+                        'status_label' => $GLOBALS['ROLE_LABELS'][$role] ?? 'Active Member',
+                        'join_date_formatted' => !empty($r['createdAt'] ?? $r['createdat']) ? date('d M Y, H:i', strtotime($r['createdAt'] ?? $r['createdat'])) : date('d M Y, H:i'),
+                        'recent_activity' => 'Platform Member (Active)',
+                        'recent_activity_time' => 'Online',
+                        'referrals_count' => $usersMap[$unLower]['referrals_count'] ?? 0,
+                        'referral_earnings' => $usersMap[$unLower]['referral_earnings'] ?? 0,
+                        'tasks_completed' => $usersMap[$unLower]['tasks_completed'] ?? 0,
+                        'total_earned' => (float)($r['cashBalance'] ?? $r['cashbalance'] ?? 0.0),
+                        'remaining_cash' => (float)($r['cashBalance'] ?? $r['cashbalance'] ?? 0.0),
+                        'remaining_pts' => (int)($r['pointsBalance'] ?? $r['pointsbalance'] ?? 100),
+                        'bank_name' => $usersMap[$unLower]['bank_name'] ?? 'Pending Setup',
+                        'account_number' => $usersMap[$unLower]['account_number'] ?? '••••••••',
+                        'activity_ledger' => $usersMap[$unLower]['activity_ledger'] ?? [
+                            ['time' => 'Recently', 'type' => 'Auth', 'desc' => 'Account Registered and Active', 'ip' => '102.89.x.x']
+                        ]
+                    ];
+                    $usersMap[$unLower] = array_merge($usersMap[$unLower] ?? [], $dbEntry);
+                }
+            } catch (Exception $e) {
+                // Fallback for case-insensitive column names
+                try {
+                    $stmt = $pdo->query('SELECT id, username, email, phone, role FROM users');
+                    $dbRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($dbRows as $r) {
+                        $unLower = strtolower($r['username']);
+                        $role = !empty($r['role']) ? $r['role'] : ($usersMap[$unLower]['role'] ?? 'member');
+                        $usersMap[$unLower] = array_merge($usersMap[$unLower] ?? [], [
+                            'id' => $r['id'],
+                            'username' => $r['username'],
+                            'full_name' => $r['username'],
+                            'email' => $r['email'] ?? '',
+                            'phone' => $r['phone'] ?? '',
+                            'role' => $role,
+                            'mode' => ($role === 'uploader') ? 'uploader' : 'active',
+                            'status_label' => $GLOBALS['ROLE_LABELS'][$role] ?? 'Active Member',
+                            'join_date_formatted' => date('d M Y, H:i'),
+                            'recent_activity' => 'Platform Member (Active)',
+                            'recent_activity_time' => 'Online',
+                            'referrals_count' => 0,
+                            'referral_earnings' => 0,
+                            'tasks_completed' => 0,
+                            'total_earned' => 0,
+                            'remaining_cash' => 0,
+                            'remaining_pts' => 100,
+                            'bank_name' => 'Pending Setup',
+                            'account_number' => '••••••••'
+                        ]);
+                    }
+                } catch (Exception $e2) {}
+            }
+        }
+
+        $allUsers = array_values($usersMap);
         echo json_encode([
             'success' => true,
-            'users' => $data['users'] ?? [],
+            'users' => $allUsers,
             'valid_roles' => $GLOBALS['VALID_ROLES'],
             'role_labels' => $GLOBALS['ROLE_LABELS'],
             'role_colors' => $GLOBALS['ROLE_COLORS']
@@ -135,6 +218,14 @@ switch ($action) {
 
         saveUsers($data);
 
+        // Also persist role update into PostgreSQL database if available
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE LOWER(username) = LOWER(?)");
+                $stmt->execute([$newRole, $username]);
+            } catch (Exception $e) {}
+        }
+
         echo json_encode([
             'success' => true,
             'message' => "User '{$username}' has been promoted to {$ROLE_LABELS[$newRole]}",
@@ -194,6 +285,27 @@ switch ($action) {
         if (empty($username)) {
             echo json_encode(['success' => false, 'error' => 'Username required']);
             exit;
+        }
+
+        // Check PostgreSQL database first
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("SELECT role FROM users WHERE LOWER(username) = LOWER(?)");
+                $stmt->execute([$username]);
+                $dbRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($dbRow && !empty($dbRow['role'])) {
+                    $rRole = $dbRow['role'];
+                    echo json_encode([
+                        'success' => true,
+                        'username' => $username,
+                        'role' => $rRole,
+                        'role_label' => $ROLE_LABELS[$rRole] ?? 'Active Member',
+                        'role_colors' => $ROLE_COLORS[$rRole] ?? $ROLE_COLORS['member'],
+                        'permissions' => []
+                    ]);
+                    exit;
+                }
+            } catch (Exception $e) {}
         }
 
         $data = loadUsers();

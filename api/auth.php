@@ -37,20 +37,26 @@ if ($action === 'register') {
     
     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
     $referralCode = 'REF-' . strtoupper(substr(md5(uniqid()), 0, 8));
+require_once __DIR__ . '/../config/app.php';
     
     $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy) VALUES (?, ?, ?, ?, ?, ?, ?)");
     
     try {
         $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy]);
-        $userId = $pdo->lastInsertId() ?: $username; // UUID might not return from lastInsertId easily, but username is unique
         
-        // Retrieve the generated UUID
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+        // Retrieve the generated user safely without lastval/lastInsertId sequence error
+        $stmt = $pdo->prepare("SELECT id, username FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
-        $_SESSION['user_id'] = $user['id'];
+        $userId = $user['id'] ?? $username;
+        $_SESSION['user_id'] = $userId;
         $_SESSION['username'] = $username;
+        
+        // Set browser session cookie so refreshing on Vercel never logs the user out
+        if (function_exists('setAuthCookie')) {
+            setAuthCookie($userId, $username, false);
+        }
         
         echo json_encode(['status' => 'success', 'username' => $username]);
     } catch (PDOException $e) {
@@ -63,6 +69,7 @@ if ($action === 'login') {
     $data = json_decode(file_get_contents('php://input'), true);
     $username = trim($data['username'] ?? '');
     $password = $data['password'] ?? '';
+    require_once __DIR__ . '/../config/app.php';
     
     $stmt = $pdo->prepare("SELECT id, username, passwordHash FROM users WHERE username = ? OR email = ?");
     $stmt->execute([$username, $username]);
@@ -71,6 +78,10 @@ if ($action === 'login') {
     if ($user && password_verify($password, $user['passwordhash'] ?? $user['passwordHash'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        
+        if (function_exists('setAuthCookie')) {
+            setAuthCookie($user['id'], $user['username'], false);
+        }
         
         echo json_encode(['status' => 'success', 'username' => $user['username']]);
     } else {
@@ -81,6 +92,12 @@ if ($action === 'login') {
         if ($username === $adminUser && $password === $adminPass) {
             $_SESSION['user_id'] = 'admin-dev-id';
             $_SESSION['username'] = $username;
+            $_SESSION['is_admin'] = true;
+            
+            if (function_exists('setAuthCookie')) {
+                setAuthCookie('admin-dev-id', $username, true);
+            }
+            
             echo json_encode(['status' => 'success', 'username' => $username, 'isAdmin' => true]);
             exit;
         }
@@ -91,6 +108,18 @@ if ($action === 'login') {
 }
 
 if ($action === 'logout') {
+    require_once __DIR__ . '/../config/app.php';
+    if (function_exists('clearAuthCookie')) {
+        clearAuthCookie();
+    }
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
     session_destroy();
     echo json_encode(['status' => 'success']);
     exit;

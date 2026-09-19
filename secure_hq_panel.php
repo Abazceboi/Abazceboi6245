@@ -1,13 +1,15 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once __DIR__ . '/config/app.php';
+
+$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+if (!$authUser) {
     header("Location: login.php");
     exit;
 }
 
 // Strict Admin-Only Verification
 $adminUser = getenv('ADMIN_USERNAME') ?: 'admin';
-if (strtolower($_SESSION['username']) !== strtolower($adminUser)) {
+if (strtolower($authUser['username']) !== strtolower($adminUser)) {
     // If a normal user somehow guesses this secret URL, give them a fake 404 to throw them off
     header("HTTP/1.0 404 Not Found");
     die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
@@ -141,28 +143,39 @@ require_once __DIR__ . '/includes/header.php';
             <div style="margin-bottom:12px">
                 <label style="font-size:0.7rem;font-weight:700;color:#7DD3FC;margin-bottom:4px;display:block">Quick Jump</label>
                 <select id="adminModuleSelector" class="admin-select" onchange="switchAdminTab(this.value);toggleAdminNavDrawer()">
-                    <option value="overview" selected>Overview & Statistics</option>
-                    <option value="withdrawals">Payout Approvals</option>
-                    <option value="users">Users &amp; Ledgers</option>
-                    <option value="opportunities">Upload Opportunities &amp; Tasks</option>
-                    <option value="vtu">VTU Telecoms Hub</option>
-                    <option value="broadcasts">Broadcast Engine</option>
-                    <option value="notifications">In-App Notifications</option>
-                    <option value="team">Staff &amp; Roles</option>
-                    <option value="features">Feature Toggles</option>
-                    <option value="content">Cards &amp; Text</option>
-                    <option value="adverts">Member Adverts</option>
-                    <option value="uploaders">Uploader Requests</option>
-                    <option value="adsense">Google AdSense</option>
-                    <option value="gateways">Payment Gateways</option>
-                    <option value="autopayout">Auto-Payout App (24/7)</option>
-                    <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
+                    <optgroup label="Core Operations">
+                        <option value="overview" selected>Overview &amp; Statistics</option>
+                        <option value="withdrawals">Payout Approvals</option>
+                        <option value="users">Users &amp; Ledgers</option>
+                        <option value="opportunities">Tasks &amp; Gigs Hub</option>
+                        <option value="vtu">VTU Telecoms Hub</option>
+                    </optgroup>
+                    <optgroup label="Growth &amp; Monetization">
+                        <option value="uploaders">Uploader Requests</option>
+                        <option value="adverts">Member Adverts</option>
+                        <option value="adsense">Google AdSense</option>
+                    </optgroup>
+                    <optgroup label="Financial Systems &amp; Gateways">
+                        <option value="gateways">Payment Gateways</option>
+                        <option value="autopayout">Auto-Payout App (24/7)</option>
+                        <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
+                    </optgroup>
+                    <optgroup label="Communications">
+                        <option value="broadcasts">Broadcast Engine</option>
+                        <option value="notifications">In-App Notifications</option>
+                    </optgroup>
+                    <optgroup label="System &amp; Settings">
+                        <option value="team">Staff &amp; Roles</option>
+                        <option value="features">Feature Toggles</option>
+                        <option value="content">Cards &amp; Text</option>
+                        <option value="settings">Master Settings &amp; Maintenance</option>
+                    </optgroup>
                 </select>
             </div>
 
             <!-- Category 1: Core Operations -->
             <div class="admin-drawer-section-title">Core Operations</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-link">Overview &amp; Intelligence</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-link drawer-link-active">Overview &amp; Intelligence</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('withdrawals')" class="drawer-link">Payout Approvals</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('users')" class="drawer-link">Users &amp; Ledgers</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('opportunities')" class="drawer-link">Tasks &amp; Gigs Hub</a>
@@ -174,21 +187,73 @@ require_once __DIR__ . '/includes/header.php';
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adverts')" class="drawer-link">Member Adverts</a>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adsense')" class="drawer-link">Google AdSense</a>
 
-            <!-- Category 3: System & Platform -->
+            <!-- Category 3: Financial Gateways -->
+            <div class="admin-drawer-section-title" style="margin-top:10px">Financial Systems &amp; Gateways</div>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('gateways')" class="drawer-link">Payment Gateways</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('autopayout')" class="drawer-link">Auto-Payout App (24/7)</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('virtual-accounts')" class="drawer-link">Virtual Accounts &amp; DVA</a>
+
+            <!-- Category 4: Communications -->
+            <div class="admin-drawer-section-title" style="margin-top:10px">Communications</div>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-link">Broadcast Engine</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-link">In-App Notifications</a>
+
+            <!-- Category 5: System & Platform -->
             <div class="admin-drawer-section-title" style="margin-top:10px">System &amp; Platform</div>
             <a href="javascript:void(0)" onclick="selectAdminDrawerTab('team')" class="drawer-link">Staff Permissions &amp; Roles</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('settings')" class="drawer-link">Master Settings &amp; Config</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-link">In-App Notifications</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-link">Broadcast Engine</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('features')" class="drawer-link">Feature Toggles</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('content')" class="drawer-link">Cards &amp; Text Customization</a>
+            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('settings')" class="drawer-link">Master Settings &amp; Maintenance</a>
 
             <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(56, 189, 248, 0.15)">
                 <a href="dashboard.php" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;text-decoration:none">Go to Member Dashboard →</a>
             </div>
         </aside>
 
-
-
-        
+        <!-- Admin Categories & Modules Quick Navigation Bar -->
+        <div class="admin-modules-nav-bar reveal" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;padding:8px 14px;background:#0C162D;border:1px solid rgba(56,189,248,0.22);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.35);flex-wrap:wrap">
+            <div class="admin-category-pills" style="display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;max-width:100%">
+                <button type="button" class="admin-cat-pill active" onclick="switchAdminTab('overview')">Overview</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('withdrawals')">Payouts</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('users')">Users</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('opportunities')">Tasks</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('vtu')">VTU Hub</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('gateways')">Gateways</button>
+                <button type="button" class="admin-cat-pill" onclick="switchAdminTab('settings')">Settings</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+                <label for="adminTopModuleSelector" style="font-size:0.75rem;font-weight:700;color:#7DD3FC;white-space:nowrap">Jump To:</label>
+                <select id="adminTopModuleSelector" class="admin-select" onchange="switchAdminTab(this.value)" style="font-size:0.8rem;padding:6px 12px;min-width:180px;background:#060C1B;border:1px solid rgba(56,189,248,0.3);color:#BAE6FD;border-radius:8px">
+                    <optgroup label="Core Operations">
+                        <option value="overview" selected>Overview &amp; Intelligence</option>
+                        <option value="withdrawals">Payout Approvals</option>
+                        <option value="users">Users &amp; Ledgers</option>
+                        <option value="opportunities">Tasks &amp; Gigs Hub</option>
+                        <option value="vtu">VTU Telecoms &amp; Data</option>
+                    </optgroup>
+                    <optgroup label="Growth &amp; Monetization">
+                        <option value="uploaders">Uploader Requests</option>
+                        <option value="adverts">Member Adverts</option>
+                        <option value="adsense">Google AdSense</option>
+                    </optgroup>
+                    <optgroup label="Financial Systems &amp; Gateways">
+                        <option value="gateways">Payment Gateways</option>
+                        <option value="autopayout">Auto-Payout App (24/7)</option>
+                        <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
+                    </optgroup>
+                    <optgroup label="Communications">
+                        <option value="broadcasts">Broadcast Engine</option>
+                        <option value="notifications">In-App Notifications</option>
+                    </optgroup>
+                    <optgroup label="System &amp; Settings">
+                        <option value="team">Staff Permissions &amp; Roles</option>
+                        <option value="features">Feature Toggles</option>
+                        <option value="content">Cards &amp; Text</option>
+                        <option value="settings">Master Settings &amp; Maintenance</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
 
     <!-- ======================================================== -->
     <!-- TAB 0: Overview & Statistics HUB (DEFAULT VIEW ON LOGIN)    -->
@@ -211,7 +276,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
 
             <!-- View Switcher Controls -->
-            <div style="display:flex;align-items:center;gap:6px;background:#F0F9FF;border:1px solid #BAE6FD;border:1px solid rgba(56,189,248,0.25);border-radius:9px;padding:3px">
+            <div class="admin-view-controls-pill" style="display:flex;align-items:center;gap:6px;border-radius:9px;padding:3px">
                 <button type="button" id="btnViewCards" onclick="switchOverviewMetricView('CARDS')" class="admin-chart-tab-btn active">
                     KPI Cards Only
                 </button>
@@ -448,26 +513,26 @@ require_once __DIR__ . '/includes/header.php';
                             <span style="font-size:0.68rem;color:#7DD3FC;font-weight:600;white-space:nowrap">4 Active</span>
                         </div>
                         <div style="display:flex;flex-direction:column;gap:8px">
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
+                            <div class="admin-member-tile" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">member</span>
+                                    <span class="admin-member-uname" style="font-size:0.84rem;font-weight:700">member</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#38BDF8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);padding:3px 10px;border-radius:6px;font-weight:700">Verified Earner</span>
+                                <span class="admin-member-badge" style="font-size:0.7rem;padding:3px 10px;border-radius:6px;font-weight:700">Verified Earner</span>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
+                            <div class="admin-member-tile" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">superadmin</span>
+                                    <span class="admin-member-uname" style="font-size:0.84rem;font-weight:700">superadmin</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#F8FAFC;background:rgba(56,189,248,0.25);border:1px solid rgba(56,189,248,0.4);padding:3px 10px;border-radius:6px;font-weight:800">Master Admin</span>
+                                <span class="admin-member-badge admin-badge-master" style="font-size:0.7rem;padding:3px 10px;border-radius:6px;font-weight:800">Master Admin</span>
                             </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);box-shadow:0 2px 8px rgba(0,0,0,0.25)">
+                            <div class="admin-member-tile" style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
                                 <div style="display:flex;align-items:center;gap:10px">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
-                                    <span style="font-size:0.84rem;color:#F8FAFC;font-weight:700">task_pro_99</span>
+                                    <span class="admin-member-uname" style="font-size:0.84rem;font-weight:700">task_pro_99</span>
                                 </div>
-                                <span style="font-size:0.7rem;color:#38BDF8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);padding:3px 10px;border-radius:6px;font-weight:700">Verified Jobber</span>
+                                <span class="admin-member-badge" style="font-size:0.7rem;padding:3px 10px;border-radius:6px;font-weight:700">Verified Jobber</span>
                             </div>
                         </div>
                     </div>
@@ -493,7 +558,7 @@ require_once __DIR__ . '/includes/header.php';
 
                 <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
                     <!-- Direct Vendor Assignment Selector -->
-                    <div style="margin-bottom:12px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:10px;padding:8px 12px">
+                    <div class="admin-vendor-box" style="margin-bottom:12px;border-radius:10px;padding:8px 12px">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                             <label style="font-size:0.7rem;color:#7DD3FC;font-weight:800;text-transform:uppercase;letter-spacing:0.04em">Assign Directly To Vendor</label>
                             <span style="font-size:0.68rem;color:#38BDF8;font-weight:700">Exclusive Wholesale</span>
@@ -507,7 +572,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Segmented Channel Selector -->
-                    <div style="display:flex;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:10px;padding:4px;margin-bottom:12px;gap:4px">
+                    <div class="admin-channel-bar" style="display:flex;border-radius:10px;padding:4px;margin-bottom:12px;gap:4px">
                         <button type="button" id="btnChannelTabUpl" onclick="switchAdminGenChannel('UPLOADER')" style="flex:1;height:34px;font-size:0.76rem;font-weight:800;border-radius:8px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFFFFF;border:none;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(2,132,199,0.35)">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             <span>Task Uploaders (₦2k)</span>
@@ -519,7 +584,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Channel 1: Task Uploaders (Active View) -->
-                    <div id="channelPaneUploader" style="background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:12px;margin-bottom:12px">
+                    <div id="channelPaneUploader" class="admin-channel-pane" style="border-radius:12px;padding:12px;margin-bottom:12px">
                         <div style="display:flex;gap:8px;margin-bottom:10px">
                             <select id="uploaderCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
                                 <option value="UPL">Uploader Upgrade PIN (₦2,000)</option>
@@ -540,7 +605,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Channel 2: Affiliates (Hidden by default) -->
-                    <div id="channelPaneAffiliate" style="display:none;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;padding:12px;margin-bottom:12px">
+                    <div id="channelPaneAffiliate" class="admin-channel-pane" style="display:none;border-radius:12px;padding:12px;margin-bottom:12px">
                         <div style="display:flex;gap:8px;margin-bottom:10px">
                             <select id="affiliateCouponType" class="admin-select" style="flex:1;height:34px;font-size:0.76rem">
                                 <option value="AFF">Affiliate Registration PIN</option>
@@ -562,10 +627,10 @@ require_once __DIR__ . '/includes/header.php';
                     <!-- Filter pills & Copy controls -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px;flex-wrap:wrap">
                         <div style="display:flex;gap:6px;flex-wrap:wrap">
-                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('ALL', this)" style="padding:5px 12px;font-size:0.72rem;background:#0E1A33;color:#FFFFFF;border:1px solid #38BDF8;border-radius:8px;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
-                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
-                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Affiliates (<span id="cntFilterAff">0</span>)</button>
-                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:5px 12px;font-size:0.72rem;background:rgba(14,26,51,0.5);color:#94A3B8;border:1px solid rgba(59,130,246,0.2);border-radius:8px;font-weight:700">Vendors (<span id="cntFilterVendor">0</span>)</button>
+                            <button type="button" id="btnFilterAllCoupons" class="btn-dash-action admin-filter-pill active" onclick="filterOverviewCoupons('ALL', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">All (<span id="cntFilterAll">0</span>)</button>
+                            <button type="button" id="btnFilterUplCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('UPLOADER', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Uploaders (<span id="cntFilterUpl">0</span>)</button>
+                            <button type="button" id="btnFilterAffCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('AFFILIATE', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Affiliates (<span id="cntFilterAff">0</span>)</button>
+                            <button type="button" id="btnFilterVendorCoupons" class="btn-dash-action admin-filter-pill" onclick="filterOverviewCoupons('VENDOR', this)" style="padding:5px 12px;font-size:0.72rem;font-weight:700">Vendors (<span id="cntFilterVendor">0</span>)</button>
                         </div>
                         <button type="button" class="btn-dash-action btn-dash-secondary" onclick="copyAllActiveCoupons()" style="padding:5px 14px;font-size:0.72rem;font-weight:700;border-radius:8px">
                             <span>Copy PINs</span>
@@ -581,7 +646,7 @@ require_once __DIR__ . '/includes/header.php';
                     </div>
 
                     <!-- Scrollable Coupons List with Sky Blue accents -->
-                    <div id="overviewCouponsList" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding:8px;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-top:none;border-radius:0 0 10px 10px">
+                    <div id="overviewCouponsList" class="admin-coupons-scroll-wrap" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;padding:8px;border-top:none;border-radius:0 0 10px 10px">
                     </div>
                 </div>
             </div>
@@ -589,7 +654,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <!-- 4. Platform Status & Operations Quick Bar -->
-        <div class="admin-card reveal" style="padding:14px 20px !important;background:#0E1A33;border:1px solid rgba(59,130,246,0.22);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
+        <div class="admin-card reveal admin-status-bar" style="padding:14px 20px !important;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                     <div style="display:flex;align-items:center;gap:8px">
@@ -3379,9 +3444,19 @@ require_once __DIR__ . '/includes/header.php';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Sync dropdown selector in command bar
+        // Sync dropdown selectors in command bar & top modules nav bar
         const sel = document.getElementById('adminModuleSelector');
         if (sel) sel.value = tabName;
+        const topSel = document.getElementById('adminTopModuleSelector');
+        if (topSel) topSel.value = tabName;
+
+        // Highlight category pill if matched
+        document.querySelectorAll('.admin-cat-pill').forEach(cp => {
+            if (cp.getAttribute('onclick') && cp.getAttribute('onclick').includes("'" + tabName + "'")) {
+                document.querySelectorAll('.admin-cat-pill').forEach(p => p.classList.remove('active'));
+                cp.classList.add('active');
+            }
+        });
     };
 
     // ============================================================
@@ -6751,10 +6826,39 @@ saveWithdrawalSettings = function() {
     loadAdminSiteContent();
     loadAdminAdverts();
     loadAdminUploaders();
-    calculatePlatformFinancials();
     const initialMetricView = localStorage.getItem('ix_overview_view_mode') || 'CARDS';
     if (window.switchOverviewMetricView) window.switchOverviewMetricView(initialMetricView);
     setInterval(renderPayoutQueue, 1500);
+
+    // Live Member Directory Sync with PostgreSQL Database
+    window.loadServerUsers = async function() {
+        try {
+            const res = await fetch('api/users.php?action=get_users&t=' + Date.now());
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.users)) {
+                const existingMap = {};
+                adminUsersList.forEach(u => {
+                    existingMap[u.username.toLowerCase()] = u;
+                });
+                data.users.forEach(su => {
+                    const key = su.username.toLowerCase();
+                    if (existingMap[key]) {
+                        existingMap[key].role = su.role;
+                        existingMap[key].status_label = su.status_label || existingMap[key].status_label;
+                        if (su.points !== undefined) existingMap[key].remaining_pts = su.points;
+                        if (su.cash !== undefined) existingMap[key].remaining_cash = su.cash;
+                    } else {
+                        adminUsersList.unshift(su);
+                        existingMap[key] = su;
+                    }
+                });
+                localStorage.setItem('ix_admin_users', JSON.stringify(adminUsersList));
+                renderAdminUsersTable();
+                calculatePlatformFinancials();
+            }
+        } catch(e) {}
+    };
+    loadServerUsers();
 
     // ─── User Role Management ────────────────────────
     window.updateUserRole = function(username, newRole) {

@@ -10270,3 +10270,323 @@ html, body {
   border: 1px solid #E2E8F0 !important;
 }
 
+/* ====================================================================== */
+/* COMPREHENSIVE LIGHT MODE OVERHAUL FOR ADMIN HQ PANEL                   */
+/* ====================================================================== */
+[data-theme="light"] .admin-main-workspace {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* 1. Command Bar */
+[data-theme="light"] .admin-command-bar {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .admin-brand-icon {
+  background: #E0F2FE !important;
+  border-color: #BAE6FD !important;
+  color: #0284C7 !important;
+}
+[data-theme="light"] .admin-brand-meta h1,
+[data-theme="light"] .admin-brand-meta h1 span {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-brand-meta p {
+  color: #64748B !important;
+}
+
+/* 2. Admin Cards & Headers */
+[data-theme="light"] .admin-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-card-header {
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-card-title,
+[data-theme="light"] .admin-card-title span {
+  color: #0F172A !important;
+}
+
+/* 3. View Mode Bar & Analytics Selector */
+[data-theme="light"] .admin-view-mode-bar {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .admin-view-mode-bar > div:first-child > div:last-child > div:first-child {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-view-mode-bar > div:first-child > div:last-child > div:last-child {
+  color: #64748B !important;
+}
+[data-theme="light"] .admin-chart-tab-btn {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-chart-tab-btn.active {
+  background: linear-gradient(135deg, #0284C7, #38BDF8) !important;
+  color: #FFFFFF !important;
+  border-color: #0284C7 !important;
+}
+
+/* 4. KPI Cards */
+[data-theme="light"] .admin-kpi-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+}
+[data-theme="light"] .admin-kpi-title {
+  color: #64748B !important;
+}
+[data-theme="light"] .admin-kpi-val {
+  color: #0F172A !important;
+}
+
+/* 5. Member Roster */
+[data-theme="light"] .admin-member-tile {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-member-uname {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-member-badge {
+  background: #E0F2FE !important;
+  color: #0369A1 !important;
+  border: 1px solid #BAE6FD !important;
+}
+[data-theme="light"] .admin-badge-master {
+  background: #FEF3C7 !important;
+  color: #B45309 !important;
+  border: 1px solid #FDE68A !important;
+}
+
+/* 6. PIN Generator & Channel Controls */
+[data-theme="light"] .admin-vendor-box {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-channel-bar {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-channel-pane {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-filter-pill {
+  background: #F1F5F9 !important;
+  color: #475569 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+[data-theme="light"] .admin-filter-pill.active {
+  background: #0284C7 !important;
+  color: #FFFFFF !important;
+  border-color: #0284C7 !important;
+}
+
+/* 7. PIN Table */
+[data-theme="light"] .coupon-table-header {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .admin-coupons-scroll-wrap {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-top: none !important;
+}
+[data-theme="light"] .coupon-item {
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .coupon-col-code {
+  color: #0284C7 !important;
+}
+[data-theme="light"] .coupon-col-type {
+  color: #334155 !important;
+}
+[data-theme="light"] .coupon-item:hover {
+  background: #F1F5F9 !important;
+}
+
+/* 8. Status Bar & Universal Search */
+[data-theme="light"] .admin-status-bar {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] .admin-status-bar span {
+  color: #1E293B !important;
+}
+[data-theme="light"] .admin-search-wrap {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+}
+[data-theme="light"] #adminUniversalSearch {
+  color: #0F172A !important;
+}
+
+/* 9. Form Inputs & Selects */
+[data-theme="light"] .admin-input,
+[data-theme="light"] .admin-select,
+[data-theme="light"] .admin-textarea {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* 10. Table Cells Across All Tabs */
+[data-theme="light"] table tr {
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+[data-theme="light"] table td {
+  color: #1E293B !important;
+}
+[data-theme="light"] table th {
+  background: #F8FAFC !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+/* 11. Buttons in Light Mode */
+[data-theme="light"] .btn-dash-action:not(.btn-dash-primary) {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+  border: 1px solid #CBD5E1 !important;
+}
+[data-theme="light"] .btn-dash-action:not(.btn-dash-primary):hover {
+  background: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+/* 12. Admin Categories & Top Navigation Bar in Light Mode */
+[data-theme="light"] .admin-modules-nav-bar {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .admin-cat-pill {
+  background: #F1F5F9 !important;
+  color: #334155 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+[data-theme="light"] .admin-cat-pill:hover,
+[data-theme="light"] .admin-cat-pill.active {
+  background: linear-gradient(135deg, #0284C7, #38BDF8) !important;
+  color: #FFFFFF !important;
+  border-color: #0284C7 !important;
+}
+[data-theme="light"] #adminTopModuleSelector {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+[data-theme="light"] .admin-view-controls-pill {
+  background: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+/* 13. Deep Blue & High-Contrast Overrides for Light Mode */
+[data-theme="light"] .admin-main-workspace [style*="color:#93C5FD"],
+[data-theme="light"] .admin-main-workspace [style*="color: #93C5FD"],
+[data-theme="light"] .admin-main-workspace [style*="color:#BAE6FD"],
+[data-theme="light"] .admin-main-workspace [style*="color: #BAE6FD"],
+[data-theme="light"] .admin-main-workspace [style*="color:#7DD3FC"],
+[data-theme="light"] .admin-main-workspace [style*="color: #7DD3FC"],
+[data-theme="light"] .admin-main-workspace [style*="color:#60A5FA"],
+[data-theme="light"] .admin-main-workspace [style*="color: #60A5FA"] {
+  color: #0284C7 !important;
+}
+[data-theme="light"] .admin-main-workspace td [style*="color:#FFF"],
+[data-theme="light"] .admin-main-workspace td [style*="color: #FFF"],
+[data-theme="light"] .admin-main-workspace td [style*="color:#FFFFFF"],
+[data-theme="light"] .admin-main-workspace td [style*="color: #FFFFFF"],
+[data-theme="light"] .admin-main-workspace td [style*="color:var(--white-pure)"],
+[data-theme="light"] .admin-main-workspace td [style*="color: var(--white-pure)"] {
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-main-workspace [style*="color:var(--text-muted)"],
+[data-theme="light"] .admin-main-workspace [style*="color: var(--text-muted)"],
+[data-theme="light"] .admin-main-workspace [style*="color:var(--text-gray)"],
+[data-theme="light"] .admin-main-workspace [style*="color: var(--text-gray)"] {
+  color: #475569 !important;
+}
+
+/* 14. Admin Navigation Drawer in Light Mode */
+[data-theme="light"] #adminNavDrawer {
+  background: #FFFFFF !important;
+  border-right: 1px solid #E2E8F0 !important;
+  box-shadow: 6px 0 30px rgba(0, 0, 0, 0.1) !important;
+}
+[data-theme="light"] #adminNavDrawer .drawer-link {
+  color: #334155 !important;
+}
+[data-theme="light"] #adminNavDrawer .drawer-link:hover,
+[data-theme="light"] #adminNavDrawer .drawer-link-active {
+  background: rgba(2, 132, 199, 0.1) !important;
+  color: #0284C7 !important;
+}
+[data-theme="light"] #adminNavDrawer .admin-drawer-section-title {
+  color: #0284C7 !important;
+  font-weight: 800 !important;
+}
+[data-theme="light"] #adminNavDrawer .drawer-head div[style*="color:#FFFFFF"] {
+  color: #0F172A !important;
+}
+
+/* 15. User Role Dropdown Select in Tables */
+.admin-role-select {
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  min-width: 120px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #0C162D;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #BAE6FD;
+}
+[data-theme="light"] .admin-role-select {
+  background: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .admin-role-select option {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* 16. Default Styling for Category Pills */
+.admin-cat-pill {
+  background: rgba(56, 189, 248, 0.08);
+  color: #BAE6FD;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.admin-cat-pill:hover,
+.admin-cat-pill.active {
+  background: linear-gradient(135deg, #0284C7, #38BDF8);
+  color: #FFFFFF;
+  border-color: #38BDF8;
+}
+
+.admin-view-controls-pill {
+  background: rgba(12, 22, 45, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+

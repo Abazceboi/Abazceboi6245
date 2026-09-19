@@ -1,15 +1,56 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once __DIR__ . '/config/app.php';
+require_once __DIR__ . '/config/db.php';
+
+$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+if (!$authUser) {
     header("Location: login.php");
     exit;
 }
 
-require_once __DIR__ . '/config/app.php';
-
-// Try to grab username from session, fallback to GET (for backwards compatibility if needed during transition)
-$username = $_SESSION['username'] ?? $_GET['username'] ?? $_GET['user'] ?? 'Member';
+// Authenticated user credentials
+$username = $authUser['username'] ?? $_SESSION['username'] ?? $_GET['username'] ?? $_GET['user'] ?? 'Member';
+$userId = $authUser['id'] ?? $_SESSION['user_id'] ?? '';
 $initials = strtoupper(substr($username, 0, 2));
+
+// Live Database Balances & Profile
+$userPoints = 100;
+$userCash = 0.00;
+$userRole = 'member';
+$userPhone = '';
+$userEmail = '';
+
+$pdo = getDbConnection();
+if ($pdo) {
+    try {
+        $stmt = $pdo->prepare('SELECT id, username, email, phone, "pointsBalance", "cashBalance", role FROM users WHERE LOWER(username) = LOWER(?) OR id::text = ?');
+        $stmt->execute([$username, strval($userId)]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $userPoints = (int)($row['pointsBalance'] ?? $row['pointsbalance'] ?? 100);
+            $userCash = (float)($row['cashBalance'] ?? $row['cashbalance'] ?? 0.00);
+            $userRole = !empty($row['role']) ? $row['role'] : 'member';
+            $userPhone = $row['phone'] ?? '';
+            $userEmail = $row['email'] ?? '';
+        }
+    } catch (Exception $e) {
+        try {
+            $stmt = $pdo->prepare('SELECT id, username, email, phone, pointsBalance, cashBalance, role FROM users WHERE LOWER(username) = LOWER(?)');
+            $stmt->execute([$username]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $userPoints = (int)($row['pointsbalance'] ?? 100);
+                $userCash = (float)($row['cashbalance'] ?? 0.00);
+                $userRole = !empty($row['role']) ? $row['role'] : 'member';
+                $userPhone = $row['phone'] ?? '';
+                $userEmail = $row['email'] ?? '';
+            }
+        } catch (Exception $e2) {}
+    }
+}
+
+$totalLiquid = $userCash + $userPoints;
+
 $pageTitle = 'Member Dashboard | ' . APP_NAME;
 $hideNavbar = true;
 $hideFooter = true;
@@ -199,19 +240,19 @@ require_once __DIR__ . '/includes/header.php';
 
                     <div class="deck-amount-wrap">
                         <span class="deck-currency">₦</span>
-                        <span class="deck-amount" id="deckTotalLiquidVal">0.00</span>
+                        <span class="deck-amount" id="deckTotalLiquidVal"><?= number_format($totalLiquid, 2) ?></span>
                     </div>
 
                     <!-- 3 Wallet Cards -->
                     <div class="deck-telemetry-row">
                         <div class="telemetry-item">
                             <span class="telemetry-lbl">Referral Cash Wallet</span>
-                            <span class="telemetry-val accent-gold dash-maskable-val" id="deckRefCashVal">₦0.00</span>
+                            <span class="telemetry-val accent-gold dash-maskable-val" id="deckRefCashVal">₦<?= number_format($userCash, 2) ?></span>
                             <span style="font-size:0.68rem;color:#64748B">Available for Withdrawal</span>
                         </div>
                         <div class="telemetry-item">
                             <span class="telemetry-lbl">Task Points Wallet</span>
-                            <span class="telemetry-val accent-cyan dash-maskable-val" id="deckTaskPtsVal">0 PTS</span>
+                            <span class="telemetry-val accent-cyan dash-maskable-val" id="deckTaskPtsVal"><?= number_format($userPoints) ?> PTS</span>
                         </div>
                         <div class="telemetry-item telemetry-withdrawal">
                             <span class="telemetry-lbl">Total Paid Out</span>
@@ -2365,6 +2406,25 @@ require_once __DIR__ . '/includes/header.php';
  e.preventDefault();
  const bk = g('wBank'), ac = g('wAccount'), am = g('wAmount');
  const walletType = (g('selectedWithdrawWallet') || {}).value || 'task';
+ const enteredAmount = parseFloat(am ? am.value : 0) || 0;
+
+ let ws = {};
+ try { ws = JSON.parse(localStorage.getItem('ix_withdrawal_settings') || '{}'); } catch(e) {}
+ const minAmount = walletType === 'task' ? (parseInt(ws.task_min) || 1000) : (parseInt(ws.referral_min) || 1000);
+ const availableBal = walletType === 'task' ? parseFloat(localStorage.getItem('ix_wallet_points') || '0') : parseFloat(localStorage.getItem('ix_wallet_cash') || '0');
+
+ if (enteredAmount < minAmount) {
+     alert(`Minimum Withdrawal Threshold:\n\nThe minimum payout amount for ${walletType === 'task' ? 'Task Points' : 'Referral Cash'} is ₦${minAmount.toLocaleString()}. You entered ₦${enteredAmount.toLocaleString()}.`);
+     if (am) am.focus();
+     return;
+ }
+
+ if (enteredAmount > availableBal) {
+     alert(`Insufficient Balance:\n\nYour available balance is ${walletType === 'task' ? Math.round(availableBal).toLocaleString() + ' PTS' : '₦' + availableBal.toLocaleString('en-NG', {minimumFractionDigits:2})}. You cannot request ₦${enteredAmount.toLocaleString()}.`);
+     if (am) am.focus();
+     return;
+ }
+
  const bankName = bk.value || 'Unknown Bank';
  g('cBank').textContent = bankName;
  g('cAccount').textContent = ac.value;
@@ -4028,8 +4088,13 @@ renderDashboardNotifications();
         const minBadge = document.getElementById('withdrawMinBadge');
         const formEl = document.getElementById('withdrawForm');
 
-        // Update minimum badge
+        // Update minimum badge and input attributes
         if (minBadge) minBadge.textContent = 'Min: ₦' + minAmount.toLocaleString();
+        const wAmtInput = document.getElementById('wAmount');
+        if (wAmtInput) {
+            wAmtInput.min = minAmount;
+            wAmtInput.placeholder = 'Min: ₦' + minAmount.toLocaleString();
+        }
 
         // 1. Check Scheduled Manual Withdrawal Window
         const manMode = ws.manual_mode_type || 'always_open';
@@ -4433,6 +4498,11 @@ renderDashboardNotifications();
             }
         } catch(e) {}
     };
+
+    // Sync live database wallet balance from server render
+    localStorage.setItem('ix_wallet_points', '<?= $userPoints ?>');
+    localStorage.setItem('ix_wallet_cash', '<?= $userCash ?>');
+    localStorage.setItem('ix_user_role', '<?= $userRole ?>');
 
     // Initialize Jobbers Feed, Referrals, Feature Flags, Saved Bank & Site Content on load
     renderJobbersOpportunities();

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     referralCode VARCHAR(100) UNIQUE NOT NULL,
     referredBy VARCHAR(100),
     isPro BOOLEAN DEFAULT true,
+    role VARCHAR(50) DEFAULT 'member',
     couponPinUsed VARCHAR(100),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -83,6 +84,8 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 try {
     $pdo->exec($sql);
+    // Migration: ensure role column exists on existing installations
+    $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'member';");
     echo "SUCCESS: Database tables have been successfully initialized.\n";
     echo "You can now register users and log in.";
 } catch (PDOException $e) {

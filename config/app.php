@@ -17,3 +17,6 @@ define('MIN_WITHDRAWAL_NAIRA', 5000); // ₦5,000 Minimum Bank Payout
 // Support & Contacts
 define('SUPPORT_EMAIL', 'Supportinnovationx@gmail.com');
 define('WHATSAPP_SUPPORT', '2347037765714');
+
+// Load cryptographic session authentication helper
+require_once __DIR__ . '/../includes/auth_helper.php';

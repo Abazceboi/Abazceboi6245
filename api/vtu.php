@@ -14,6 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../config/db.php';
+
 $configFile = __DIR__ . '/../config/vtu_settings.json';
 
 // Default configuration with PrimeBiller, Points Exchange Rate, and Per-Network Selling Rates
@@ -228,6 +231,36 @@ if ($action === 'buy_airtime' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $pointsRate = $config['points_per_naira'] ?? 1.0;
     $amountChargedPoints = round($amountChargedNaira * $pointsRate);
 
+    // Verify user balance if connected
+    $pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+    $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+    $dbUser = null;
+
+    if ($pdo && $authUser) {
+        $stmt = $pdo->prepare("SELECT id, username, pointsBalance, cashBalance FROM users WHERE id::text = ? OR username = ?");
+        $stmt->execute([$authUser['user_id'], $authUser['username']]);
+        $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($dbUser) {
+            $userPoints = (int)($dbUser['pointsbalance'] ?? $dbUser['pointsBalance'] ?? 0);
+            $userCash = (float)($dbUser['cashbalance'] ?? $dbUser['cashBalance'] ?? 0.0);
+
+            if ($paySource === 'points' && $userPoints < $amountChargedPoints) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Insufficient points balance. You need ' . $amountChargedPoints . ' PTS, but have ' . $userPoints . ' PTS.'
+                ]);
+                exit;
+            } else if ($paySource !== 'points' && $userCash < $amountChargedNaira) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Insufficient cash balance. You need ₦' . number_format($amountChargedNaira, 2) . ', but have ₦' . number_format($userCash, 2) . '.'
+                ]);
+                exit;
+            }
+        }
+    }
+
     $txRef = 'IX-AIR-' . strtoupper(substr(uniqid(), -6)) . rand(100, 999);
     $networkId = $config['network_ids'][$network] ?? '1';
 
@@ -275,6 +308,17 @@ if ($action === 'buy_airtime' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($providerSuccess) {
+        // Deduct from wallet if database connected
+        if ($pdo && $dbUser) {
+            if ($paySource === 'points') {
+                $up = $pdo->prepare("UPDATE users SET pointsBalance = pointsBalance - ? WHERE id = ?");
+                $up->execute([$amountChargedPoints, $dbUser['id']]);
+            } else {
+                $up = $pdo->prepare("UPDATE users SET cashBalance = cashBalance - ? WHERE id = ?");
+                $up->execute([$amountChargedNaira, $dbUser['id']]);
+            }
+        }
+
         echo json_encode([
             'status' => 'success',
             'message' => 'Airtime recharge of ₦' . number_format($faceAmount) . ' to ' . $phone . ' was successful!',
@@ -283,7 +327,9 @@ if ($action === 'buy_airtime' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 'provider_ref' => $providerRef,
                 'network' => strtoupper($network),
                 'phone' => $phone,
+                'amount' => $faceAmount,
                 'face_amount' => $faceAmount,
+                'amount_charged' => ($paySource === 'points' ? $amountChargedPoints : $amountChargedNaira),
                 'selling_rate_percent' => $sellingRate,
                 'amount_charged_naira' => $amountChargedNaira,
                 'amount_charged_points' => $amountChargedPoints,
@@ -331,6 +377,36 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $amountNaira = (float)($config['data_prices'][$network][$plan] ?? $input['amount'] ?? 250);
     $pointsRate = $config['points_per_naira'] ?? 1.0;
     $amountPoints = round($amountNaira * $pointsRate);
+
+    // Verify user balance if connected
+    $pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+    $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+    $dbUser = null;
+
+    if ($pdo && $authUser) {
+        $stmt = $pdo->prepare("SELECT id, username, pointsBalance, cashBalance FROM users WHERE id::text = ? OR username = ?");
+        $stmt->execute([$authUser['user_id'], $authUser['username']]);
+        $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($dbUser) {
+            $userPoints = (int)($dbUser['pointsbalance'] ?? $dbUser['pointsBalance'] ?? 0);
+            $userCash = (float)($dbUser['cashbalance'] ?? $dbUser['cashBalance'] ?? 0.0);
+
+            if ($paySource === 'points' && $userPoints < $amountPoints) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Insufficient points balance. You need ' . $amountPoints . ' PTS, but have ' . $userPoints . ' PTS.'
+                ]);
+                exit;
+            } else if ($paySource !== 'points' && $userCash < $amountNaira) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Insufficient cash balance. You need ₦' . number_format($amountNaira, 2) . ', but have ₦' . number_format($userCash, 2) . '.'
+                ]);
+                exit;
+            }
+        }
+    }
 
     $txRef = 'IX-DAT-' . strtoupper(substr(uniqid(), -6)) . rand(100, 999);
     $networkId = $config['network_ids'][$network] ?? '1';
@@ -380,6 +456,17 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($providerSuccess) {
+        // Deduct from wallet if database connected
+        if ($pdo && $dbUser) {
+            if ($paySource === 'points') {
+                $up = $pdo->prepare("UPDATE users SET pointsBalance = pointsBalance - ? WHERE id = ?");
+                $up->execute([$amountPoints, $dbUser['id']]);
+            } else {
+                $up = $pdo->prepare("UPDATE users SET cashBalance = cashBalance - ? WHERE id = ?");
+                $up->execute([$amountNaira, $dbUser['id']]);
+            }
+        }
+
         echo json_encode([
             'status' => 'success',
             'message' => strtoupper($network) . ' ' . $plan . ' SME Data successfully dispatched to ' . $phone . '!',
@@ -389,6 +476,8 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 'network' => strtoupper($network),
                 'phone' => $phone,
                 'plan' => $plan,
+                'amount' => $amountNaira,
+                'amount_charged' => ($paySource === 'points' ? $amountPoints : $amountNaira),
                 'amount_charged_naira' => $amountNaira,
                 'amount_charged_points' => $amountPoints,
                 'points_exchange_rate' => $pointsRate,
