@@ -86,6 +86,132 @@ if ($action === 'get_settings') {
     exit;
 }
 
+// Helper: Extract wallet balance from provider response
+function extractProviderBalance($response) {
+    if (is_string($response)) {
+        $decoded = json_decode($response, true);
+    } else {
+        $decoded = $response;
+    }
+    if (!is_array($decoded)) return null;
+
+    $candidates = [
+        $decoded['wallet_balance'] ?? null,
+        $decoded['balance'] ?? null,
+        $decoded['wallet'] ?? null,
+        $decoded['user']['wallet_balance'] ?? null,
+        $decoded['user']['balance'] ?? null,
+        $decoded['user']['wallet'] ?? null,
+        $decoded['data']['wallet_balance'] ?? null,
+        $decoded['data']['balance'] ?? null,
+        $decoded['data']['wallet'] ?? null,
+        $decoded['data']['user']['wallet_balance'] ?? null,
+        $decoded['data']['user']['balance'] ?? null,
+        $decoded['contents']['balance'] ?? null,
+        $decoded['account_balance'] ?? null,
+        $decoded['user_info']['balance'] ?? null,
+        $decoded['profile']['balance'] ?? null
+    ];
+
+    foreach ($candidates as $cand) {
+        if ($cand !== null && is_numeric(str_replace([',', ' ', '₦'], '', $cand))) {
+            return (float)str_replace([',', ' ', '₦'], '', $cand);
+        }
+    }
+    return null;
+}
+
+// 1B. GET LIVE PROVIDER API BALANCE
+if ($action === 'get_api_balance') {
+    $providerName = ucfirst($config['provider_name'] ?? 'Oma General Data');
+    $mode = $config['api_mode'] ?? 'sandbox';
+
+    if ($mode === 'sandbox') {
+        echo json_encode([
+            'status' => 'success',
+            'mode' => 'sandbox',
+            'provider' => $providerName,
+            'balance_raw' => 250000.00,
+            'balance_formatted' => '₦250,000.00',
+            'currency' => 'NGN',
+            'last_checked' => date('d M Y, H:i:s'),
+            'api_status' => 'Sandbox Simulation (Ready)'
+        ]);
+        exit;
+    }
+
+    if (empty($config['api_key'])) {
+        echo json_encode([
+            'status' => 'warning',
+            'mode' => 'live',
+            'provider' => $providerName,
+            'balance_raw' => 0.00,
+            'balance_formatted' => '₦0.00 (Unconfigured)',
+            'currency' => 'NGN',
+            'last_checked' => date('d M Y, H:i:s'),
+            'api_status' => 'API Key Required'
+        ]);
+        exit;
+    }
+
+    $authHeader = (strpos($config['provider_name'], 'primebiller') !== false || strpos($config['provider_name'], 'omageneraldata') !== false)
+        ? 'Authorization: Token ' . $config['api_key']
+        : 'Authorization: Bearer ' . $config['api_key'];
+
+    $baseUrl = rtrim($config['api_base_url'] ?? '', '/');
+    $provider = strtolower($config['provider_name'] ?? '');
+    if (strpos($provider, 'vtpass') !== false) {
+        $balanceUrl = $baseUrl . '/balance';
+    } elseif (strpos($provider, 'clubkonnect') !== false) {
+        $balanceUrl = $baseUrl . '/wallet';
+    } else {
+        $balanceUrl = $baseUrl . '/user/';
+    }
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $balanceUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        $authHeader,
+        'Content-Type: application/json'
+    ]);
+    $res = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $bal = null;
+    if ($httpCode >= 200 && $httpCode < 400) {
+        $bal = extractProviderBalance($res);
+    }
+
+    if ($bal !== null) {
+        echo json_encode([
+            'status' => 'success',
+            'mode' => 'live',
+            'provider' => $providerName,
+            'balance_raw' => $bal,
+            'balance_formatted' => '₦' . number_format($bal, 2),
+            'currency' => 'NGN',
+            'last_checked' => date('d M Y, H:i:s'),
+            'api_status' => 'Live & Synchronized'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => ($httpCode >= 200 && $httpCode < 400) ? 'success' : 'warning',
+            'mode' => 'live',
+            'provider' => $providerName,
+            'balance_raw' => 0.00,
+            'balance_formatted' => ($httpCode >= 200 && $httpCode < 400) ? '₦0.00' : 'HTTP Code ' . $httpCode,
+            'currency' => 'NGN',
+            'last_checked' => date('d M Y, H:i:s'),
+            'api_status' => ($httpCode >= 200 && $httpCode < 400) ? 'Connected (Zero Balance)' : 'Provider Offline/Error',
+            'raw_response' => json_decode($res, true) ?? $res
+        ]);
+    }
+    exit;
+}
+
 // 2. SAVE SETTINGS (Admin Only)
 if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
@@ -173,10 +299,13 @@ if ($action === 'test_connection') {
     curl_close($ch);
 
     if ($httpCode >= 200 && $httpCode < 400) {
+        $extractedBal = extractProviderBalance($res);
+        $balText = $extractedBal !== null ? '₦' . number_format($extractedBal, 2) : 'Connected (Active)';
         echo json_encode([
             'status' => 'success',
             'mode' => 'live',
             'message' => 'Live Provider API Connected Successfully! HTTP ' . $httpCode . ' OK.',
+            'wallet_balance' => $balText,
             'raw_response' => json_decode($res, true) ?? $res
         ]);
     } else {

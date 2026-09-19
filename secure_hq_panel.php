@@ -357,6 +357,19 @@ require_once __DIR__ . '/includes/header.php';
                 <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px">Available for instant payouts</div>
             </div>
 
+            <!-- 3. VTU Provider API Wallet Balance -->
+            <div class="admin-kpi-card" style="--kpi-accent: #38BDF8;cursor:pointer" onclick="switchAdminTab('vtu')" title="Click to view VTU Telecoms & API Settings">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <span class="admin-kpi-title">VTU Provider API Balance</span>
+                    <span id="overviewApiModeTag" style="font-size:0.65rem;color:#38BDF8;background:rgba(56,189,248,0.12);padding:1px 6px;border-radius:4px;font-weight:700">Sandbox</span>
+                </div>
+                <div class="admin-kpi-val" style="font-variant-numeric:tabular-nums;color:#38BDF8" id="overviewApiBalanceVal">₦250,000.00</div>
+                <div style="font-size:0.72rem;color:#94A3B8;margin-top:6px;display:flex;align-items:center;justify-content:space-between">
+                    <span id="overviewApiProviderName">Oma General Data</span>
+                    <span style="color:#60A5FA;font-weight:700">Manage Hub →</span>
+                </div>
+            </div>
+
             <!-- 3. Real Cash from Uploaders -->
             <div class="admin-kpi-card" style="--kpi-accent: #38BDF8">
                 <div style="margin-bottom:6px">
@@ -1975,8 +1988,37 @@ require_once __DIR__ . '/includes/header.php';
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 <span>← Back to Overview</span>
             </button>
-            <span style="font-size:0.8rem;color:#60A5FA;font-weight:700">Module: VTU Telecoms & Cheap Data Hub</span>
+        <!-- Live Provider API Balance Console Card -->
+        <div class="admin-card vtu-balance-hero-card" style="margin-bottom:20px;background:linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(56, 189, 248, 0.06) 100%);border:1.5px solid rgba(56, 189, 248, 0.35);border-radius:16px;padding:22px 26px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+                <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#38BDF8;box-shadow:0 0 10px #38BDF8"></div>
+                        <span style="font-size:0.75rem;font-weight:800;color:#7DD3FC;text-transform:uppercase;letter-spacing:0.08em">Live Telecoms Provider API Wallet</span>
+                        <span id="vtuApiProviderBadge" style="font-size:0.72rem;padding:2px 8px;border-radius:6px;background:rgba(56,189,248,0.15);color:#BAE6FD;border:1px solid rgba(56,189,248,0.3);font-weight:700">Oma General Data</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;gap:12px">
+                        <div id="vtuLiveApiBalance" style="font-size:2.2rem;font-weight:900;color:#FFFFFF;font-variant-numeric:tabular-nums;letter-spacing:-0.5px">₦250,000.00</div>
+                        <span id="vtuApiModeTag" style="font-size:0.75rem;color:#38BDF8;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(56,189,248,0.12)">Sandbox Ready</span>
+                    </div>
+                    <div style="font-size:0.75rem;color:#94A3B8;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                        <span>Last Synchronized: </span><strong id="vtuApiLastChecked" style="color:#F1F5F9">Just now</strong>
+                        <span>•</span>
+                        <span id="vtuApiHealthText" style="color:#34D399;font-weight:700">● Gateway Operational</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="fetchVtuLiveBalance(true)" id="btnRefreshVtuBalance" style="background:linear-gradient(135deg, #0284C7, #38BDF8);padding:10px 18px">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                        <span>Refresh Balance</span>
+                    </button>
+                    <a href="https://omageneraldata.com" id="vtuProviderPortalLink" target="_blank" class="btn-dash-action btn-dash-secondary" style="padding:10px 16px;text-decoration:none">
+                        <span>Fund Provider Wallet ↗</span>
+                    </a>
+                </div>
+            </div>
         </div>
+
  <div class="admin-grid-2">
  
  <!-- VTU Provider API & Gateway Settings -->
@@ -3438,10 +3480,20 @@ require_once __DIR__ . '/includes/header.php';
             const b = document.getElementById('tabBtn' + tabName.charAt(0).toUpperCase() + tabName.slice(1)) || document.querySelector(`[data-tab="tab-${tabName}"]`);
             if (b) b.classList.add('active');
         }
-        const target = document.getElementById('tab-' + tabName);
-        if (target) {
-            target.classList.add('active');
+        const settingsSubTabs = ['gateways', 'autopayout', 'virtual-accounts', 'features', 'content', 'maintenance'];
+        if (settingsSubTabs.includes(tabName)) {
+            const settingsTab = document.getElementById('tab-settings');
+            if (settingsTab) settingsTab.classList.add('active');
+            if (typeof window.switchSettingsSubTab === 'function') {
+                window.switchSettingsSubTab(tabName);
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            const target = document.getElementById('tab-' + tabName);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         // Sync dropdown selectors in command bar & top modules nav bar
@@ -5284,7 +5336,7 @@ saveWithdrawalSettings = function() {
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
-            alert('Virtual Dedicated Account configuration saved successfully!');
+            alert('✅ Virtual Dedicated Account configuration saved successfully!');
         } catch(e) {
             alert('Virtual Account settings saved to local session.');
         }
@@ -5598,6 +5650,23 @@ saveWithdrawalSettings = function() {
  airtelInput.value = '3';
  nineMobileInput.value = '4';
  }
+
+ const providerUrls = {
+ 'omageneraldata': { name: 'Oma General Data', portal: 'https://omageneraldata.com' },
+ 'primebiller': { name: 'PrimeBiller', portal: 'https://primebiller.com' },
+ 'vtpass': { name: 'VTpass', portal: 'https://vtpass.com' },
+ 'clubkonnect': { name: 'ClubKonnect', portal: 'https://clubkonnect.com' },
+ 'husmodata': { name: 'HusmoData', portal: 'https://husmodata.com' },
+ 'bilalsms': { name: 'BilalSMS', portal: 'https://bilalsms.com' },
+ 'custom': { name: 'Custom Provider', portal: '#' }
+ };
+ const info = providerUrls[preset] || { name: 'VTU Provider', portal: '#' };
+ const portalLink = document.getElementById('vtuProviderPortalLink');
+ if (portalLink && info.portal !== '#') portalLink.href = info.portal;
+ const vtuBadge = document.getElementById('vtuApiProviderBadge');
+ if (vtuBadge) vtuBadge.textContent = info.name;
+ const ovBadge = document.getElementById('overviewApiProviderName');
+ if (ovBadge) ovBadge.textContent = info.name;
  };
 
  window.saveVtuSettings = async function() {
@@ -5635,9 +5704,12 @@ saveWithdrawalSettings = function() {
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify(vtu)
  });
+ if (typeof window.fetchVtuLiveBalance === 'function') {
+ window.fetchVtuLiveBalance(false);
+ }
  } catch(e) {}
 
- alert(' VTU PrimeBiller API, Custom Airtime Rates & Points Exchange rate saved successfully!');
+ alert('✅ Telecoms VTU API settings and pricing configurations saved successfully!');
  };
 
  window.testVtuConnection = async function() {
@@ -5656,6 +5728,12 @@ saveWithdrawalSettings = function() {
  resultBox.style.border = '1px solid rgba(37, 99, 235, 0.4)';
  resultBox.style.color = '#93C5FD';
  resultBox.innerHTML = ` ${data.message} ${data.wallet_balance ? '• Provider Balance: ' + data.wallet_balance : ''}`;
+ if (data.wallet_balance) {
+ const b1 = document.getElementById('vtuLiveApiBalance');
+ if (b1) b1.textContent = data.wallet_balance;
+ const b2 = document.getElementById('overviewApiBalanceVal');
+ if (b2) b2.textContent = data.wallet_balance;
+ }
  } else {
  resultBox.style.background = 'rgba(244,63,94,0.18)';
  resultBox.style.border = '1px solid rgba(244,63,94,0.4)';
@@ -5667,6 +5745,73 @@ saveWithdrawalSettings = function() {
  resultBox.style.border = '1px solid rgba(37, 99, 235, 0.4)';
  resultBox.style.color = '#93C5FD';
  resultBox.innerHTML = ` Sandbox Provider Connection Verified. API Endpoint is reachable & ready.`;
+ }
+ };
+
+ // Dedicated Live API Balance Synchronizer
+ window.fetchVtuLiveBalance = async function(manualClick = false) {
+ const btn = document.getElementById('btnRefreshVtuBalance');
+ if (btn && manualClick) {
+ btn.disabled = true;
+ btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">↻</span> Syncing...';
+ }
+
+ try {
+ const res = await fetch('api/vtu.php?action=get_api_balance&t=' + Date.now());
+ const data = await res.json();
+ if (data && data.status) {
+ const formatted = data.balance_formatted || '₦0.00';
+ const rawVal = data.balance_raw || 0;
+ const provider = data.provider || 'Oma General Data';
+ const mode = (data.mode === 'live') ? 'Live Production' : 'Sandbox Ready';
+ const time = data.last_checked || new Date().toLocaleTimeString('en-GB');
+
+ // 1. Update VTU Hero Card Elements
+ const balEl = document.getElementById('vtuLiveApiBalance');
+ if (balEl) balEl.textContent = formatted;
+
+ const badgeEl = document.getElementById('vtuApiProviderBadge');
+ if (badgeEl) badgeEl.textContent = provider;
+
+ const modeTag = document.getElementById('vtuApiModeTag');
+ if (modeTag) {
+ modeTag.textContent = mode;
+ modeTag.style.color = (data.mode === 'live') ? '#34D399' : '#38BDF8';
+ }
+
+ const lastChecked = document.getElementById('vtuApiLastChecked');
+ if (lastChecked) lastChecked.textContent = time;
+
+ const healthText = document.getElementById('vtuApiHealthText');
+ if (healthText) {
+ healthText.textContent = '● ' + (data.api_status || 'Gateway Operational');
+ healthText.style.color = (data.mode === 'live' && rawVal > 0) ? '#34D399' : (data.mode === 'sandbox' ? '#38BDF8' : '#FBBF24');
+ }
+
+ // 2. Update Overview KPI Card Elements
+ const ovBal = document.getElementById('overviewApiBalanceVal');
+ if (ovBal) ovBal.textContent = formatted;
+
+ const ovProvider = document.getElementById('overviewApiProviderName');
+ if (ovProvider) ovProvider.textContent = provider;
+
+ const ovModeTag = document.getElementById('overviewApiModeTag');
+ if (ovModeTag) {
+ ovModeTag.textContent = (data.mode === 'live') ? 'Live API' : 'Sandbox';
+ ovModeTag.style.color = (data.mode === 'live') ? '#34D399' : '#38BDF8';
+ }
+
+ if (manualClick) {
+ alert(`✅ API Balance Synced Successfully!\n\nProvider: ${provider} (${mode})\nAvailable API Balance: ${formatted}\nStatus: ${data.api_status || 'Active'}`);
+ }
+ }
+ } catch(e) {
+ if (manualClick) alert('⚠️ Could not sync with API provider endpoint.');
+ } finally {
+ if (btn && manualClick) {
+ btn.disabled = false;
+ btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg><span>Refresh Balance</span>';
+ }
  }
  };
 
@@ -6826,6 +6971,9 @@ saveWithdrawalSettings = function() {
     loadAdminSiteContent();
     loadAdminAdverts();
     loadAdminUploaders();
+    if (typeof window.fetchVtuLiveBalance === 'function') {
+        window.fetchVtuLiveBalance(false);
+    }
     const initialMetricView = localStorage.getItem('ix_overview_view_mode') || 'CARDS';
     if (window.switchOverviewMetricView) window.switchOverviewMetricView(initialMetricView);
     setInterval(renderPayoutQueue, 1500);
