@@ -71,10 +71,3 @@ INSERT INTO vendors (id, name, location, rating, codes_sold, phone, avatar_bg) V
 ('v2', 'Fatima Bello', 'Abuja / Northern Region (Access Bank, Palmpay)', 4.9, 1850, '2348023456789', '#3B82F6'),
 ('v3', 'Tunde Adeyemi', 'Ibadan / South West (Zenith, Moniepoint)', 4.9, 1420, '2348034567890', '#F59E0B')
 ON CONFLICT (id) DO NOTHING;
-
--- Seed Sample Coupon PINs
-INSERT INTO coupon_pins (id, code, amount, is_used) VALUES
-('pin1', 'INX-PRO-9842-7719', 500.00, FALSE),
-('pin2', 'INX-PRO-5541-2093', 500.00, FALSE),
-('pin3', 'INX-PRO-3819-6604', 500.00, FALSE)
-ON CONFLICT (id) DO NOTHING;

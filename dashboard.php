@@ -17,33 +17,36 @@ $initials = strtoupper(substr($username, 0, 2));
 $userPoints = 100;
 $userCash = 0.00;
 $userRole = 'member';
-$userPhone = '';
-$userEmail = '';
+$userPhone = $authUser['phone'] ?? $_SESSION['phone'] ?? '';
+$userEmail = $authUser['email'] ?? $_SESSION['email'] ?? '';
+$userFullName = $authUser['fullName'] ?? $_SESSION['fullName'] ?? $username;
 
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT id, username, email, phone, "pointsBalance", "cashBalance", role FROM users WHERE LOWER(username) = LOWER(?) OR id::text = ?');
+        $stmt = $pdo->prepare('SELECT id, username, email, phone, "fullName", "pointsBalance", "cashBalance", role FROM users WHERE LOWER(username) = LOWER(?) OR id::text = ?');
         $stmt->execute([$username, strval($userId)]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
             $userPoints = (int)($row['pointsBalance'] ?? $row['pointsbalance'] ?? 100);
             $userCash = (float)($row['cashBalance'] ?? $row['cashbalance'] ?? 0.00);
             $userRole = !empty($row['role']) ? $row['role'] : 'member';
-            $userPhone = $row['phone'] ?? '';
-            $userEmail = $row['email'] ?? '';
+            if (!empty($row['phone'])) $userPhone = $row['phone'];
+            if (!empty($row['email'])) $userEmail = $row['email'];
+            if (!empty($row['fullName'] ?? $row['fullname'])) $userFullName = $row['fullName'] ?? $row['fullname'];
         }
     } catch (Exception $e) {
         try {
-            $stmt = $pdo->prepare('SELECT id, username, email, phone, pointsBalance, cashBalance, role FROM users WHERE LOWER(username) = LOWER(?)');
+            $stmt = $pdo->prepare('SELECT id, username, email, phone, fullName, pointsBalance, cashBalance, role FROM users WHERE LOWER(username) = LOWER(?)');
             $stmt->execute([$username]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row) {
                 $userPoints = (int)($row['pointsbalance'] ?? 100);
                 $userCash = (float)($row['cashbalance'] ?? 0.00);
                 $userRole = !empty($row['role']) ? $row['role'] : 'member';
-                $userPhone = $row['phone'] ?? '';
-                $userEmail = $row['email'] ?? '';
+                if (!empty($row['phone'])) $userPhone = $row['phone'];
+                if (!empty($row['email'])) $userEmail = $row['email'];
+                if (!empty($row['fullName'] ?? $row['fullname'])) $userFullName = $row['fullName'] ?? $row['fullname'];
             }
         } catch (Exception $e2) {}
     }
@@ -98,7 +101,7 @@ require_once __DIR__ . '/includes/header.php';
                 </button>
 
                 <!-- Theme Switcher -->
-                <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme()" aria-label="Toggle Theme" title="Toggle Theme">
+                <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme(event)" aria-label="Toggle Theme" title="Toggle Theme">
                     <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                 </button>
 
@@ -495,7 +498,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_tasks" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -562,7 +565,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_vtu" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -796,7 +799,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_settings" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -872,23 +875,63 @@ require_once __DIR__ . '/includes/header.php';
                                     [data-theme="light"] .avatar-option input:checked + .avatar-preview { border-color: #0F172A !important; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
                                 </style>
                             </div>
+                            <!-- 1. Display Name (Editable) -->
                             <div style="margin-bottom:14px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Display Name</label>
-                                <input type="text" id="settingsInputName" class="admin-input" placeholder="e.g. Member" value="<?= htmlspecialchars($username) ?>" required>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Display Name</label>
+                                    <span style="font-size:0.68rem;font-weight:700;color:#38BDF8;background:rgba(56,189,248,0.12);padding:2px 8px;border-radius:6px;border:1px solid rgba(56,189,248,0.25)">Editable</span>
+                                </div>
+                                <input type="text" id="settingsInputName" class="admin-input" placeholder="Your Display Name" value="<?= htmlspecialchars($username) ?>" required style="width:100%">
                                 <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Instantly updates your greeting and avatar across the dashboard.</span>
                             </div>
+
+                            <!-- 2. Account Username (Permanent / Locked) -->
                             <div style="margin-bottom:14px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Email Address</label>
-                                <input type="email" id="settingsInputEmail" class="admin-input" placeholder="e.g. member@gmail.com" value="member@gmail.com" required>
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Used for withdrawal settlement receipts and downline referral tracking.</span>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Account Username</label>
+                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        Permanent
+                                    </span>
+                                </div>
+                                <input type="text" id="settingsInputUsername" class="admin-input" value="<?= htmlspecialchars($username) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
+                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Primary unique membership ID and referral identifier. Cannot be changed.</span>
                             </div>
-                            <div style="margin-bottom:18px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Phone / WhatsApp Number</label>
-                                <input type="tel" id="settingsInputPhone" class="admin-input" placeholder="e.g. 08012345678" value="08012345678">
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Default destination number for instant VTU airtime &amp; cheap data.</span>
+
+                            <!-- 3. Email Address (Permanent / Locked) -->
+                            <div style="margin-bottom:14px">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Email Address (Gmail)</label>
+                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        Permanent
+                                    </span>
+                                </div>
+                                <input type="email" id="settingsInputEmail" class="admin-input" value="<?= htmlspecialchars($userEmail) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
+                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Bound to your account for payout receipts and security alerts. Cannot be changed.</span>
                             </div>
+
+                            <!-- 4. Phone Number (Permanent / Locked) -->
+                            <div style="margin-bottom:16px">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Phone / WhatsApp Number</label>
+                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        Permanent
+                                    </span>
+                                </div>
+                                <input type="tel" id="settingsInputPhone" class="admin-input" value="<?= htmlspecialchars($userPhone) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
+                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Bound to your registered WhatsApp for verification and VTU delivery. Cannot be changed.</span>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div style="padding:10px 14px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;margin-bottom:18px;font-size:0.72rem;color:#94A3B8;line-height:1.5;display:flex;align-items:flex-start;gap:8px">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2" style="flex-shrink:0;margin-top:2px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <span><strong>Security Notice:</strong> Your registered username, email address, and phone number are permanently bound to your account for payout security and fraud prevention. Only your Display Name and Avatar style can be changed.</span>
+                            </div>
+
                             <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;height:38px;justify-content:center">
-                                <span>Save Profile Info</span>
+                                <span>Save Display Name</span>
                             </button>
                         </form>
                     </div>
@@ -966,7 +1009,7 @@ require_once __DIR__ . '/includes/header.php';
                         <form id="settingsPrefForm" onsubmit="handleSavePrefSettings(event)">
                             <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
                                 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
-                                    <input type="checkbox" id="prefHideBalance" style="width:17px;height:17px;accent-color:#6366F1">
+                                    <input type="checkbox" id="prefHideBalance" onchange="handlePrefHideBalanceToggle(this.checked)" style="width:17px;height:17px;accent-color:#6366F1">
                                     <span>Hide / Mask wallet balance by default on startup</span>
                                 </label>
                                 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
@@ -989,7 +1032,7 @@ require_once __DIR__ . '/includes/header.php';
 
             <div id="dashPane_bank" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -1056,7 +1099,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_uploader" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -1338,7 +1381,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_advert" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -1481,7 +1524,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_referrals" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -1633,7 +1676,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ======================================================== -->
             <div id="dashPane_withdraw" class="dash-service-pane" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="switchDashTab('overview')">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
                         <span>Back to Overview</span>
                     </button>
@@ -2045,7 +2088,7 @@ require_once __DIR__ . '/includes/header.php';
                 <!-- Uploader Accreditation Code or Transfer Note -->
                 <div class="withdraw-form-group" style="margin-bottom:12px">
                     <label style="font-size:0.76rem;color:#818CF8">Uploader Accreditation Code (or type "BANK TRANSFER") *</label>
-                    <input type="text" id="upgCodeInput" class="admin-input" placeholder="e.g. IX-UPL-8821-PRO or BANK TRANSFER" required style="width:100%;padding:10px 12px;font-weight:700">
+                    <input type="text" id="upgCodeInput" class="admin-input" placeholder="Enter Uploader Code or BANK TRANSFER" required style="width:100%;padding:10px 12px;font-weight:700">
                     <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">
                         Notice: Input your Uploader Code or type "BANK TRANSFER" if you transferred directly.
                     </div>
@@ -3736,33 +3779,26 @@ renderDashboardNotifications();
         alert('Bank details saved successfully! Your live credit card has been updated.');
     };
 
-    // Settings Profile Form Handler
+    // Settings Profile Form Handler (Display Name & Avatar Only)
     window.handleSaveProfileSettings = function(e) {
         if (e) e.preventDefault();
         
-        // Find button to show saving state if possible, though not required to fail if missing
         const btn = document.querySelector('#settingsProfileForm button[type="submit"]') || document.createElement('button');
         const og = btn.innerHTML;
         btn.innerHTML = 'Saving...';
         
         setTimeout(() => {
             const nameVal = document.getElementById('settingsInputName') ? document.getElementById('settingsInputName').value.trim() : 'Member';
-            const init = nameVal.substring(0, 2).toUpperCase() || 'IX';
-            const email = document.getElementById('settingsInputEmail') ? document.getElementById('settingsInputEmail').value.trim() : '';
-            const phone = document.getElementById('settingsInputPhone') ? document.getElementById('settingsInputPhone').value.trim() : '';
             
             // Find selected avatar gradient
             const selectedRadio = document.querySelector('input[name="avatar_choice"]:checked');
             const selectedGradient = selectedRadio ? selectedRadio.nextElementSibling.style.background : 'linear-gradient(135deg, #0284C7, #38BDF8)';
             const selectedIconHTML = selectedRadio ? selectedRadio.nextElementSibling.innerHTML : 'IX';
             
-            // Save to localStorage
+            // Save display name & avatar to localStorage
             localStorage.setItem('ix_user_name', nameVal);
             localStorage.setItem('ix_user_avatar_bg', selectedGradient);
             localStorage.setItem('ix_user_avatar_html', selectedIconHTML);
-            
-            const profile = { name: nameVal, email, phone };
-            localStorage.setItem('ix_user_profile', JSON.stringify(profile));
             
             // Update DOM elements
             document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = nameVal; });
@@ -3774,24 +3810,38 @@ renderDashboardNotifications();
             });
             
             btn.innerHTML = og;
-            if(window.showDialog) {
-                window.showDialog('Profile Updated', 'Your profile details have been saved.', 'success');
-            } else {
-                alert('Profile updated successfully!');
-            }
-        }, 600);
+            alert('Display Name updated successfully!');
+        }, 300);
     };
 
-    // Also add a quick init function right after it to load the saved avatar on page load:
+    // Quick init function to load saved profile details on page load:
     document.addEventListener('DOMContentLoaded', () => {
-        const savedName = localStorage.getItem('ix_user_name');
+        const savedName = localStorage.getItem('ix_user_name') || localStorage.getItem('ix_user_fullname');
         const savedBg = localStorage.getItem('ix_user_avatar_bg');
         const savedIcon = localStorage.getItem('ix_user_avatar_html');
+        const savedEmail = localStorage.getItem('ix_user_email');
+        const savedPhone = localStorage.getItem('ix_user_phone');
+        const savedUser = localStorage.getItem('ix_current_user');
         
         if(savedName) {
             document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = savedName; });
             const input = document.getElementById('settingsInputName');
             if(input) input.value = savedName;
+        }
+
+        const emailInp = document.getElementById('settingsInputEmail');
+        if (emailInp && (!emailInp.value || emailInp.value === 'member@gmail.com') && savedEmail) {
+            emailInp.value = savedEmail;
+        }
+
+        const phoneInp = document.getElementById('settingsInputPhone');
+        if (phoneInp && (!phoneInp.value || phoneInp.value === '08012345678') && savedPhone) {
+            phoneInp.value = savedPhone;
+        }
+
+        const userInp = document.getElementById('settingsInputUsername');
+        if (userInp && (!userInp.value || userInp.value === 'Member') && savedUser) {
+            userInp.value = savedUser;
         }
         
         if(savedBg && savedIcon) {
@@ -3827,6 +3877,34 @@ renderDashboardNotifications();
         alert('Withdrawal Security PIN saved successfully!');
     };
 
+    // App Preferences Loader & Form Handlers
+    window.loadUserPreferences = function() {
+        let prefs = { hideBal: false, emailAlerts: true, instantVtu: true };
+        try {
+            const stored = localStorage.getItem('ix_user_prefs');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                prefs = Object.assign(prefs, parsed);
+            } else if (localStorage.getItem('ix_balance_masked') === 'true') {
+                prefs.hideBal = true;
+            }
+        } catch(e) {}
+
+        const hideBalEl = document.getElementById('prefHideBalance');
+        const emailEl = document.getElementById('prefEmailAlerts');
+        const vtuEl = document.getElementById('prefInstantVtu');
+
+        if (hideBalEl) hideBalEl.checked = !!prefs.hideBal;
+        if (emailEl) emailEl.checked = !!prefs.emailAlerts;
+        if (vtuEl) vtuEl.checked = !!prefs.instantVtu;
+
+        return prefs;
+    };
+
+    window.handlePrefHideBalanceToggle = function(isChecked) {
+        window.setBalanceMaskState(!!isChecked);
+    };
+
     // Settings Preferences Form Handler
     window.handleSavePrefSettings = function(e) {
         if (e) e.preventDefault();
@@ -3834,7 +3912,13 @@ renderDashboardNotifications();
         const emailAlerts = document.getElementById('prefEmailAlerts') ? document.getElementById('prefEmailAlerts').checked : true;
         const instantVtu = document.getElementById('prefInstantVtu') ? document.getElementById('prefInstantVtu').checked : true;
 
-        localStorage.setItem('ix_user_prefs', JSON.stringify({ hideBal, emailAlerts, instantVtu }));
+        const prefs = { hideBal, emailAlerts, instantVtu };
+        try {
+            localStorage.setItem('ix_user_prefs', JSON.stringify(prefs));
+            localStorage.setItem('ix_balance_masked', hideBal ? 'true' : 'false');
+        } catch(err) {}
+
+        window.setBalanceMaskState(hideBal);
         alert('Preferences saved successfully!');
     };
 
@@ -4357,9 +4441,11 @@ renderDashboardNotifications();
     };
 
     // =========================================================
-    // MODULAR SINGLE-VIEW TAB CONTROLLER FOR DASHBOARD
+    // MODULAR SINGLE-VIEW TAB CONTROLLER FOR DASHBOARD WITH HISTORY API
     // =========================================================
-    window.switchDashTab = function(tabName) {
+    window.currentDashTab = 'overview';
+
+    window.switchDashTab = function(tabName, pushState = true) {
         if (!tabName) tabName = 'overview';
         
         // 1. Hide all service panes
@@ -4386,9 +4472,13 @@ renderDashboardNotifications();
             if (tabName === 'withdraw' && typeof window.refreshWithdrawPortal === 'function') {
                 window.refreshWithdrawPortal();
             }
+            if (tabName === 'settings' && typeof window.loadUserPreferences === 'function') {
+                window.loadUserPreferences();
+            }
         } else {
             const fallback = document.getElementById('dashPane_overview');
             if (fallback) fallback.style.display = 'block';
+            tabName = 'overview';
         }
 
         // 3. Update pill navigation bar active states
@@ -4410,6 +4500,22 @@ renderDashboardNotifications();
         document.querySelectorAll('#dashNavDrawer .drawer-link').forEach(link => link.classList.remove('drawer-link-active'));
         const activeDrawerLink = document.getElementById('drawerLink_' + tabName);
         if (activeDrawerLink) activeDrawerLink.classList.add('drawer-link-active');
+
+        // 5. Update HTML5 History State for mobile back button navigation
+        if (pushState && tabName !== window.currentDashTab) {
+            try {
+                history.pushState({ tab: tabName }, '', '#' + tabName);
+            } catch(e) {}
+        }
+        window.currentDashTab = tabName;
+    };
+
+    window.goBackToOverview = function() {
+        if (window.history.length > 1 && window.history.state && window.history.state.tab && window.history.state.tab !== 'overview') {
+            window.history.back();
+        } else {
+            switchDashTab('overview');
+        }
     };
 
     window.selectDashDrawerTab = function(tabName) {
@@ -4489,7 +4595,16 @@ renderDashboardNotifications();
 
         try {
             localStorage.setItem('ix_balance_masked', shouldMask ? 'true' : 'false');
+            let p = {};
+            try { p = JSON.parse(localStorage.getItem('ix_user_prefs') || '{}'); } catch(e) {}
+            p.hideBal = !!shouldMask;
+            localStorage.setItem('ix_user_prefs', JSON.stringify(p));
         } catch(e) {}
+
+        const prefHideEl = document.getElementById('prefHideBalance');
+        if (prefHideEl) {
+            prefHideEl.checked = !!shouldMask;
+        }
     };
 
     window.toggleBalanceMask = function() {
@@ -4498,8 +4613,14 @@ renderDashboardNotifications();
         window.setBalanceMaskState(!isCurrentlyMasked);
     };
 
-    // Default to Overview tab on initial load
-    switchDashTab('overview');
+    // Initialize tab from URL hash (e.g. #settings, #withdraw) or default to overview
+    const initialHash = (location.hash || '').replace('#', '').trim();
+    const validTabs = ['overview', 'tasks', 'vtu', 'settings', 'bank', 'uploader', 'advert', 'referrals', 'withdraw'];
+    const startTab = validTabs.includes(initialHash) ? initialHash : 'overview';
+    try {
+        history.replaceState({ tab: startTab }, '', '#' + startTab);
+    } catch(e) {}
+    switchDashTab(startTab, false);
 
     window.fetchServerWithdrawalSettings = async function() {
         try {
@@ -4530,9 +4651,23 @@ renderDashboardNotifications();
     loadWithdrawalPinStatus();
     fetchServerWithdrawalSettings();
 
-    // Initialize balance mask state from preference / storage
-    if (localStorage.getItem('ix_balance_masked') === 'true') {
+    // Initialize App Preferences & balance mask state from preference / storage
+    if (typeof window.loadUserPreferences === 'function') {
+        window.loadUserPreferences();
+    }
+    let shouldMaskOnInit = false;
+    try {
+        const userPrefs = JSON.parse(localStorage.getItem('ix_user_prefs') || '{}');
+        if (userPrefs.hideBal === true || localStorage.getItem('ix_balance_masked') === 'true') {
+            shouldMaskOnInit = true;
+        }
+    } catch(e) {
+        shouldMaskOnInit = (localStorage.getItem('ix_balance_masked') === 'true');
+    }
+    if (shouldMaskOnInit) {
         window.setBalanceMaskState(true);
+    } else {
+        window.setBalanceMaskState(false);
     }
 
     // Listen for live broadcasts from admin dashboard across tabs
@@ -4543,9 +4678,16 @@ renderDashboardNotifications();
         if (e.key === 'ix_withdrawal_settings') refreshWithdrawPortal();
         if (e.key === 'ix_saved_bank_account') loadSavedBankAccount();
         if (e.key === 'ix_balance_masked') window.setBalanceMaskState(e.newValue === 'true');
+        if (e.key === 'ix_user_prefs' && typeof window.loadUserPreferences === 'function') window.loadUserPreferences();
         if (e.key === 'ix_inapp_notifs') window.renderDashboardNotifications();
     });
     window.addEventListener('ix:bank-updated', () => loadSavedBankAccount());
+    
+    // Listen for mobile phone back button (popstate) to navigate between tabs without logging out
+    window.addEventListener('popstate', (e) => {
+        const targetTab = (e.state && e.state.tab) ? e.state.tab : (location.hash ? location.hash.replace('#', '') : 'overview');
+        switchDashTab(targetTab, false);
+    });
 
  // Close modals
  g('receiptClose') && g('receiptClose').addEventListener('click', () => close(receiptOv));

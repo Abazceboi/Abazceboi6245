@@ -13,11 +13,14 @@ function getSessionSecret(): string {
     return getenv('SESSION_SECRET') ?: 'ix_platform_crypt_secret_2026_x';
 }
 
-function setAuthCookie($userId, $username, $isAdmin = false): void {
+function setAuthCookie($userId, $username, $isAdmin = false, $email = '', $phone = '', $fullName = ''): void {
     $secret = getSessionSecret();
     $payload = base64_encode(json_encode([
         'user_id' => $userId,
         'username' => $username,
+        'email' => $email,
+        'phone' => $phone,
+        'fullName' => $fullName,
         'is_admin' => $isAdmin,
         'time' => time()
     ]));
@@ -57,6 +60,9 @@ function getAuthenticatedUser(): ?array {
         return [
             'user_id' => $_SESSION['user_id'],
             'username' => $_SESSION['username'],
+            'email' => $_SESSION['email'] ?? '',
+            'phone' => $_SESSION['phone'] ?? '',
+            'fullName' => $_SESSION['fullName'] ?? '',
             'is_admin' => !empty($_SESSION['is_admin'])
         ];
     }
@@ -74,6 +80,9 @@ function getAuthenticatedUser(): ?array {
                 if (!empty($data['user_id']) && !empty($data['username'])) {
                     $_SESSION['user_id'] = $data['user_id'];
                     $_SESSION['username'] = $data['username'];
+                    if (!empty($data['email'])) $_SESSION['email'] = $data['email'];
+                    if (!empty($data['phone'])) $_SESSION['phone'] = $data['phone'];
+                    if (!empty($data['fullName'])) $_SESSION['fullName'] = $data['fullName'];
                     if (!empty($data['is_admin'])) {
                         $_SESSION['is_admin'] = true;
                     }

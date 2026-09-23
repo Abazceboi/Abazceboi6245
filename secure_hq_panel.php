@@ -111,7 +111,7 @@ require_once __DIR__ . '/includes/header.php';
                 </a>
 
                 <!-- Theme Switcher -->
-                <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme()" aria-label="Toggle Theme" title="Toggle Theme">
+                <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme(event)" aria-label="Toggle Theme" title="Toggle Theme">
                     <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                 </button>
 
@@ -3976,6 +3976,92 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- ADMIN EDIT USER DETAILS MODAL              -->
+<!-- ========================================== -->
+<div class="receipt-overlay" id="editUserModalOverlay" style="z-index:99999">
+    <div class="receipt-modal" style="max-width:640px;width:95%;padding:28px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:14px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#FFF">Edit Member Credentials</h3>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Admin override for details locked from regular members</div>
+                </div>
+            </div>
+            <button type="button" onclick="closeEditUserModal()" style="background:none;border:none;color:#FFF;font-size:1.4rem;cursor:pointer">&times;</button>
+        </div>
+
+        <form id="adminEditUserForm" onsubmit="handleSaveAdminUserDetails(event)">
+            <input type="hidden" id="editUserTargetUsername">
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Account Username</label>
+                    <input type="text" id="editUserUsername" class="admin-input" required style="width:100%">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Full Name / Display Name</label>
+                    <input type="text" id="editUserFullName" class="admin-input" required style="width:100%">
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Email Address (Gmail)</label>
+                    <input type="email" id="editUserEmail" class="admin-input" required style="width:100%">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Phone / WhatsApp Number</label>
+                    <input type="tel" id="editUserPhone" class="admin-input" required style="width:100%">
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Membership Role</label>
+                    <select id="editUserRole" class="admin-select" style="width:100%">
+                        <option value="member">Active Member</option>
+                        <option value="uploader">Verified Uploader</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="sub_admin">Sub-Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Referral Cash Balance (₦)</label>
+                    <input type="number" step="0.01" id="editUserCash" class="admin-input" style="width:100%">
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Task Points Balance (PTS)</label>
+                    <input type="number" id="editUserPts" class="admin-input" style="width:100%">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">Settlement Bank Name</label>
+                    <input type="text" id="editUserBank" class="admin-input" placeholder="e.g. OPay Digital Services" style="width:100%">
+                </div>
+            </div>
+
+            <div style="margin-bottom:20px">
+                <label style="display:block;font-size:0.75rem;font-weight:700;color:#94A3B8;margin-bottom:5px">10-Digit NUBAN Account Number</label>
+                <input type="text" id="editUserNuban" maxlength="10" class="admin-input" placeholder="e.g. 0801234567" style="width:100%">
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px">
+                <button type="button" onclick="closeEditUserModal()" class="btn-dash-action btn-dash-secondary">Cancel</button>
+                <button type="submit" id="btnSaveAdminEditUser" class="btn-dash-action btn-dash-primary" style="padding:0 24px">
+                    <span>Save Changes</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Admin Master JavaScript Engine -->
 <script>
 (function() {
@@ -4718,6 +4804,7 @@ require_once __DIR__ . '/includes/header.php';
         }
 
         const storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
+        const newBatch = [];
 
         for (let i = 0; i < qty; i++) {
             const p1 = Math.floor(1000 + Math.random() * 9000);
@@ -4732,12 +4819,26 @@ require_once __DIR__ . '/includes/header.php';
                 vendorId: vendorId,
                 vendorName: vendorName,
                 wholesalePrice: wholesaleVal,
+                amount: regPrice,
+                isUsed: false,
+                is_used: false,
+                usedBy: null,
+                used_by: null,
                 created_at: new Date().toISOString()
             };
             storedCoupons.unshift(couponObj);
+            newBatch.push(couponObj);
         }
 
         localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
+
+        // Asynchronously persist new batch into backend database & storage
+        fetch('api/coupons.php?action=save_pins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupons: newBatch })
+        }).catch(err => console.warn('Could not sync PINs to database:', err));
+
         if (window.renderOverviewCouponsList) window.renderOverviewCouponsList();
         if (window.renderOverviewBarChart) window.renderOverviewBarChart();
         if (window.calculatePlatformFinancials) window.calculatePlatformFinancials();
@@ -4760,32 +4861,51 @@ require_once __DIR__ . '/includes/header.php';
     // Render overview coupons list from stored coupons
     window.renderOverviewCouponsList = function() {
         let storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || 'null');
-        if (!storedCoupons || storedCoupons.length === 0) {
-            storedCoupons = [
-                { code: 'INX-UPL-9481-7290', channel: 'UPLOADER', typeLabel: 'Uploader Upgrade PIN', vendorId: '', vendorName: '', wholesalePrice: 2000, created_at: new Date(Date.now() - 3600000).toISOString() },
-                { code: 'INX-JOB-3104-8842', channel: 'UPLOADER', typeLabel: 'Jobber Quota PIN', vendorId: 'v1', vendorName: 'Emmanuel Eze', wholesalePrice: 1000, created_at: new Date(Date.now() - 7200000).toISOString() },
-                { code: 'INX-AFF-5521-4409', channel: 'AFFILIATE', typeLabel: 'Member Registration PIN', vendorId: 'v2', vendorName: 'Fatima Bello', wholesalePrice: 800, created_at: new Date(Date.now() - 10800000).toISOString() },
-                { code: 'INX-AFF-8219-3341', channel: 'AFFILIATE', typeLabel: 'Member Registration PIN', vendorId: '', vendorName: '', wholesalePrice: 1000, created_at: new Date(Date.now() - 14400000).toISOString() },
-                { code: 'INX-AFF-4412-9908', channel: 'AFFILIATE', typeLabel: 'Affiliate VIP Promo PIN', vendorId: 'v3', vendorName: 'Tunde Adeyemi', wholesalePrice: 800, created_at: new Date(Date.now() - 18000000).toISOString() }
-            ];
+        if (!storedCoupons || !Array.isArray(storedCoupons)) {
+            storedCoupons = [];
             localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
         }
 
+        // Try syncing live usage data from server
+        if (!window.__ixCouponsFetching) {
+            window.__ixCouponsFetching = true;
+            fetch('api/coupons.php?action=get_pins')
+                .then(r => r.json())
+                .then(res => {
+                    window.__ixCouponsFetching = false;
+                    if (res && res.success && Array.isArray(res.coupons) && res.coupons.length > 0) {
+                        localStorage.setItem('ix_coupons', JSON.stringify(res.coupons));
+                        window.renderCouponsDOM(res.coupons);
+                    }
+                })
+                .catch(() => { window.__ixCouponsFetching = false; });
+        }
+
+        window.renderCouponsDOM(storedCoupons);
+    };
+
+    window.renderCouponsDOM = function(storedCoupons) {
         // 1. Render in Overview tab preview (Top 4 most recent)
         const overviewList = document.getElementById('overviewCouponsList');
         if (overviewList) {
             const previewItems = storedCoupons.slice(0, 4);
             overviewList.innerHTML = previewItems.map(c => {
-                const hasVendor = Boolean(c.vendorName);
+                const hasVendor = Boolean(c.vendorName || c.vendor_name);
+                const vendorLabel = c.vendorName || c.vendor_name;
+                const isUsed = Boolean(c.isUsed || c.is_used || c.usedBy || c.used_by);
                 const vendorBadge = hasVendor 
-                    ? `<span class="vendor-exclusive-pill" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Assigned to ${c.vendorName}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span style="overflow:hidden;text-overflow:ellipsis">${c.vendorName}</span></span>` 
+                    ? `<span class="vendor-exclusive-pill" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Assigned to ${vendorLabel}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span style="overflow:hidden;text-overflow:ellipsis">${vendorLabel}</span></span>` 
                     : `<span style="font-size:0.66rem;color:#64748B;font-weight:500;padding-left:2px">General Pool</span>`;
 
+                const statusDot = isUsed 
+                    ? `<span style="font-size:0.64rem;color:#F87171;font-weight:700">● Used</span>`
+                    : `<span style="font-size:0.64rem;color:#34D399;font-weight:700">● Available</span>`;
+
                 return `
-                    <div class="coupon-item" data-channel="${c.channel}" data-vendor="${c.vendorId || ''}">
+                    <div class="coupon-item" data-channel="${c.channel}" data-vendor="${c.vendorId || c.vendor_id || ''}">
                         <div class="coupon-col-code">${c.code}</div>
-                        <div class="coupon-col-type" title="${c.typeLabel}">${c.typeLabel}</div>
-                        <div class="coupon-col-vendor">${vendorBadge}</div>
+                        <div class="coupon-col-type" title="${c.typeLabel || c.type_label}">${c.typeLabel || c.type_label}</div>
+                        <div class="coupon-col-vendor" style="display:flex;align-items:center;gap:6px">${vendorBadge} ${statusDot}</div>
                         <div class="coupon-col-action">
                             <button type="button" class="btn-dash-action" onclick="copyToClipboard('${c.code}')">Copy</button>
                         </div>
@@ -4801,22 +4921,32 @@ require_once __DIR__ . '/includes/header.php';
                 tabList.innerHTML = `<div style="text-align:center;padding:36px;color:#94A3B8;font-size:0.85rem">No PIN vouchers found in system repository. Generate your first batch above!</div>`;
             } else {
                 tabList.innerHTML = storedCoupons.map(c => {
-                    const hasVendor = Boolean(c.vendorName);
+                    const hasVendor = Boolean(c.vendorName || c.vendor_name);
+                    const vendorLabel = c.vendorName || c.vendor_name;
+                    const isUsed = Boolean(c.isUsed || c.is_used || c.usedBy || c.used_by);
+                    const usedByUser = c.usedBy || c.used_by || '';
                     const vendorBadge = hasVendor 
-                        ? `<span class="vendor-exclusive-pill" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Assigned to ${c.vendorName}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>${c.vendorName}</span></span>` 
+                        ? `<span class="vendor-exclusive-pill" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Assigned to ${vendorLabel}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>${vendorLabel}</span></span>` 
                         : `<span style="font-size:0.72rem;color:#64748B;font-weight:600;padding-left:2px">General Pool</span>`;
                     const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Active';
-                    const priceFormatted = c.wholesalePrice ? '₦' + Number(c.wholesalePrice).toLocaleString() : (c.channel === 'UPLOADER' ? '₦2,000' : '₦1,000');
+                    const priceFormatted = (c.wholesalePrice || c.wholesale_price) ? '₦' + Number(c.wholesalePrice || c.wholesale_price).toLocaleString() : (c.channel === 'UPLOADER' ? '₦2,000' : '₦1,000');
+
+                    const statusPill = isUsed 
+                        ? `<span style="display:inline-block;padding:2px 7px;border-radius:5px;font-size:0.67rem;font-weight:800;background:rgba(248,113,113,0.12);color:#F87171;border:1px solid rgba(248,113,113,0.3)">● Used ${usedByUser ? '(@' + usedByUser + ')' : ''}</span>`
+                        : `<span style="display:inline-block;padding:2px 7px;border-radius:5px;font-size:0.67rem;font-weight:800;background:rgba(52,211,153,0.12);color:#34D399;border:1px solid rgba(52,211,153,0.3)">● Available</span>`;
 
                     return `
-                        <div class="coupon-item coupon-tab-row" data-channel="${c.channel}" data-vendor="${c.vendorId || ''}" style="grid-template-columns: 2fr 1.6fr 1fr 1.6fr 1.2fr 1.2fr; align-items:center; display:grid; gap:10px; padding:12px 14px; background:rgba(255,255,255,0.02); border:1px solid rgba(56,189,248,0.15); border-radius:10px; transition:all 0.2s ease">
+                        <div class="coupon-item coupon-tab-row" data-channel="${c.channel}" data-vendor="${c.vendorId || c.vendor_id || ''}" style="grid-template-columns: 2fr 1.6fr 1fr 1.6fr 1.4fr 1.2fr; align-items:center; display:grid; gap:10px; padding:12px 14px; background:rgba(255,255,255,0.02); border:1px solid rgba(56,189,248,0.15); border-radius:10px; transition:all 0.2s ease">
                             <div class="coupon-col-code" style="font-family:'Courier New', monospace;font-weight:800;font-size:0.86rem;color:#38BDF8;letter-spacing:1px;display:flex;align-items:center;gap:6px">
                                 <span>${c.code}</span>
                             </div>
-                            <div class="coupon-col-type" style="font-size:0.78rem;font-weight:700;color:#F8FAFC" title="${c.typeLabel || c.type}">${c.typeLabel || c.type}</div>
+                            <div class="coupon-col-type" style="font-size:0.78rem;font-weight:700;color:#F8FAFC" title="${c.typeLabel || c.type_label || c.type}">${c.typeLabel || c.type_label || c.type}</div>
                             <div style="font-size:0.82rem;font-weight:800;color:#34D399;font-variant-numeric:tabular-nums">${priceFormatted}</div>
                             <div class="coupon-col-vendor">${vendorBadge}</div>
-                            <div style="font-size:0.72rem;color:#94A3B8">${dateStr}</div>
+                            <div style="font-size:0.72rem;color:#94A3B8;display:flex;flex-direction:column;gap:3px">
+                                ${statusPill}
+                                <span style="font-size:0.66rem;color:#64748B">${dateStr}</span>
+                            </div>
                             <div class="coupon-col-action" style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
                                 <button type="button" class="btn-dash-action" onclick="copyToClipboard('${c.code}')" style="padding:4px 10px;font-size:0.72rem;font-weight:700">Copy</button>
                                 <button type="button" class="btn-dash-action" onclick="deleteCouponPin('${c.code}')" style="padding:4px 8px;font-size:0.72rem;color:#F87171;border-color:rgba(248,113,113,0.3)" title="Delete/Invalidate PIN">&times;</button>
@@ -4829,9 +4959,10 @@ require_once __DIR__ . '/includes/header.php';
 
         // Update counts
         const total = storedCoupons.length;
+        const available = storedCoupons.filter(c => !(c.isUsed || c.is_used || c.usedBy || c.used_by)).length;
         const upl = storedCoupons.filter(c => c.channel === 'UPLOADER').length;
         const aff = storedCoupons.filter(c => c.channel === 'AFFILIATE').length;
-        const ven = storedCoupons.filter(c => c.vendorId).length;
+        const ven = storedCoupons.filter(c => c.vendorId || c.vendor_id).length;
 
         const elTot = document.getElementById('lblCouponsGenCount');
         if (window.renderOverviewBarChart) window.renderOverviewBarChart();
@@ -4843,12 +4974,12 @@ require_once __DIR__ . '/includes/header.php';
         const elUnused = document.getElementById('overviewCouponsUnused');
 
         if (elTot) elTot.textContent = total;
-        if (elAvail) elAvail.textContent = total;
+        if (elAvail) elAvail.textContent = available;
         if (elFilterAll) elFilterAll.textContent = total;
         if (elFilterUpl) elFilterUpl.textContent = upl;
         if (elFilterAff) elFilterAff.textContent = aff;
         if (elFilterVen) elFilterVen.textContent = ven;
-        if (elUnused) elUnused.textContent = `${total} Total Available`;
+        if (elUnused) elUnused.textContent = `${available} Available • ${total} Generated`;
 
         // Update dedicated tab counts
         const tabAvail = document.getElementById('lblCouponsTabAvailable');
@@ -4856,9 +4987,9 @@ require_once __DIR__ . '/includes/header.php';
         const tabReg = document.getElementById('lblCouponsTabReg');
         const tabVen = document.getElementById('lblCouponsTabVendor');
 
-        if (tabAvail) tabAvail.textContent = total;
+        if (tabAvail) tabAvail.textContent = available;
         if (tabTot) tabTot.textContent = total;
-        if (tabReg) tabReg.textContent = `${aff} Active (₦1k)`;
+        if (tabReg) tabReg.textContent = `${aff} Reg PINs`;
         if (tabVen) tabVen.textContent = `${ven} Allocated`;
 
         const tabFilterAll = document.getElementById('tabCntFilterAll');
@@ -4967,6 +5098,13 @@ require_once __DIR__ . '/includes/header.php';
         let storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
         storedCoupons = storedCoupons.filter(c => c.code !== code);
         localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
+
+        fetch('api/coupons.php?action=delete_pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        }).catch(e => {});
+
         if (window.renderOverviewCouponsList) window.renderOverviewCouponsList();
         if (window.showToast) window.showToast(`PIN ${code} removed!`, 'info');
     };
@@ -7527,8 +7665,12 @@ saveWithdrawalSettings = function() {
                             <option value="sub_admin" ${role === 'sub_admin' ? 'selected' : ''}>Sub-Admin</option>
                             <option value="super_admin" ${role === 'super_admin' ? 'selected' : ''}>Super Admin</option>
                         </select><br>
-                        <button type="button" onclick="openUserActivityLedger('${u.username}')" class="btn-dash-action btn-dash-secondary" style="padding:6px 12px;font-size:0.74rem;width:120px">
+                        <button type="button" onclick="openUserActivityLedger('${u.username}')" class="btn-dash-action btn-dash-secondary" style="padding:5px 10px;font-size:0.72rem;width:120px;margin-bottom:4px">
                             Audit Ledger
+                        </button><br>
+                        <button type="button" onclick="openEditUserModal('${u.username}')" class="btn-dash-action" style="padding:5px 10px;font-size:0.72rem;width:120px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);color:#38BDF8;font-weight:700">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:3px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit Member
                         </button>
                     </td>
                 </tr>
@@ -7566,6 +7708,104 @@ saveWithdrawalSettings = function() {
         }
 
         document.getElementById('userLedgerModalOverlay').classList.add('open');
+    };
+
+    window.openEditUserModal = function(username) {
+        const u = adminUsersList.find(usr => usr.username.toLowerCase() === username.toLowerCase());
+        if (!u) return;
+
+        document.getElementById('editUserTargetUsername').value = u.username;
+        document.getElementById('editUserUsername').value = u.username;
+        document.getElementById('editUserFullName').value = u.full_name || u.username;
+        document.getElementById('editUserEmail').value = u.email || '';
+        document.getElementById('editUserPhone').value = u.phone || '';
+        document.getElementById('editUserRole').value = u.role || 'member';
+        document.getElementById('editUserCash').value = u.remaining_cash || 0;
+        document.getElementById('editUserPts').value = u.remaining_pts || 100;
+        document.getElementById('editUserBank').value = u.bank_name || '';
+        document.getElementById('editUserNuban').value = u.account_number || '';
+
+        document.getElementById('editUserModalOverlay').classList.add('open');
+    };
+
+    window.closeEditUserModal = function() {
+        document.getElementById('editUserModalOverlay').classList.remove('open');
+    };
+
+    window.handleSaveAdminUserDetails = async function(e) {
+        if (e) e.preventDefault();
+        const btn = document.getElementById('btnSaveAdminEditUser');
+        const ogText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span>Saving...</span>';
+
+        const targetUsername = document.getElementById('editUserTargetUsername').value;
+        const newUsername = document.getElementById('editUserUsername').value.trim();
+        const fullName = document.getElementById('editUserFullName').value.trim();
+        const email = document.getElementById('editUserEmail').value.trim();
+        const phone = document.getElementById('editUserPhone').value.trim();
+        const role = document.getElementById('editUserRole').value;
+        const cashBalance = parseFloat(document.getElementById('editUserCash').value) || 0;
+        const pointsBalance = parseInt(document.getElementById('editUserPts').value) || 0;
+        const bankName = document.getElementById('editUserBank').value.trim();
+        const accountNumber = document.getElementById('editUserNuban').value.trim();
+
+        try {
+            const res = await fetch('api/users.php?action=update_user_details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target_username: targetUsername,
+                    new_username: newUsername,
+                    full_name: fullName,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    cash_balance: cashBalance,
+                    points_balance: pointsBalance,
+                    bank_name: bankName,
+                    account_number: accountNumber
+                })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                // Update in memory list
+                const u = adminUsersList.find(usr => usr.username.toLowerCase() === targetUsername.toLowerCase());
+                if (u) {
+                    u.username = newUsername;
+                    u.full_name = fullName;
+                    u.email = email;
+                    u.phone = phone;
+                    u.role = role;
+                    u.status_label = (role === 'uploader') ? 'Verified Uploader' : (role === 'super_admin' ? 'Super Admin' : (role === 'sub_admin' ? 'Sub-Admin' : (role === 'moderator' ? 'Moderator' : 'Active Member')));
+                    u.remaining_cash = cashBalance;
+                    u.remaining_pts = pointsBalance;
+                    u.bank_name = bankName;
+                    u.account_number = accountNumber;
+                    localStorage.setItem('ix_admin_users', JSON.stringify(adminUsersList));
+                }
+                
+                // If the edited user is currently logged in locally, sync localStorage
+                const currentUser = localStorage.getItem('ix_current_user');
+                if (currentUser && currentUser.toLowerCase() === targetUsername.toLowerCase()) {
+                    localStorage.setItem('ix_current_user', newUsername);
+                    localStorage.setItem('ix_user_name', fullName);
+                    localStorage.setItem('ix_user_email', email);
+                    localStorage.setItem('ix_user_phone', phone);
+                }
+
+                closeEditUserModal();
+                renderAdminUsersTable();
+                alert(`User details for @${newUsername} updated successfully!`);
+            } else {
+                alert(data.error || 'Failed to update user details.');
+            }
+        } catch(err) {
+            alert('A network error occurred while updating user details.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = ogText;
+        }
     };
 
     window.seedNewDemoUser = function() {

@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/config/app.php';
+$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+if ($authUser) {
+    header("Location: dashboard.php");
+    exit;
+}
 $pinFromQuery = $_GET['pin'] ?? '';
 $refFromQuery = $_GET['ref'] ?? '';
 ?>
@@ -323,7 +328,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                             <label for="regPin" style="margin-bottom:0">Activation / Vendor PIN</label>
                             <a href="vendors.php" style="font-size:0.75rem;color:#7DD3FC;text-decoration:none;font-weight:700">Buy PIN from Vendor &rarr;</a>
                         </div>
-                        <input type="text" id="regPin" name="pin" class="form-input" value="<?= htmlspecialchars($pinFromQuery) ?>" placeholder="e.g. INX-ACT-8492-VIP" required>
+                        <input type="text" id="regPin" name="pin" class="form-input" value="<?= htmlspecialchars($pinFromQuery) ?>" placeholder="Enter activation coupon PIN" required>
                     </div>
 
                     <div class="form-group full">
@@ -396,19 +401,23 @@ $refFromQuery = $_GET['ref'] ?? '';
             return;
         }
 
-        if (pin.includes('UPL') || pin.startsWith('IX-UPL-')) {
-            alert(`Invalid Code Type!\n\n"${pin}" is an Uploader Accreditation Code. It cannot be used for Member Registration.\n\nPlease purchase or input a Member Activation PIN (e.g. IX-ACT-XXXX-VIP).`);
+        if (!pin) {
+            alert('Please enter an Activation / Vendor PIN to proceed with registration.');
             return;
         }
 
+        if (pin.includes('UPL') || pin.startsWith('IX-UPL-') || pin.startsWith('INX-UPL-')) {
+            alert(`Invalid Code Type!\n\n"${pin}" is an Uploader Accreditation Code. It cannot be used for Member Registration.\n\nPlease purchase or input a Member Activation PIN (e.g. INX-AFF-XXXX-XXXX).`);
+            return;
+        }
         
         btn.disabled = true;
-        btn.innerHTML = `<span>Activating Account & Syncing Referrals...</span>`;
+        btn.innerHTML = `<span>Activating Account & Verifying PIN...</span>`;
 
         const fullName = document.getElementById('fullName').value.trim();
         const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
 
-        // Register via real backend API
+        // Register via real backend API with PIN verification
         fetch('api/auth.php?action=register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -418,6 +427,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                 email: email,
                 phone: phone,
                 password: password,
+                pin: pin,
                 ref: refCode
             })
         })
@@ -426,11 +436,14 @@ $refFromQuery = $_GET['ref'] ?? '';
             if (data.status === 'success') {
                 try {
                     localStorage.setItem('ix_current_user', data.username);
+                    if (data.email) localStorage.setItem('ix_user_email', data.email);
+                    if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
+                    if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                     sessionStorage.setItem('ix_user', data.username);
                 } catch(e) {}
                 
                 alert(`Account Activated!\n\nWelcome @${data.username}. Your membership has been activated successfully.\nYour referral link is ready, and you can withdraw earnings directly to your bank.`);
-                window.location.href = 'dashboard.php';
+                window.location.replace('dashboard.php');
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;

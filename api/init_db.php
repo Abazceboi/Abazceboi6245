@@ -84,8 +84,16 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 try {
     $pdo->exec($sql);
-    // Migration: ensure role column exists on existing installations
+    // Migrations: ensure role & coupon tracking columns exist on existing installations
     $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'member';");
+    $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS couponPinUsed VARCHAR(100);");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS is_used BOOLEAN DEFAULT false;");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS used_by VARCHAR(100);");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS vendor_id VARCHAR(100);");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS vendor_name VARCHAR(255);");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS tier VARCHAR(50) DEFAULT 'AFF';");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS type_label VARCHAR(100);");
+    $pdo->exec("ALTER TABLE coupon_pins ADD COLUMN IF NOT EXISTS used_at TIMESTAMP;");
     echo "SUCCESS: Database tables have been successfully initialized.\n";
     echo "You can now register users and log in.";
 } catch (PDOException $e) {

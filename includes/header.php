@@ -48,6 +48,16 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
             try {
                 savedTheme = localStorage.getItem('ix_theme') || localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', savedTheme);
+                if (window.CSS && CSS.registerProperty) {
+                    try {
+                        CSS.registerProperty({
+                            name: '--theme-wipe-radius',
+                            syntax: '<length>',
+                            inherits: false,
+                            initialValue: '0px'
+                        });
+                    } catch(e) {}
+                }
             } catch(e) {}
 
             function syncThemeUI(theme) {
@@ -61,18 +71,32 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                         btn.innerHTML = (theme === 'light') ? moonSvg : sunSvg;
                         btn.setAttribute('title', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
                     });
+                    if (typeof syncThemeIcons === 'function') {
+                        syncThemeIcons();
+                    }
                 } catch(e) {}
             }
 
-            window.togglePlatformTheme = function() {
+            window.togglePlatformTheme = function(e) {
                 try {
+                    var evt = e || window.event;
+                    var x = (evt && evt.clientX) ? evt.clientX + 'px' : 'calc(100% - 40px)';
+                    var y = (evt && evt.clientY) ? evt.clientY + 'px' : '30px';
+                    document.documentElement.style.setProperty('--theme-x', x);
+                    document.documentElement.style.setProperty('--theme-y', y);
+
                     var current = document.documentElement.getAttribute('data-theme') || 'dark';
                     var next = (current === 'light') ? 'dark' : 'light';
                     
                     var updateTheme = function() {
                         document.documentElement.setAttribute('data-theme', next);
-                        localStorage.setItem('ix_theme', next);
-                        localStorage.setItem('theme', next);
+                        if (document.body) {
+                            document.body.setAttribute('data-theme', next);
+                        }
+                        try {
+                            localStorage.setItem('ix_theme', next);
+                            localStorage.setItem('theme', next);
+                        } catch(err) {}
                         syncThemeUI(next);
                     };
 
@@ -85,7 +109,9 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                     } else {
                         updateTheme();
                     }
-                } catch(e) {}
+                } catch(e) {
+                    try { updateTheme(); } catch(err) {}
+                }
             };
 
             document.addEventListener('DOMContentLoaded', function() {

@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../includes/coupons_helper.php';
 
+$pdo = getDbConnection();
 $input = json_decode(file_get_contents('php://input'), true);
 $code = trim($input['code'] ?? '');
 
@@ -31,18 +33,44 @@ if (empty($code)) {
 }
 
 $codeUpper = strtoupper($code);
+$coupon = findCouponByCode($codeUpper, $pdo);
+
+if (!$coupon) {
+    echo json_encode([
+        'success' => false,
+        'is_used' => false,
+        'message' => "Invalid or unrecognized code: \"{$codeUpper}\". Please check code format or purchase an activation PIN from an authorized vendor."
+    ]);
+    exit;
+}
 
 // Determine Code Type: Uploader vs Member
-$isUploaderCode = (strpos($codeUpper, 'UPL') !== false);
+$isUploaderCode = (strpos($codeUpper, 'UPL') !== false || ($coupon['type'] ?? '') === 'UPL' || ($coupon['channel'] ?? '') === 'UPLOADER');
 $codeType = $isUploaderCode ? 'uploader_accreditation' : 'member_activation';
 $codeTypeLabel = $isUploaderCode ? 'Official Uploader Accreditation PIN' : 'Member Registration PIN';
-$codeAmount = $isUploaderCode ? 10000 : MEMBERSHIP_FEE;
+$codeAmount = $coupon['amount'] ?? ($isUploaderCode ? 10000 : MEMBERSHIP_FEE);
+
+if (!empty($coupon['is_used']) || !empty($coupon['used_by'])) {
+    $usedByInfo = !empty($coupon['used_by']) ? " by user @{$coupon['used_by']}" : "";
+    $usedAtInfo = !empty($coupon['used_at']) ? " on " . date('M j, Y', strtotime($coupon['used_at'])) : "";
+    echo json_encode([
+        'success' => false,
+        'is_used' => true,
+        'used_by' => $coupon['used_by'] ?? null,
+        'code_type' => $codeType,
+        'code_label' => $codeTypeLabel,
+        'message' => "This coupon PIN (\"{$codeUpper}\") has already been used to register an account{$usedByInfo}{$usedAtInfo}. Coupon codes are strictly single-use only.",
+        'code' => $codeUpper
+    ]);
+    exit;
+}
 
 echo json_encode([
     'success' => true,
+    'is_used' => false,
     'code_type' => $codeType,
     'code_label' => $codeTypeLabel,
-    'message' => "Valid and active {$codeTypeLabel}.",
+    'message' => "Valid and active {$codeTypeLabel}. Ready for account registration!",
     'amount' => $codeAmount,
     'code' => $codeUpper
 ]);

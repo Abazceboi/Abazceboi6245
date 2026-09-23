@@ -1,5 +1,14 @@
 <?php
 require_once __DIR__ . '/config/app.php';
+$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+if ($authUser) {
+    if (!empty($authUser['is_admin']) || (isset($authUser['username']) && in_array(strtolower($authUser['username']), ['admin', 'superadmin']))) {
+        header("Location: secure_hq_panel.php");
+    } else {
+        header("Location: dashboard.php");
+    }
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -306,10 +315,13 @@ require_once __DIR__ . '/config/app.php';
         .then(data => {
             if (data.status === 'success') {
                 localStorage.setItem('ix_current_user', data.username);
+                if (data.email) localStorage.setItem('ix_user_email', data.email);
+                if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
+                if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                 if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
-                    window.location.href = 'secure_hq_panel.php';
+                    window.location.replace('secure_hq_panel.php');
                 } else {
-                    window.location.href = 'dashboard.php';
+                    window.location.replace('dashboard.php');
                 }
             } else {
                 alert(data.message || 'Login failed.');

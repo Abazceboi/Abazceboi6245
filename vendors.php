@@ -248,46 +248,58 @@ function unlockVendorVault() {
 
     const vendorName = vendorMap[vendorId] || 'Vendor';
 
-    // Retrieve sitewide stored coupons
-    let storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
-    if (storedCoupons.length === 0) {
-        storedCoupons = [
-            { code: 'INX-JOB-3104-8842', channel: 'UPLOADER', typeLabel: 'Jobber Quota PIN', vendorId: 'v1', vendorName: 'Emmanuel Eze' },
-            { code: 'INX-AFF-5521-4409', channel: 'AFFILIATE', typeLabel: 'Member Registration PIN', vendorId: 'v2', vendorName: 'Fatima Bello' },
-            { code: 'INX-AFF-4412-9908', channel: 'AFFILIATE', typeLabel: 'Affiliate VIP Promo PIN', vendorId: 'v3', vendorName: 'Tunde Adeyemi' },
-            { code: 'INX-AFF-9012-7741', channel: 'AFFILIATE', typeLabel: 'Member Registration PIN', vendorId: 'v1', vendorName: 'Emmanuel Eze' },
-            { code: 'INX-UPL-1892-6630', channel: 'UPLOADER', typeLabel: 'Uploader Upgrade PIN', vendorId: 'v1', vendorName: 'Emmanuel Eze' }
-        ];
-        localStorage.setItem('ix_coupons', JSON.stringify(storedCoupons));
-    }
+    function renderVendorVault(coupons) {
+        // Filter ONLY coupons assigned to this specific vendor
+        const vendorCoupons = coupons.filter(c => (c.vendorId === vendorId || c.vendor_id === vendorId));
 
-    // STRICT SEGREGATION: Filter ONLY coupons assigned to this specific vendor
-    const vendorCoupons = storedCoupons.filter(c => c.vendorId === vendorId);
+        document.getElementById('activeVaultVendorName').textContent = vendorName;
+        document.getElementById('activeVaultPinCount').textContent = `${vendorCoupons.length} PINs`;
 
-    document.getElementById('activeVaultVendorName').textContent = vendorName;
-    document.getElementById('activeVaultPinCount').textContent = `${vendorCoupons.length} PINs`;
-
-    const listEl = document.getElementById('vaultPinsList');
-    if (vendorCoupons.length === 0) {
-        listEl.innerHTML = `
-            <div style="padding:24px;text-align:center;color:#94A3B8;background:rgba(10,16,32,0.6);border:1px dashed rgba(56,189,248,0.2);border-radius:10px">
-                <p style="font-size:0.85rem;margin-bottom:6px;color:#FFF;font-weight:700">No PINs Assigned To ${vendorName}</p>
-                <p style="font-size:0.75rem;margin:0">Administration has not allocated wholesale codes to your account yet. Generate or assign codes from the Admin Center.</p>
-            </div>
-        `;
-    } else {
-        listEl.innerHTML = vendorCoupons.map(c => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(10,16,32,0.8);border:1px solid rgba(56,189,248,0.18);border-radius:8px;font-size:0.78rem">
-                <div>
-                    <span style="font-family:monospace;font-weight:800;color:#38BDF8">${c.code}</span>
-                    <span style="font-size:0.7rem;color:#7DD3FC;margin-left:8px;font-weight:600">${c.typeLabel}</span>
+        const listEl = document.getElementById('vaultPinsList');
+        if (vendorCoupons.length === 0) {
+            listEl.innerHTML = `
+                <div style="padding:24px;text-align:center;color:#94A3B8;background:rgba(10,16,32,0.6);border:1px dashed rgba(56,189,248,0.2);border-radius:10px">
+                    <p style="font-size:0.85rem;margin-bottom:6px;color:#FFF;font-weight:700">No PINs Assigned To ${vendorName}</p>
+                    <p style="font-size:0.75rem;margin:0">Administration has not allocated wholesale codes to your account yet. Generate or assign codes from the Admin Center.</p>
                 </div>
-                <button type="button" class="btn-dash-action" onclick="copyToClipboard('${c.code}')" style="padding:3px 10px;font-size:0.7rem;background:rgba(56,189,248,0.15);color:#FFF;border:none;border-radius:5px">
-                    Copy
-                </button>
-            </div>
-        `).join('');
+            `;
+        } else {
+            listEl.innerHTML = vendorCoupons.map(c => {
+                const isUsed = Boolean(c.isUsed || c.is_used || c.usedBy || c.used_by);
+                const statusBadge = isUsed
+                    ? `<span style="font-size:0.68rem;color:#F87171;background:rgba(248,113,113,0.15);padding:2px 6px;border-radius:4px;font-weight:700">Redeemed</span>`
+                    : `<span style="font-size:0.68rem;color:#34D399;background:rgba(52,211,153,0.15);padding:2px 6px;border-radius:4px;font-weight:700">Available</span>`;
+
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(10,16,32,0.8);border:1px solid rgba(56,189,248,0.18);border-radius:8px;font-size:0.78rem">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                            <span style="font-family:monospace;font-weight:800;color:#38BDF8;font-size:0.84rem">${c.code}</span>
+                            <span style="font-size:0.7rem;color:#7DD3FC;font-weight:600">${c.typeLabel || c.type_label || 'Member PIN'}</span>
+                            ${statusBadge}
+                        </div>
+                        <button type="button" class="btn-dash-action" onclick="copyToClipboard('${c.code}')" style="padding:4px 12px;font-size:0.72rem;background:rgba(56,189,248,0.15);color:#FFF;border:1px solid rgba(56,189,248,0.3);border-radius:6px;font-weight:700">
+                            Copy
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
     }
+
+    // Retrieve cached coupons first
+    let storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
+    renderVendorVault(storedCoupons);
+
+    // Fetch live backend status
+    fetch('api/coupons.php?action=get_pins')
+        .then(r => r.json())
+        .then(res => {
+            if (res && res.success && Array.isArray(res.coupons)) {
+                localStorage.setItem('ix_coupons', JSON.stringify(res.coupons));
+                renderVendorVault(res.coupons);
+            }
+        })
+        .catch(() => {});
 
     document.getElementById('vendorAuthSection').style.display = 'none';
     document.getElementById('vendorInventorySection').style.display = 'block';

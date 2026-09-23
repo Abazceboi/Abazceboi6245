@@ -5638,7 +5638,7 @@ select.dash-input:focus {
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(8px);
-  z-index: 998;
+  z-index: 10001;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -5659,7 +5659,7 @@ select.dash-input:focus {
   height: 100vh;
   background: #0F0F17;
   border-left: 1px solid rgba(99, 102, 241, 0.15);
-  z-index: 999;
+  z-index: 10002;
   padding: 24px;
   transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -5672,7 +5672,7 @@ select.dash-input:focus {
 
 .drawer-head {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--mt-border);
@@ -5680,6 +5680,33 @@ select.dash-input:focus {
 }
 .drawer-head .logo {
   color: #FFFFFF;
+}
+.drawer-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: var(--transition);
+}
+.drawer-close-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+[data-theme="light"] .drawer-close-btn {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+[data-theme="light"] .drawer-close-btn:hover {
+  background: #E2E8F0 !important;
 }
 .drawer-link {
   padding: 12px 14px;
@@ -10492,40 +10519,63 @@ html, body {
 /* ---------------------------------------------------------------------- */
 /* THEME TOGGLE VIEW TRANSITION ANIMATIONS                                */
 /* ---------------------------------------------------------------------- */
+@property --theme-wipe-radius {
+  syntax: '<length>';
+  initial-value: 0px;
+  inherits: false;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
+
 ::view-transition-group(root) {
-  animation-duration: 1.2s;
+  animation-duration: 0.38s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-animating-theme="light"]::view-transition-old(root) {
-  animation: themeFade 1.2s ease forwards;
-}
-[data-animating-theme="light"]::view-transition-new(root) {
-  animation: revealLight 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  z-index: 9999;
-}
-@keyframes revealLight {
-  0% { clip-path: circle(0% at 100% 100%); }
-  100% { clip-path: circle(150% at 100% 100%); }
+::view-transition-old(root) {
+  z-index: 1;
 }
 
-[data-animating-theme="dark"]::view-transition-old(root) {
-  animation: themeFade 1.2s ease forwards;
-}
-[data-animating-theme="dark"]::view-transition-new(root) {
-  animation: revealDark 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+::view-transition-new(root) {
   z-index: 9999;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--theme-x, calc(100% - 40px)) var(--theme-y, 30px),
+    #000 0px,
+    #000 var(--theme-wipe-radius),
+    rgba(0, 0, 0, 0.7) calc(var(--theme-wipe-radius) + 20px),
+    rgba(0, 0, 0, 0.25) calc(var(--theme-wipe-radius) + 40px),
+    transparent calc(var(--theme-wipe-radius) + 60px)
+  );
+  mask-image: radial-gradient(
+    circle at var(--theme-x, calc(100% - 40px)) var(--theme-y, 30px),
+    #000 0px,
+    #000 var(--theme-wipe-radius),
+    rgba(0, 0, 0, 0.7) calc(var(--theme-wipe-radius) + 20px),
+    rgba(0, 0, 0, 0.25) calc(var(--theme-wipe-radius) + 40px),
+    transparent calc(var(--theme-wipe-radius) + 60px)
+  );
+  animation: themeWipeReveal 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-@keyframes revealDark {
-  0% { clip-path: circle(0% at 100% 0%); }
-  100% { clip-path: circle(150% at 100% 0%); }
+
+@keyframes themeWipeReveal {
+  from {
+    --theme-wipe-radius: 0px;
+  }
+  to {
+    --theme-wipe-radius: 160vmax;
+  }
 }
-@keyframes themeFade {
-  to { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 

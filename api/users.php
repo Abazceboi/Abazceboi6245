@@ -334,10 +334,108 @@ switch ($action) {
         ]);
         break;
 
+    case 'update_user_details':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $targetUsername = trim($input['target_username'] ?? '');
+        $newUsername    = trim($input['new_username'] ?? $targetUsername);
+        $fullName       = trim($input['full_name'] ?? '');
+        $email          = trim($input['email'] ?? '');
+        $phone          = trim($input['phone'] ?? '');
+        $role           = trim($input['role'] ?? 'member');
+        $cashBalance    = isset($input['cash_balance']) ? (float)$input['cash_balance'] : 0.0;
+        $pointsBalance  = isset($input['points_balance']) ? (int)$input['points_balance'] : 100;
+        $bankName       = trim($input['bank_name'] ?? '');
+        $accountNumber  = trim($input['account_number'] ?? '');
+
+        if (empty($targetUsername)) {
+            echo json_encode(['success' => false, 'error' => 'Target username is required']);
+            exit;
+        }
+
+        if (!in_array($role, $VALID_ROLES)) {
+            $role = 'member';
+        }
+
+        // 1. Update in Database if available
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+            } catch (Exception $e) {
+                try {
+                    $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                } catch (Exception $e2) {}
+            }
+        }
+
+        // 2. Update in JSON registry
+        $data = loadUsers();
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($targetUsername)) {
+                $u['username'] = $newUsername;
+                if (!empty($fullName)) $u['full_name'] = $fullName;
+                if (!empty($email)) $u['email'] = $email;
+                if (!empty($phone)) $u['phone'] = $phone;
+                $u['role'] = $role;
+                $u['role_label'] = $ROLE_LABELS[$role] ?? 'Active Member';
+                $u['remaining_cash'] = $cashBalance;
+                $u['remaining_pts'] = $pointsBalance;
+                if (!empty($bankName)) $u['bank_name'] = $bankName;
+                if (!empty($accountNumber)) $u['account_number'] = $accountNumber;
+                $u['updated_at'] = date('c');
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if (!$found) {
+            $data['users'][] = [
+                'username' => $newUsername,
+                'full_name' => $fullName ?: $newUsername,
+                'email' => $email,
+                'phone' => $phone,
+                'role' => $role,
+                'role_label' => $ROLE_LABELS[$role] ?? 'Active Member',
+                'remaining_cash' => $cashBalance,
+                'remaining_pts' => $pointsBalance,
+                'bank_name' => $bankName ?: 'Pending Setup',
+                'account_number' => $accountNumber ?: '••••••••',
+                'updated_at' => date('c')
+            ];
+        }
+
+        saveUsers($data);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "User '{$targetUsername}' updated successfully.",
+            'user' => [
+                'username' => $newUsername,
+                'full_name' => $fullName,
+                'email' => $email,
+                'phone' => $phone,
+                'role' => $role,
+                'cash_balance' => $cashBalance,
+                'points_balance' => $pointsBalance,
+                'bank_name' => $bankName,
+                'account_number' => $accountNumber
+            ]
+        ]);
+        break;
+
     default:
         echo json_encode([
             'success' => false,
-            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, get_role',
+            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, update_user_details, get_role',
             'valid_roles' => $VALID_ROLES,
             'role_labels' => $ROLE_LABELS
         ]);

@@ -155,7 +155,7 @@ function isActive($page, $currentPage) {
 
     <div class="nav-cta">
         <!-- Light / Dark Mode Toggle Button -->
-        <button type="button" class="btn-theme-toggle" id="btnThemeToggle" onclick="togglePlatformTheme()" aria-label="Toggle Light/Dark Theme">
+        <button type="button" class="btn-theme-toggle" id="btnThemeToggle" onclick="togglePlatformTheme(event)" aria-label="Toggle Light/Dark Theme">
             <svg id="themeIconSun" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             <svg id="themeIconMoon" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
@@ -181,9 +181,7 @@ function isActive($page, $currentPage) {
             <div class="logo-icon" style="width:34px;height:34px;font-size:0.75rem">IX</div>
             <span style="font-size:1.2rem">INNOVATIONX</span>
         </div>
-        <button type="button" onclick="togglePlatformTheme()" class="btn-dash-action" style="padding:4px 10px;font-size:0.75rem;display:flex;align-items:center;gap:6px">
-            <span id="mobileThemeText">Theme</span>
-        </button>
+        <button type="button" class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close Menu" onclick="var d=document.getElementById('mobileDrawer'),b=document.querySelector('.drawer-backdrop');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:var(--white-pure);width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.3rem;line-height:1">&times;</button>
     </div>
     <a href="index.php" class="drawer-link">Home</a>
     
@@ -218,26 +216,51 @@ window.syncThemeIcons = function() {
     const current = document.documentElement.getAttribute('data-theme') || 'dark';
     const sun = document.getElementById('themeIconSun');
     const moon = document.getElementById('themeIconMoon');
-    const mText = document.getElementById('mobileThemeText');
     if (current === 'light') {
         if (sun) sun.style.display = 'none';
         if (moon) moon.style.display = 'block';
-        if (mText) mText.textContent = 'Dark Mode';
     } else {
         if (sun) sun.style.display = 'block';
         if (moon) moon.style.display = 'none';
-        if (mText) mText.textContent = 'Light Mode';
     }
 };
 
-window.togglePlatformTheme = function() {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = current === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
+window.togglePlatformTheme = function(e) {
     try {
-        localStorage.setItem('ix_theme', next);
-    } catch(e) {}
-    syncThemeIcons();
+        var evt = e || window.event;
+        var x = (evt && evt.clientX) ? evt.clientX + 'px' : 'calc(100% - 40px)';
+        var y = (evt && evt.clientY) ? evt.clientY + 'px' : '30px';
+        document.documentElement.style.setProperty('--theme-x', x);
+        document.documentElement.style.setProperty('--theme-y', y);
+
+        var current = document.documentElement.getAttribute('data-theme') || 'dark';
+        var next = (current === 'light') ? 'dark' : 'light';
+
+        var updateTheme = function() {
+            document.documentElement.setAttribute('data-theme', next);
+            if (document.body) {
+                document.body.setAttribute('data-theme', next);
+            }
+            try {
+                localStorage.setItem('ix_theme', next);
+                localStorage.setItem('theme', next);
+            } catch(err) {}
+            syncThemeIcons();
+            if (typeof syncThemeUI === 'function') syncThemeUI(next);
+        };
+
+        if (document.startViewTransition) {
+            document.documentElement.setAttribute('data-animating-theme', next);
+            var transition = document.startViewTransition(updateTheme);
+            transition.finished.then(function() {
+                document.documentElement.removeAttribute('data-animating-theme');
+            });
+        } else {
+            updateTheme();
+        }
+    } catch(err) {
+        try { updateTheme(); } catch(e2) {}
+    }
 };
 
 document.addEventListener('DOMContentLoaded', syncThemeIcons);

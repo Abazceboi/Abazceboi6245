@@ -60,18 +60,23 @@ export class CodeVerifier {
             }
             else {
                 this.resultBox.className = 'verify-result error';
+                const headline = data.is_used ? 'Code Already Used' : 'Invalid Code';
+                const actionBtn = data.is_used
+                    ? `<div style="margin-top:14px"><a href="vendors.php" class="btn-primary" style="display:inline-flex;padding:8px 22px;font-size:0.85rem">Get Fresh Activation PIN &rarr;</a></div>`
+                    : `<div style="margin-top:14px"><a href="vendors.php" class="btn-outline" style="display:inline-flex;padding:8px 22px;font-size:0.85rem">Purchase from Official Vendors &rarr;</a></div>`;
                 this.resultBox.innerHTML = `
-                    <div style="font-weight:800;font-size:1.05rem;color:#F43F5E;margin-bottom:4px">Invalid Code</div>
-                    <div style="font-size:0.9rem;color:var(--text-gray)">${data.message || 'Please check code format or buy from verified vendors.'}</div>
+                    <div style="font-weight:800;font-size:1.05rem;color:#F43F5E;margin-bottom:4px">${headline}</div>
+                    <div style="font-size:0.9rem;color:var(--text-gray);line-height:1.45">${data.message || 'Please check code format or buy from verified vendors.'}</div>
+                    ${actionBtn}
                 `;
             }
         }
         catch (err) {
             this.resultBox.style.display = 'block';
-            this.resultBox.className = 'verify-result success';
+            this.resultBox.className = 'verify-result error';
             this.resultBox.innerHTML = `
-                <div style="font-weight:800;font-size:1.05rem;color:#10B981;margin-bottom:4px">Code Format Verified</div>
-                <div style="font-size:0.9rem;color:var(--text-gray)">Status: Active.</div>
+                <div style="font-weight:800;font-size:1.05rem;color:#F43F5E;margin-bottom:4px">Verification Unavailable</div>
+                <div style="font-size:0.9rem;color:var(--text-gray)">Unable to connect to verification server. Please verify your internet connection.</div>
             `;
         }
         finally {
