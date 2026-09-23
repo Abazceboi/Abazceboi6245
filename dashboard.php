@@ -79,18 +79,25 @@ require_once __DIR__ . '/includes/header.php';
                 <!-- In-App Notification Bell -->
                 <div class="notif-bell-wrap" id="navNotifWrap">
                     <button type="button" class="btn-notif-bell" id="btnNotifBell" onclick="toggleNotifDropdown(event)" aria-label="Notifications" title="Notifications">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        <span class="notif-badge-count" id="notifBadgeCount">3</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="notif-badge-count" id="notifBadgeCount" style="display:none">0</span>
                     </button>
                     <div class="notif-dropdown" id="notifDropdown">
-                        <div class="notif-dropdown-head" style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08)">
-                            <div style="display:flex;align-items:center;gap:8px">
-                                <span style="font-size:0.85rem;font-weight:800;color:var(--white-pure)">Notifications</span>
-                                <span style="font-size:0.72rem;color:#38BDF8;background:rgba(2,132,199,0.15);border:1px solid rgba(56,189,248,0.3);padding:2px 8px;border-radius:10px;font-weight:700" id="notifDropdownCount">3 New</span>
+                        <div class="notif-dropdown-head">
+                            <div class="notif-head-title-wrap">
+                                <span class="notif-head-title">Notifications</span>
+                                <span class="notif-unread-pill" id="notifDropdownCount">0 New</span>
                             </div>
-                            <button type="button" onclick="clearAllNotifications(event)" style="background:none;border:none;color:var(--text-gray);font-size:0.72rem;font-weight:700;cursor:pointer;padding:2px 6px;border-radius:6px;transition:var(--transition)" title="Clear all notifications">Clear All</button>
+                            <button type="button" class="notif-btn-mark-all" onclick="markAllNotificationsAsRead(event)" title="Mark all notifications as read">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Mark all read</span>
+                            </button>
                         </div>
-                        <div id="notifDropdownList" style="max-height:360px;overflow-y:auto"></div>
+                        <div class="notif-filter-tabs">
+                            <button type="button" class="notif-filter-tab active" id="notifTabAll" onclick="setNotifFilter('all', event)">All (<span id="notifTabCountAll">0</span>)</button>
+                            <button type="button" class="notif-filter-tab" id="notifTabUnread" onclick="setNotifFilter('unread', event)">Unread (<span id="notifTabCountUnread">0</span>)</button>
+                        </div>
+                        <div id="notifDropdownList" style="max-height:360px;overflow-y:auto;padding-right:2px"></div>
                     </div>
                 </div>
 
@@ -1921,81 +1928,150 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
- <!-- ===== STEP 2: RECEIPT + TRACKER MODAL ===== -->
+ <!-- ===== STEP 2: LUXURY RECEIPT + ACTIVE TRACKER MODAL ===== -->
     <div class="receipt-overlay" id="receiptOverlay" style="display:none">
- <div class="receipt-modal" id="receiptCapture">
- <div class="receipt-top">
- <div class="receipt-logo">
- <div class="logo-icon" style="width:32px;height:32px;font-size:0.75rem">IX</div>
- <span style="font-weight:900;font-size:1rem;color:#FFF">INNOVATIONX</span>
- </div>
- <div class="receipt-badge badge-pending" id="receiptBadge">
- <span class="receipt-badge-dot"></span>
- <span class="badge-text">Processing</span>
- </div>
- </div>
+        <div class="receipt-modal" id="receiptCapture">
+            <div class="receipt-top">
+                <div class="receipt-logo">
+                    <div class="receipt-logo-icon">IX</div>
+                    <div class="receipt-brand-text">
+                        <span class="receipt-brand-name">INNOVATIONX</span>
+                        <span class="receipt-brand-sub">Official Settlement Voucher</span>
+                    </div>
+                </div>
+                <div class="receipt-badge badge-pending" id="receiptBadge">
+                    <span class="receipt-badge-dot"></span>
+                    <span class="badge-text">Processing</span>
+                </div>
+            </div>
 
- <h3 class="receipt-title" style="font-size:1.15rem;margin-bottom:2px">Withdrawal Receipt</h3>
- <p class="receipt-txid" id="receiptTxId" style="margin-bottom:14px">TXN-XXXXXXXX</p>
+            <!-- Net Dispatched Amount Hero Card -->
+            <div class="receipt-hero-amount-card">
+                <div class="receipt-hero-amount-sub">Net Amount Dispatched</div>
+                <div class="receipt-hero-amount-val" id="rHeroAmount">₦0.00</div>
+            </div>
 
- <div class="receipt-details" style="margin-bottom:14px">
- <div class="receipt-row">
- <span class="receipt-label">Bank</span>
- <span class="receipt-value" id="rBank">—</span>
- </div>
- <div class="receipt-row">
- <span class="receipt-label">Account</span>
- <span class="receipt-value" id="rAccount">—</span>
- </div>
- <div class="receipt-row">
- <span class="receipt-label">Amount</span>
- <span class="receipt-value receipt-amount" id="rAmount">—</span>
- </div>
- <div class="receipt-row">
- <span class="receipt-label">Date & Time</span>
- <span class="receipt-value" id="rDateTime" style="font-size:0.82rem">—</span>
- </div>
- <div class="receipt-row">
- <span class="receipt-label">Status</span>
- <span class="receipt-value receipt-status status-processing" id="rStatus">Request Submitted</span>
- </div>
- </div>
+            <!-- Active Reference Number Tracking Section -->
+            <div class="receipt-ref-tracker-pill">
+                <div class="receipt-ref-left">
+                    <div class="receipt-ref-title-row">
+                        <span class="receipt-ref-live-pulse"></span>
+                        <span class="receipt-ref-title">Reference Tracking ID</span>
+                    </div>
+                    <p class="receipt-txid" id="receiptTxId">TXN-XXXXXXXX</p>
+                </div>
+                <button type="button" class="btn-receipt-copy-ref" id="btnReceiptCopyRef" onclick="copyReceiptRef(event)" title="Copy Reference Number">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span id="btnReceiptCopyText">Copy Ref</span>
+                </button>
+            </div>
 
- <!-- Compact Horizontal Tracker -->
- <div class="receipt-tracker" style="padding:14px 16px;margin-bottom:14px">
- <h4 class="tracker-title" style="font-size:0.78rem;margin-bottom:12px">Transfer Tracking</h4>
- <div class="tracker-compact">
- <div class="tc-step active" id="ts1">
- <div class="tc-dot"></div>
- <span class="tc-label">Submitted</span>
- </div>
- <div class="tc-line" id="tl1"></div>
- <div class="tc-step" id="ts2">
- <div class="tc-dot"></div>
- <span class="tc-label">Verified</span>
- </div>
- <div class="tc-line" id="tl2"></div>
- <div class="tc-step" id="ts3">
- <div class="tc-dot"></div>
- <span class="tc-label">Processing</span>
- </div>
- <div class="tc-line" id="tl3"></div>
- <div class="tc-step" id="ts4">
- <div class="tc-dot"></div>
- <span class="tc-label">Sent</span>
- </div>
- </div>
- </div>
+            <!-- 4-Step Animated Tracking Lifecycle -->
+            <div class="receipt-tracker">
+                <div class="tracker-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>Active Transfer Lifecycle</span>
+                </div>
+                <div class="tracker-compact">
+                    <div class="tc-step active" id="ts1">
+                        <div class="tc-dot"></div>
+                        <span class="tc-label">Submitted</span>
+                    </div>
+                    <div class="tc-line" id="tl1"></div>
+                    <div class="tc-step" id="ts2">
+                        <div class="tc-dot"></div>
+                        <span class="tc-label">Verified</span>
+                    </div>
+                    <div class="tc-line" id="tl2"></div>
+                    <div class="tc-step" id="ts3">
+                        <div class="tc-dot"></div>
+                        <span class="tc-label">Switching</span>
+                    </div>
+                    <div class="tc-line" id="tl3"></div>
+                    <div class="tc-step" id="ts4">
+                        <div class="tc-dot"></div>
+                        <span class="tc-label">Settled</span>
+                    </div>
+                </div>
+            </div>
 
- <div class="receipt-btn-row">
- <button class="btn-receipt-download" id="receiptDownload">
- <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
- Download Receipt
- </button>
- <button class="btn-receipt-close" id="receiptClose">Close</button>
- </div>
- </div>
- </div>
+            <!-- Detailed Breakdown Table -->
+            <div class="receipt-details">
+                <div class="receipt-row">
+                    <span class="receipt-label">Beneficiary Bank</span>
+                    <span class="receipt-value" id="rBank">—</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Account Number</span>
+                    <span class="receipt-value" id="rAccount" style="font-family:'SFMono-Regular',Consolas,monospace">—</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Beneficiary Name</span>
+                    <span class="receipt-value" id="rBeneficiaryName"><?= htmlspecialchars($username) ?></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Payout Amount</span>
+                    <span class="receipt-value receipt-amount" id="rAmount">—</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Settlement Channel</span>
+                    <span class="receipt-value" style="font-size:0.78rem;color:#38BDF8">Instant NUBAN NIP Switch</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Date & Time</span>
+                    <span class="receipt-value" id="rDateTime" style="font-size:0.78rem">—</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Transfer Status</span>
+                    <span class="receipt-value receipt-status status-processing" id="rStatus">Request Submitted</span>
+                </div>
+            </div>
+
+            <!-- Digital Cryptographic Security Seal -->
+            <div class="receipt-security-seal">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Verified Digital Settlement Voucher · SHA-256 Validated</span>
+            </div>
+
+            <div class="receipt-btn-row">
+                <button type="button" class="btn-receipt-download" id="receiptDownload">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Receipt
+                </button>
+                <button type="button" class="btn-receipt-close" id="receiptClose">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NOTIFICATION DETAIL MODAL ===== -->
+    <div class="notif-detail-overlay" id="notifDetailModalOverlay" style="display:none">
+        <div class="notif-detail-card" id="notifDetailCard">
+            <div class="notif-detail-head">
+                <div class="notif-detail-badge" id="notifDetailBadge">
+                    <span id="notifDetailBadgeIcon">✨</span>
+                    <span id="notifDetailBadgeText">SYSTEM UPDATE</span>
+                </div>
+                <button type="button" class="notif-detail-close-btn" onclick="closeNotificationDetail()" aria-label="Close">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <h3 class="notif-detail-title" id="notifDetailTitle">Notification Title</h3>
+            <div class="notif-detail-time" id="notifDetailTime">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="notifDetailTimeText">Just now</span>
+            </div>
+            <div class="notif-detail-body" id="notifDetailBody">
+                Full message content here...
+            </div>
+            <div class="notif-detail-actions">
+                <a href="javascript:void(0)" class="notif-btn-primary-action" id="notifDetailActionBtn" onclick="handleNotifModalAction()">
+                    <span id="notifDetailActionBtnText">View Details</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <button type="button" class="notif-btn-secondary-action" onclick="closeNotificationDetail()">Dismiss</button>
+            </div>
+        </div>
+    </div>
 
  <!-- ===== STEP 3: JOBBERS TASK EXECUTION & PROOF MODAL ===== -->
     <div class="receipt-overlay" id="taskExecOverlay" style="display:none">
@@ -2571,6 +2647,7 @@ require_once __DIR__ . '/includes/header.php';
     }
 
     g('receiptTxId').textContent = currentTxn.id;
+    if (g('rHeroAmount')) g('rHeroAmount').textContent = fmtN(currentTxn.amount);
     g('rBank').textContent = currentTxn.bank;
     g('rAccount').textContent = mask(currentTxn.account);
     g('rAmount').textContent = fmtN(currentTxn.amount);
@@ -2900,78 +2977,194 @@ window.regenerateUserVirtualAccount = async function() {
 loadUserVirtualAccount();
 
 // ==========================================
-// IN-APP NOTIFICATION DROPDOWN HANDLER
 // ==========================================
+// LUXURY IN-APP NOTIFICATIONS CONTROLLER
+// ==========================================
+let currentDashboardNotifs = [];
+let activeNotifFilter = 'all';
+let activeModalNotif = null;
+
 const DEFAULT_SYSTEM_NOTIFS = [
-    { title: 'Welcome to INNOVATIONX', msg: 'Your account is active. Complete daily tasks to earn points.', time: 'Just now', link: 'javascript:void(0)' },
-    { title: '3 Jobbers Tasks Live', msg: 'New sponsored videos and flyer tasks ready to claim.', time: '10m ago', link: 'javascript:switchDashTab("tasks")' },
-    { title: 'Dedicated NUBAN Ready', msg: 'Transfer from any mobile bank app to fund your wallet instantly.', time: '1h ago', link: 'javascript:switchDashTab("overview")' }
+    {
+        id: 'notif_welcome',
+        title: 'Welcome to INNOVATIONX',
+        msg: 'Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.',
+        time: 'Just now',
+        icon: '✨',
+        category: 'system',
+        link: 'javascript:switchDashTab("overview")',
+        linkText: 'View Overview'
+    },
+    {
+        id: 'notif_tasks_live',
+        title: '3 Jobbers Tasks & Gigs Live',
+        msg: 'New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.',
+        time: '15m ago',
+        icon: '💼',
+        category: 'tasks',
+        link: 'javascript:switchDashTab("tasks")',
+        linkText: 'Go to Tasks Hub'
+    },
+    {
+        id: 'notif_nuban_ready',
+        title: 'Dedicated Settlement NUBAN Ready',
+        msg: 'Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.',
+        time: '1h ago',
+        icon: '💳',
+        category: 'wallet',
+        link: 'javascript:switchDashTab("overview")',
+        linkText: 'Check Settlement Card'
+    },
+    {
+        id: 'notif_security',
+        title: 'Account Protection & Immutable PIN',
+        msg: 'Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.',
+        time: '3h ago',
+        icon: '🛡️',
+        category: 'security',
+        link: 'javascript:switchDashTab("settings")',
+        linkText: 'Security Settings'
+    }
 ];
 
-window.getDashboardNotifications = function() {
-    let stored = [];
+window.getReadNotifIds = function() {
+    try {
+        const raw = localStorage.getItem('ix_read_notifs');
+        return raw ? JSON.parse(raw) : [];
+    } catch(e) {
+        return [];
+    }
+};
+
+window.saveReadNotifIds = function(ids) {
+    try {
+        localStorage.setItem('ix_read_notifs', JSON.stringify(ids || []));
+    } catch(e) {}
+};
+
+window.fetchDashboardNotifications = async function() {
+    try {
+        const res = await fetch('api/notifications.php?action=get');
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.notifications) && data.notifications.length > 0) {
+            currentDashboardNotifs = data.notifications;
+            localStorage.setItem('ix_inapp_notifs', JSON.stringify(currentDashboardNotifs));
+        } else {
+            fallbackLocalNotifs();
+        }
+    } catch(e) {
+        fallbackLocalNotifs();
+    }
+    window.renderDashboardNotifications();
+};
+
+function fallbackLocalNotifs() {
     try {
         const raw = localStorage.getItem('ix_inapp_notifs');
-        if (raw) stored = JSON.parse(raw);
-    } catch(e) {
-        stored = [];
-    }
-    if (!stored || !Array.isArray(stored) || stored.length === 0) {
-        stored = DEFAULT_SYSTEM_NOTIFS;
-        try {
-            localStorage.setItem('ix_inapp_notifs', JSON.stringify(DEFAULT_SYSTEM_NOTIFS));
-        } catch(e) {}
-    }
-    return stored;
-};
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            currentDashboardNotifs = parsed;
+            return;
+        }
+    } catch(e) {}
+    currentDashboardNotifs = DEFAULT_SYSTEM_NOTIFS;
+    try {
+        localStorage.setItem('ix_inapp_notifs', JSON.stringify(DEFAULT_SYSTEM_NOTIFS));
+    } catch(e) {}
+}
 
 window.renderDashboardNotifications = function() {
     const notifList = document.getElementById('notifDropdownList');
-    const notifCount = document.getElementById('notifBadgeCount');
+    const notifBadge = document.getElementById('notifBadgeCount');
     const headCount = document.getElementById('notifDropdownCount');
+    const tabCountAll = document.getElementById('notifTabCountAll');
+    const tabCountUnread = document.getElementById('notifTabCountUnread');
     if (!notifList) return;
 
-    const stored = window.getDashboardNotifications();
-
-    if (notifCount) {
-        notifCount.textContent = stored.length.toString();
-        notifCount.style.display = stored.length > 0 ? 'inline-flex' : 'none';
+    if (!currentDashboardNotifs || currentDashboardNotifs.length === 0) {
+        fallbackLocalNotifs();
     }
+
+    const readIds = window.getReadNotifIds();
+    const unreadNotifs = currentDashboardNotifs.filter(n => !readIds.includes(n.id));
+    const unreadCount = unreadNotifs.length;
+
+    // Update Badge on Bell
+    if (notifBadge) {
+        if (unreadCount > 0) {
+            notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount.toString();
+            notifBadge.style.display = 'inline-flex';
+        } else {
+            notifBadge.style.display = 'none';
+        }
+    }
+
     if (headCount) {
-        headCount.textContent = `${stored.length} New`;
+        headCount.textContent = unreadCount > 0 ? `${unreadCount} New` : 'All Read';
+    }
+    if (tabCountAll) tabCountAll.textContent = currentDashboardNotifs.length.toString();
+    if (tabCountUnread) tabCountUnread.textContent = unreadCount.toString();
+
+    let listToRender = currentDashboardNotifs;
+    if (activeNotifFilter === 'unread') {
+        listToRender = unreadNotifs;
     }
 
-    if (stored.length === 0) {
-        notifList.innerHTML = '<div style="text-align:center;padding:24px 12px;color:var(--text-muted);font-size:0.82rem">No new notifications</div>';
+    if (listToRender.length === 0) {
+        const emptyMsg = activeNotifFilter === 'unread' 
+            ? 'You are all caught up! No unread notifications.' 
+            : 'No notifications at this time.';
+        notifList.innerHTML = `
+            <div style="text-align:center;padding:28px 14px;color:#94A3B8;font-size:0.82rem">
+                <div style="font-size:1.6rem;margin-bottom:8px">🎉</div>
+                <div style="font-weight:700;color:#CBD5E1;margin-bottom:4px">${activeNotifFilter === 'unread' ? 'All Clear' : 'No Notifications'}</div>
+                <div>${emptyMsg}</div>
+            </div>
+        `;
         return;
     }
 
-    notifList.innerHTML = stored.map((n, idx) => {
-        const iconBox = n.icon 
-            ? `<div style="width:34px;height:34px;border-radius:10px;background:rgba(2,132,199,0.15);border:1px solid rgba(56,189,248,0.3);color:#38BDF8;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${n.icon}</div>`
-            : `<div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;flex-shrink:0">IX</div>`;
-
-        let clickAttr = '';
-        if (n.link && n.link.startsWith('javascript:')) {
-            const code = n.link.replace('javascript:', '');
-            clickAttr = `onclick="window.closeNotifDropdown(); ${code}"`;
-        } else if (n.link && n.link !== '#') {
-            clickAttr = `onclick="window.closeNotifDropdown();"`;
-        }
+    notifList.innerHTML = listToRender.map(n => {
+        const isRead = readIds.includes(n.id);
+        const iconBox = `<div class="notif-item-icon">${n.icon || '✨'}</div>`;
+        const unreadIndicator = !isRead ? '<span class="notif-unread-dot" title="Unread"></span>' : '';
 
         return `
-            <a href="${n.link || 'javascript:void(0)'}" ${clickAttr} class="notif-item" style="display:flex;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);margin-bottom:8px;text-decoration:none;border:1px solid rgba(255,255,255,0.06);transition:var(--transition)">
+            <div class="notif-item ${isRead ? 'is-read' : 'is-unread'}" onclick="openNotificationDetail('${n.id}')" title="Click to view full message">
                 ${iconBox}
-                <div style="min-width:0;flex:1">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-                        <div style="font-size:0.84rem;font-weight:800;color:var(--white-pure);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.title}</div>
-                        <span style="font-size:0.68rem;color:#38BDF8;white-space:nowrap;font-weight:600">${n.time || 'New'}</span>
+                <div class="notif-item-content">
+                    <div class="notif-item-header">
+                        <div class="notif-item-title">${n.title || 'Notification'}</div>
+                        <div style="display:flex;align-items:center;gap:4px">
+                            <span class="notif-item-time">${n.time || 'New'}</span>
+                            ${unreadIndicator}
+                        </div>
                     </div>
-                    <div style="font-size:0.74rem;color:var(--text-gray);line-height:1.4">${n.msg}</div>
+                    <div class="notif-item-desc">${n.msg || ''}</div>
                 </div>
-            </a>
+            </div>
         `;
     }).join('');
+};
+
+window.setNotifFilter = function(filter, e) {
+    if (e) {
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    activeNotifFilter = filter;
+    const tabAll = document.getElementById('notifTabAll');
+    const tabUnread = document.getElementById('notifTabUnread');
+    if (tabAll && tabUnread) {
+        if (filter === 'all') {
+            tabAll.classList.add('active');
+            tabUnread.classList.remove('active');
+        } else {
+            tabAll.classList.remove('active');
+            tabUnread.classList.add('active');
+        }
+    }
+    window.renderDashboardNotifications();
 };
 
 window.toggleNotifDropdown = function(e) {
@@ -2984,7 +3177,7 @@ window.toggleNotifDropdown = function(e) {
 
     const isShowing = notifDrop.classList.contains('show');
     if (!isShowing) {
-        window.renderDashboardNotifications();
+        window.fetchDashboardNotifications();
         notifDrop.classList.add('show');
     } else {
         notifDrop.classList.remove('show');
@@ -2996,12 +3189,89 @@ window.closeNotifDropdown = function() {
     if (notifDrop) notifDrop.classList.remove('show');
 };
 
-window.clearAllNotifications = function(e) {
-    if (e) e.stopPropagation();
-    try {
-        localStorage.setItem('ix_inapp_notifs', JSON.stringify([]));
-    } catch(err) {}
+window.markAllNotificationsAsRead = function(e) {
+    if (e) {
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const allIds = currentDashboardNotifs.map(n => n.id);
+    window.saveReadNotifIds(allIds);
     window.renderDashboardNotifications();
+};
+
+window.openNotificationDetail = function(id) {
+    const notif = currentDashboardNotifs.find(n => n.id === id);
+    if (!notif) return;
+
+    // Automatically mark this item as read
+    const readIds = window.getReadNotifIds();
+    if (!readIds.includes(id)) {
+        readIds.push(id);
+        window.saveReadNotifIds(readIds);
+    }
+    window.renderDashboardNotifications();
+
+    // Populate Detail Modal
+    activeModalNotif = notif;
+    const badgeIcon = document.getElementById('notifDetailBadgeIcon');
+    const badgeText = document.getElementById('notifDetailBadgeText');
+    const titleEl = document.getElementById('notifDetailTitle');
+    const timeText = document.getElementById('notifDetailTimeText');
+    const bodyEl = document.getElementById('notifDetailBody');
+    const actionBtn = document.getElementById('notifDetailActionBtn');
+    const actionBtnText = document.getElementById('notifDetailActionBtnText');
+
+    if (badgeIcon) badgeIcon.textContent = notif.icon || '✨';
+    if (badgeText) badgeText.textContent = (notif.category || 'System Notice').toUpperCase();
+    if (titleEl) titleEl.textContent = notif.title || 'Notification Details';
+    if (timeText) timeText.textContent = notif.time || 'Recently Dispatched';
+    if (bodyEl) bodyEl.textContent = notif.msg || '';
+
+    if (actionBtn && actionBtnText) {
+        if (notif.link && notif.link !== '#' && notif.link !== 'javascript:void(0)') {
+            actionBtn.style.display = 'inline-flex';
+            actionBtnText.textContent = notif.linkText || 'Open Action';
+        } else {
+            actionBtn.style.display = 'none';
+        }
+    }
+
+    // Open detail modal and close dropdown
+    const modal = document.getElementById('notifDetailModalOverlay');
+    if (modal) {
+        modal.classList.add('open');
+        modal.style.display = 'flex';
+    }
+    window.closeNotifDropdown();
+};
+
+window.closeNotificationDetail = function() {
+    const modal = document.getElementById('notifDetailModalOverlay');
+    if (modal) {
+        modal.classList.remove('open');
+        modal.style.display = 'none';
+    }
+    activeModalNotif = null;
+};
+
+window.handleNotifModalAction = function() {
+    if (!activeModalNotif || !activeModalNotif.link) {
+        window.closeNotificationDetail();
+        return;
+    }
+    const link = activeModalNotif.link;
+    window.closeNotificationDetail();
+    if (link.startsWith('javascript:')) {
+        const code = link.replace('javascript:', '');
+        try {
+            const fn = new Function(code);
+            fn();
+        } catch(e) {
+            eval(code);
+        }
+    } else {
+        window.location.href = link;
+    }
 };
 
 document.addEventListener('click', (e) => {
@@ -3012,23 +3282,63 @@ document.addEventListener('click', (e) => {
             notifDrop.classList.remove('show');
         }
     }
+    const detailOverlay = document.getElementById('notifDetailModalOverlay');
+    if (detailOverlay && detailOverlay.classList.contains('open') && e.target === detailOverlay) {
+        window.closeNotificationDetail();
+    }
 });
 
-renderDashboardNotifications();
+// Initial load
+window.fetchDashboardNotifications();
 
-// Download receipt as PNG
- g('receiptDownload') && g('receiptDownload').addEventListener('click', function() {
- const el = g('receiptCapture');
- const btns = el.querySelector('.receipt-btn-row');
- btns.style.display = 'none';
- html2canvas(el, { backgroundColor:'#0D0620', scale:2, useCORS:true }).then(c => {
- btns.style.display = '';
- const a = document.createElement('a');
- a.download = 'INNOVATIONX_' + g('receiptTxId').textContent + '.png';
- a.href = c.toDataURL('image/png');
- a.click();
- }).catch(() => { btns.style.display = ''; });
- });
+// Reference Number Copy Helper
+window.copyReceiptRef = function(e) {
+    if (e) {
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const txIdEl = document.getElementById('receiptTxId');
+    if (!txIdEl) return;
+    const ref = txIdEl.textContent.trim();
+    navigator.clipboard.writeText(ref).then(() => {
+        const copyBtnText = document.getElementById('btnReceiptCopyText');
+        if (copyBtnText) {
+            const old = copyBtnText.textContent;
+            copyBtnText.textContent = 'Copied!';
+            setTimeout(() => { copyBtnText.textContent = old; }, 2000);
+        }
+    }).catch(() => {
+        prompt('Copy your reference number:', ref);
+    });
+};
+
+// Download receipt as PNG with High Fidelity & Guaranteed Non-White Background
+g('receiptDownload') && g('receiptDownload').addEventListener('click', function() {
+    const el = g('receiptCapture');
+    const btns = el.querySelector('.receipt-btn-row');
+    const copyBtn = el.querySelector('.btn-receipt-copy-ref');
+    if (btns) btns.style.display = 'none';
+    if (copyBtn) copyBtn.style.display = 'none';
+
+    html2canvas(el, { 
+        backgroundColor: '#070B16', 
+        scale: 2.5, 
+        useCORS: true,
+        logging: false
+    }).then(c => {
+        if (btns) btns.style.display = '';
+        if (copyBtn) copyBtn.style.display = '';
+        const a = document.createElement('a');
+        const refId = (g('receiptTxId') ? g('receiptTxId').textContent.trim() : 'RECEIPT');
+        a.download = 'INNOVATIONX_' + refId + '.png';
+        a.href = c.toDataURL('image/png');
+        a.click();
+    }).catch(err => {
+        if (btns) btns.style.display = '';
+        if (copyBtn) copyBtn.style.display = '';
+        console.error('Receipt canvas error:', err);
+    });
+});
 
  // ==========================================
  // 5. JOBBERS OPPORTUNITIES & GIGS ENGINE

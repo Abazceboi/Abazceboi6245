@@ -6725,7 +6725,7 @@ saveWithdrawalSettings = function() {
  // ==========================================
  // 5. IN-APP NOTIFICATIONS ENGINE
  // ==========================================
- window.dispatchNotification = function() {
+ window.dispatchNotification = async function() {
  const icon = document.getElementById('notifIcon').value;
  const title = document.getElementById('notifTitle').value.trim();
  const msg = document.getElementById('notifMsg').value.trim();
@@ -6736,29 +6736,51 @@ saveWithdrawalSettings = function() {
  return;
  }
 
- const notifs = JSON.parse(localStorage.getItem('ix_inapp_notifs') || '[]');
- notifs.unshift({
- id: 'NOTIF-' + Date.now(),
+ const newNotif = {
+ id: 'notif_' + Date.now(),
  icon: icon,
  title: title,
  msg: msg,
- link: link || '#',
- date: new Date().toISOString()
+ link: link || 'javascript:void(0)',
+ linkText: 'View Details',
+ time: 'Just now',
+ timestamp: Math.floor(Date.now() / 1000)
+ };
+
+ try {
+ await fetch('api/notifications.php?action=broadcast', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify(newNotif)
  });
+ } catch(e) {}
+
+ const notifs = JSON.parse(localStorage.getItem('ix_inapp_notifs') || '[]');
+ notifs.unshift(newNotif);
  localStorage.setItem('ix_inapp_notifs', JSON.stringify(notifs));
 
  document.getElementById('notifTitle').value = '';
  document.getElementById('notifMsg').value = '';
  renderNotifications();
- alert('Notification sent to all users successfully!');
+ alert('Notification broadcasted to all users successfully!');
  };
 
- function renderNotifications() {
- const notifs = JSON.parse(localStorage.getItem('ix_inapp_notifs') || '[]');
+ async function renderNotifications() {
+ let notifs = JSON.parse(localStorage.getItem('ix_inapp_notifs') || '[]');
+ try {
+ const res = await fetch('api/notifications.php?action=get');
+ const data = await res.json();
+ if (data && data.success && Array.isArray(data.notifications)) {
+ notifs = data.notifications;
+ localStorage.setItem('ix_inapp_notifs', JSON.stringify(notifs));
+ }
+ } catch(e) {}
+
  const container = document.getElementById('notifListContainer');
  const badge = document.getElementById('notifCountBadge');
  if (badge) badge.textContent = notifs.length + ' Active';
 
+ if (!container) return;
  if (notifs.length === 0) {
  container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.84rem">No active notifications sent.</div>`;
  return;
@@ -6767,20 +6789,29 @@ saveWithdrawalSettings = function() {
  container.innerHTML = notifs.map((n, idx) => `
  <div class="dash-act-item">
  <div class="dash-act-left">
- <div class="dash-task-icon-box" style="width:36px;height:36px;font-size:1rem;background:rgba(59, 130, 246, 0.15)">${n.icon}</div>
+ <div class="dash-task-icon-box" style="width:36px;height:36px;font-size:1rem;background:rgba(59, 130, 246, 0.15)">${n.icon || '✨'}</div>
  <div>
- <div class="dash-act-name">${n.title}</div>
- <div class="dash-act-time">${n.msg}</div>
+ <div class="dash-act-name">${n.title || ''}</div>
+ <div class="dash-act-time">${n.msg || ''}</div>
  </div>
  </div>
- <button onclick="deleteNotif(${idx})" style="background:none;border:none;color:#F43F5E;font-size:0.75rem;cursor:pointer;font-weight:700">
+ <button onclick="deleteNotif(${idx}, '${n.id || ''}')" style="background:none;border:none;color:#F43F5E;font-size:0.75rem;cursor:pointer;font-weight:700">
  Delete
  </button>
  </div>
  `).join('');
  }
 
- window.deleteNotif = function(idx) {
+ window.deleteNotif = async function(idx, id) {
+ if (id) {
+ try {
+ await fetch('api/notifications.php?action=delete', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ id: id })
+ });
+ } catch(e) {}
+ }
  const notifs = JSON.parse(localStorage.getItem('ix_inapp_notifs') || '[]');
  notifs.splice(idx, 1);
  localStorage.setItem('ix_inapp_notifs', JSON.stringify(notifs));

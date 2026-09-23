@@ -1,0 +1,46 @@
+[
+  {
+    "id": "notif_welcome",
+    "title": "Welcome to INNOVATIONX",
+    "msg": "Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.",
+    "time": "Just now",
+    "timestamp": 1727128800,
+    "icon": "✨",
+    "category": "system",
+    "link": "javascript:switchDashTab('overview')",
+    "linkText": "View Overview"
+  },
+  {
+    "id": "notif_tasks_live",
+    "title": "3 Jobbers Tasks & Gigs Live",
+    "msg": "New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.",
+    "time": "15m ago",
+    "timestamp": 1727127900,
+    "icon": "💼",
+    "category": "task",
+    "link": "javascript:switchDashTab('tasks')",
+    "linkText": "Go to Tasks Hub"
+  },
+  {
+    "id": "notif_nuban_ready",
+    "title": "Dedicated Settlement NUBAN Ready",
+    "msg": "Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.",
+    "time": "1h ago",
+    "timestamp": 1727125200,
+    "icon": "💳",
+    "category": "wallet",
+    "link": "javascript:switchDashTab('overview')",
+    "linkText": "Check Settlement Card"
+  },
+  {
+    "id": "notif_security",
+    "title": "Account Protection & Immutable PIN",
+    "msg": "Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.",
+    "time": "3h ago",
+    "timestamp": 1727118000,
+    "icon": "🛡️",
+    "category": "security",
+    "link": "javascript:switchDashTab('settings')",
+    "linkText": "Security Settings"
+  }
+]
