@@ -114,12 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-    // 8. In-App Notification Bell & Dropdown
+    // 8. In-App Notification Bell & Dropdown (Navbar fallback for non-dashboard pages)
     const notifBell = document.getElementById('btnNotifBell');
     const notifDrop = document.getElementById('notifDropdown');
     const notifCount = document.getElementById('notifBadgeCount');
     const notifList = document.getElementById('notifDropdownList');
-    if (notifBell && notifDrop) {
+    // Only attach generic fallback listener on public navbar pages if toggleNotifDropdown is not already handling it
+    if (notifBell && notifDrop && !window.location.pathname.includes('dashboard.php') && !notifBell.getAttribute('onclick')) {
         notifBell.addEventListener('click', (e) => {
             e.stopPropagation();
             notifDrop.classList.toggle('show');

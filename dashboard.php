@@ -60,12 +60,24 @@ $hideFooter = true;
 require_once __DIR__ . '/includes/header.php';
 ?>
 
+<script>
+// Early resilience hooks to guarantee header buttons work immediately
+window.toggleDashDrawer = window.toggleDashDrawer || function() {
+    const drawer = document.getElementById('dashNavDrawer');
+    const backdrop = document.getElementById('dashDrawerBackdrop');
+    if (drawer && backdrop) {
+        drawer.classList.toggle('open');
+        backdrop.classList.toggle('open');
+    }
+};
+</script>
+
 <!-- Dashboard Content Area -->
 <main class="section tech-bg-grid" style="padding-top:24px;padding-bottom:50px">
     <div class="container dash-tech-container">
 
         <!-- 1. Executive Top Bar -->
-        <header class="dash-hud-bar reveal">
+        <header class="dash-hud-bar">
             <div class="hud-left">
                 <div class="hud-avatar" id="hudUserAvatar"><?= htmlspecialchars($initials) ?></div>
                 <div class="hud-user-info">
@@ -367,6 +379,36 @@ require_once __DIR__ . '/includes/header.php';
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- SECTION A.5: DAILY STREAK & EARNING CHECK-IN CONSOLE -->
+            <div class="daily-checkin-card reveal" id="dailyCheckinCard">
+                <div class="daily-checkin-header">
+                    <div class="daily-checkin-title-wrap">
+                        <div class="daily-checkin-flame-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>
+                        </div>
+                        <div>
+                            <div class="daily-checkin-title">Daily Earning Streak &amp; Check-In</div>
+                            <div class="daily-checkin-sub">Check in every 24 hours to build your streak multiplier and earn free Task Points.</div>
+                        </div>
+                    </div>
+                    <div class="daily-checkin-streak-badge" id="checkinStreakBadge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <span><strong id="checkinStreakDays">0</strong> Day Streak</span>
+                    </div>
+                </div>
+
+                <div class="daily-checkin-days-grid" id="checkinDaysGrid">
+                    <!-- 7-Day Visual Progression Rendered Dynamically -->
+                </div>
+
+                <div class="daily-checkin-action-bar">
+                    <button type="button" class="btn-claim-checkin" id="btnClaimDailyCheckin" onclick="claimDailyCheckinReward()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span id="btnClaimDailyCheckinText">Claim Daily Reward (+50 PTS)</span>
+                    </button>
                 </div>
             </div>
 
@@ -3290,6 +3332,152 @@ document.addEventListener('click', (e) => {
 
 // Initial load
 window.fetchDashboardNotifications();
+
+// ======================================================================
+// DAILY STREAK & CHECK-IN CONTROLLER
+// ======================================================================
+const CHECKIN_REWARDS = [50, 75, 100, 125, 150, 200, 500];
+
+window.getDailyCheckinState = function() {
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterdayDate = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const lastDate = localStorage.getItem('ix_last_checkin_date') || '';
+    let streak = parseInt(localStorage.getItem('ix_checkin_streak') || '0', 10);
+
+    const isClaimedToday = (lastDate === today);
+    
+    // If user missed yesterday and didn't claim today, streak resets
+    if (!isClaimedToday && lastDate !== yesterdayDate && lastDate !== '') {
+        streak = 0;
+    }
+
+    return {
+        today,
+        lastDate,
+        streak,
+        isClaimedToday
+    };
+};
+
+window.renderDailyCheckinUI = function() {
+    const state = window.getDailyCheckinState();
+    const streakDaysEl = document.getElementById('checkinStreakDays');
+    const daysGrid = document.getElementById('checkinDaysGrid');
+    const claimBtn = document.getElementById('btnClaimDailyCheckin');
+    const claimBtnText = document.getElementById('btnClaimDailyCheckinText');
+
+    if (streakDaysEl) streakDaysEl.textContent = state.streak.toString();
+
+    // Determine current step index (0 to 6)
+    const currentStep = state.isClaimedToday ? Math.max(0, (state.streak - 1) % 7) : (state.streak % 7);
+    const currentReward = CHECKIN_REWARDS[currentStep] || 50;
+
+    if (daysGrid) {
+        let gridHtml = '';
+        const dayNames = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7 🔥'];
+        
+        for (let i = 0; i < 7; i++) {
+            const reward = CHECKIN_REWARDS[i];
+            let statusClass = '';
+            let iconHtml = '<span class="checkin-day-status-icon">🎁</span>';
+
+            if (state.isClaimedToday) {
+                if (i <= currentStep) {
+                    statusClass = 'completed';
+                    iconHtml = '<span class="checkin-day-status-icon">✓</span>';
+                }
+            } else {
+                if (i < currentStep) {
+                    statusClass = 'completed';
+                    iconHtml = '<span class="checkin-day-status-icon">✓</span>';
+                } else if (i === currentStep) {
+                    statusClass = 'today-ready';
+                    iconHtml = '<span class="checkin-day-status-icon">⚡</span>';
+                }
+            }
+
+            gridHtml += `
+                <div class="checkin-day-pill ${statusClass}">
+                    <span class="checkin-day-name">${dayNames[i]}</span>
+                    <span class="checkin-day-reward">+${reward}</span>
+                    ${iconHtml}
+                </div>
+            `;
+        }
+        daysGrid.innerHTML = gridHtml;
+    }
+
+    if (claimBtn && claimBtnText) {
+        if (state.isClaimedToday) {
+            claimBtn.disabled = true;
+            claimBtnText.textContent = `✓ Checked In Today (${state.streak} Day Streak)`;
+        } else {
+            claimBtn.disabled = false;
+            claimBtnText.textContent = `Claim Day ${currentStep + 1} Reward (+${currentReward} PTS)`;
+        }
+    }
+};
+
+window.claimDailyCheckinReward = function() {
+    const state = window.getDailyCheckinState();
+    if (state.isClaimedToday) return;
+
+    const currentStep = state.streak % 7;
+    const rewardPts = CHECKIN_REWARDS[currentStep] || 50;
+    const newStreak = state.streak + 1;
+
+    // Save State
+    localStorage.setItem('ix_last_checkin_date', state.today);
+    localStorage.setItem('ix_checkin_streak', newStreak.toString());
+
+    // Update Task Points balance in localStorage and UI
+    let currentPts = parseInt(localStorage.getItem('ix_task_points') || '100', 10);
+    currentPts += rewardPts;
+    localStorage.setItem('ix_task_points', currentPts.toString());
+
+    // Update Live Points elements
+    const ptsEls = ['deckTaskPtsVal', 'drawerTaskPoints', 'userPointsDisplay', 'hudTaskPts'];
+    ptsEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = currentPts.toLocaleString() + ' PTS';
+    });
+
+    // Add entry to Recent Activity Stream
+    const feed = document.getElementById('dashboardActivityFeed');
+    if (feed) {
+        const streakText = newStreak > 1 ? ` (${newStreak}-Day Streak)` : '';
+        const newFeedItem = document.createElement('div');
+        newFeedItem.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:10px;';
+        newFeedItem.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div>
+                    <div style="font-size:0.86rem;font-weight:700;color:#F1F5F9">Daily Check-In Reward${streakText}</div>
+                    <div style="font-size:0.72rem;color:#94A3B8">Just now · Instant Automated Credit</div>
+                </div>
+            </div>
+            <div style="text-align:right">
+                <span style="font-size:0.88rem;font-weight:900;color:#38BDF8">+${rewardPts} PTS</span>
+                <div style="font-size:0.68rem;color:#94A3B8">Credited</div>
+            </div>
+        `;
+        const innerContainer = feed.querySelector('div') || feed;
+        innerContainer.insertBefore(newFeedItem, innerContainer.firstChild);
+    }
+
+    // Re-render UI
+    window.renderDailyCheckinUI();
+
+    // Trigger toast notification if available
+    if (typeof window.showToast === 'function') {
+        window.showToast(`🎉 +${rewardPts} PTS Claimed! ${newStreak}-Day Streak active.`, 'success');
+    }
+};
+
+// Initialize Check-In UI
+window.renderDailyCheckinUI();
 
 // Reference Number Copy Helper
 window.copyReceiptRef = function(e) {

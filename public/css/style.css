@@ -4305,17 +4305,17 @@ select.dash-input:focus {
 }
 .vtu-brand-card.active-airtel .vtu-brand-name { color: #F43F5E; }
 .vtu-brand-card.active-glo {
-  background: rgba(56, 189, 248, 0.14) ;
-  border-color: #10B981;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.22);
+  background: rgba(56, 189, 248, 0.14);
+  border-color: #38BDF8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.22);
 }
-.vtu-brand-card.active-glo .vtu-brand-name { color: #10B981; }
+.vtu-brand-card.active-glo .vtu-brand-name { color: #38BDF8; }
 .vtu-brand-card.active-9mobile {
   background: rgba(2, 132, 199, 0.14);
   border-color: #0284C7;
   box-shadow: 0 0 20px rgba(2, 132, 199, 0.22);
 }
-.vtu-brand-card.active-9mobile .vtu-brand-name { color: #006848; }
+.vtu-brand-card.active-9mobile .vtu-brand-name { color: #0284C7; }
 
 .vtu-amount-grid {
   display: grid;
@@ -5302,9 +5302,9 @@ select.dash-input:focus {
   border: 1px solid rgba(2, 132, 199, 0.45);
 }
 .receipt-badge.badge-complete {
-  background: rgba(52, 211, 153, 0.16);
-  color: #34D399;
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(56, 189, 248, 0.16);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
 }
 .receipt-badge.badge-rejected {
   background: rgba(244, 63, 94, 0.16);
@@ -5326,8 +5326,8 @@ select.dash-input:focus {
   box-shadow: 0 0 6px #7DD3FC;
 }
 .badge-complete .receipt-badge-dot {
-  background: #34D399;
-  box-shadow: 0 0 6px #34D399;
+  background: #38BDF8;
+  box-shadow: 0 0 6px #38BDF8;
   animation: none;
 }
 .badge-rejected .receipt-badge-dot {
@@ -5387,8 +5387,8 @@ select.dash-input:focus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #34D399;
-  box-shadow: 0 0 8px #34D399;
+  background: #38BDF8;
+  box-shadow: 0 0 8px #38BDF8;
   animation: pulseLive 1.4s infinite;
 }
 .receipt-ref-title {
@@ -5480,9 +5480,9 @@ select.dash-input:focus {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
 }
 .tc-step.done .tc-dot {
-  background: #34D399;
-  border-color: #A7F3D0;
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+  background: #38BDF8;
+  border-color: #BAE6FD;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
 }
 .tc-label {
   font-size: 0.65rem;
@@ -5494,7 +5494,7 @@ select.dash-input:focus {
   color: #38BDF8;
 }
 .tc-step.done .tc-label {
-  color: #34D399;
+  color: #38BDF8;
 }
 .tc-line {
   flex: 1;
@@ -5504,7 +5504,7 @@ select.dash-input:focus {
   transition: background 0.4s ease;
 }
 .tc-line.active {
-  background: linear-gradient(90deg, #38BDF8, #34D399);
+  background: linear-gradient(90deg, #38BDF8, #0284C7);
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
 }
 
@@ -5556,8 +5556,8 @@ select.dash-input:focus {
   color: #7DD3FC;
 }
 .receipt-status.status-complete {
-  background: rgba(52, 211, 153, 0.18);
-  color: #34D399;
+  background: rgba(56, 189, 248, 0.18);
+  color: #38BDF8;
 }
 .receipt-status.status-rejected {
   background: rgba(244, 63, 94, 0.15);
@@ -10784,14 +10784,19 @@ html, body {
   background: #F8FAFC !important;
   border-color: #E2E8F0 !important;
 }
-[data-theme="light"] .terminal-feed-list div[style*="color:#F1F5F9"] {
+[data-theme="light"] .terminal-feed-list div[style*="color:#F1F5F9"],
+[data-theme="light"] .terminal-feed-list span[style*="color:#F1F5F9"] {
   color: #0F172A !important;
 }
-[data-theme="light"] .terminal-feed-list div[style*="color:#38BDF8"] {
+[data-theme="light"] .terminal-feed-list div[style*="color:#38BDF8"],
+[data-theme="light"] .terminal-feed-list span[style*="color:#38BDF8"] {
   color: #0284C7 !important;
 }
-[data-theme="light"] .terminal-feed-list div[style*="color:#7DD3FC"] {
-  color: #0F172A !important;
+[data-theme="light"] .terminal-feed-list div[style*="color:#7DD3FC"],
+[data-theme="light"] .terminal-feed-list span[style*="color:#7DD3FC"] {
+  color: #0284C7 !important;
+  background: rgba(2, 132, 199, 0.12) !important;
+  border: 1px solid rgba(2, 132, 199, 0.25) !important;
 }
 
 [data-theme="light"] .deck-credit-card {
@@ -10889,8 +10894,8 @@ html, body {
   border-color: rgba(15, 23, 42, 0.15) !important;
 }
 [data-theme="light"] .credit-card-status-pill .status-dot {
-  background: #10B981 !important;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4) !important;
+  background: #0284C7 !important;
+  box-shadow: 0 0 8px rgba(2, 132, 199, 0.5) !important;
 }
 [data-theme="light"] .deck-credit-card .btn-dash-action {
   background: #0F172A !important;
@@ -10970,20 +10975,265 @@ html, body {
 
 
 /* ---------------------------------------------------------------------- */
-/* LIGHT MODE MODULE BADGES FIX                                           */
+/* LIGHT MODE MODULE BADGES & SERVICE HUB BLUE ACCENTS                   */
 /* ---------------------------------------------------------------------- */
-[data-theme="light"] .module-badge,
+[data-theme="light"] .module-badge {
+  background: rgba(2, 132, 199, 0.08) !important;
+  color: #0284C7 !important;
+  border: 1px solid rgba(2, 132, 199, 0.25) !important;
+  font-weight: 700 !important;
+}
 [data-theme="light"] .bento-badge,
-[data-theme="light"] .dash-panel-badge,
-[data-theme="light"] .module-tag {
+[data-theme="light"] .dash-panel-badge {
   background: #F1F5F9 !important;
-  color: #334155 !important;
+  color: #0284C7 !important;
   border: 1px solid #CBD5E1 !important;
 }
+[data-theme="light"] .module-tag {
+  background: transparent !important;
+  color: #0284C7 !important;
+  font-weight: 800 !important;
+  border: none !important;
+}
+[data-theme="light"] .module-card .btn-tech-ghost,
+[data-theme="light"] .module-card-footer .btn-dash-action {
+  background: rgba(2, 132, 199, 0.08) !important;
+  color: #0284C7 !important;
+  border: 1.5px solid rgba(2, 132, 199, 0.35) !important;
+  font-weight: 800 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+[data-theme="light"] .module-card .btn-tech-ghost:hover,
+[data-theme="light"] .module-card-footer .btn-dash-action:hover {
+  background: #0284C7 !important;
+  color: #FFFFFF !important;
+  border-color: #0284C7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3) !important;
+}
 [data-theme="light"] .module-icon-wrap {
-  background: #F8FAFC !important;
-  color: #0369A1 !important;
+  background: #F0F9FF !important;
+  color: #0284C7 !important;
+  border: 1px solid #BAE6FD !important;
+}
+[data-theme="light"] .btn-withdraw-action {
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35) !important;
+}
+[data-theme="light"] .btn-withdraw-action:hover {
+  box-shadow: 0 8px 25px rgba(2, 132, 199, 0.5) !important;
+  transform: translateY(-2px);
+}
+
+/* ====================================================================== */
+/* LUXURY DAILY CHECK-IN STREAK SYSTEM                                    */
+/* ====================================================================== */
+.daily-checkin-card {
+  background: linear-gradient(135deg, #0D1A38 0%, #081126 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 18px;
+  padding: 20px 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+.daily-checkin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #38BDF8, #818CF8, #38BDF8);
+  background-size: 200% 100%;
+  animation: shimmerBorder 4s linear infinite;
+}
+@keyframes shimmerBorder {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+.daily-checkin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.daily-checkin-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.daily-checkin-flame-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.4);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.daily-checkin-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+.daily-checkin-sub {
+  font-size: 0.76rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+.daily-checkin-streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #38BDF8;
+}
+.daily-checkin-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.checkin-day-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+.checkin-day-pill.completed {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+.checkin-day-pill.today-ready {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.35) 0%, rgba(56, 189, 248, 0.2) 100%);
+  border: 1.5px solid #38BDF8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+  transform: translateY(-2px);
+}
+.checkin-day-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+}
+.checkin-day-pill.completed .checkin-day-name,
+.checkin-day-pill.today-ready .checkin-day-name {
+  color: #7DD3FC;
+}
+.checkin-day-reward {
+  font-size: 0.76rem;
+  font-weight: 900;
+  color: #F8FAFC;
+}
+.checkin-day-pill.completed .checkin-day-reward {
+  color: #38BDF8;
+}
+.checkin-day-status-icon {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+.daily-checkin-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.btn-claim-checkin {
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+  transition: all 0.2s ease;
+}
+.btn-claim-checkin:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.6);
+}
+.btn-claim-checkin:disabled {
+  background: rgba(255, 255, 255, 0.07);
+  color: #94A3B8;
+  cursor: not-allowed;
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Light Mode Overrides for Daily Check-In */
+[data-theme="light"] .daily-checkin-card {
+  background: #FFFFFF !important;
   border: 1px solid #E2E8F0 !important;
+  border-top: 3px solid #0284C7 !important;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .daily-checkin-title {
+  color: #0F172A !important;
+}
+[data-theme="light"] .daily-checkin-sub {
+  color: #475569 !important;
+}
+[data-theme="light"] .daily-checkin-streak-badge {
+  background: rgba(2, 132, 199, 0.08) !important;
+  border-color: rgba(2, 132, 199, 0.3) !important;
+  color: #0284C7 !important;
+}
+[data-theme="light"] .checkin-day-pill {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+[data-theme="light"] .checkin-day-name {
+  color: #64748B !important;
+}
+[data-theme="light"] .checkin-day-reward {
+  color: #0F172A !important;
+}
+[data-theme="light"] .checkin-day-pill.completed {
+  background: rgba(2, 132, 199, 0.1) !important;
+  border-color: #0284C7 !important;
+}
+[data-theme="light"] .checkin-day-pill.completed .checkin-day-reward,
+[data-theme="light"] .checkin-day-pill.completed .checkin-day-name {
+  color: #0284C7 !important;
+}
+[data-theme="light"] .checkin-day-pill.today-ready {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2) !important;
+}
+[data-theme="light"] .btn-claim-checkin:disabled {
+  background: #F1F5F9 !important;
+  color: #64748B !important;
+  border-color: #CBD5E1 !important;
 }
 
 /* ====================================================================== */

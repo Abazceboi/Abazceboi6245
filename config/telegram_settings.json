@@ -7,6 +7,6 @@
   "popup_description": "Get instant daily task drops, vendor coupon codes, free airtime flash giveaways, and 24/7 direct admin support. Join over 50,000+ active Nigerian earners!",
   "popup_button_text": "Join Telegram Channel ↗",
   "popup_delay_seconds": 2,
-  "show_on_dashboard": true,
+  "show_on_dashboard": false,
   "show_on_homepage": false
 }
