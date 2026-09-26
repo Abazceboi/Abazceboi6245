@@ -255,15 +255,6 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                     </div>
                     <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </a>
-                <a href="admin.php" class="drawer-compact-link">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        </div>
-                        <span>Admin Panel</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
             </div>
 
             <!-- Sign Out Button -->
