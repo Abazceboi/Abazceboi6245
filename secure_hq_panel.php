@@ -253,23 +253,44 @@ require_once __DIR__ . '/includes/header.php';
         <!-- Admin Slide-Out Navigation Drawer -->
         <div class="drawer-backdrop" id="adminDrawerBackdrop" onclick="toggleAdminNavDrawer()"></div>
         <aside class="mobile-drawer" id="adminNavDrawer">
-            <div class="drawer-head" style="padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(56, 189, 248, 0.15)">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFFFFF">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <!-- Luxury Admin Header Card -->
+            <div class="drawer-profile-card">
+                <div class="drawer-profile-info">
+                    <div class="drawer-avatar" style="background:linear-gradient(135deg, #0284C7, #38BDF8)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     </div>
-                    <div>
-                        <div style="font-size:0.98rem;font-weight:800;color:#FFFFFF">Admin Hub</div>
-                        <div style="font-size:0.7rem;color:#7DD3FC">17 Platform Modules</div>
+                    <div class="drawer-user-meta">
+                        <div class="drawer-user-name">Admin HQ</div>
+                        <div class="drawer-user-status">
+                            <span class="drawer-status-dot"></span> Master Access • 17 Modules
+                        </div>
                     </div>
                 </div>
-                <button type="button" onclick="toggleAdminNavDrawer()" style="background:none;border:none;color:#BAE6FD;font-size:1.4rem;cursor:pointer">&times;</button>
+                <button type="button" class="drawer-close-btn-fancy" onclick="toggleAdminNavDrawer()" aria-label="Close Admin Navigation Drawer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
 
-            <!-- Quick Module Dropdown Selector (Active for JS sync) -->
-            <div style="margin-bottom:12px">
-                <label style="font-size:0.7rem;font-weight:700;color:#7DD3FC;margin-bottom:4px;display:block">Quick Jump</label>
-                <select id="adminModuleSelector" class="admin-select" onchange="switchAdminTab(this.value);toggleAdminNavDrawer()">
+            <!-- Quick Action Micro-Cards (3 Columns) -->
+            <div class="drawer-quick-grid">
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-quick-tile drawer-link drawer-link-active" id="adminDrawerLink_overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Overview</span>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('coupons')" class="drawer-quick-tile drawer-link" id="adminDrawerLink_coupons">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                    <span>Coupons</span>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('withdrawals')" class="drawer-quick-tile drawer-link" id="adminDrawerLink_withdrawals">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Payouts</span>
+                </a>
+            </div>
+
+            <!-- Quick Jump Dropdown Card -->
+            <div class="drawer-group-card" style="padding:8px 10px">
+                <div class="drawer-group-label" style="padding:0 0 6px 0">Jump to Module</div>
+                <select id="adminModuleSelector" class="admin-select" onchange="switchAdminTab(this.value);toggleAdminNavDrawer()" style="width:100%;height:36px;font-size:0.78rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#FFFFFF;border-radius:8px;padding:0 8px">
                     <optgroup label="Core Operations">
                         <option value="overview" selected>Overview &amp; Statistics</option>
                         <option value="coupons">Coupon Codes &amp; PINs</option>
@@ -302,42 +323,168 @@ require_once __DIR__ . '/includes/header.php';
                 </select>
             </div>
 
-            <!-- Category 1: Core Operations -->
-            <div class="admin-drawer-section-title">Core Operations</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('overview')" class="drawer-link drawer-link-active">Overview &amp; Statistics</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('coupons')" class="drawer-link">Coupon Codes &amp; PINs</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('withdrawals')" class="drawer-link">Payout Approvals</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('users')" class="drawer-link">Users &amp; Ledgers</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('opportunities')" class="drawer-link">Tasks &amp; Gigs Hub</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('vtu')" class="drawer-link">VTU Telecoms &amp; Data</a>
+            <!-- Group 1: Core Operations -->
+            <div class="drawer-group-card">
+                <div class="drawer-group-label">Core Operations</div>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('users')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <span>Users &amp; Ledgers</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('opportunities')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                        <span>Tasks &amp; Gigs Hub</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('vtu')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
+                        </div>
+                        <span>VTU Telecoms &amp; Data</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
 
-            <!-- Category 2: Growth & Monetization -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Growth &amp; Monetization</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('uploaders')" class="drawer-link">Uploader Requests</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adverts')" class="drawer-link">Member Adverts</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adsense')" class="drawer-link">Google AdSense</a>
+            <!-- Group 2: Financials & Monetization -->
+            <div class="drawer-group-card">
+                <div class="drawer-group-label">Financials &amp; Growth</div>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('gateways')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        </div>
+                        <span>Payment Gateways</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('autopayout')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <span>Auto-Payout App (24/7)</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('virtual-accounts')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        </div>
+                        <span>Virtual Accounts &amp; DVA</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('uploaders')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <span>Uploader Requests</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adverts')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                        </div>
+                        <span>Member Adverts</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('adsense')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <span>Google AdSense</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
 
-            <!-- Category 3: Financial Gateways -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Financial Systems &amp; Gateways</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('gateways')" class="drawer-link">Payment Gateways</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('autopayout')" class="drawer-link">Auto-Payout App (24/7)</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('virtual-accounts')" class="drawer-link">Virtual Accounts &amp; DVA</a>
+            <!-- Group 3: Communications & Platform -->
+            <div class="drawer-group-card">
+                <div class="drawer-group-label">Community &amp; Settings</div>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('vendors')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        </div>
+                        <span>Vendors &amp; Telegram Hub</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </div>
+                        <span>Broadcast Engine</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        </div>
+                        <span>In-App Notifications</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('team')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <span>Staff Permissions &amp; Roles</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('features')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <span>Feature Toggles</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('content')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </div>
+                        <span>Cards &amp; Text Customization</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('settings')" class="drawer-compact-link drawer-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        </div>
+                        <span>Master Settings &amp; Maintenance</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
 
-            <!-- Category 4: Communications & Community -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">Communications &amp; Community</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('vendors')" class="drawer-link">Vendors &amp; Telegram Pop-up</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('broadcasts')" class="drawer-link">Broadcast Engine</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('notifications')" class="drawer-link">In-App Notifications</a>
-
-            <!-- Category 5: System & Platform -->
-            <div class="admin-drawer-section-title" style="margin-top:10px">System &amp; Platform</div>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('team')" class="drawer-link">Staff Permissions &amp; Roles</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('features')" class="drawer-link">Feature Toggles</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('content')" class="drawer-link">Cards &amp; Text Customization</a>
-            <a href="javascript:void(0)" onclick="selectAdminDrawerTab('settings')" class="drawer-link">Master Settings &amp; Maintenance</a>
-
-            <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(56, 189, 248, 0.15)">
-                <a href="dashboard.php" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;text-decoration:none">Go to Member Dashboard →</a>
+            <!-- Footer Action Button -->
+            <div style="margin-top:6px;padding-top:10px;border-top:1px solid rgba(56, 189, 248, 0.15)">
+                <a href="dashboard.php" class="btn-dash-action btn-dash-primary" style="width:100%;height:40px;border-radius:10px;justify-content:center;text-decoration:none">Go to Member Dashboard →</a>
             </div>
         </aside>
 

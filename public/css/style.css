@@ -1128,16 +1128,25 @@ button, input, select { font-family: inherit; outline: none; border: none; }
 
 .hamburger {
   display: none;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--white-border);
-  color: #FFFFFF;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38BDF8;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.hamburger:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
 }
 
 /* ===== HERO SECTION ===== */
@@ -6030,19 +6039,31 @@ select.dash-input:focus {
   position: fixed;
   top: 0;
   right: -100%;
-  width: 85%;
-  max-width: 340px;
+  width: 86%;
+  max-width: 310px;
   height: 100vh;
-  background: #0F0F17;
-  border-left: 1px solid rgba(99, 102, 241, 0.15);
+  max-height: 100vh;
+  background: linear-gradient(180deg, #0C101C 0%, #080B13 100%);
+  border-left: 1px solid rgba(56, 189, 248, 0.22);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
   z-index: 10002;
-  padding: 24px;
+  padding: 16px 14px 20px;
   transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   overflow-y: auto;
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: -14px 0 45px rgba(0, 0, 0, 0.75);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.25) transparent;
+}
+.mobile-drawer::-webkit-scrollbar {
+  width: 4px;
+}
+.mobile-drawer::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 4px;
 }
 .mobile-drawer.open { right: 0; }
 
@@ -6150,9 +6171,12 @@ select.dash-input:focus {
 }
 
 /* ========================================================
-   LUXURY COMPACT DASHBOARD DRAWER (#dashNavDrawer)
+   LUXURY COMPACT DASHBOARD & GLOBAL DRAWERS
    ======================================================== */
-#dashNavDrawer {
+.mobile-drawer,
+#dashNavDrawer,
+#mobileDrawer,
+#adminNavDrawer {
   width: 86%;
   max-width: 310px;
   height: 100vh;
@@ -6170,10 +6194,16 @@ select.dash-input:focus {
   scrollbar-width: thin;
   scrollbar-color: rgba(56, 189, 248, 0.25) transparent;
 }
-#dashNavDrawer::-webkit-scrollbar {
+.mobile-drawer::-webkit-scrollbar,
+#dashNavDrawer::-webkit-scrollbar,
+#mobileDrawer::-webkit-scrollbar,
+#adminNavDrawer::-webkit-scrollbar {
   width: 4px;
 }
-#dashNavDrawer::-webkit-scrollbar-thumb {
+.mobile-drawer::-webkit-scrollbar-thumb,
+#dashNavDrawer::-webkit-scrollbar-thumb,
+#mobileDrawer::-webkit-scrollbar-thumb,
+#adminNavDrawer::-webkit-scrollbar-thumb {
   background: rgba(56, 189, 248, 0.25);
   border-radius: 4px;
 }
@@ -6421,7 +6451,10 @@ select.dash-input:focus {
 }
 
 /* Light Theme Overrides for Luxury Drawer */
-[data-theme="light"] #dashNavDrawer {
+[data-theme="light"] .mobile-drawer,
+[data-theme="light"] #dashNavDrawer,
+[data-theme="light"] #mobileDrawer,
+[data-theme="light"] #adminNavDrawer {
   background: #FFFFFF;
   border-left-color: #E2E8F0;
   box-shadow: -10px 0 35px rgba(0, 0, 0, 0.1);
