@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/config/app.php';
-$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
-if ($authUser) {
-    header("Location: dashboard.php");
-    exit;
-}
+
 $pinFromQuery = $_GET['pin'] ?? '';
 $refFromQuery = $_GET['ref'] ?? '';
 ?>

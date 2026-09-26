@@ -160,24 +160,12 @@ function isActive($page, $currentPage) {
             <svg id="themeIconMoon" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
 
-<?php
-$navAuthUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
-if ($navAuthUser):
-?>
-        <a href="<?= (!empty($navAuthUser['is_admin']) || in_array(strtolower($navAuthUser['username'] ?? ''), ['admin', 'superadmin'])) ? 'secure_hq_panel.php' : 'dashboard.php' ?>" class="btn-nav-register" style="padding:8px 16px;font-size:0.82rem">
-            <span>Dashboard</span>
-        </a>
-        <a href="logout.php" class="btn-nav-login" style="padding:8px 14px;font-size:0.82rem;color:#FCA5A5">
-            <span>Logout</span>
-        </a>
-<?php else: ?>
         <a href="login.php" class="btn-nav-login">
-            <span>Login</span>
+            <span>Sign In</span>
         </a>
         <a href="register.php" class="btn-nav-register">
-            <span>Register</span>
+            <span>Sign Up</span>
         </a>
-<?php endif; ?>
         <button class="hamburger" id="hamburger" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="mobileDrawer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="17" x2="21" y2="17"></line></svg>
         </button>
@@ -188,19 +176,8 @@ if ($navAuthUser):
 <!-- Mobile Navigation Drawer -->
 <div class="drawer-backdrop" aria-hidden="true"></div>
 <aside class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
-    <!-- Luxury Profile / Brand Card -->
+    <!-- Luxury Brand Header Card -->
     <div class="drawer-profile-card">
-<?php if ($navAuthUser): ?>
-        <div class="drawer-profile-info">
-            <div class="drawer-avatar"><?= htmlspecialchars(strtoupper(substr($navAuthUser['username'] ?? 'IX', 0, 2))) ?></div>
-            <div class="drawer-user-meta">
-                <div class="drawer-user-name"><?= htmlspecialchars($navAuthUser['username'] ?? 'Member') ?></div>
-                <div class="drawer-user-status">
-                    <span class="drawer-status-dot"></span> Active Member
-                </div>
-            </div>
-        </div>
-<?php else: ?>
         <div class="drawer-profile-info">
             <div class="drawer-avatar">IX</div>
             <div class="drawer-user-meta">
@@ -210,7 +187,6 @@ if ($navAuthUser):
                 </div>
             </div>
         </div>
-<?php endif; ?>
         <button type="button" class="drawer-close-btn-fancy" id="drawerCloseBtn" aria-label="Close Menu" onclick="var d=document.getElementById('mobileDrawer'),b=document.querySelector('.drawer-backdrop');if(d)d.classList.remove('open');if(b)b.classList.remove('open');document.body.style.overflow='';">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -325,16 +301,8 @@ if ($navAuthUser):
 
     <!-- Action Buttons -->
     <div style="margin-top:4px;display:flex;flex-direction:column;gap:8px">
-<?php if ($navAuthUser): ?>
-        <a href="<?= (!empty($navAuthUser['is_admin']) || in_array(strtolower($navAuthUser['username'] ?? ''), ['admin', 'superadmin'])) ? 'secure_hq_panel.php' : 'dashboard.php' ?>" class="btn-dash-action btn-dash-primary" style="text-align:center;justify-content:center;height:40px;border-radius:10px;text-decoration:none">Go to Dashboard</a>
-        <a href="logout.php" class="drawer-logout-btn" style="margin-top:0">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            <span>Sign Out</span>
-        </a>
-<?php else: ?>
-        <a href="register.php" class="btn-dash-action btn-dash-primary" style="text-align:center;justify-content:center;height:40px;border-radius:10px;text-decoration:none">Register Now</a>
+        <a href="register.php" class="btn-dash-action btn-dash-primary" style="text-align:center;justify-content:center;height:40px;border-radius:10px;text-decoration:none">Sign Up</a>
         <a href="login.php" class="btn-dash-action btn-dash-secondary" style="text-align:center;justify-content:center;height:40px;border-radius:10px;text-decoration:none">Sign In</a>
-<?php endif; ?>
     </div>
 </aside>
 

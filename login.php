@@ -20,15 +20,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
     @session_destroy();
 }
 
-$authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
-if ($authUser && empty($_GET['logged_out']) && empty($_GET['logout'])) {
-    if (!empty($authUser['is_admin']) || (isset($authUser['username']) && in_array(strtolower($authUser['username']), ['admin', 'superadmin']))) {
-        header("Location: secure_hq_panel.php");
-    } else {
-        header("Location: dashboard.php");
-    }
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
