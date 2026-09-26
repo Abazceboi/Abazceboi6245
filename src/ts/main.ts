@@ -166,12 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (notifCount) notifCount.textContent = storedNotifs.length.toString();
         if (notifList) {
             notifList.innerHTML = storedNotifs.map((n: any) => `
-                <a href="${n.link || 'javascript:void(0)'}" class="notif-item" style="display:flex;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);margin-bottom:8px;text-decoration:none;border:1px solid rgba(255,255,255,0.06)">
-                    <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#9333EA,#3B82F6);color:#FFF;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;flex-shrink:0">IX</div>
-                    <div style="min-width:0;flex:1">
-                        <div style="font-size:0.84rem;font-weight:800;color:var(--white-pure);margin-bottom:2px">${n.title}</div>
-                        <div style="font-size:0.74rem;color:var(--text-gray);line-height:1.4">${n.msg}</div>
-                    </div>
+                <a href="${n.link || 'javascript:void(0)'}" class="notif-item" style="display:block;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.03);margin-bottom:8px;text-decoration:none;border:1px solid rgba(255,255,255,0.06)">
+                    <div style="font-size:0.84rem;font-weight:800;color:var(--white-pure);margin-bottom:2px">${n.title}</div>
+                    <div style="font-size:0.74rem;color:var(--text-gray);line-height:1.4">${n.msg}</div>
                 </a>
             `).join('');
         }

@@ -141,86 +141,136 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
         <!-- Slide-Out Navigation Drawer -->
         <div class="drawer-backdrop" id="dashDrawerBackdrop" onclick="toggleDashDrawer()"></div>
         <aside class="mobile-drawer" id="dashNavDrawer">
-            <div class="drawer-head" style="padding:16px 18px 14px;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.15)">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <div id="drawerUserAvatar" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#0284C7,#38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;font-size:0.8rem;flex-shrink:0">IX</div>
-                    <div>
-                        <div id="drawerUsername" style="font-size:0.95rem;font-weight:800;color:#FFFFFF">Member</div>
-                        <div style="font-size:0.7rem;color:#7DD3FC">Active Member</div>
+            <!-- Luxury Profile Header -->
+            <div class="drawer-profile-card">
+                <div class="drawer-profile-info">
+                    <div id="drawerUserAvatar" class="drawer-avatar"><?= htmlspecialchars($initials) ?></div>
+                    <div class="drawer-user-meta">
+                        <div id="drawerUsername" class="drawer-user-name"><?= htmlspecialchars($username) ?></div>
+                        <div class="drawer-user-status">
+                            <span class="drawer-status-dot"></span> Active Member
+                        </div>
                     </div>
                 </div>
-                <button type="button" onclick="toggleDashDrawer()" style="background:none;border:none;color:#BAE6FD;font-size:1.4rem;cursor:pointer;padding:4px">&times;</button>
+                <button type="button" class="drawer-close-btn-fancy" onclick="toggleDashDrawer()" aria-label="Close Navigation Drawer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
 
-            <!-- MAIN -->
-            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">MAIN</div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('overview')" class="drawer-link drawer-link-active" id="drawerLink_overview">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span>Overview & Balances</span>
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('withdraw')" class="drawer-link" id="drawerLink_withdraw">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <span>Withdraw Funds</span>
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('tasks')" class="drawer-link" id="drawerLink_tasks">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span>Jobbers Tasks & Gigs</span>
-            </a>
-
-            <!-- SERVICES -->
-            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">SERVICES</div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('vtu')" class="drawer-link" id="drawerLink_vtu">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
-                <span>VTU Telecoms & Data</span>
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('bank')" class="drawer-link" id="drawerLink_bank">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                <span>Bank & Security PIN</span>
-            </a>
-
-            <!-- GROW & EARN -->
-            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">GROW & EARN</div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-link" id="drawerLink_uploader">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <span>Become an Uploader</span>
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('advert')" class="drawer-link" id="drawerLink_advert">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                <span>Place Adverts</span>
-            </a>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('referrals')" class="drawer-link" id="drawerLink_referrals">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span>Referral Accelerator</span>
-            </a>
-
-            <!-- COMMUNITY & DISTRIBUTORS -->
-            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">COMMUNITY &amp; DISTRIBUTORS</div>
-            <a href="javascript:void(0)" onclick="openTelegramCommunityModal();toggleDashDrawer()" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                <span>Telegram Community</span>
-            </a>
-            <a href="vendors.php" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <span>Verified Vendors &amp; PINs</span>
-            </a>
-
-            <!-- ACCOUNT -->
-            <div class="drawer-section-title" style="font-size:0.68rem; font-weight:800; color:#7DD3FC; text-transform:uppercase; letter-spacing:0.1em; padding:10px 18px 4px;">ACCOUNT</div>
-            <a href="javascript:void(0)" onclick="selectDashDrawerTab('settings')" class="drawer-link" id="drawerLink_settings">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>Settings & Preferences</span>
-            </a>
-            <a href="admin.php" class="drawer-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <span>Admin Panel</span>
-            </a>
-
-            <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(56,189,248,0.15)">
-                <a href="logout.php" class="drawer-link" style="color:#F87171">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span>Sign Out</span>
+            <!-- Quick Action Micro-Cards (3 Columns) -->
+            <div class="drawer-quick-grid">
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('overview')" class="drawer-quick-tile drawer-link drawer-link-active" id="drawerLink_overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>Overview</span>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('withdraw')" class="drawer-quick-tile drawer-link" id="drawerLink_withdraw">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Withdraw</span>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('tasks')" class="drawer-quick-tile drawer-link" id="drawerLink_tasks">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <span>Tasks</span>
                 </a>
             </div>
+
+            <!-- Services & Earning Card -->
+            <div class="drawer-group-card">
+                <div class="drawer-group-label">Services &amp; Earning</div>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('vtu')" class="drawer-compact-link drawer-link" id="drawerLink_vtu">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
+                        </div>
+                        <span>VTU Telecoms &amp; Data</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('bank')" class="drawer-compact-link drawer-link" id="drawerLink_bank">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        </div>
+                        <span>Bank &amp; Security PIN</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-compact-link drawer-link" id="drawerLink_uploader">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <span>Become an Uploader</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('advert')" class="drawer-compact-link drawer-link" id="drawerLink_advert">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                        </div>
+                        <span>Place Adverts</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('referrals')" class="drawer-compact-link drawer-link" id="drawerLink_referrals">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <span>Referral Accelerator</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+
+            <!-- Platform & Community Card -->
+            <div class="drawer-group-card">
+                <div class="drawer-group-label">Community &amp; Access</div>
+                <a href="javascript:void(0)" onclick="openTelegramCommunityModal();toggleDashDrawer()" class="drawer-compact-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon" style="color:#38BDF8">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                        </div>
+                        <span>Telegram Community</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="vendors.php" class="drawer-compact-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                        <span>Verified Vendors &amp; PINs</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('settings')" class="drawer-compact-link drawer-link" id="drawerLink_settings">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        </div>
+                        <span>Settings & Preferences</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="admin.php" class="drawer-compact-link">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <span>Admin Panel</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+            </div>
+
+            <!-- Sign Out Button -->
+            <a href="logout.php" class="drawer-logout-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Sign Out</span>
+            </a>
         </aside>
 
         <!-- One-Time New User Modal Container -->
@@ -2090,7 +2140,6 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
         <div class="notif-detail-card" id="notifDetailCard">
             <div class="notif-detail-head">
                 <div class="notif-detail-badge" id="notifDetailBadge">
-                    <span id="notifDetailBadgeIcon">IX</span>
                     <span id="notifDetailBadgeText">SYSTEM UPDATE</span>
                 </div>
                 <button type="button" class="notif-detail-close-btn" onclick="closeNotificationDetail()" aria-label="Close">
@@ -3032,7 +3081,6 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Welcome to INNOVATIONX',
         msg: 'Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.',
         time: 'Just now',
-        icon: 'IX',
         category: 'system',
         link: 'javascript:switchDashTab("overview")',
         linkText: 'View Overview'
@@ -3042,7 +3090,6 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: '3 Jobbers Tasks & Gigs Live',
         msg: 'New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.',
         time: '15m ago',
-        icon: 'GIG',
         category: 'tasks',
         link: 'javascript:switchDashTab("tasks")',
         linkText: 'Go to Tasks Hub'
@@ -3052,7 +3099,6 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Dedicated Settlement NUBAN Ready',
         msg: 'Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.',
         time: '1h ago',
-        icon: 'NGN',
         category: 'wallet',
         link: 'javascript:switchDashTab("overview")',
         linkText: 'Check Settlement Card'
@@ -3062,7 +3108,6 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Account Protection & Immutable PIN',
         msg: 'Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.',
         time: '3h ago',
-        icon: 'SEC',
         category: 'security',
         link: 'javascript:switchDashTab("settings")',
         linkText: 'Security Settings'
@@ -3169,16 +3214,14 @@ window.renderDashboardNotifications = function() {
 
     notifList.innerHTML = listToRender.map(n => {
         const isRead = readIds.includes(n.id);
-        const iconBox = '<div class="notif-item-icon">' + (n.icon || 'IX') + '</div>';
         const unreadIndicator = !isRead ? '<span class="notif-unread-dot" title="Unread"></span>' : '';
 
         return `
             <div class="notif-item ${isRead ? 'is-read' : 'is-unread'}" onclick="openNotificationDetail('${n.id}')" title="Click to view full message">
-                ${iconBox}
                 <div class="notif-item-content">
                     <div class="notif-item-header">
                         <div class="notif-item-title">${n.title || 'Notification'}</div>
-                        <div style="display:flex;align-items:center;gap:4px">
+                        <div style="display:flex;align-items:center;gap:6px">
                             <span class="notif-item-time">${n.time || 'New'}</span>
                             ${unreadIndicator}
                         </div>
@@ -3264,7 +3307,7 @@ window.openNotificationDetail = function(id) {
     const actionBtn = document.getElementById('notifDetailActionBtn');
     const actionBtnText = document.getElementById('notifDetailActionBtnText');
 
-    if (badgeIcon) badgeIcon.textContent = notif.icon || 'IX';
+    if (badgeIcon) badgeIcon.style.display = 'none';
     if (badgeText) badgeText.textContent = (notif.category || 'System Notice').toUpperCase();
     if (titleEl) titleEl.textContent = notif.title || 'Notification Details';
     if (timeText) timeText.textContent = notif.time || 'Recently Dispatched';

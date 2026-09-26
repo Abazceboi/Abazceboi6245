@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'broadcast') {
         $title = trim($input['title'] ?? '');
         $msg = trim($input['msg'] ?? '');
-        $icon = trim($input['icon'] ?? '✨');
+        $icon = trim($input['icon'] ?? '');
         $link = trim($input['link'] ?? 'dashboard.php');
         $linkText = trim($input['linkText'] ?? 'View Details');
         $category = trim($input['category'] ?? 'system');

@@ -5,7 +5,6 @@
     "msg": "Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.",
     "time": "Just now",
     "timestamp": 1727128800,
-    "icon": "✨",
     "category": "system",
     "link": "javascript:switchDashTab('overview')",
     "linkText": "View Overview"
@@ -16,7 +15,6 @@
     "msg": "New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.",
     "time": "15m ago",
     "timestamp": 1727127900,
-    "icon": "💼",
     "category": "task",
     "link": "javascript:switchDashTab('tasks')",
     "linkText": "Go to Tasks Hub"
@@ -27,7 +25,6 @@
     "msg": "Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.",
     "time": "1h ago",
     "timestamp": 1727125200,
-    "icon": "💳",
     "category": "wallet",
     "link": "javascript:switchDashTab('overview')",
     "linkText": "Check Settlement Card"
@@ -38,7 +35,6 @@
     "msg": "Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.",
     "time": "3h ago",
     "timestamp": 1727118000,
-    "icon": "🛡️",
     "category": "security",
     "link": "javascript:switchDashTab('settings')",
     "linkText": "Security Settings"
