@@ -8016,14 +8016,24 @@ select.dash-input:focus {
 [data-theme="light"] .btn-tech-ghost,
 [data-theme="light"] .btn-dash-action {
   background: #FFFFFF !important;
-  color: #334155 !important;
-  border: 1px solid #CBD5E1 !important;
+  color: #0284C7 !important;
+  border: 1px solid #BAE6FD !important;
 }
 [data-theme="light"] .btn-tech-ghost:hover,
 [data-theme="light"] .btn-dash-action:hover {
-  background: #F1F5F9 !important;
-  border-color: #94A3B8 !important;
-  color: #0F172A !important;
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+  color: #0369A1 !important;
+}
+
+/* Specific HUD action buttons remain neutral in light mode */
+[data-theme="light"] .btn-dash-theme,
+[data-theme="light"] .btn-dash-menu,
+[data-theme="light"] .btn-dash-logout,
+[data-theme="light"] .btn-notif-bell {
+  color: #334155 !important;
+  border-color: #CBD5E1 !important;
+  background: #FFFFFF !important;
 }
 
 [data-theme="light"] .bento-card {

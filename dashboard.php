@@ -2090,7 +2090,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
         <div class="notif-detail-card" id="notifDetailCard">
             <div class="notif-detail-head">
                 <div class="notif-detail-badge" id="notifDetailBadge">
-                    <span id="notifDetailBadgeIcon">✨</span>
+                    <span id="notifDetailBadgeIcon">IX</span>
                     <span id="notifDetailBadgeText">SYSTEM UPDATE</span>
                 </div>
                 <button type="button" class="notif-detail-close-btn" onclick="closeNotificationDetail()" aria-label="Close">
@@ -3032,7 +3032,7 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Welcome to INNOVATIONX',
         msg: 'Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.',
         time: 'Just now',
-        icon: '✨',
+        icon: 'IX',
         category: 'system',
         link: 'javascript:switchDashTab("overview")',
         linkText: 'View Overview'
@@ -3042,7 +3042,7 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: '3 Jobbers Tasks & Gigs Live',
         msg: 'New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.',
         time: '15m ago',
-        icon: '💼',
+        icon: 'GIG',
         category: 'tasks',
         link: 'javascript:switchDashTab("tasks")',
         linkText: 'Go to Tasks Hub'
@@ -3052,7 +3052,7 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Dedicated Settlement NUBAN Ready',
         msg: 'Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.',
         time: '1h ago',
-        icon: '💳',
+        icon: 'NGN',
         category: 'wallet',
         link: 'javascript:switchDashTab("overview")',
         linkText: 'Check Settlement Card'
@@ -3062,7 +3062,7 @@ const DEFAULT_SYSTEM_NOTIFS = [
         title: 'Account Protection & Immutable PIN',
         msg: 'Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.',
         time: '3h ago',
-        icon: '🛡️',
+        icon: 'SEC',
         category: 'security',
         link: 'javascript:switchDashTab("settings")',
         linkText: 'Security Settings'
@@ -3153,22 +3153,23 @@ window.renderDashboardNotifications = function() {
     }
 
     if (listToRender.length === 0) {
-        const emptyMsg = activeNotifFilter === 'unread' 
-            ? 'You are all caught up! No unread notifications.' 
+        const emptyMsg = activeNotifFilter === 'unread'
+            ? 'You are all caught up! No unread notifications.'
             : 'No notifications at this time.';
-        notifList.innerHTML = `
-            <div style="text-align:center;padding:28px 14px;color:#94A3B8;font-size:0.82rem">
-                <div style="font-size:1.6rem;margin-bottom:8px">🎉</div>
-                <div style="font-weight:700;color:#CBD5E1;margin-bottom:4px">${activeNotifFilter === 'unread' ? 'All Clear' : 'No Notifications'}</div>
-                <div>${emptyMsg}</div>
-            </div>
-        `;
+        notifList.innerHTML =
+            '<div style="text-align:center;padding:28px 14px;color:#94A3B8;font-size:0.82rem">' +
+                '<div style="margin-bottom:8px;display:flex;justify-content:center">' +
+                    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' +
+                '</div>' +
+                '<div style="font-weight:700;color:#CBD5E1;margin-bottom:4px">' + (activeNotifFilter === 'unread' ? 'All Clear' : 'No Notifications') + '</div>' +
+                '<div>' + emptyMsg + '</div>' +
+            '</div>';
         return;
     }
 
     notifList.innerHTML = listToRender.map(n => {
         const isRead = readIds.includes(n.id);
-        const iconBox = `<div class="notif-item-icon">${n.icon || '✨'}</div>`;
+        const iconBox = '<div class="notif-item-icon">' + (n.icon || 'IX') + '</div>';
         const unreadIndicator = !isRead ? '<span class="notif-unread-dot" title="Unread"></span>' : '';
 
         return `
@@ -3263,7 +3264,7 @@ window.openNotificationDetail = function(id) {
     const actionBtn = document.getElementById('notifDetailActionBtn');
     const actionBtnText = document.getElementById('notifDetailActionBtnText');
 
-    if (badgeIcon) badgeIcon.textContent = notif.icon || '✨';
+    if (badgeIcon) badgeIcon.textContent = notif.icon || 'IX';
     if (badgeText) badgeText.textContent = (notif.category || 'System Notice').toUpperCase();
     if (titleEl) titleEl.textContent = notif.title || 'Notification Details';
     if (timeText) timeText.textContent = notif.time || 'Recently Dispatched';
@@ -3345,10 +3346,11 @@ window.getDailyCheckinState = function() {
     let streak = parseInt(localStorage.getItem('ix_checkin_streak') || '0', 10);
 
     const isClaimedToday = (lastDate === today);
-    
-    // If user missed yesterday and didn't claim today, streak resets
+
+    // If user missed yesterday and didn't claim today, streak resets - persist the reset
     if (!isClaimedToday && lastDate !== yesterdayDate && lastDate !== '') {
         streak = 0;
+        localStorage.setItem('ix_checkin_streak', '0');
     }
 
     return {
@@ -3374,35 +3376,37 @@ window.renderDailyCheckinUI = function() {
 
     if (daysGrid) {
         let gridHtml = '';
-        const dayNames = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7 🔥'];
-        
+        const dayNames = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
+
+        const svgDone = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+        const svgActive = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+        const svgLocked = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
         for (let i = 0; i < 7; i++) {
             const reward = CHECKIN_REWARDS[i];
             let statusClass = '';
-            let iconHtml = '<span class="checkin-day-status-icon">🎁</span>';
+            let iconHtml = '<span class="checkin-day-status-icon">' + svgLocked + '</span>';
 
             if (state.isClaimedToday) {
                 if (i <= currentStep) {
                     statusClass = 'completed';
-                    iconHtml = '<span class="checkin-day-status-icon">✓</span>';
+                    iconHtml = '<span class="checkin-day-status-icon">' + svgDone + '</span>';
                 }
             } else {
                 if (i < currentStep) {
                     statusClass = 'completed';
-                    iconHtml = '<span class="checkin-day-status-icon">✓</span>';
+                    iconHtml = '<span class="checkin-day-status-icon">' + svgDone + '</span>';
                 } else if (i === currentStep) {
                     statusClass = 'today-ready';
-                    iconHtml = '<span class="checkin-day-status-icon">⚡</span>';
+                    iconHtml = '<span class="checkin-day-status-icon">' + svgActive + '</span>';
                 }
             }
 
-            gridHtml += `
-                <div class="checkin-day-pill ${statusClass}">
-                    <span class="checkin-day-name">${dayNames[i]}</span>
-                    <span class="checkin-day-reward">+${reward}</span>
-                    ${iconHtml}
-                </div>
-            `;
+            gridHtml += '<div class="checkin-day-pill ' + statusClass + '">' +
+                '<span class="checkin-day-name">' + dayNames[i] + '</span>' +
+                '<span class="checkin-day-reward">+' + reward + '</span>' +
+                iconHtml +
+                '</div>';
         }
         daysGrid.innerHTML = gridHtml;
     }
@@ -3410,10 +3414,10 @@ window.renderDailyCheckinUI = function() {
     if (claimBtn && claimBtnText) {
         if (state.isClaimedToday) {
             claimBtn.disabled = true;
-            claimBtnText.textContent = `✓ Checked In Today (${state.streak} Day Streak)`;
+            claimBtnText.textContent = 'Checked In Today (' + state.streak + ' Day Streak)';
         } else {
             claimBtn.disabled = false;
-            claimBtnText.textContent = `Claim Day ${currentStep + 1} Reward (+${currentReward} PTS)`;
+            claimBtnText.textContent = 'Claim Day ' + (currentStep + 1) + ' Reward (+' + currentReward + ' PTS)';
         }
     }
 };
@@ -3472,7 +3476,7 @@ window.claimDailyCheckinReward = function() {
 
     // Trigger toast notification if available
     if (typeof window.showToast === 'function') {
-        window.showToast(`🎉 +${rewardPts} PTS Claimed! ${newStreak}-Day Streak active.`, 'success');
+        window.showToast('+' + rewardPts + ' PTS Claimed! ' + newStreak + '-Day Streak active.', 'success');
     }
 };
 
@@ -3920,25 +3924,25 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
  window.applySiteContent = async function() {
  let siteContent = {
  card_cash_title: "Withdrawable Cash",
- card_cash_sub: "From 10 paid referrals • Ready to cash out",
+ card_cash_sub: "From 10 paid referrals - Ready to cash out",
  card_pts_title: "Task Points Wallet",
- card_pts_sub: "≈ ₦5,400 Equiv / Direct data conversion",
+ card_pts_sub: "Approx. 1 PTS = 1.00 Value / Direct data conversion",
  card_paid_title: "Total Lifetime Paid",
- card_paid_sub: "Transferred to Bank • 100% Automated",
+ card_paid_sub: "Transferred to Bank - 100% Automated",
  landing_stat1_val: "₦148,500,000+",
  landing_stat1_label: "Total Payouts Settled",
  landing_stat2_val: "124,000+",
  landing_stat2_label: "Active Daily Earners",
  landing_stat3_val: "2.4 Seconds",
  landing_stat3_label: "Average Payout Speed",
- referral_card_title: " Exclusive ₦250 Referral Link",
+ referral_card_title: "Exclusive Referral Link",
  referral_card_badge: "₦250 Cash / Invite",
  referral_card_desc: "Share your personal link with friends. You earn instant ₦250 cash in your wallet the moment they register their membership pin.",
- jobbers_hub_title: " Jobbers Opportunities & Daily Tasks",
+ jobbers_hub_title: "Jobbers Opportunities & Daily Tasks",
  jobbers_hub_desc: "Explore verified earning opportunities published by official uploaders. Perform the quick tasks, submit proof, and get credited in Task Points instantly.",
- withdraw_card_title: " Request Bank Payout",
- withdraw_min_badge: "Min: ₦5,000",
- advert_card_title: " Place an Advert / Launch Campaign",
+ withdraw_card_title: "Request Bank Payout",
+ withdraw_min_badge: "Min: 1,000",
+ advert_card_title: "Place an Advert / Launch Campaign",
  advert_card_badge: "Member Ads Hub",
  advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash."
  };
