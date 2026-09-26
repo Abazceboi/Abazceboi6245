@@ -74,7 +74,7 @@ function renderPhpFile(filePath, context = {}) {
 
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_NAME\)\s*\?>/g, 'INNOVATIONX');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_TAGLINE\)\s*\?>/g, 'Where SoftLife Meets High-Yield Daily Earnings');
-    content = content.replace(/<\?=\s*htmlspecialchars\(APP_VERSION\)\s*\?>/g, '2.0.0');
+    content = content.replace(/<\?=\s*htmlspecialchars\(APP_VERSION\)\s*\?>/g, '1.0');
     content = content.replace(/<\?=\s*htmlspecialchars\(SUPPORT_EMAIL\)\s*\?>/g, 'Supportinnovationx@gmail.com');
     content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, '500');
     content = content.replace(/<\?=\s*TASK_POINTS_RATE\s*\?>/g, '150');
@@ -917,7 +917,7 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            res.end(JSON.stringify({ status: 'active', service: 'INNOVATIONX PrimeBiller & VTU Telecoms API Gateway', version: '2.0.0' }));
+            res.end(JSON.stringify({ status: 'active', service: 'INNOVATIONX PrimeBiller & VTU Telecoms API Gateway', version: '1.0' }));
         };
 
         function roundNumber(num, scale) {

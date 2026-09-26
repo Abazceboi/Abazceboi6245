@@ -184,5 +184,5 @@ if ($action === 'reject_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 echo json_encode([
     'status' => 'active',
     'service' => 'INNOVATIONX Uploader Accreditation Engine',
-    'version' => '2.0.0'
+    'version' => '1.0'
 ]);

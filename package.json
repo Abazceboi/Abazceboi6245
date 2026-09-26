@@ -1,6 +1,6 @@
 {
   "name": "innovationx",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "INNOVATIONX — Luxury High-Yield Daily Earnings Platform",
   "main": "server.js",
   "scripts": {

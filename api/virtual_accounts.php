@@ -182,4 +182,4 @@ if ($action === 'webhook') {
     exit;
 }
 
-echo json_encode(['status' => 'active', 'service' => 'INNOVATIONX Dedicated Virtual Account API', 'version' => '2.0.0']);
+echo json_encode(['status' => 'active', 'service' => 'INNOVATIONX Dedicated Virtual Account API', 'version' => '1.0']);

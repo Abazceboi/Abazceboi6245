@@ -628,6 +628,6 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 echo json_encode([
     'status' => 'active',
     'service' => 'INNOVATIONX PrimeBiller & VTU Telecoms Engine',
-    'version' => '2.0.0',
+    'version' => '1.0',
     'mode' => $config['api_mode']
 ]);

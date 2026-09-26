@@ -6,7 +6,7 @@
 define('APP_NAME', 'INNOVATIONX');
 define('APP_TAGLINE', 'Where SoftLife Meets High-Yield Daily Earnings');
 define('APP_URL', getenv('APP_URL') ?: 'http://localhost:5050');
-define('APP_VERSION', '2.0.0');
+define('APP_VERSION', '1.0');
 
 // Platform Rates & Financials
 define('MEMBERSHIP_FEE', 500); // Naira ₦500 Lifetime Access

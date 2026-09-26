@@ -176,5 +176,5 @@ if ($action === 'delete_advert' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 echo json_encode([
     'status' => 'active',
     'service' => 'INNOVATIONX Adverts & Campaigns API Gateway',
-    'version' => '2.0.0'
+    'version' => '1.0'
 ]);
