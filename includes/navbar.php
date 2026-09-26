@@ -160,12 +160,24 @@ function isActive($page, $currentPage) {
             <svg id="themeIconMoon" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
 
+<?php
+$navAuthUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
+if ($navAuthUser):
+?>
+        <a href="<?= (!empty($navAuthUser['is_admin']) || in_array(strtolower($navAuthUser['username'] ?? ''), ['admin', 'superadmin'])) ? 'secure_hq_panel.php' : 'dashboard.php' ?>" class="btn-nav-register" style="padding:8px 16px;font-size:0.82rem">
+            <span>Dashboard</span>
+        </a>
+        <a href="logout.php" class="btn-nav-login" style="padding:8px 14px;font-size:0.82rem;color:#FCA5A5">
+            <span>Logout</span>
+        </a>
+<?php else: ?>
         <a href="login.php" class="btn-nav-login">
             <span>Login</span>
         </a>
         <a href="register.php" class="btn-nav-register">
             <span>Register</span>
         </a>
+<?php endif; ?>
         <button class="hamburger" id="hamburger" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="mobileDrawer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="17" x2="21" y2="17"></line></svg>
         </button>
@@ -206,8 +218,13 @@ function isActive($page, $currentPage) {
     <a href="admin.php" class="drawer-link" style="color:var(--sky-vibrant)">Admin Portal</a>
 
     <div class="drawer-buttons">
+<?php if ($navAuthUser): ?>
+        <a href="<?= (!empty($navAuthUser['is_admin']) || in_array(strtolower($navAuthUser['username'] ?? ''), ['admin', 'superadmin'])) ? 'secure_hq_panel.php' : 'dashboard.php' ?>" class="btn-primary" style="text-align:center;justify-content:center">Go to Dashboard</a>
+        <a href="logout.php" class="btn-outline" style="text-align:center;justify-content:center;color:#FCA5A5;border-color:rgba(239,68,68,0.3)">Logout</a>
+<?php else: ?>
         <a href="register.php" class="btn-primary" style="text-align:center;justify-content:center">Register Now</a>
         <a href="login.php" class="btn-outline" style="text-align:center;justify-content:center">Login</a>
+<?php endif; ?>
     </div>
 </aside>
 

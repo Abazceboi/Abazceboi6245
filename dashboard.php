@@ -130,7 +130,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                 </button>
 
                 <!-- Logout Action -->
-                <a href="login.php" class="btn-dash-action btn-dash-logout" title="Sign Out">
+                <a href="logout.php" class="btn-dash-action btn-dash-logout" title="Sign Out">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </a>
             </div>
@@ -216,7 +216,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
             </a>
 
             <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(56,189,248,0.15)">
-                <a href="login.php" class="drawer-link" style="color:#F87171">
+                <a href="logout.php" class="drawer-link" style="color:#F87171">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     <span>Sign Out</span>
                 </a>

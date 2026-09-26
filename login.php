@@ -1,7 +1,27 @@
 <?php
 require_once __DIR__ . '/config/app.php';
+
+// If user explicitly visited login.php?action=logout or login.php?logout=1, clear session immediately
+if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logout']) || isset($_GET['logged_out'])) {
+    if (function_exists('clearAuthCookie')) {
+        clearAuthCookie();
+    }
+    if (session_status() === PHP_SESSION_NONE) {
+        @session_start();
+    }
+    $_SESSION = [];
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    @session_destroy();
+}
+
 $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
-if ($authUser) {
+if ($authUser && empty($_GET['logged_out']) && empty($_GET['logout'])) {
     if (!empty($authUser['is_admin']) || (isset($authUser['username']) && in_array(strtolower($authUser['username']), ['admin', 'superadmin']))) {
         header("Location: secure_hq_panel.php");
     } else {
@@ -241,6 +261,24 @@ if ($authUser) {
                 </div>
             </div>
 
+            <div id="loginStatusAlert" style="display:none;margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"></div>
+
+            <?php if (!empty($_GET['logged_out'])): ?>
+            <div style="margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.35);color:#7DD3FC;display:flex;align-items:center;gap:8px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                <span>You have been safely signed out.</span>
+            </div>
+            <script>
+                // Clean up sensitive client-side session caches
+                try {
+                    localStorage.removeItem('ix_current_user');
+                    localStorage.removeItem('ix_user_email');
+                    localStorage.removeItem('ix_user_phone');
+                    localStorage.removeItem('ix_user_fullname');
+                } catch(e) {}
+            </script>
+            <?php endif; ?>
+
             <form id="loginForm" onsubmit="handleLoginSubmit(event)">
                 <div class="form-group">
                     <label for="loginUser">Username or Email</label>
@@ -297,11 +335,29 @@ if ($authUser) {
         }
     }
 
+    function showLoginAlert(msg, isSuccess = false) {
+        const box = document.getElementById('loginStatusAlert');
+        if (!box) return;
+        box.style.display = 'block';
+        if (isSuccess) {
+            box.style.background = 'rgba(56, 189, 248, 0.12)';
+            box.style.border = '1px solid rgba(56, 189, 248, 0.35)';
+            box.style.color = '#7DD3FC';
+        } else {
+            box.style.background = 'rgba(239, 68, 68, 0.12)';
+            box.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+            box.style.color = '#FCA5A5';
+        }
+        box.textContent = msg;
+    }
+
     function handleLoginSubmit(e) {
         e.preventDefault();
         const btn = document.getElementById('btnLoginSubmit');
         const user = document.getElementById('loginUser').value.trim();
         const pass = document.getElementById('loginPass').value;
+        const box = document.getElementById('loginStatusAlert');
+        if (box) box.style.display = 'none';
 
         btn.disabled = true;
         btn.innerHTML = `<span>Signing In...</span>`;
@@ -314,25 +370,28 @@ if ($authUser) {
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
+                showLoginAlert('Login successful! Redirecting...', true);
                 localStorage.setItem('ix_current_user', data.username);
                 if (data.email) localStorage.setItem('ix_user_email', data.email);
                 if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                 if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
-                if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
-                    window.location.replace('secure_hq_panel.php');
-                } else {
-                    window.location.replace('dashboard.php');
-                }
+                setTimeout(() => {
+                    if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
+                        window.location.replace('secure_hq_panel.php');
+                    } else {
+                        window.location.replace('dashboard.php');
+                    }
+                }, 300);
             } else {
-                alert(data.message || 'Login failed.');
+                showLoginAlert(data.message || 'Invalid username or password.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Secure Sign In</span>`;
+                btn.innerHTML = `<span>Sign In to Dashboard</span>`;
             }
         })
         .catch(err => {
-            alert('A network error occurred. Please try again.');
+            showLoginAlert('A network error occurred. Please try again.');
             btn.disabled = false;
-            btn.innerHTML = `<span>Secure Sign In</span>`;
+            btn.innerHTML = `<span>Sign In to Dashboard</span>`;
         });
     }
     </script>
