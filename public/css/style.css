@@ -8032,26 +8032,26 @@ select.dash-input:focus {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 11px 16px;
   border-radius: 12px;
-  background: rgba(56, 189, 248, 0.14);
-  color: #FFFFFF;
-  border: 1.5px solid rgba(56, 189, 248, 0.45);
-  font-size: 0.8rem;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+  color: #FFFFFF !important;
+  border: 1.5px solid #0284C7;
+  font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.38);
   text-decoration: none;
   box-sizing: border-box;
 }
 
 .btn-credit-manage:hover {
-  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
+  color: #FFFFFF !important;
   border-color: #38BDF8;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
   transform: translateY(-2px);
 }
 
@@ -8084,13 +8084,16 @@ select.dash-input:focus {
 }
 
 [data-theme="light"] .btn-credit-manage {
-  background: rgba(56, 189, 248, 0.18) !important;
-  border-color: rgba(56, 189, 248, 0.5) !important;
+  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+  border-color: #0284C7 !important;
   color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4) !important;
 }
 
 [data-theme="light"] .btn-credit-manage:hover {
-  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%) !important;
+  background: linear-gradient(135deg, #0369A1 0%, #075985 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55) !important;
 }
 
 @media (max-width: 480px) {
@@ -12477,5 +12480,459 @@ html, body {
   border-color: #BAE6FD !important;
 }
 [data-theme="light"] .coupon-col-type {
+  color: #0F172A !important;
+}
+
+/* ======================================================== */
+/* OTC UNLISTED TOKENS MARKETPLACE & LIGHT THEME STYLING    */
+/* ======================================================== */
+
+/* Fancy Token Selector Component */
+.fancy-token-selector-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.fancy-token-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.fancy-token-trigger:hover {
+  border-color: #38BDF8;
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+}
+
+.fancy-token-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.fancy-token-sym {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.fancy-token-net-badge {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  font-weight: 700;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.fancy-token-fullname {
+  font-size: 0.72rem;
+  color: #94A3B8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fancy-token-rate-chip {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #7DD3FC;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.fancy-token-chevron {
+  color: #38BDF8;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+/* Fancy Token Dropdown Tray */
+.fancy-token-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  background: #0E1626;
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(56, 189, 248, 0.15);
+  z-index: 999;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.fancy-token-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fancy-picker-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.fancy-picker-sub {
+  font-size: 0.7rem;
+  color: #94A3B8;
+}
+
+.fancy-token-grid-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.fancy-token-option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fancy-token-option-card:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+.fancy-token-option-card.active {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38BDF8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+/* Marketplace P2P Dealer Offers Grid */
+.marketplace-offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.marketplace-offer-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.marketplace-offer-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.marketplace-offer-card.active {
+  border-color: #38BDF8 !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25) !important;
+}
+
+.marketplace-offer-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.marketplace-badge-escrow {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.marketplace-badge-express {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.marketplace-badge-bulk {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* ======================================================== */
+/* LIGHT THEME RULES FOR OTC TOKEN MARKETPLACE              */
+/* ======================================================== */
+
+[data-theme="light"] .dash-token-market-card,
+[data-theme="light"] .token-market-card {
+  background: #FFFFFF !important;
+  border: 1.5px solid #E2E8F0 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .dash-token-market-card:hover,
+[data-theme="light"] .token-market-card:hover {
+  border-color: #0284C7 !important;
+  box-shadow: 0 8px 25px rgba(2, 132, 199, 0.12) !important;
+}
+
+[data-theme="light"] #dashTradeDeskCard,
+[data-theme="light"] #tradeDeskSection {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] #dashTradeTypeHeading,
+[data-theme="light"] #tradeTypeHeading,
+[data-theme="light"] .marketplace-section-title,
+[data-theme="light"] .fancy-picker-title,
+[data-theme="light"] .dash-token-market-card strong,
+[data-theme="light"] .token-market-card strong,
+[data-theme="light"] .token-market-card div[style*="font-size:1.05rem"] {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .fancy-token-sym,
+[data-theme="light"] .dash-token-market-card div[style*="font-size:0.95rem;font-weight:900"] {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .fancy-token-fullname,
+[data-theme="light"] .marketplace-section-sub,
+[data-theme="light"] .fancy-picker-sub,
+[data-theme="light"] .dash-token-market-card div[style*="font-size:0.68rem;color:#94A3B8"],
+[data-theme="light"] .token-market-card div[style*="font-size:0.72rem;color:#94A3B8"] {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .fancy-token-trigger {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+[data-theme="light"] .fancy-token-trigger:hover {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+}
+
+[data-theme="light"] .fancy-token-dropdown {
+  background: #FFFFFF !important;
+  border-color: #0284C7 !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .fancy-token-dropdown-header {
+  border-bottom-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .fancy-token-option-card {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .fancy-token-option-card:hover {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+}
+
+[data-theme="light"] .fancy-token-option-card.active {
+  background: #E0F2FE !important;
+  border-color: #0284C7 !important;
+}
+
+[data-theme="light"] .marketplace-offer-card {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .marketplace-offer-card:hover {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+}
+
+[data-theme="light"] .marketplace-offer-card.active {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15) !important;
+}
+
+[data-theme="light"] .marketplace-offer-card strong {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .marketplace-offer-card span,
+[data-theme="light"] .marketplace-offer-card div {
+  color: #334155;
+}
+
+/* Light Theme Metrics & Rate Boxes */
+[data-theme="light"] .dash-token-market-card div[style*="background:rgba(0,0,0,0.3)"],
+[data-theme="light"] .token-market-card div[style*="background:rgba(0,0,0,0.3)"] {
+  background: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] div[style*="background:rgba(56, 189, 248, 0.06)"] {
+  background: #F0F9FF !important;
+  border-color: #BAE6FD !important;
+}
+
+[data-theme="light"] div[style*="background:rgba(56, 189, 248, 0.06)"] div[style*="font-weight:900"] {
+  color: #0369A1 !important;
+}
+
+[data-theme="light"] div[style*="background:rgba(52, 211, 153, 0.06)"] {
+  background: #F0FDF4 !important;
+  border-color: #BBF7D0 !important;
+}
+
+[data-theme="light"] div[style*="background:rgba(52, 211, 153, 0.06)"] div[style*="font-weight:900"] {
+  color: #047857 !important;
+}
+
+[data-theme="light"] label[style*="color:#BAE6FD"] {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] #tradeCalculatedNaira,
+[data-theme="light"] #dashTradeCalculatedNaira {
+  color: #0284C7 !important;
+}
+
+[data-theme="light"] div[style*="background:rgba(56, 189, 248, 0.08)"] {
+  background: #F0F9FF !important;
+  border-color: #BAE6FD !important;
+}
+
+[data-theme="light"] div[style*="border:1px dashed rgba(56, 189, 248, 0.3)"] {
+  background: #F0F9FF !important;
+  border-color: #0284C7 !important;
+}
+
+[data-theme="light"] div[style*="border:1px dashed rgba(56, 189, 248, 0.3)"] div[style*="font-weight:900"],
+[data-theme="light"] div[style*="border:1px dashed rgba(56, 189, 248, 0.3)"] span[id*="disp"] {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] div[style*="border:2px dashed rgba(56, 189, 248, 0.3)"] {
+  background: #F8FAFC !important;
+  border-color: #93C5FD !important;
+}
+
+[data-theme="light"] div[style*="border:2px dashed rgba(56, 189, 248, 0.3)"] div {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .dash-service-pane table thead tr {
+  background: #F8FAFC !important;
+  border-bottom-color: #CBD5E1 !important;
+}
+
+[data-theme="light"] .dash-service-pane table thead th {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .dash-service-pane table tbody tr {
+  border-bottom-color: #F1F5F9 !important;
+}
+
+[data-theme="light"] .dash-service-pane table tbody td {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .dash-service-pane table tbody td strong {
+  color: #0F172A !important;
+}
+
+.token-product-views-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38BDF8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .token-product-views-badge {
+  background: #E0F2FE !important;
+  color: #0369A1 !important;
+  border-color: #BAE6FD !important;
+}
+
+/* Light Theme Inputs in Token Desks */
+[data-theme="light"] #dashPane_tokens input.admin-input,
+[data-theme="light"] #tradeDeskSection input.admin-input,
+[data-theme="light"] #dashPane_tokens select.admin-select,
+[data-theme="light"] #tradeDeskSection select.admin-select {
+  background: #F8FAFC !important;
+  border: 1.5px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] #dashPane_tokens input.admin-input:focus,
+[data-theme="light"] #tradeDeskSection input.admin-input:focus {
+  border-color: #0284C7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+  background: #FFFFFF !important;
+}
+
+[data-theme="light"] .dash-token-market-card .token-title-sym,
+[data-theme="light"] .token-market-card .token-title-sym {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .dash-token-market-card .token-sub-name,
+[data-theme="light"] .token-market-card .token-sub-name {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .dash-token-market-card .token-rate-val,
+[data-theme="light"] .token-market-card .token-rate-val {
   color: #0F172A !important;
 }

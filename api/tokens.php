@@ -118,20 +118,21 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $rawInput = file_get_contents('php://input');
     $input = json_decode($rawInput, true) ?? $_POST;
 
-    $type = strtolower(trim($input['type'] ?? 'buy')); // 'buy' or 'sell'
-    $symbol = strtoupper(trim($input['token_symbol'] ?? ''));
-    $amount = (float)($input['token_amount'] ?? 0);
+    $type = strtolower(trim($input['type'] ?? $input['trade_type'] ?? 'buy')); // 'buy' or 'sell'
+    $symbol = strtoupper(trim($input['token_symbol'] ?? $input['symbol'] ?? ''));
+    $amount = (float)($input['token_amount'] ?? $input['amount'] ?? 0);
     $userId = trim($input['user_id'] ?? 'Member');
     $username = trim($input['username'] ?? 'Member');
-    $walletAddress = trim($input['wallet_address'] ?? '');
-    $bankName = trim($input['bank_name'] ?? '');
-    $accountNumber = trim($input['account_number'] ?? '');
+    $walletAddress = trim($input['wallet_address'] ?? $input['user_wallet'] ?? '');
+    $bankName = trim($input['bank_name'] ?? $input['payout_bank'] ?? '');
+    $accountNumber = trim($input['account_number'] ?? $input['payout_account'] ?? '');
     $accountName = trim($input['account_name'] ?? '');
     $txReference = trim($input['tx_reference'] ?? '');
     $proofImage = trim($input['proof_image'] ?? '');
+    $escrowMerchant = trim($input['escrow_merchant'] ?? $input['selected_merchant'] ?? 'InnovationX Official Escrow');
 
     if ($amount <= 0 || empty($symbol)) {
-        echo json_encode(['status' => 'error', 'message' => 'Please provide a valid token and amount.']);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Please provide a valid token and amount.', 'error' => 'Please provide a valid token and amount.']);
         exit;
     }
 
@@ -147,18 +148,18 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$targetToken) {
-        echo json_encode(['status' => 'error', 'message' => "Token '{$symbol}' is not currently available for trade."]);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => "Token '{$symbol}' is not currently available for trade.", 'error' => "Token '{$symbol}' is not currently available for trade."]);
         exit;
     }
 
     $minTrade = (float)($targetToken['min_trade'] ?? 1);
     $maxTrade = (float)($targetToken['max_trade'] ?? 100000);
     if ($amount < $minTrade) {
-        echo json_encode(['status' => 'error', 'message' => "Minimum trade limit for {$symbol} is {$minTrade} tokens."]);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => "Minimum trade limit for {$symbol} is {$minTrade} tokens.", 'error' => "Minimum trade limit for {$symbol} is {$minTrade} tokens."]);
         exit;
     }
     if ($amount > $maxTrade) {
-        echo json_encode(['status' => 'error', 'message' => "Maximum trade limit for {$symbol} is " . number_format($maxTrade) . " tokens."]);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => "Maximum trade limit for {$symbol} is " . number_format($maxTrade) . " tokens.", 'error' => "Maximum trade limit for {$symbol} is " . number_format($maxTrade) . " tokens."]);
         exit;
     }
 
@@ -166,17 +167,17 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $totalNaira = round($amount * $rate, 2);
 
     if ($type === 'buy' && empty($walletAddress)) {
-        echo json_encode(['status' => 'error', 'message' => "Please provide your {$symbol} receiving wallet address or UID."]);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => "Please provide your {$symbol} receiving wallet address or UID.", 'error' => "Please provide your {$symbol} receiving wallet address or UID."]);
         exit;
     }
 
     if ($type === 'sell' && (empty($accountNumber) || empty($bankName))) {
-        echo json_encode(['status' => 'error', 'message' => 'Please provide your destination bank name and account number to receive payment.']);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Please provide your destination bank name and account number to receive payment.', 'error' => 'Please provide your destination bank name and account number to receive payment.']);
         exit;
     }
 
     if (empty($proofImage)) {
-        echo json_encode(['status' => 'error', 'message' => 'Please attach your payment / transfer screenshot proof.']);
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Please attach your payment / transfer screenshot proof.', 'error' => 'Please attach your payment / transfer screenshot proof.']);
         exit;
     }
 
@@ -184,21 +185,29 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderId = 'IX-TOK-' . strtoupper(substr(uniqid(), -6));
 
     $newOrder = [
+        'id' => $orderId,
         'order_id' => $orderId,
         'type' => $type,
+        'trade_type' => $type,
+        'symbol' => $symbol,
         'token_symbol' => $symbol,
         'token_name' => $targetToken['name'] ?? $symbol,
+        'amount' => $amount,
         'token_amount' => $amount,
         'rate' => $rate,
         'total_naira' => $totalNaira,
         'user_id' => $userId,
         'username' => $username,
         'wallet_address' => $walletAddress ?: ($targetToken['platform_deposit_address'] ?? ''),
+        'user_wallet' => $walletAddress ?: ($targetToken['platform_deposit_address'] ?? ''),
         'bank_name' => $bankName ?: ($config['platform_bank']['bank_name'] ?? 'OPay'),
+        'payout_bank' => $bankName ?: ($config['platform_bank']['bank_name'] ?? 'OPay'),
         'account_number' => $accountNumber ?: ($config['platform_bank']['account_number'] ?? ''),
+        'payout_account' => $accountNumber ?: ($config['platform_bank']['account_number'] ?? ''),
         'account_name' => $accountName ?: ($config['platform_bank']['account_name'] ?? ''),
         'tx_reference' => $txReference ?: 'REF-' . strtoupper(substr(md5(uniqid()), 0, 10)),
         'proof_image' => $proofImage,
+        'escrow_merchant' => $escrowMerchant,
         'status' => 'pending',
         'admin_note' => '',
         'created_at' => date('Y-m-d H:i:s'),
@@ -216,6 +225,7 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     echo json_encode([
         'status' => 'success',
+        'success' => true,
         'message' => 'Token trade order submitted successfully! Proof attached and queued for verification.',
         'order' => $newOrder
     ]);

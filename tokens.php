@@ -53,20 +53,27 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                 <?= htmlspecialchars($tok['icon'] ?? '🪙') ?>
                             </div>
                             <div>
-                                <div style="font-size:1.05rem;font-weight:900;color:#FFFFFF"><?= htmlspecialchars($tok['symbol']) ?></div>
-                                <div style="font-size:0.72rem;color:#94A3B8"><?= htmlspecialchars($tok['name']) ?></div>
+                                <div class="token-title-sym" style="font-size:1.05rem;font-weight:900"><?= htmlspecialchars($tok['symbol']) ?></div>
+                                <div class="token-sub-name" style="font-size:0.72rem"><?= htmlspecialchars($tok['name']) ?></div>
                             </div>
                         </div>
-                        <span style="font-size:0.68rem;padding:3px 8px;border-radius:6px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;font-weight:700">
-                            <?= htmlspecialchars($tok['network']) ?>
-                        </span>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                            <span style="font-size:0.68rem;padding:3px 8px;border-radius:6px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;font-weight:700">
+                                <?= htmlspecialchars($tok['network']) ?>
+                            </span>
+                            <!-- Live Views Badge on Product Card -->
+                            <div class="token-product-views-badge" title="Live Views on <?= htmlspecialchars($tok['symbol']) ?>">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <span id="viewCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['views_count'] ?? 1200) ?></span> views
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Live Views & Trades Metric Pill -->
+                    <!-- Live Trades Metric Pill -->
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:9px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);margin-bottom:14px;font-size:0.74rem">
                         <div style="display:flex;align-items:center;gap:5px;color:#7DD3FC">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            <span id="viewCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['views_count'] ?? 1200) ?></span> views
+                            <span>Live Market Interest</span>
                         </div>
                         <div style="display:flex;align-items:center;gap:5px;color:#34D399">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -78,11 +85,11 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
                         <div style="padding:8px 10px;border-radius:9px;background:rgba(56, 189, 248, 0.06);border:1px solid rgba(56, 189, 248, 0.18)">
                             <div style="font-size:0.65rem;color:#7DD3FC;font-weight:700;text-transform:uppercase">We Sell (Buy Rate)</div>
-                            <div style="font-size:1.05rem;font-weight:900;color:#FFFFFF">₦<?= number_format($tok['buy_rate']) ?></div>
+                            <div class="token-rate-val" style="font-size:1.05rem;font-weight:900">₦<?= number_format($tok['buy_rate']) ?></div>
                         </div>
                         <div style="padding:8px 10px;border-radius:9px;background:rgba(52, 211, 153, 0.06);border:1px solid rgba(52, 211, 153, 0.18)">
                             <div style="font-size:0.65rem;color:#6EE7B7;font-weight:700;text-transform:uppercase">We Buy (Sell Rate)</div>
-                            <div style="font-size:1.05rem;font-weight:900;color:#FFFFFF">₦<?= number_format($tok['sell_rate']) ?></div>
+                            <div class="token-rate-val" style="font-size:1.05rem;font-weight:900">₦<?= number_format($tok['sell_rate']) ?></div>
                         </div>
                     </div>
 
@@ -109,7 +116,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         <span id="tradeTypeHeading">Buy Tokens</span>
                         <span id="selectedTokenBadge" style="font-size:0.75rem;padding:3px 10px;border-radius:8px;background:rgba(56, 189, 248, 0.15);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3)">VERY</span>
                     </h2>
-                    <div style="font-size:0.8rem;color:#94A3B8">Fill in your trade details, attach transfer/payment proof, and submit for verification.</div>
+                    <div class="token-sub-name" style="font-size:0.8rem">Select token, pick escrow option, enter quantity, and submit payment receipt.</div>
                 </div>
 
                 <!-- Buy / Sell Toggle Switcher -->
@@ -125,18 +132,154 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
 
             <!-- Trade Form -->
             <form id="tokenTradeForm" onsubmit="handleTokenTradeSubmit(event)">
+                <!-- P2P Marketplace Offers / Escrow Choices (Requested by User) -->
+                <div style="margin-bottom:24px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div>
+                            <label class="marketplace-section-title" style="display:block;font-size:0.84rem;font-weight:800;color:#FFFFFF;margin-bottom:2px">
+                                Choose P2P Escrow Market Option
+                            </label>
+                            <div class="marketplace-section-sub" style="font-size:0.72rem;color:#94A3B8">Select your preferred verified escrow partner and settlement route</div>
+                        </div>
+                        <span class="marketplace-offer-badge marketplace-badge-escrow">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            100% Escrow Protected
+                        </span>
+                    </div>
+
+                    <input type="hidden" id="selectedMarketplaceOffer" value="InnovationX Official Escrow">
+
+                    <div class="marketplace-offers-grid" id="marketplaceOffersGrid">
+                        <!-- Option 1: Official Escrow Desk -->
+                        <div class="marketplace-offer-card active" id="offer_official" onclick="selectMarketplaceOffer('official', 'InnovationX Official Escrow')">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:1.3rem">🛡️</span>
+                                    <div>
+                                        <strong style="font-size:0.88rem;color:#FFFFFF;display:block">InnovationX Vault</strong>
+                                        <span style="font-size:0.68rem;color:#94A3B8">Official Platform Escrow</span>
+                                    </div>
+                                </div>
+                                <span class="marketplace-offer-badge marketplace-badge-escrow">Verified #1</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
+                                <span style="color:#7DD3FC;font-weight:700">⚡ 3–8 Mins</span>
+                                <span style="color:#34D399;font-weight:700">⭐ 5.0 (4,920+)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
+                                <span>Fee: <b style="color:#34D399">0.00%</b></span>
+                                <span>Limits: ₦5k – ₦10M</span>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Apex P2P Express -->
+                        <div class="marketplace-offer-card" id="offer_apex" onclick="selectMarketplaceOffer('apex', 'Apex P2P Express Desk')">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:1.3rem">⚡</span>
+                                    <div>
+                                        <strong style="font-size:0.88rem;color:#FFFFFF;display:block">Apex P2P Express</strong>
+                                        <span style="font-size:0.68rem;color:#94A3B8">Fast-Track OTC Trader</span>
+                                    </div>
+                                </div>
+                                <span class="marketplace-offer-badge marketplace-badge-express">Speedy</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
+                                <span style="color:#7DD3FC;font-weight:700">⚡ 5–15 Mins</span>
+                                <span style="color:#34D399;font-weight:700">⭐ 4.9 (2,180+)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
+                                <span>Fee: <b style="color:#34D399">0.00%</b></span>
+                                <span>Limits: ₦2k – ₦5M</span>
+                            </div>
+                        </div>
+
+                        <!-- Option 3: Prime OTC Whales Pool -->
+                        <div class="marketplace-offer-card" id="offer_whales" onclick="selectMarketplaceOffer('whales', 'Prime OTC Whales Desk')">
+                            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <span style="font-size:1.3rem">💎</span>
+                                    <div>
+                                        <strong style="font-size:0.88rem;color:#FFFFFF;display:block">Prime Whales Desk</strong>
+                                        <span style="font-size:0.68rem;color:#94A3B8">High Volume Liquidity</span>
+                                    </div>
+                                </div>
+                                <span class="marketplace-offer-badge marketplace-badge-bulk">Bulk OTC</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
+                                <span style="color:#7DD3FC;font-weight:700">⚡ 10–25 Mins</span>
+                                <span style="color:#34D399;font-weight:700">⭐ 4.95 (1,450+)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
+                                <span>Fee: <b style="color:#34D399">0.00%</b></span>
+                                <span>Limits: ₦50k – ₦25M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;margin-bottom:20px">
-                    
-                    <!-- Token Selector -->
+                    <!-- Fancy Stylish Token Selector (Requested by User) -->
                     <div>
                         <label style="display:block;font-size:0.78rem;font-weight:700;color:#BAE6FD;margin-bottom:6px">Select Token to Trade</label>
-                        <select id="tradeTokenSelect" onchange="handleTokenSelectChange(this.value)" class="admin-select" style="width:100%;height:44px;font-size:0.88rem;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px">
-                            <?php foreach ($tokensList as $tok): ?>
-                            <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>">
-                                <?= htmlspecialchars($tok['symbol']) ?> — <?= htmlspecialchars($tok['name']) ?> (<?= htmlspecialchars($tok['network']) ?>)
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="fancy-token-selector-wrap" id="fancyTokenPickerWrap">
+                            <button type="button" class="fancy-token-trigger" id="tokenSelectTrigger" onclick="toggleTokenPicker(event)">
+                                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                                    <div class="fancy-token-icon" id="triggerIcon"><?= htmlspecialchars($tokensList[0]['icon'] ?? '🪙') ?></div>
+                                    <div style="text-align:left;min-width:0">
+                                        <div style="display:flex;align-items:center;gap:6px">
+                                            <span class="fancy-token-sym" id="triggerSym"><?= htmlspecialchars($tokensList[0]['symbol'] ?? 'VERY') ?></span>
+                                            <span class="fancy-token-net-badge" id="triggerNet"><?= htmlspecialchars($tokensList[0]['network'] ?? 'VERY Mainnet') ?></span>
+                                        </div>
+                                        <div class="fancy-token-fullname" id="triggerName"><?= htmlspecialchars($tokensList[0]['name'] ?? 'VeryCoin Network') ?></div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                                    <div class="fancy-token-rate-chip" id="triggerRate">₦<?= number_format($tokensList[0]['buy_rate'] ?? 350) ?> / ₦<?= number_format($tokensList[0]['sell_rate'] ?? 300) ?></div>
+                                    <svg class="fancy-token-chevron" id="triggerChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                            </button>
+
+                            <!-- Dropdown Popover List -->
+                            <div class="fancy-token-dropdown" id="tokenPickerDropdown" style="display:none">
+                                <div class="fancy-token-dropdown-header">
+                                    <div>
+                                        <div class="fancy-picker-title">Select Token Asset</div>
+                                        <div class="fancy-picker-sub">Instant rate sync &amp; escrow settlement</div>
+                                    </div>
+                                    <button type="button" onclick="closeTokenPicker(event)" class="btn-dash-action" style="height:26px;padding:0 8px;font-size:0.7rem">✕</button>
+                                </div>
+                                <div class="fancy-token-grid-list">
+                                    <?php foreach ($tokensList as $idx => $tok): ?>
+                                    <div class="fancy-token-option-card <?= ($idx === 0) ? 'active' : '' ?>" id="tokOpt_<?= htmlspecialchars($tok['symbol']) ?>" onclick="pickToken('<?= htmlspecialchars($tok['symbol']) ?>')">
+                                        <div style="display:flex;align-items:center;gap:10px">
+                                            <div class="fancy-token-icon" style="width:34px;height:34px;font-size:1.15rem"><?= htmlspecialchars($tok['icon'] ?? '🪙') ?></div>
+                                            <div>
+                                                <div style="display:flex;align-items:center;gap:5px">
+                                                    <span class="fancy-token-sym" style="font-size:0.92rem"><?= htmlspecialchars($tok['symbol']) ?></span>
+                                                    <span class="fancy-token-net-badge" style="font-size:0.62rem;padding:1px 5px"><?= htmlspecialchars($tok['network']) ?></span>
+                                                </div>
+                                                <div class="fancy-token-fullname" style="font-size:0.7rem"><?= htmlspecialchars($tok['name']) ?></div>
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right">
+                                            <div style="font-size:0.76rem;font-weight:800;color:#38BDF8">Buy: ₦<?= number_format($tok['buy_rate']) ?></div>
+                                            <div style="font-size:0.7rem;font-weight:700;color:#34D399">Sell: ₦<?= number_format($tok['sell_rate']) ?></div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <!-- Hidden Select for native bindings and form submits -->
+                            <select id="tradeTokenSelect" style="display:none" onchange="handleTokenSelectChange(this.value)">
+                                <?php foreach ($tokensList as $tok): ?>
+                                <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>" data-icon="<?= htmlspecialchars($tok['icon'] ?? '🪙') ?>" data-name="<?= htmlspecialchars($tok['name']) ?>">
+                                    <?= htmlspecialchars($tok['symbol']) ?> — <?= htmlspecialchars($tok['name']) ?> (<?= htmlspecialchars($tok['network']) ?>)
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Token Amount -->
@@ -349,6 +492,49 @@ function setTradeType(type) {
     calculateTradeTotal();
 }
 
+// Fancy Token Dropdown & Marketplace Controllers
+function toggleTokenPicker(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const dd = document.getElementById('tokenPickerDropdown');
+    const chev = document.getElementById('triggerChevron');
+    if (!dd) return;
+    const isVisible = dd.style.display === 'block';
+    dd.style.display = isVisible ? 'none' : 'block';
+    if (chev) chev.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function closeTokenPicker(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const dd = document.getElementById('tokenPickerDropdown');
+    const chev = document.getElementById('triggerChevron');
+    if (dd) dd.style.display = 'none';
+    if (chev) chev.style.transform = 'rotate(0deg)';
+}
+
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('fancyTokenPickerWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        closeTokenPicker();
+    }
+});
+
+function selectMarketplaceOffer(id, name) {
+    const inp = document.getElementById('selectedMarketplaceOffer');
+    if (inp) inp.value = name;
+    document.querySelectorAll('#marketplaceOffersGrid .marketplace-offer-card').forEach(c => c.classList.remove('active'));
+    const target = document.getElementById('offer_' + id);
+    if (target) target.classList.add('active');
+}
+
+function pickToken(symbol) {
+    const select = document.getElementById('tradeTokenSelect');
+    if (select) {
+        select.value = symbol;
+        handleTokenSelectChange(symbol);
+    }
+    closeTokenPicker();
+}
+
 function selectTokenToTrade(symbol, type) {
     setTradeType(type);
     const select = document.getElementById('tradeTokenSelect');
@@ -360,21 +546,60 @@ function selectTokenToTrade(symbol, type) {
 }
 
 function handleTokenSelectChange(symbol) {
-    document.getElementById('selectedTokenBadge').textContent = symbol;
+    const badge = document.getElementById('selectedTokenBadge');
+    if (badge) badge.textContent = symbol;
     const select = document.getElementById('tradeTokenSelect');
+    if (!select) return;
     const opt = select.options[select.selectedIndex];
     if (!opt) return;
 
+    const buy = opt.getAttribute('data-buy') || '0';
+    const sell = opt.getAttribute('data-sell') || '0';
     const min = opt.getAttribute('data-min') || '1';
     const wallet = opt.getAttribute('data-wallet') || '';
     const memo = opt.getAttribute('data-memo') || '';
+    const net = opt.getAttribute('data-network') || '';
+    const name = opt.getAttribute('data-name') || '';
+    const icon = opt.getAttribute('data-icon') || '🪙';
 
-    document.getElementById('tokenQtyLimits').textContent = `(Min: ${min})`;
-    document.getElementById('dispDepositAddress').textContent = wallet;
-    document.getElementById('dispDepositMemo').textContent = memo;
+    // Update Fancy Selector Button Elements
+    const tIcon = document.getElementById('triggerIcon');
+    const tSym = document.getElementById('triggerSym');
+    const tNet = document.getElementById('triggerNet');
+    const tName = document.getElementById('triggerName');
+    const tRate = document.getElementById('triggerRate');
 
-    // Trigger API view counter increment silently
-    fetch(`api/tokens.php?action=get_tokens&view_symbol=${symbol}`).catch(() => {});
+    if (tIcon) tIcon.textContent = icon;
+    if (tSym) tSym.textContent = symbol;
+    if (tNet) tNet.textContent = net;
+    if (tName) tName.textContent = name;
+    if (tRate) tRate.textContent = `₦${Number(buy).toLocaleString()} / ₦${Number(sell).toLocaleString()}`;
+
+    // Highlight active card in fancy dropdown
+    document.querySelectorAll('#tokenPickerDropdown .fancy-token-option-card').forEach(card => card.classList.remove('active'));
+    const activeCard = document.getElementById('tokOpt_' + symbol);
+    if (activeCard) activeCard.classList.add('active');
+
+    const minEl = document.getElementById('tokenQtyLimits');
+    if (minEl) minEl.textContent = `(Min: ${min})`;
+    const addrEl = document.getElementById('dispDepositAddress');
+    if (addrEl) addrEl.textContent = wallet;
+    const memoEl = document.getElementById('dispDepositMemo');
+    if (memoEl) memoEl.textContent = memo;
+
+    // Trigger API view counter increment silently and update DOM badge
+    fetch(`api/tokens.php?action=get_tokens&view_symbol=${symbol}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.status === 'success' && Array.isArray(data.tokens)) {
+                const found = data.tokens.find(t => t.symbol === symbol);
+                if (found) {
+                    const vEl = document.getElementById(`viewCount_${symbol}`);
+                    if (vEl) vEl.textContent = Number(found.views_count || 0).toLocaleString();
+                }
+            }
+        })
+        .catch(() => {});
 
     calculateTradeTotal();
 }
@@ -493,7 +718,8 @@ async function handleTokenTradeSubmit(e) {
                 bank_name: payoutBank,
                 account_number: payoutAccount,
                 tx_reference: txRef,
-                proof_image: proofB64
+                proof_image: proofB64,
+                escrow_merchant: document.getElementById('selectedMarketplaceOffer')?.value || 'InnovationX Official Escrow'
             })
         });
         const data = await res.json();
