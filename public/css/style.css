@@ -10419,6 +10419,7 @@ html, body {
     gap: 8px !important;
     margin-bottom: 16px !important;
     justify-content: space-between !important;
+    position: relative !important;
   }
   .hud-left, .hud-actions {
     padding: 6px 10px !important;
@@ -10426,7 +10427,7 @@ html, body {
   .hud-left {
     gap: 10px !important;
     min-width: 0 !important;
-    flex-shrink: 1 !important;
+    flex: 1 1 auto !important;
   }
   .hud-avatar {
     width: 34px !important;
@@ -10436,16 +10437,19 @@ html, body {
   }
   .hud-user-info {
     min-width: 0 !important;
+    flex: 1 1 auto !important;
   }
   .hud-user-info h2 {
     font-size: 0.95rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    max-width: 130px !important;
   }
   .hud-actions {
     gap: 6px !important;
     flex-shrink: 0 !important;
+    position: static !important;
   }
   .hud-actions .btn-dash-action {
     width: 40px !important;
@@ -10465,6 +10469,21 @@ html, body {
   }
   .hud-actions .btn-dash-menu span {
     display: none !important;
+  }
+
+  /* Notifications Dropdown: Perfectly fit to mobile screen */
+  .notif-bell-wrap {
+    position: static !important;
+  }
+  .notif-dropdown {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    box-sizing: border-box !important;
+    border-radius: 18px !important;
   }
 
   /* 4. Admin Top Command Bar Balance (Mobile Single-Row App Header) */
@@ -10642,31 +10661,123 @@ html, body {
 
   /* 8. Credit Card Terminal Balance */
   .deck-credit-card {
-    padding: 18px 16px !important;
+    padding: 16px 14px !important;
     min-height: auto !important;
     border-radius: 18px !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   .credit-card-header {
-    flex-wrap: wrap !important;
-    gap: 10px !important;
-  }
-  .credit-card-number-val-row {
-    padding: 10px 12px !important;
-    justify-content: center !important;
-  }
-  .credit-card-number-digits {
-    font-size: clamp(1.15rem, 5vw, 1.45rem) !important;
-    letter-spacing: 2.5px !important;
-    text-align: center !important;
-  }
-  .credit-card-meta-row {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 10px !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+  }
+  .credit-card-brand {
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .credit-card-logo-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.72rem !important;
+    border-radius: 7px !important;
+    flex-shrink: 0 !important;
+  }
+  .credit-card-site-name {
+    font-size: 0.82rem !important;
+    letter-spacing: 1px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .credit-card-tier-tag {
+    font-size: 0.52rem !important;
+    letter-spacing: 1.2px !important;
+  }
+  .credit-card-bank-badge {
+    padding: 4px 10px !important;
+    gap: 5px !important;
+    max-width: 50% !important;
+    flex-shrink: 0 !important;
+  }
+  .credit-card-bank-name {
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .credit-card-chip-row {
+    margin: 8px 0 6px !important;
+    gap: 12px !important;
+  }
+  .credit-card-emv-chip {
+    width: 38px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+  }
+  .credit-card-contactless svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .credit-card-number-block {
+    margin: 4px 0 10px !important;
+  }
+  .credit-card-number-lbl {
+    font-size: 0.52rem !important;
+    letter-spacing: 1.2px !important;
+    margin-bottom: 4px !important;
+  }
+  .credit-card-number-val-row {
+    padding: 8px 10px !important;
+    justify-content: center !important;
+  }
+  .credit-card-number-digits {
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem) !important;
+    letter-spacing: 2px !important;
+    text-align: center !important;
+    word-break: break-all !important;
+  }
+  .credit-card-footer {
+    gap: 8px !important;
+    margin-top: 8px !important;
+  }
+  .credit-card-meta-row {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
     width: 100% !important;
+  }
+  .credit-card-meta-col {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  .credit-card-sub-lbl {
+    font-size: 0.52rem !important;
+    letter-spacing: 1px !important;
+  }
+  .credit-card-holder-name {
+    font-size: 0.82rem !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+    max-width: 160px !important;
+  }
+  .credit-card-meta-col.credit-card-meta-right {
+    flex-shrink: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  .credit-card-status-pill {
+    padding: 2px 8px !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.4px !important;
   }
   .credit-card-action-row {
     width: 100% !important;
@@ -10674,8 +10785,8 @@ html, body {
   .btn-credit-manage {
     width: 100% !important;
     justify-content: center !important;
-    padding: 10px 14px !important;
-    font-size: 0.8rem !important;
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
   }
 
   /* 9. Bento Grid & 6-Tile Tech Dispatch Grid */
@@ -10717,7 +10828,7 @@ html, body {
 /* --- Small & Compact Screens (under 400px) --- */
 @media (max-width: 400px) {
   .hud-user-info h2 {
-    max-width: 80px !important;
+    max-width: 110px !important;
   }
   .admin-kpi-grid-8 {
     grid-template-columns: 1fr !important;
