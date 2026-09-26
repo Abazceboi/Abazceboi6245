@@ -154,7 +154,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         <div class="marketplace-offer-card active" id="offer_official" onclick="selectMarketplaceOffer('official', 'InnovationX Official Escrow')">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="font-size:1.3rem">🛡️</span>
+                                    <span style="font-size:1.3rem"></span>
                                     <div>
                                         <strong style="font-size:0.88rem;color:#FFFFFF;display:block">InnovationX Vault</strong>
                                         <span style="font-size:0.68rem;color:#94A3B8">Official Platform Escrow</span>

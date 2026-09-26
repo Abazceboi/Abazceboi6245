@@ -1823,7 +1823,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
                         <div style="display:flex;align-items:center;gap:12px">
                             <div style="width:44px;height:44px;border-radius:12px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#38BDF8;font-size:1.4rem">
-                                🪙
+                                
                             </div>
                             <div>
                                 <h2 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 4px">Unlisted Tokens OTC Desk</h2>
@@ -1853,7 +1853,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
                                 <div style="display:flex;align-items:center;gap:8px">
                                     <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.25);display:flex;align-items:center;justify-content:center;font-size:1.15rem">
-                                        <?= htmlspecialchars($tok['icon'] ?? '🪙') ?>
+                                        <?= htmlspecialchars($tok['icon'] ?? '') ?>
                                     </div>
                                     <div>
                                         <div class="token-title-sym" style="font-size:0.95rem;font-weight:900"><?= htmlspecialchars($tok['symbol']) ?></div>
@@ -1955,7 +1955,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                 <div class="marketplace-offer-card active" id="dashOffer_official" onclick="selectDashMarketplaceOffer('official', 'InnovationX Official Escrow')">
                                     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                         <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem">🛡️</span>
+                                            <span style="font-size:1.25rem"></span>
                                             <div>
                                                 <strong style="font-size:0.84rem;color:#FFFFFF;display:block">InnovationX Vault</strong>
                                                 <span style="font-size:0.67rem;color:#94A3B8">Official Platform Escrow</span>
@@ -1964,8 +1964,8 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                         <span class="marketplace-offer-badge marketplace-badge-escrow">Verified #1</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700">⚡ 3–8 Mins</span>
-                                        <span style="color:#34D399;font-weight:700">⭐ 5.0 (4,920+)</span>
+                                        <span style="color:#7DD3FC;font-weight:700"> 3–8 Mins</span>
+                                        <span style="color:#34D399;font-weight:700">5.0 (4,920+)</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">
                                         <span>Fee: <b style="color:#34D399">0.00%</b></span>
@@ -1977,7 +1977,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                 <div class="marketplace-offer-card" id="dashOffer_apex" onclick="selectDashMarketplaceOffer('apex', 'Apex P2P Express Desk')">
                                     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                         <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem">⚡</span>
+                                            <span style="font-size:1.25rem"></span>
                                             <div>
                                                 <strong style="font-size:0.84rem;color:#FFFFFF;display:block">Apex P2P Express</strong>
                                                 <span style="font-size:0.67rem;color:#94A3B8">Fast-Track OTC Trader</span>
@@ -1986,8 +1986,8 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                         <span class="marketplace-offer-badge marketplace-badge-express">Speedy</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700">⚡ 5–15 Mins</span>
-                                        <span style="color:#34D399;font-weight:700">⭐ 4.9 (2,180+)</span>
+                                        <span style="color:#7DD3FC;font-weight:700">5–15 Mins</span>
+                                        <span style="color:#34D399;font-weight:700">4.9 (2,180+)</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">
                                         <span>Fee: <b style="color:#34D399">0.00%</b></span>
@@ -1999,7 +1999,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                 <div class="marketplace-offer-card" id="dashOffer_whales" onclick="selectDashMarketplaceOffer('whales', 'Prime OTC Whales Desk')">
                                     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                         <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem">💎</span>
+                                            <span style="font-size:1.25rem"></span>
                                             <div>
                                                 <strong style="font-size:0.84rem;color:#FFFFFF;display:block">Prime Whales Desk</strong>
                                                 <span style="font-size:0.67rem;color:#94A3B8">High Volume Liquidity</span>
@@ -2008,7 +2008,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                                         <span class="marketplace-offer-badge marketplace-badge-bulk">Bulk OTC</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700">⚡ 10–25 Mins</span>
+                                        <span style="color:#7DD3FC;font-weight:700">10–25 Mins</span>
                                         <span style="color:#34D399;font-weight:700">⭐ 4.95 (1,450+)</span>
                                     </div>
                                     <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">

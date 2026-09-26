@@ -312,7 +312,29 @@ require_once __DIR__ . '/includes/header.php';
                 <p class="section-subtitle">Clear answers to help you start earning with total peace of mind.</p>
             </div>
 
-            <div class="faq-accordion reveal">
+<?php
+// Load FAQ data and group by category
+$faqData = json_decode(file_get_contents(__DIR__.'/faq.json'), true);
+$categories = [];
+foreach ($faqData as $item) {
+    $categories[$item['category']][] = $item;
+}
+foreach ($categories as $cat => $items): ?>
+    <h3 class="faq-category-title"><?php echo htmlspecialchars($cat); ?></h3>
+    <div class="faq-list">
+        <?php foreach ($items as $item): ?>
+        <div class="faq-item">
+            <div class="faq-q">
+                <span><?php echo htmlspecialchars($item['question']); ?></span>
+                <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="faq-a">
+                <p><?php echo $item['answer']; ?></p>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+<?php endforeach; ?>
                 <div class="faq-item">
                     <div class="faq-q">
                         <span>How much does it cost to join INNOVATIONX?</span>
