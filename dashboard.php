@@ -54,6 +54,16 @@ if ($pdo) {
 
 $totalLiquid = $userCash + $userPoints;
 
+// OTC Unlisted Tokens Config
+$tokensConfigFile = __DIR__ . '/config/tokens_config.json';
+$tokensConfig = file_exists($tokensConfigFile) ? json_decode(file_get_contents($tokensConfigFile), true) : [];
+$dashTokensList = $tokensConfig['tokens'] ?? [];
+$dashPlatformBank = $tokensConfig['platform_bank'] ?? [
+    'bank_name' => 'OPay Digital Services',
+    'account_number' => '8102345678',
+    'account_name' => 'INNOVATIONX OTC TRADING'
+];
+
 $pageTitle = 'Member Dashboard | ' . APP_NAME;
 $hideNavbar = true;
 $hideFooter = true;
@@ -191,6 +201,15 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
                         </div>
                         <span>Bank &amp; Security PIN</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('tokens')" class="drawer-compact-link drawer-link" id="drawerLink_tokens">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+                        </div>
+                        <span>Unlisted Tokens OTC</span>
                     </div>
                     <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </a>
@@ -523,6 +542,24 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                         <span class="module-tag">Targeted Reach</span>
                         <button type="button" onclick="switchDashTab('advert')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
                             Create Advert
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Module 5: Unlisted Tokens OTC Desk -->
+                <div class="module-card">
+                    <div class="module-card-head">
+                        <div class="module-icon-wrap">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+                        </div>
+                        <span class="module-badge" style="background:rgba(52, 211, 153, 0.15);color:#34D399;border-color:rgba(52, 211, 153, 0.3)">P2P Escrow</span>
+                    </div>
+                    <div class="module-title">Unlisted Tokens OTC</div>
+                    <div class="module-desc">Buy &amp; sell pre-market mining tokens including VERY, RUBI, SIDRA, and PI with verified bank proof escrow.</div>
+                    <div class="module-card-footer">
+                        <span class="module-tag">OTC Exchange</span>
+                        <button type="button" onclick="switchDashTab('tokens')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
+                            Trade Tokens
                         </button>
                     </div>
                 </div>
@@ -1759,6 +1796,312 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- 7B. UNLISTED TOKENS OTC DESK PANE                         -->
+            <!-- ======================================================== -->
+            <div id="dashPane_tokens" class="dash-service-pane" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        <span>Back to Overview</span>
+                    </button>
+                    <div style="display:flex;gap:8px">
+                        <a href="tokens.php" target="_blank" class="btn-dash-action btn-dash-secondary" style="font-size:0.75rem" title="Open Standalone Desk">
+                            <span>Open Full Desk ↗</span>
+                        </a>
+                        <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                            <span>Menu</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Header Banner -->
+                <div class="dash-panel visible" style="margin-bottom:20px;background:radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.12), transparent 50%), var(--mt-surface);border-color:rgba(56, 189, 248, 0.3)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div style="width:44px;height:44px;border-radius:12px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#38BDF8;font-size:1.4rem">
+                                🪙
+                            </div>
+                            <div>
+                                <h2 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 4px">Unlisted Tokens OTC Desk</h2>
+                                <p style="font-size:0.78rem;color:#94A3B8;margin:0">Trade VERY, RUBI, SIDRA &amp; PI with verified escrow and payment proof upload.</p>
+                            </div>
+                        </div>
+                        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(52, 211, 153, 0.1);border:1px solid rgba(52, 211, 153, 0.25);color:#34D399;font-size:0.75rem;font-weight:800">
+                            <span class="live-dot" style="background:#34D399;box-shadow:0 0 8px #34D399"></span>
+                            <span>Escrow Desk Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Token Market Cards (Shows views & trades count per token) -->
+                <div style="margin-bottom:24px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                        <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            Live Rates, Views &amp; Activity
+                        </div>
+                        <div style="font-size:0.72rem;color:#94A3B8">Live trade volume &amp; viewer metrics</div>
+                    </div>
+
+                    <div id="dashTokensMarketGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px">
+                        <?php foreach ($dashTokensList as $tok): ?>
+                        <div class="dash-token-market-card" id="dashCard_<?= htmlspecialchars($tok['symbol']) ?>" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;position:relative;transition:all 0.2s ease">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.25);display:flex;align-items:center;justify-content:center;font-size:1.15rem">
+                                        <?= htmlspecialchars($tok['icon'] ?? '🪙') ?>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF"><?= htmlspecialchars($tok['symbol']) ?></div>
+                                        <div style="font-size:0.68rem;color:#94A3B8"><?= htmlspecialchars($tok['name']) ?></div>
+                                    </div>
+                                </div>
+                                <span style="font-size:0.65rem;padding:2px 7px;border-radius:5px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;font-weight:700">
+                                    <?= htmlspecialchars($tok['network']) ?>
+                                </span>
+                            </div>
+
+                            <!-- Live Views & Trades Metric Strip -->
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);margin-bottom:12px;font-size:0.72rem">
+                                <div style="display:flex;align-items:center;gap:4px;color:#7DD3FC">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <span id="dashViewCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['views_count'] ?? 1200) ?></span> views
+                                </div>
+                                <div style="display:flex;align-items:center;gap:4px;color:#34D399">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    <span id="dashTradeCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['trades_count'] ?? 450) ?></span> trades
+                                </div>
+                            </div>
+
+                            <!-- Buy / Sell Rates -->
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+                                <div style="padding:6px 8px;border-radius:8px;background:rgba(56, 189, 248, 0.06);border:1px solid rgba(56, 189, 248, 0.18)">
+                                    <div style="font-size:0.62rem;color:#7DD3FC;font-weight:700">BUY (We Sell)</div>
+                                    <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF">₦<?= number_format($tok['buy_rate']) ?></div>
+                                </div>
+                                <div style="padding:6px 8px;border-radius:8px;background:rgba(52, 211, 153, 0.06);border:1px solid rgba(52, 211, 153, 0.18)">
+                                    <div style="font-size:0.62rem;color:#6EE7B7;font-weight:700">SELL (We Buy)</div>
+                                    <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF">₦<?= number_format($tok['sell_rate']) ?></div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Action Buttons -->
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                                <button type="button" onclick="selectDashTokenToTrade('<?= htmlspecialchars($tok['symbol']) ?>', 'buy')" class="btn-dash-action btn-dash-primary" style="justify-content:center;height:32px;font-size:0.74rem">
+                                    Buy <?= htmlspecialchars($tok['symbol']) ?>
+                                </button>
+                                <button type="button" onclick="selectDashTokenToTrade('<?= htmlspecialchars($tok['symbol']) ?>', 'sell')" class="btn-dash-action btn-dash-secondary" style="justify-content:center;height:32px;font-size:0.74rem">
+                                    Sell <?= htmlspecialchars($tok['symbol']) ?>
+                                </button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Trade Desk & Proof Submission Form -->
+                <div id="dashTradeDeskCard" class="dash-panel visible" style="margin-bottom:24px;border-color:rgba(56, 189, 248, 0.25)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:14px">
+                        <div>
+                            <h3 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 4px;display:flex;align-items:center;gap:8px">
+                                <span id="dashTradeTypeHeading">Buy Tokens</span>
+                                <span id="dashSelectedTokenBadge" style="font-size:0.72rem;padding:2px 8px;border-radius:6px;background:rgba(56, 189, 248, 0.15);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3)">VERY</span>
+                            </h3>
+                            <div style="font-size:0.75rem;color:#94A3B8">Enter quantity, send payment/tokens, and attach proof screenshot.</div>
+                        </div>
+
+                        <!-- Buy / Sell Switcher -->
+                        <div style="display:flex;align-items:center;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:3px">
+                            <button type="button" id="dashTabBtnBuy" onclick="setDashTradeType('buy')" style="padding:6px 16px;border-radius:7px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border:none;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s ease">
+                                Buy Tokens
+                            </button>
+                            <button type="button" id="dashTabBtnSell" onclick="setDashTradeType('sell')" style="padding:6px 16px;border-radius:7px;background:transparent;color:#94A3B8;border:none;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s ease">
+                                Sell Tokens
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="dashTokenTradeForm" onsubmit="handleDashTokenTradeSubmit(event)">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;margin-bottom:16px">
+                            <!-- Token Selector -->
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Select Token</label>
+                                <select id="dashTradeTokenSelect" onchange="handleDashTokenSelectChange(this.value)" class="admin-select" style="width:100%;height:42px;font-size:0.85rem;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px">
+                                    <?php foreach ($dashTokensList as $tok): ?>
+                                    <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>">
+                                        <?= htmlspecialchars($tok['symbol']) ?> — <?= htmlspecialchars($tok['name']) ?> (<?= htmlspecialchars($tok['network']) ?>)
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <!-- Token Amount -->
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">
+                                    Token Quantity <span id="dashTokenQtyLimits" style="color:#64748B;font-weight:500">(Min: 10)</span>
+                                </label>
+                                <input type="number" step="any" min="1" id="dashTradeTokenAmount" oninput="calculateDashTradeTotal()" placeholder="e.g. 100" required class="admin-input" style="width:100%;height:42px;font-size:0.92rem;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px">
+                            </div>
+
+                            <!-- Calculated Naira Total -->
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">
+                                    Calculated NGN Total <span id="dashTradeRateDisplay" style="color:#38BDF8;font-weight:600">@ ₦350/token</span>
+                                </label>
+                                <div style="height:42px;background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);border-radius:10px;display:flex;align-items:center;padding:0 14px;color:#38BDF8;font-weight:900;font-size:1.05rem">
+                                    <span id="dashTradeCalculatedNaira">₦0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment / Vault Instructions Card -->
+                        <div style="background:rgba(56, 189, 248, 0.05);border:1px dashed rgba(56, 189, 248, 0.3);border-radius:12px;padding:16px;margin-bottom:18px">
+                            <!-- Buy Instructions -->
+                            <div id="dashInstructionsBuy">
+                                <div style="font-size:0.76rem;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">
+                                    Step 1: Transfer NGN to Platform Escrow Bank
+                                </div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+                                    <div>
+                                        <div style="font-size:0.7rem;color:#94A3B8">Bank Name &amp; Account Number:</div>
+                                        <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF">
+                                            <span><?= htmlspecialchars($dashPlatformBank['bank_name']) ?></span> — <span><?= htmlspecialchars($dashPlatformBank['account_number']) ?></span>
+                                        </div>
+                                        <div style="font-size:0.72rem;color:#7DD3FC">Account Name: <span><?= htmlspecialchars($dashPlatformBank['account_name']) ?></span></div>
+                                    </div>
+                                    <button type="button" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($dashPlatformBank['account_number']) ?>');alert('Account number copied!')" class="btn-dash-action btn-dash-secondary" style="height:32px;font-size:0.74rem">
+                                        Copy Account
+                                    </button>
+                                </div>
+                                <div>
+                                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Your Receiving Token Wallet / Username *</label>
+                                    <input type="text" id="dashTradeUserWallet" class="admin-input" placeholder="e.g. your VERY wallet address or Rubi Username" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
+                                </div>
+                            </div>
+
+                            <!-- Sell Instructions -->
+                            <div id="dashInstructionsSell" style="display:none">
+                                <div style="font-size:0.76rem;font-weight:800;color:#34D399;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">
+                                    Step 1: Transfer Tokens to Platform Receiving Address
+                                </div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+                                    <div style="min-width:0;flex:1">
+                                        <div style="font-size:0.7rem;color:#94A3B8">Platform Deposit Address / Username:</div>
+                                        <div style="font-size:0.88rem;font-weight:900;color:#FFFFFF;word-break:break-all" id="dashDispDepositAddress">
+                                            very1q84m5z9g3k2p7x6w0c1v8b4n7m9l2j5h4k3e
+                                        </div>
+                                        <div style="font-size:0.72rem;color:#6EE7B7">Memo / Transfer Note: <span id="dashDispDepositMemo">IX-VERY-OTC</span></div>
+                                    </div>
+                                    <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('dashDispDepositAddress').textContent.trim());alert('Deposit address copied!')" class="btn-dash-action btn-dash-secondary" style="height:32px;font-size:0.74rem">
+                                        Copy Address
+                                    </button>
+                                </div>
+
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                                    <div>
+                                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Your Bank Name (For Payout) *</label>
+                                        <input type="text" id="dashTradePayoutBank" class="admin-input" placeholder="e.g. OPay / PalmPay / Kuda" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Account Number &amp; Name *</label>
+                                        <input type="text" id="dashTradePayoutAccount" class="admin-input" placeholder="e.g. 0123456789 - John Doe" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proof Upload & Reference Section -->
+                        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:20px">
+                            <div style="font-size:0.86rem;font-weight:800;color:#FFFFFF;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Transfer / Payment Proof
+                            </div>
+
+                            <div style="margin-bottom:12px">
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Transaction Reference / Sender Name *</label>
+                                <input type="text" id="dashTradeTxReference" class="admin-input" placeholder="e.g. Session ID, TxHash, or Sender Account Name" required style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
+                            </div>
+
+                            <div>
+                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Upload Transfer Receipt Screenshot *</label>
+                                <div style="border:2px dashed rgba(56, 189, 248, 0.3);border-radius:10px;padding:16px;text-align:center;background:rgba(0,0,0,0.2);cursor:pointer" onclick="document.getElementById('dashTokenProofFileInput').click()">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8" style="margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                    <div style="font-size:0.82rem;font-weight:700;color:#FFFFFF">Tap to Upload Screenshot Proof</div>
+                                    <div style="font-size:0.7rem;color:#94A3B8">PNG, JPG or WEBP (Max 5MB)</div>
+                                    <input type="file" id="dashTokenProofFileInput" accept="image/*" onchange="handleDashProofFileSelect(event)" style="display:none">
+                                    <input type="hidden" id="dashTokenProofBase64" value="">
+                                </div>
+
+                                <div id="dashTokenProofPreviewWrap" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid rgba(56, 189, 248, 0.3);align-items:center;justify-content:space-between">
+                                    <div style="display:flex;align-items:center;gap:10px">
+                                        <img id="dashTokenProofPreviewImg" src="" alt="Proof Preview" style="width:44px;height:44px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,0.15)">
+                                        <div>
+                                            <div style="font-size:0.78rem;font-weight:700;color:#38BDF8">Receipt Attached</div>
+                                            <div id="dashTokenProofFileName" style="font-size:0.68rem;color:#94A3B8">screenshot.png</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="clearDashProofUpload(event)" class="btn-dash-action btn-dash-logout" style="height:28px;font-size:0.72rem">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="dashBtnSubmitTokenOrder" class="btn-dash-action btn-dash-primary" style="width:100%;height:44px;font-size:0.9rem;font-weight:800;border-radius:10px;justify-content:center">
+                            <span>Submit Trade &amp; Proof for Verification</span>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Your Token Orders Ledger -->
+                <div class="dash-panel visible">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+                        <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:6px">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            My OTC Trade Orders
+                        </div>
+                        <button type="button" onclick="loadDashTokenOrders()" class="btn-dash-action btn-dash-secondary" style="height:28px;font-size:0.72rem">
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left">
+                            <thead>
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.1);color:#94A3B8;font-size:0.7rem;text-transform:uppercase">
+                                    <th style="padding:8px">Order ID</th>
+                                    <th style="padding:8px">Type</th>
+                                    <th style="padding:8px">Token &amp; Qty</th>
+                                    <th style="padding:8px">Naira Total</th>
+                                    <th style="padding:8px">Reference</th>
+                                    <th style="padding:8px">Proof</th>
+                                    <th style="padding:8px">Status</th>
+                                    <th style="padding:8px">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashTokenOrdersTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center;padding:20px;color:#64748B">Loading orders...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Proof Lightbox Modal -->
+                <div id="dashProofLightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;padding:20px" onclick="closeDashProofLightbox()">
+                    <div style="position:relative;max-width:90%;max-height:90%" onclick="event.stopPropagation()">
+                        <img id="dashLightboxImg" src="" alt="Proof Screenshot" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 0 30px rgba(0,0,0,0.9);border:1px solid rgba(255,255,255,0.2)">
+                        <button type="button" onclick="closeDashProofLightbox()" style="position:absolute;top:-12px;right:-12px;width:30px;height:30px;border-radius:50%;background:#EF4444;color:#FFF;border:none;font-weight:900;cursor:pointer">&times;</button>
+                    </div>
+                </div>
+
             </div>
 
             <!-- ======================================================== -->
@@ -5021,6 +5364,9 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
             if (tabName === 'settings' && typeof window.loadUserPreferences === 'function') {
                 window.loadUserPreferences();
             }
+            if (tabName === 'tokens' && typeof window.refreshDashTokensData === 'function') {
+                window.refreshDashTokensData();
+            }
         } else {
             const fallback = document.getElementById('dashPane_overview');
             if (fallback) fallback.style.display = 'block';
@@ -5231,7 +5577,293 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         switchDashTab(targetTab, false);
     });
 
- // Close modals
+    // ==========================================
+    // UNLISTED TOKENS OTC DESK CONTROLLER
+    // ==========================================
+    let currentDashTradeType = 'buy';
+
+    window.setDashTradeType = function(type) {
+        currentDashTradeType = type;
+        const btnBuy = document.getElementById('dashTabBtnBuy');
+        const btnSell = document.getElementById('dashTabBtnSell');
+        const heading = document.getElementById('dashTradeTypeHeading');
+        const instBuy = document.getElementById('dashInstructionsBuy');
+        const instSell = document.getElementById('dashInstructionsSell');
+        const btnSubmit = document.getElementById('dashBtnSubmitTokenOrder');
+
+        if (type === 'buy') {
+            if (btnBuy) { btnBuy.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)'; btnBuy.style.color = '#FFFFFF'; }
+            if (btnSell) { btnSell.style.background = 'transparent'; btnSell.style.color = '#94A3B8'; }
+            if (heading) heading.textContent = 'Buy Tokens';
+            if (instBuy) instBuy.style.display = 'block';
+            if (instSell) instSell.style.display = 'none';
+            if (btnSubmit) btnSubmit.innerHTML = `<span>Submit Buy Order &amp; Proof for Verification</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        } else {
+            if (btnSell) { btnSell.style.background = 'linear-gradient(135deg, #059669, #34D399)'; btnSell.style.color = '#FFFFFF'; }
+            if (btnBuy) { btnBuy.style.background = 'transparent'; btnBuy.style.color = '#94A3B8'; }
+            if (heading) heading.textContent = 'Sell Tokens';
+            if (instBuy) instBuy.style.display = 'none';
+            if (instSell) instSell.style.display = 'block';
+            if (btnSubmit) btnSubmit.innerHTML = `<span>Submit Sell Order &amp; Proof for Payout</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        }
+        calculateDashTradeTotal();
+    };
+
+    window.selectDashTokenToTrade = function(symbol, type) {
+        setDashTradeType(type);
+        const sel = document.getElementById('dashTradeTokenSelect');
+        if (sel) {
+            sel.value = symbol;
+            handleDashTokenSelectChange(symbol);
+        }
+        const desk = document.getElementById('dashTradeDeskCard');
+        if (desk) desk.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.handleDashTokenSelectChange = function(symbol) {
+        const badge = document.getElementById('dashSelectedTokenBadge');
+        if (badge) badge.textContent = symbol;
+        const sel = document.getElementById('dashTradeTokenSelect');
+        if (!sel) return;
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt) return;
+
+        const min = opt.getAttribute('data-min') || '1';
+        const wallet = opt.getAttribute('data-wallet') || '';
+        const memo = opt.getAttribute('data-memo') || '';
+
+        const minEl = document.getElementById('dashTokenQtyLimits');
+        if (minEl) minEl.textContent = `(Min: ${min})`;
+        const addrEl = document.getElementById('dashDispDepositAddress');
+        if (addrEl) addrEl.textContent = wallet;
+        const memoEl = document.getElementById('dashDispDepositMemo');
+        if (memoEl) memoEl.textContent = memo;
+
+        // Fire silent view count increment
+        fetch(`api/tokens.php?action=get_tokens&view_symbol=${symbol}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success && Array.isArray(data.tokens)) {
+                    const found = data.tokens.find(t => t.symbol === symbol);
+                    if (found) {
+                        const vEl = document.getElementById(`dashViewCount_${symbol}`);
+                        if (vEl) vEl.textContent = Number(found.views_count || 0).toLocaleString();
+                    }
+                }
+            })
+            .catch(() => {});
+
+        calculateDashTradeTotal();
+    };
+
+    window.calculateDashTradeTotal = function() {
+        const sel = document.getElementById('dashTradeTokenSelect');
+        if (!sel) return;
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt) return;
+
+        const rate = currentDashTradeType === 'buy' ? parseFloat(opt.getAttribute('data-buy') || 1) : parseFloat(opt.getAttribute('data-sell') || 1);
+        const qty = parseFloat(document.getElementById('dashTradeTokenAmount')?.value) || 0;
+        const total = qty * rate;
+
+        const rateEl = document.getElementById('dashTradeRateDisplay');
+        if (rateEl) rateEl.textContent = `@ ₦${rate.toLocaleString()}/token`;
+        const totalEl = document.getElementById('dashTradeCalculatedNaira');
+        if (totalEl) totalEl.textContent = `₦${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    };
+
+    window.handleDashProofFileSelect = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size exceeds 5MB limit. Please upload a smaller screenshot.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const b64 = evt.target.result;
+            const b64Inp = document.getElementById('dashTokenProofBase64');
+            const prevImg = document.getElementById('dashTokenProofPreviewImg');
+            const prevName = document.getElementById('dashTokenProofFileName');
+            const prevWrap = document.getElementById('dashTokenProofPreviewWrap');
+
+            if (b64Inp) b64Inp.value = b64;
+            if (prevImg) prevImg.src = b64;
+            if (prevName) prevName.textContent = file.name;
+            if (prevWrap) prevWrap.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearDashProofUpload = function(e) {
+        if (e) e.stopPropagation();
+        const inp = document.getElementById('dashTokenProofFileInput');
+        const b64 = document.getElementById('dashTokenProofBase64');
+        const wrap = document.getElementById('dashTokenProofPreviewWrap');
+        if (inp) inp.value = '';
+        if (b64) b64.value = '';
+        if (wrap) wrap.style.display = 'none';
+    };
+
+    window.openDashProofLightbox = function(src) {
+        const modal = document.getElementById('dashProofLightbox');
+        const img = document.getElementById('dashLightboxImg');
+        if (modal && img) {
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+    };
+
+    window.closeDashProofLightbox = function() {
+        const modal = document.getElementById('dashProofLightbox');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.handleDashTokenTradeSubmit = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('dashBtnSubmitTokenOrder');
+        const symbol = document.getElementById('dashTradeTokenSelect')?.value;
+        const amount = parseFloat(document.getElementById('dashTradeTokenAmount')?.value);
+        const txRef = document.getElementById('dashTradeTxReference')?.value.trim();
+        const proofB64 = document.getElementById('dashTokenProofBase64')?.value.trim();
+        const userWallet = document.getElementById('dashTradeUserWallet')?.value.trim();
+        const payoutBank = document.getElementById('dashTradePayoutBank')?.value.trim();
+        const payoutAccount = document.getElementById('dashTradePayoutAccount')?.value.trim();
+
+        if (!amount || amount <= 0) {
+            alert('Please enter a valid token quantity.');
+            return;
+        }
+
+        if (currentDashTradeType === 'buy' && !userWallet) {
+            alert(`Please enter your receiving ${symbol} wallet address or UID.`);
+            return;
+        }
+
+        if (currentDashTradeType === 'sell' && (!payoutBank || !payoutAccount)) {
+            alert('Please provide your bank name and account details to receive your Naira payout.');
+            return;
+        }
+
+        if (!proofB64) {
+            alert('Please attach your payment or token transfer screenshot proof.');
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span>Submitting Trade &amp; Proof...</span>`;
+        }
+
+        const username = document.getElementById('hudUsername')?.textContent.trim() || 'Member';
+
+        const payload = {
+            user_id: 'USR-' + username,
+            username: username,
+            symbol: symbol,
+            trade_type: currentDashTradeType,
+            amount: amount,
+            tx_reference: txRef,
+            proof_image: proofB64,
+            user_wallet: userWallet,
+            payout_bank: payoutBank,
+            payout_account: payoutAccount
+        };
+
+        try {
+            const res = await fetch('api/tokens.php?action=create_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Order Submitted Successfully!\n\nOrder ID: ${data.order.id}\nStatus: Verification Pending\n\nOur escrow team will verify your receipt and dispatch your payout/tokens within 15-30 minutes.`);
+                document.getElementById('dashTokenTradeForm').reset();
+                clearDashProofUpload();
+                calculateDashTradeTotal();
+                loadDashTokenOrders();
+                refreshDashTokensData();
+            } else {
+                alert('Order Submission Failed: ' + (data.error || 'Server error.'));
+            }
+        } catch(err) {
+            alert('Network error submitting order. Please check connection and try again.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                setDashTradeType(currentDashTradeType);
+            }
+        }
+    };
+
+    window.loadDashTokenOrders = async function() {
+        const tbody = document.getElementById('dashTokenOrdersTableBody');
+        if (!tbody) return;
+        const username = document.getElementById('hudUsername')?.textContent.trim() || 'Member';
+
+        try {
+            const res = await fetch(`api/tokens.php?action=get_orders&username=${encodeURIComponent(username)}&t=${Date.now()}`);
+            const data = await res.json();
+            if (data.success && Array.isArray(data.orders)) {
+                if (data.orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:#94A3B8">No orders yet. Submit your first buy or sell trade above.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.orders.map(o => {
+                    const isBuy = (o.trade_type === 'buy');
+                    const badgeColor = isBuy ? 'rgba(56, 189, 248, 0.15)' : 'rgba(52, 211, 153, 0.15)';
+                    const badgeText = isBuy ? '#38BDF8' : '#34D399';
+                    let statusBg = 'rgba(251, 191, 36, 0.15)';
+                    let statusText = '#FBBF24';
+                    if (o.status === 'approved') {
+                        statusBg = 'rgba(52, 211, 153, 0.15)';
+                        statusText = '#34D399';
+                    } else if (o.status === 'rejected') {
+                        statusBg = 'rgba(248, 113, 113, 0.15)';
+                        statusText = '#F87171';
+                    }
+                    const proofBtn = o.proof_image ? `<button type="button" onclick="openDashProofLightbox('${o.proof_image}')" class="btn-dash-action" style="padding:2px 8px;font-size:0.7rem;background:rgba(56, 189, 248, 0.1);color:#7DD3FC">View Proof ↗</button>` : '<span style="color:#64748B;font-size:0.7rem">None</span>';
+                    const dateFormatted = o.created_at ? o.created_at.slice(0, 16).replace('T', ' ') : 'Just now';
+
+                    return `
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+                            <td style="padding:10px 8px;font-weight:700;color:#FFFFFF">${o.id}</td>
+                            <td style="padding:10px 8px"><span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:${badgeColor};color:${badgeText}">${o.trade_type.toUpperCase()}</span></td>
+                            <td style="padding:10px 8px;font-weight:700;color:#BAE6FD">${Number(o.amount).toLocaleString()} ${o.symbol}</td>
+                            <td style="padding:10px 8px;font-weight:800;color:#38BDF8">₦${Number(o.total_naira || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                            <td style="padding:10px 8px;color:#94A3B8;font-size:0.75rem">${o.tx_reference || 'N/A'}</td>
+                            <td style="padding:10px 8px">${proofBtn}</td>
+                            <td style="padding:10px 8px"><span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:${statusBg};color:${statusText}">${o.status.toUpperCase()}</span></td>
+                            <td style="padding:10px 8px;color:#64748B;font-size:0.72rem">${dateFormatted}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#EF4444">Could not load orders. Please refresh.</td></tr>';
+        }
+    };
+
+    window.refreshDashTokensData = async function() {
+        try {
+            const res = await fetch('api/tokens.php?action=get_tokens&t=' + Date.now());
+            const data = await res.json();
+            if (data.success && Array.isArray(data.tokens)) {
+                data.tokens.forEach(tok => {
+                    const vEl = document.getElementById(`dashViewCount_${tok.symbol}`);
+                    if (vEl) vEl.textContent = Number(tok.views_count || 0).toLocaleString();
+                    const tEl = document.getElementById(`dashTradeCount_${tok.symbol}`);
+                    if (tEl) tEl.textContent = Number(tok.trades_count || 0).toLocaleString();
+                });
+            }
+        } catch(e) {}
+        loadDashTokenOrders();
+    };
+
+    // Close modals
  g('receiptClose') && g('receiptClose').addEventListener('click', () => close(receiptOv));
  [confirmOv, receiptOv, document.getElementById('taskExecOverlay'), document.getElementById('uploaderUpgradeModalOverlay')].forEach(ov => {
  ov && ov.addEventListener('click', e => { if (e.target === ov) close(ov); });

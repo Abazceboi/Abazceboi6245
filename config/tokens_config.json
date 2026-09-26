@@ -1,0 +1,78 @@
+{
+  "platform_bank": {
+    "bank_name": "OPay Digital Services",
+    "account_number": "8102345678",
+    "account_name": "INNOVATIONX OTC TRADING",
+    "instructions": "Transfer exact amount to the account above. Take a screenshot of the debit receipt and attach below with the session ID / reference."
+  },
+  "tokens": [
+    {
+      "id": "tok_very",
+      "symbol": "VERY",
+      "name": "Very Network",
+      "network": "Very Chain / Very App",
+      "icon": "💎",
+      "buy_rate": 350,
+      "sell_rate": 310,
+      "min_trade": 10,
+      "max_trade": 50000,
+      "platform_deposit_address": "very1q84m5z9g3k2p7x6w0c1v8b4n7m9l2j5h4k3e",
+      "deposit_memo": "IX-VERY-OTC",
+      "views_count": 4820,
+      "trades_count": 1420,
+      "volume_24h": "₦4,850,000",
+      "status": "active"
+    },
+    {
+      "id": "tok_rubi",
+      "symbol": "RUBI",
+      "name": "Rubi Block",
+      "network": "Rubi Mining App",
+      "icon": "🔴",
+      "buy_rate": 480,
+      "sell_rate": 430,
+      "min_trade": 5,
+      "max_trade": 25000,
+      "platform_deposit_address": "rubi_innovationx_desk",
+      "deposit_memo": "Rubi User ID or Phone",
+      "views_count": 3950,
+      "trades_count": 1180,
+      "volume_24h": "₦3,920,000",
+      "status": "active"
+    },
+    {
+      "id": "tok_sidra",
+      "symbol": "SIDRA",
+      "name": "Sidra Chain",
+      "network": "Sidra Bank Network",
+      "icon": "🪙",
+      "buy_rate": 280,
+      "sell_rate": 240,
+      "min_trade": 20,
+      "max_trade": 100000,
+      "platform_deposit_address": "0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
+      "deposit_memo": "IX-SIDRA-OTC",
+      "views_count": 2740,
+      "trades_count": 890,
+      "volume_24h": "₦2,450,000",
+      "status": "active"
+    },
+    {
+      "id": "tok_pi",
+      "symbol": "PI",
+      "name": "Pi Network",
+      "network": "Pi Mainnet Wallet",
+      "icon": "🥧",
+      "buy_rate": 650,
+      "sell_rate": 590,
+      "min_trade": 10,
+      "max_trade": 50000,
+      "platform_deposit_address": "GAXYZ7K9M2P4Q8R1S3T5U7V9W0X2Y4Z6A8B0C2D4E6F8G",
+      "deposit_memo": "IX-PI-MAINNET",
+      "views_count": 7650,
+      "trades_count": 2840,
+      "volume_24h": "₦9,200,000",
+      "status": "active"
+    }
+  ]
+}

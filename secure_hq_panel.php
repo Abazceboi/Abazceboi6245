@@ -215,6 +215,10 @@ require_once __DIR__ . '/includes/header.php';
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"></path></svg>
                     <span>Virtual Accounts &amp; DVA</span>
                 </button>
+                <button type="button" class="admin-module-pill" data-category="finance" data-tab="tokens" onclick="switchAdminTab('tokens', this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+                    <span>Unlisted Tokens OTC</span>
+                </button>
 
                 <!-- Communications & Community -->
                 <button type="button" class="admin-module-pill" data-category="community" data-tab="vendors" onclick="switchAdminTab('vendors', this)">
@@ -308,6 +312,7 @@ require_once __DIR__ . '/includes/header.php';
                         <option value="gateways">Payment Gateways</option>
                         <option value="autopayout">Auto-Payout App (24/7)</option>
                         <option value="virtual-accounts">Virtual Accounts &amp; DVA</option>
+                        <option value="tokens">Unlisted Tokens OTC Desk</option>
                     </optgroup>
                     <optgroup label="Communications &amp; Community">
                         <option value="vendors">Vendors &amp; Telegram Hub</option>
@@ -382,6 +387,15 @@ require_once __DIR__ . '/includes/header.php';
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </div>
                         <span>Virtual Accounts &amp; DVA</span>
+                    </div>
+                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+                <a href="javascript:void(0)" onclick="selectAdminDrawerTab('tokens')" class="drawer-compact-link drawer-link" id="adminDrawerLink_tokens">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+                        </div>
+                        <span>Unlisted Tokens OTC</span>
                     </div>
                     <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </a>
@@ -4209,6 +4223,205 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+    <!-- ======================================================== -->
+    <!-- TAB 18: UNLISTED TOKENS OTC MANAGEMENT & VERIFICATION    -->
+    <!-- ======================================================== -->
+    <div id="tab-tokens" class="admin-tab-pane">
+        <!-- Module Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;background:var(--mt-surface);border:1px solid var(--mt-border);border-radius:14px;padding:16px 20px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);color:#38BDF8;display:flex;align-items:center;justify-content:center;font-size:1.3rem">
+                    🪙
+                </div>
+                <div>
+                    <h2 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 3px">Unlisted Tokens OTC Desk Hub</h2>
+                    <p style="font-size:0.75rem;color:#94A3B8;margin:0">Manage token listings, adjust rates, verify buy/sell receipts, and approve/reject orders.</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px">
+                <a href="tokens.php" target="_blank" class="btn-dash-action btn-dash-secondary" style="font-size:0.76rem">
+                    <span>View Public Desk ↗</span>
+                </a>
+                <button type="button" onclick="loadAdminTokensHub()" class="btn-dash-action btn-dash-primary" style="font-size:0.76rem">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    <span>Refresh Desk</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="admin-kpi-grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:24px">
+            <div class="admin-kpi-card">
+                <div class="admin-kpi-title">Total Orders Placed</div>
+                <div class="admin-kpi-val" id="adminTokenOrdersCount">0</div>
+                <div class="admin-kpi-sub">Lifetime buy &amp; sell trades</div>
+            </div>
+            <div class="admin-kpi-card" style="border-color:rgba(251, 191, 36, 0.3)">
+                <div class="admin-kpi-title" style="color:#FBBF24">Pending Proof Verification</div>
+                <div class="admin-kpi-val" id="adminTokenPendingCount" style="color:#FBBF24">0</div>
+                <div class="admin-kpi-sub">Awaiting admin review</div>
+            </div>
+            <div class="admin-kpi-card" style="border-color:rgba(52, 211, 153, 0.3)">
+                <div class="admin-kpi-title" style="color:#34D399">Total Settled Volume</div>
+                <div class="admin-kpi-val" id="adminTokenTotalVolume" style="color:#34D399">₦0.00</div>
+                <div class="admin-kpi-sub">Approved OTC transaction value</div>
+            </div>
+            <div class="admin-kpi-card">
+                <div class="admin-kpi-title">Active Market Tokens</div>
+                <div class="admin-kpi-val" id="adminActiveTokensCount">4</div>
+                <div class="admin-kpi-sub">Trading pairs live</div>
+            </div>
+        </div>
+
+        <!-- Add New Token Form Card -->
+        <div class="admin-card" style="margin-bottom:24px;border-color:rgba(56, 189, 248, 0.25)">
+            <div class="admin-card-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08)">
+                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add New Token to Market Desk
+                </div>
+                <span style="font-size:0.72rem;color:#7DD3FC">Expand OTC inventory with any mining/unlisted coin</span>
+            </div>
+
+            <form id="adminAddTokenForm" onsubmit="handleAdminAddToken(event)">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:14px">
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Token Symbol *</label>
+                        <input type="text" id="newTokenSymbol" class="admin-input" placeholder="e.g. ICE, AVIVE, GRASS" required style="width:100%;text-transform:uppercase">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Full Token Name *</label>
+                        <input type="text" id="newTokenName" class="admin-input" placeholder="e.g. Ice Open Network" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Blockchain / Network *</label>
+                        <input type="text" id="newTokenNetwork" class="admin-input" placeholder="e.g. BNB Smart Chain, Mainnet" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Token Icon / Emoji</label>
+                        <input type="text" id="newTokenIcon" class="admin-input" placeholder="e.g. 🧊, 💎, ⚡" style="width:100%">
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px;margin-bottom:14px">
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">We Sell Rate (₦ per token) *</label>
+                        <input type="number" step="any" min="0.01" id="newTokenBuyRate" class="admin-input" placeholder="e.g. 250" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">We Buy Rate (₦ per token) *</label>
+                        <input type="number" step="any" min="0.01" id="newTokenSellRate" class="admin-input" placeholder="e.g. 210" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Minimum Trade Quantity *</label>
+                        <input type="number" step="any" min="1" id="newTokenMinTrade" class="admin-input" placeholder="e.g. 10" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Maximum Trade Quantity</label>
+                        <input type="number" step="any" min="1" id="newTokenMaxTrade" class="admin-input" placeholder="e.g. 50000" style="width:100%">
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Platform Receiving Wallet Address / App UID *</label>
+                        <input type="text" id="newTokenDepositAddress" class="admin-input" placeholder="e.g. 0x123... or platform username" required style="width:100%">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Memo / Tag (Optional)</label>
+                        <input type="text" id="newTokenDepositMemo" class="admin-input" placeholder="e.g. IX-OTC" style="width:100%">
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end">
+                    <button type="submit" id="btnAdminSubmitAddToken" class="btn-dash-action btn-dash-primary" style="padding:0 24px;height:40px;font-size:0.85rem">
+                        <span>List Token on Market</span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Listed Tokens Management Table -->
+        <div class="admin-card" style="margin-bottom:24px">
+            <div class="admin-card-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08)">
+                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Active Listed Tokens
+                </div>
+                <div style="font-size:0.72rem;color:#94A3B8">Live views &amp; trade counts tracked automatically</div>
+            </div>
+
+            <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:0.82rem;text-align:left">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#94A3B8;font-size:0.72rem;text-transform:uppercase">
+                            <th style="padding:10px 12px">Token</th>
+                            <th style="padding:10px 12px">Network</th>
+                            <th style="padding:10px 12px">Sell Rate (We Buy)</th>
+                            <th style="padding:10px 12px">Buy Rate (We Sell)</th>
+                            <th style="padding:10px 12px">Views Count</th>
+                            <th style="padding:10px 12px">Completed Trades</th>
+                            <th style="padding:10px 12px">Receiving Wallet</th>
+                            <th style="padding:10px 12px;text-align:right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTokensListTableBody">
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:24px;color:#64748B">Loading tokens directory...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders Queue & Proof Verification Table -->
+        <div class="admin-card">
+            <div class="admin-card-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08)">
+                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    Token Trade Orders &amp; Proof Verification Queue
+                </div>
+                <div style="display:flex;gap:6px">
+                    <button type="button" onclick="loadAdminTokensHub()" class="btn-dash-action" style="padding:4px 10px;font-size:0.72rem">
+                        Refresh Queue
+                    </button>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:0.82rem;text-align:left">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#94A3B8;font-size:0.72rem;text-transform:uppercase">
+                            <th style="padding:10px 10px">Order ID</th>
+                            <th style="padding:10px 10px">Member</th>
+                            <th style="padding:10px 10px">Type</th>
+                            <th style="padding:10px 10px">Token &amp; Qty</th>
+                            <th style="padding:10px 10px">Total NGN</th>
+                            <th style="padding:10px 10px">Reference</th>
+                            <th style="padding:10px 10px">Proof Screenshot</th>
+                            <th style="padding:10px 10px">Status</th>
+                            <th style="padding:10px 10px;text-align:right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTokenOrdersTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align:center;padding:24px;color:#64748B">Loading orders queue...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lightbox modal for proof review -->
+        <div id="adminProofLightboxModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;padding:20px" onclick="closeAdminProofLightbox()">
+            <div style="position:relative;max-width:90%;max-height:90%" onclick="event.stopPropagation()">
+                <img id="adminLightboxImg" src="" alt="Proof Screenshot" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 0 35px rgba(0,0,0,0.9);border:1px solid rgba(255,255,255,0.2)">
+                <button type="button" onclick="closeAdminProofLightbox()" style="position:absolute;top:-12px;right:-12px;width:32px;height:32px;border-radius:50%;background:#EF4444;color:#FFF;border:none;font-weight:900;cursor:pointer">&times;</button>
+            </div>
+        </div>
+    </div>
+
 <!-- Admin Master JavaScript Engine -->
 <script>
 (function() {
@@ -4363,6 +4576,9 @@ require_once __DIR__ . '/includes/header.php';
         // If switching to coupons tab, make sure coupons list is rendered
         if (tabName === 'coupons' && typeof window.renderOverviewCouponsList === 'function') {
             window.renderOverviewCouponsList();
+        }
+        if (tabName === 'tokens' && typeof window.loadAdminTokensHub === 'function') {
+            window.loadAdminTokensHub();
         }
     };
 
@@ -8527,6 +8743,278 @@ saveWithdrawalSettings = function() {
                 });
             } catch(e) {}
             loadAdminVendorsTable();
+        }
+    };
+
+    // ==========================================
+    // 18. UNLISTED TOKENS OTC MANAGEMENT ENGINE
+    // ==========================================
+    window.loadAdminTokensHub = async function() {
+        try {
+            // Load tokens list
+            const tokRes = await fetch('api/tokens.php?action=get_tokens&t=' + Date.now());
+            const tokData = await tokRes.json();
+            if (tokData && tokData.success && Array.isArray(tokData.tokens)) {
+                renderAdminTokensList(tokData.tokens);
+                const countEl = document.getElementById('adminActiveTokensCount');
+                if (countEl) countEl.textContent = tokData.tokens.length;
+            }
+
+            // Load orders list
+            const ordRes = await fetch('api/tokens.php?action=get_orders&t=' + Date.now());
+            const ordData = await ordRes.json();
+            if (ordData && ordData.success && Array.isArray(ordData.orders)) {
+                renderAdminTokenOrders(ordData.orders);
+            }
+        } catch(e) {}
+    };
+
+    window.renderAdminTokensList = function(tokens) {
+        const tbody = document.getElementById('adminTokensListTableBody');
+        if (!tbody) return;
+
+        if (!tokens || tokens.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:#94A3B8">No tokens currently listed. Use the form above to add an unlisted token.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = tokens.map(t => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                <td style="padding:12px 14px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div style="width:34px;height:34px;border-radius:10px;background:rgba(56, 189, 248, 0.12);display:flex;align-items:center;justify-content:center;font-size:1.15rem">
+                            ${t.icon || '🪙'}
+                        </div>
+                        <div>
+                            <strong style="color:#FFF;display:block">${t.symbol}</strong>
+                            <span style="font-size:0.7rem;color:#7DD3FC">${t.name}</span>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding:12px 14px;color:#CBD5E1;font-size:0.78rem">${t.network}</td>
+                <td style="padding:12px 14px;font-weight:800;color:#34D399">₦${Number(t.sell_rate).toLocaleString()}</td>
+                <td style="padding:12px 14px;font-weight:800;color:#38BDF8">₦${Number(t.buy_rate).toLocaleString()}</td>
+                <td style="padding:12px 14px;color:#7DD3FC;font-weight:700">👁️ ${Number(t.views_count || 0).toLocaleString()}</td>
+                <td style="padding:12px 14px;color:#34D399;font-weight:700">⚡ ${Number(t.trades_count || 0).toLocaleString()}</td>
+                <td style="padding:12px 14px;color:#94A3B8;font-size:0.72rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.platform_deposit_address}</td>
+                <td style="padding:12px 14px;text-align:right">
+                    <button type="button" class="btn-dash-action" onclick="adminDeleteToken('${t.symbol}')" style="padding:4px 10px;font-size:0.72rem;background:rgba(244,63,94,0.15);color:#F43F5E;border-color:rgba(244,63,94,0.3)">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.renderAdminTokenOrders = function(orders) {
+        const tbody = document.getElementById('adminTokenOrdersTableBody');
+        if (!tbody) return;
+
+        const countEl = document.getElementById('adminTokenOrdersCount');
+        const pendingEl = document.getElementById('adminTokenPendingCount');
+        const volEl = document.getElementById('adminTokenTotalVolume');
+
+        if (countEl) countEl.textContent = orders.length;
+
+        const pending = orders.filter(o => o.status === 'pending');
+        if (pendingEl) pendingEl.textContent = pending.length;
+
+        const approvedVol = orders.filter(o => o.status === 'approved').reduce((acc, cur) => acc + (parseFloat(cur.total_naira) || 0), 0);
+        if (volEl) volEl.textContent = '₦' + approvedVol.toLocaleString(undefined, {minimumFractionDigits:2});
+
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:24px;text-align:center;color:#94A3B8">No token trade orders found yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = orders.map(o => {
+            const isBuy = (o.trade_type === 'buy');
+            const typeBadge = isBuy 
+                ? '<span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:rgba(56, 189, 248, 0.15);color:#38BDF8">BUY</span>'
+                : '<span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:rgba(52, 211, 153, 0.15);color:#34D399">SELL</span>';
+
+            let statusBadge = '<span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:rgba(251, 191, 36, 0.15);color:#FBBF24">PENDING</span>';
+            if (o.status === 'approved') {
+                statusBadge = '<span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:rgba(52, 211, 153, 0.15);color:#34D399">APPROVED</span>';
+            } else if (o.status === 'rejected') {
+                statusBadge = '<span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:rgba(248, 113, 113, 0.15);color:#F87171">REJECTED</span>';
+            }
+
+            const proofCell = o.proof_image ? `
+                <div style="display:flex;align-items:center;gap:6px">
+                    <img src="${o.proof_image}" onclick="openAdminProofLightbox('${o.proof_image}')" style="width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid rgba(56, 189, 248, 0.4)" title="Click to view full screenshot">
+                    <button type="button" class="btn-dash-action" onclick="openAdminProofLightbox('${o.proof_image}')" style="padding:2px 8px;font-size:0.68rem">Zoom</button>
+                </div>
+            ` : '<span style="color:#64748B;font-size:0.72rem">No image</span>';
+
+            const destinationMeta = isBuy ? `To: ${o.user_wallet || 'Not specified'}` : `Payout: ${o.payout_bank || ''} ${o.payout_account || ''}`;
+
+            const actionButtons = (o.status === 'pending') ? `
+                <div style="display:inline-flex;gap:6px">
+                    <button type="button" class="btn-dash-action btn-dash-primary" onclick="adminApproveTokenOrder('${o.id}')" style="padding:3px 10px;font-size:0.72rem;background:#059669;border-color:#10B981" title="Verify Proof and Approve">
+                        Approve
+                    </button>
+                    <button type="button" class="btn-dash-action" onclick="adminRejectTokenOrder('${o.id}')" style="padding:3px 10px;font-size:0.72rem;background:rgba(244,63,94,0.15);color:#F43F5E;border-color:rgba(244,63,94,0.3)" title="Reject Order">
+                        Decline
+                    </button>
+                </div>
+            ` : `<span style="font-size:0.7rem;color:#94A3B8">${o.admin_remarks || 'Settled'}</span>`;
+
+            return `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                    <td style="padding:10px 10px;font-weight:700;color:#FFFFFF">${o.id}</td>
+                    <td style="padding:10px 10px">
+                        <strong style="color:#FFF;display:block">@${o.username || o.user_id}</strong>
+                        <span style="font-size:0.68rem;color:#7DD3FC">${destinationMeta}</span>
+                    </td>
+                    <td style="padding:10px 10px">${typeBadge}</td>
+                    <td style="padding:10px 10px;font-weight:700;color:#BAE6FD">${Number(o.amount).toLocaleString()} ${o.symbol}</td>
+                    <td style="padding:10px 10px;font-weight:800;color:#38BDF8">₦${Number(o.total_naira || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                    <td style="padding:10px 10px;font-size:0.72rem;color:#94A3B8">${o.tx_reference || 'N/A'}</td>
+                    <td style="padding:10px 10px">${proofCell}</td>
+                    <td style="padding:10px 10px">${statusBadge}</td>
+                    <td style="padding:10px 10px;text-align:right">${actionButtons}</td>
+                </tr>
+            `;
+        }).join('');
+    };
+
+    window.openAdminProofLightbox = function(src) {
+        const modal = document.getElementById('adminProofLightboxModal');
+        const img = document.getElementById('adminLightboxImg');
+        if (modal && img) {
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+    };
+
+    window.closeAdminProofLightbox = function() {
+        const modal = document.getElementById('adminProofLightboxModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.handleAdminAddToken = async function(e) {
+        e.preventDefault();
+        const symbol = document.getElementById('newTokenSymbol').value.trim().toUpperCase();
+        const name = document.getElementById('newTokenName').value.trim();
+        const network = document.getElementById('newTokenNetwork').value.trim();
+        const icon = document.getElementById('newTokenIcon').value.trim() || '🪙';
+        const buyRate = parseFloat(document.getElementById('newTokenBuyRate').value);
+        const sellRate = parseFloat(document.getElementById('newTokenSellRate').value);
+        const minTrade = parseFloat(document.getElementById('newTokenMinTrade').value) || 1;
+        const maxTrade = parseFloat(document.getElementById('newTokenMaxTrade').value) || 50000;
+        const depositAddress = document.getElementById('newTokenDepositAddress').value.trim();
+        const depositMemo = document.getElementById('newTokenDepositMemo').value.trim();
+
+        if (!symbol || !name || !network || !buyRate || !sellRate || !depositAddress) {
+            alert('Please fill in all required token fields.');
+            return;
+        }
+
+        const payload = {
+            symbol,
+            name,
+            network,
+            icon,
+            buy_rate: buyRate,
+            sell_rate: sellRate,
+            min_trade: minTrade,
+            max_trade: maxTrade,
+            platform_deposit_address: depositAddress,
+            deposit_memo: depositMemo,
+            views_count: 500,
+            trades_count: 120
+        };
+
+        try {
+            const res = await fetch('api/tokens.php?action=admin_add_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Token ${symbol} (${name}) has been listed successfully!`);
+                document.getElementById('adminAddTokenForm').reset();
+                loadAdminTokensHub();
+            } else {
+                alert('Error adding token: ' + (data.error || 'Server error.'));
+            }
+        } catch(err) {
+            alert('Failed to connect to tokens API.');
+        }
+    };
+
+    window.adminApproveTokenOrder = async function(orderId) {
+        const remarks = prompt('Enter approval note or transaction reference to user:', 'Payment verified and credited.');
+        if (remarks === null) return;
+
+        try {
+            const res = await fetch('api/tokens.php?action=admin_update_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    status: 'approved',
+                    admin_remarks: remarks
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Order ${orderId} has been APPROVED!`);
+                loadAdminTokensHub();
+            } else {
+                alert('Failed to approve order: ' + (data.error || 'Unknown error'));
+            }
+        } catch(err) {
+            alert('Error updating order status.');
+        }
+    };
+
+    window.adminRejectTokenOrder = async function(orderId) {
+        const remarks = prompt('Enter rejection reason (e.g. Invalid receipt or payment not received):');
+        if (remarks === null) return;
+
+        try {
+            const res = await fetch('api/tokens.php?action=admin_update_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    status: 'rejected',
+                    admin_remarks: remarks || 'Declined: receipt unverified.'
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Order ${orderId} has been REJECTED.`);
+                loadAdminTokensHub();
+            } else {
+                alert('Failed to update order.');
+            }
+        } catch(err) {
+            alert('Error updating order.');
+        }
+    };
+
+    window.adminDeleteToken = async function(symbol) {
+        if (!confirm(`Are you sure you want to remove token ${symbol} from the active market?`)) return;
+
+        try {
+            const res = await fetch('api/tokens.php?action=admin_delete_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Token ${symbol} removed from market.`);
+                loadAdminTokensHub();
+            } else {
+                alert('Failed to delete token: ' + (data.error || 'Server error'));
+            }
+        } catch(err) {
+            alert('Error deleting token.');
         }
     };
 

@@ -61,6 +61,15 @@ function isActive($page, $currentPage) {
  <span class="nav-dropdown-sub">Bonus Points &amp; Rewards</span>
  </div>
  </a>
+ <a href="tokens.php" class="nav-dropdown-link">
+ <div class="nav-dropdown-icon" style="color:var(--sky-vibrant);background:rgba(56, 189, 248, 0.15)">
+ <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+ </div>
+ <div>
+ <span class="nav-dropdown-title">Unlisted Tokens OTC</span>
+ <span class="nav-dropdown-sub">Buy &amp; Sell VERY, RUBI &amp; Mining Tokens</span>
+ </div>
+ </a>
  <a href="forecaster.php" class="nav-dropdown-link" data-feature="forecaster">
  <div class="nav-dropdown-icon" style="color:var(--sky-vibrant);background:rgba(56, 189, 248, 0.15)">
  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -217,6 +226,15 @@ function isActive($page, $currentPage) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
                 </div>
                 <span>VTU Airtime &amp; Data Hub</span>
+            </div>
+            <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+        <a href="tokens.php" class="drawer-compact-link drawer-link">
+            <div class="drawer-link-left">
+                <div class="drawer-link-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
+                </div>
+                <span>Unlisted Tokens OTC</span>
             </div>
             <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
