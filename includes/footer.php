@@ -17,11 +17,11 @@
  <span>•</span>
  <a href="index.php#privacy">Privacy Policy</a>
  <span>•</span>
- <a href="vendors.php">Verified Vendors</a>
+ <a href="register.php">Sign Up</a>
  <span>•</span>
- <a href="dashboard.php">User Dashboard</a>
+ <a href="login.php">Login</a>
  <span>•</span>
- <a href="admin.php" style="color:var(--sky-vibrant)">Admin Portal</a>
+ <a href="advertise.php">Place Advert</a>
  </div>
  </div>
  </footer>
