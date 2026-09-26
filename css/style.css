@@ -7338,7 +7338,7 @@ select.dash-input:focus {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  padding: 24px 26px;
+  padding: 20px 22px;
   min-height: 255px;
   display: flex;
   flex-direction: column;
@@ -7348,6 +7348,9 @@ select.dash-input:focus {
   box-shadow: 0 16px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(56, 189, 248, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.25);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .deck-credit-card:hover,
@@ -7389,7 +7392,8 @@ select.dash-input:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
   position: relative;
   z-index: 3;
 }
@@ -7397,17 +7401,19 @@ select.dash-input:focus {
 .credit-card-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .credit-card-logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
   color: #FFFFFF;
   font-weight: 900;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
@@ -7419,50 +7425,62 @@ select.dash-input:focus {
 .credit-card-brand-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .credit-card-site-name {
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 900;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: #FFFFFF;
   line-height: 1.2;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .credit-card-tier-tag {
-  font-size: 0.58rem;
+  font-size: 0.54rem;
   font-weight: 800;
-  letter-spacing: 1.8px;
+  letter-spacing: 1.4px;
   color: #7DD3FC;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .credit-card-bank-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 50px;
-  background: rgba(8, 20, 42, 0.7);
+  background: rgba(8, 20, 42, 0.75);
   border: 1px solid rgba(56, 189, 248, 0.35);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
+  max-width: 55%;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .credit-bank-icon {
   stroke: #38BDF8;
   flex-shrink: 0;
+  width: 12px;
+  height: 12px;
 }
 
 .credit-card-bank-name {
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: #F8FAFC;
   text-transform: uppercase;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Chip & Contactless Row */

@@ -1058,7 +1058,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                         <form id="settingsPrefForm" onsubmit="handleSavePrefSettings(event)">
                             <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
                                 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
-                                    <input type="checkbox" id="prefHideBalance" onchange="handlePrefHideBalanceToggle(this.checked)" style="width:17px;height:17px;accent-color:#6366F1">
+                                    <input type="checkbox" id="prefHideBalance" style="width:17px;height:17px;accent-color:#6366F1">
                                     <span>Hide / Mask wallet balance by default on startup</span>
                                 </label>
                                 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
@@ -4387,8 +4387,6 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
             if (stored) {
                 const parsed = JSON.parse(stored);
                 prefs = Object.assign(prefs, parsed);
-            } else if (localStorage.getItem('ix_balance_masked') === 'true') {
-                prefs.hideBal = true;
             }
         } catch(e) {}
 
@@ -4403,11 +4401,12 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         return prefs;
     };
 
-    window.handlePrefHideBalanceToggle = function(isChecked) {
-        window.setBalanceMaskState(!!isChecked);
+    // Reset checkboxes to currently saved preferences if user leaves without saving
+    window.resetUnsavedPreferences = function() {
+        window.loadUserPreferences();
     };
 
-    // Settings Preferences Form Handler
+    // Settings Preferences Form Handler: ONLY applies when user clicks Save Preferences
     window.handleSavePrefSettings = function(e) {
         if (e) e.preventDefault();
         const hideBal = document.getElementById('prefHideBalance') ? document.getElementById('prefHideBalance').checked : false;
@@ -4420,8 +4419,14 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
             localStorage.setItem('ix_balance_masked', hideBal ? 'true' : 'false');
         } catch(err) {}
 
+        // Apply masking effect only now upon deliberate save
         window.setBalanceMaskState(hideBal);
-        alert('Preferences saved successfully!');
+
+        if (typeof window.showToast === 'function') {
+            window.showToast('Preferences saved successfully!', 'success');
+        } else {
+            alert('Preferences saved successfully!');
+        }
     };
 
     window.selectUploaderPaymentMethod = function(method) {
@@ -4950,6 +4955,11 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
     window.switchDashTab = function(tabName, pushState = true) {
         if (!tabName) tabName = 'overview';
         
+        // If leaving the settings tab without saving, reset unsaved form inputs back to stored preferences
+        if (window.currentDashTab === 'settings' && tabName !== 'settings' && typeof window.resetUnsavedPreferences === 'function') {
+            window.resetUnsavedPreferences();
+        }
+
         // 1. Hide all service panes
         document.querySelectorAll('.dash-service-pane').forEach(pane => {
             pane.style.display = 'none';
@@ -5097,10 +5107,6 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
 
         try {
             localStorage.setItem('ix_balance_masked', shouldMask ? 'true' : 'false');
-            let p = {};
-            try { p = JSON.parse(localStorage.getItem('ix_user_prefs') || '{}'); } catch(e) {}
-            p.hideBal = !!shouldMask;
-            localStorage.setItem('ix_user_prefs', JSON.stringify(p));
         } catch(e) {}
 
         const prefHideEl = document.getElementById('prefHideBalance');
