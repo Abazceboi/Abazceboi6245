@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "daily_free_spins": 1,
+  "reward_policy": "points_and_airtime_only",
+  "slices": [
+    { "id": 1, "label": "100 PTS", "type": "points", "value": 100, "color": "#6366F1", "weight": 25 },
+    { "id": 2, "label": "₦100 Airtime", "type": "airtime", "value": 100, "color": "#0284C7", "weight": 20 },
+    { "id": 3, "label": "250 PTS", "type": "points", "value": 250, "color": "#8B5CF6", "weight": 18 },
+    { "id": 4, "label": "₦200 Airtime", "type": "airtime", "value": 200, "color": "#0D9488", "weight": 14 },
+    { "id": 5, "label": "500 PTS", "type": "points", "value": 500, "color": "#4F46E5", "weight": 10 },
+    { "id": 6, "label": "₦500 Airtime", "type": "airtime", "value": 500, "color": "#F59E0B", "weight": 5 },
+    { "id": 7, "label": "1,000 PTS", "type": "points", "value": 1000, "color": "#EC4899", "weight": 3 },
+    { "id": 8, "label": "Free Spin", "type": "spin", "value": 1, "color": "#10B981", "weight": 5 }
+  ],
+  "updated_at": "2026-09-27T20:00:00Z"
+}

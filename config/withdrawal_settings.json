@@ -1,21 +1,36 @@
-﻿{
-  "task_status": "active",
-  "task_mode": "manual",
-  "task_min": 1000,
-  "task_max": 100000,
-  "referral_status": "active",
-  "referral_mode": "manual",
-  "referral_min": 1000,
-  "referral_max": 100000,
-  "manual_mode_type": "always_open",
-  "manual_window_start": "",
-  "manual_window_end": "",
-  "manual_recurring_days": "fri_sat",
-  "manual_recurring_time_start": "08:00",
-  "manual_recurring_time_end": "22:00",
-  "auto_mode_type": "instant",
-  "auto_scheduled_datetime": "",
-  "auto_recurring_day": "friday",
-  "auto_recurring_time": "18:00",
-  "updated_at": "2026-09-13 20:00:00"
+{
+  "task": {
+    "mode": "manual",
+    "manual_status": "closed",
+    "manual_closed_message": "Task Points withdrawals are currently closed by administration. Please check back later.",
+    "auto_schedule_type": "recurring_days",
+    "auto_recurring_days": [
+      "sun"
+    ],
+    "auto_time_start": "14:00",
+    "auto_time_end": "18:00",
+    "auto_window_start": "2026-09-27T14:00",
+    "auto_window_end": "2026-09-27T18:00",
+    "min_amount": 1000,
+    "max_amount": 100000,
+    "status": "active"
+  },
+  "affiliate": {
+    "mode": "manual",
+    "manual_status": "closed",
+    "manual_closed_message": "Affiliate Cash withdrawals are currently closed by administration. Please check back later.",
+    "auto_schedule_type": "recurring_days",
+    "auto_recurring_days": [
+      "tue",
+      "fri"
+    ],
+    "auto_time_start": "08:00",
+    "auto_time_end": "22:00",
+    "auto_window_start": "2026-09-27T08:00",
+    "auto_window_end": "2026-09-28T22:00",
+    "min_amount": 1000,
+    "max_amount": 100000,
+    "status": "active"
+  },
+  "updated_at": "2026-09-27T19:18:26.279Z"
 }

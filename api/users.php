@@ -342,16 +342,20 @@ switch ($action) {
         }
 
         $input = json_decode(file_get_contents('php://input'), true);
-        $targetUsername = trim($input['target_username'] ?? '');
-        $newUsername    = trim($input['new_username'] ?? $targetUsername);
-        $fullName       = trim($input['full_name'] ?? '');
+        $targetUsername = trim($input['target_username'] ?? $input['username'] ?? $input['id'] ?? '');
+        $newUsername    = trim($input['new_username'] ?? $input['username'] ?? $targetUsername);
+        $fullName       = trim($input['full_name'] ?? $input['fullname'] ?? '');
         $email          = trim($input['email'] ?? '');
         $phone          = trim($input['phone'] ?? '');
         $role           = trim($input['role'] ?? 'member');
-        $cashBalance    = isset($input['cash_balance']) ? (float)$input['cash_balance'] : 0.0;
-        $pointsBalance  = isset($input['points_balance']) ? (int)$input['points_balance'] : 100;
+        $cashBalance    = isset($input['cash_balance']) ? (float)$input['cash_balance'] : (isset($input['cash']) ? (float)$input['cash'] : 0.0);
+        $pointsBalance  = isset($input['points_balance']) ? (int)$input['points_balance'] : (isset($input['points']) ? (int)$input['points'] : 100);
         $bankName       = trim($input['bank_name'] ?? '');
-        $accountNumber  = trim($input['account_number'] ?? '');
+        $accountNumber  = trim($input['account_number'] ?? $input['account_no'] ?? '');
+        $accountName    = trim($input['account_name'] ?? '');
+        $status         = trim($input['status'] ?? 'active');
+
+        $newPassword    = trim($input['new_password'] ?? $input['password'] ?? '');
 
         if (empty($targetUsername)) {
             echo json_encode(['success' => false, 'error' => 'Target username is required']);
@@ -362,15 +366,27 @@ switch ($action) {
             $role = 'member';
         }
 
+        $passwordHash = !empty($newPassword) ? password_hash($newPassword, PASSWORD_BCRYPT) : null;
+
         // 1. Update in Database if available
         if ($pdo) {
             try {
-                $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
-                $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                if ($passwordHash) {
+                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ?, "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $passwordHash, $targetUsername]);
+                } else {
+                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                }
             } catch (Exception $e) {
                 try {
-                    $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ? WHERE LOWER(username) = LOWER(?)');
-                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                    if ($passwordHash) {
+                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ?, passwordHash = ? WHERE LOWER(username) = LOWER(?)');
+                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $passwordHash, $targetUsername]);
+                    } else {
+                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ? WHERE LOWER(username) = LOWER(?)');
+                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                    }
                 } catch (Exception $e2) {}
             }
         }
@@ -388,8 +404,17 @@ switch ($action) {
                 $u['role_label'] = $ROLE_LABELS[$role] ?? 'Active Member';
                 $u['remaining_cash'] = $cashBalance;
                 $u['remaining_pts'] = $pointsBalance;
+                $u['total_earned'] = $cashBalance;
                 if (!empty($bankName)) $u['bank_name'] = $bankName;
                 if (!empty($accountNumber)) $u['account_number'] = $accountNumber;
+                if (!empty($accountName)) $u['account_name'] = $accountName;
+                if (!empty($newPassword)) {
+                    $u['password'] = $newPassword;
+                    $u['password_hash'] = $passwordHash;
+                    $u['password_updated_at'] = date('c');
+                    $u['password_reset_by'] = 'admin';
+                }
+                $u['status'] = $status;
                 $u['updated_at'] = date('c');
                 $found = true;
                 break;
@@ -398,7 +423,7 @@ switch ($action) {
         unset($u);
 
         if (!$found) {
-            $data['users'][] = [
+            $newEntry = [
                 'username' => $newUsername,
                 'full_name' => $fullName ?: $newUsername,
                 'email' => $email,
@@ -407,10 +432,20 @@ switch ($action) {
                 'role_label' => $ROLE_LABELS[$role] ?? 'Active Member',
                 'remaining_cash' => $cashBalance,
                 'remaining_pts' => $pointsBalance,
+                'total_earned' => $cashBalance,
                 'bank_name' => $bankName ?: 'Pending Setup',
                 'account_number' => $accountNumber ?: '••••••••',
+                'account_name' => $accountName ?: '',
+                'status' => $status,
                 'updated_at' => date('c')
             ];
+            if (!empty($newPassword)) {
+                $newEntry['password'] = $newPassword;
+                $newEntry['password_hash'] = $passwordHash;
+                $newEntry['password_updated_at'] = date('c');
+                $newEntry['password_reset_by'] = 'admin';
+            }
+            $data['users'][] = $newEntry;
         }
 
         saveUsers($data);
@@ -424,18 +459,244 @@ switch ($action) {
                 'email' => $email,
                 'phone' => $phone,
                 'role' => $role,
+                'role_label' => $ROLE_LABELS[$role] ?? 'Active Member',
                 'cash_balance' => $cashBalance,
                 'points_balance' => $pointsBalance,
+                'remaining_cash' => $cashBalance,
+                'remaining_pts' => $pointsBalance,
                 'bank_name' => $bankName,
-                'account_number' => $accountNumber
+                'account_number' => $accountNumber,
+                'account_name' => $accountName,
+                'status' => $status,
+                'password_reset' => !empty($newPassword)
             ]
+        ]);
+        break;
+
+    case 'force_reset_password':
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?: $_POST;
+        $targetUsername = trim($input['target_username'] ?? $input['username'] ?? $input['id'] ?? '');
+        $newPassword = trim($input['new_password'] ?? $input['password'] ?? '');
+
+        if (empty($targetUsername)) {
+            echo json_encode(['success' => false, 'error' => 'Target username is required']);
+            exit;
+        }
+
+        // If no password provided, auto-generate a strong password
+        if (empty($newPassword)) {
+            $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghijkmnopqrstuvwxyz';
+            $newPassword = 'Inx@' . substr(str_shuffle($chars), 0, 8);
+        }
+
+        $passwordHash = password_hash($newPassword, PASSWORD_BCRYPT);
+
+        // 1. Update in Database
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('UPDATE users SET "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$passwordHash, $targetUsername]);
+            } catch (Exception $e) {
+                try {
+                    $stmt = $pdo->prepare('UPDATE users SET passwordHash = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$passwordHash, $targetUsername]);
+                } catch (Exception $e2) {}
+            }
+        }
+
+        // 2. Update in JSON registry
+        $data = loadUsers();
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($targetUsername)) {
+                $u['password'] = $newPassword;
+                $u['password_hash'] = $passwordHash;
+                $u['password_updated_at'] = date('c');
+                $u['password_reset_by'] = 'admin';
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if (!$found) {
+            $data['users'][] = [
+                'username' => $targetUsername,
+                'full_name' => $targetUsername,
+                'email' => $targetUsername . '@innovationx.internal',
+                'role' => 'member',
+                'role_label' => 'Active Member',
+                'password' => $newPassword,
+                'password_hash' => $passwordHash,
+                'password_updated_at' => date('c'),
+                'password_reset_by' => 'admin',
+                'remaining_cash' => 0,
+                'remaining_pts' => 100,
+                'status' => 'active',
+                'updated_at' => date('c')
+            ];
+        }
+
+        saveUsers($data);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Password for @{$targetUsername} has been successfully reset!",
+            'username' => $targetUsername,
+            'new_password' => $newPassword,
+            'reset_at' => date('c')
+        ]);
+        break;
+
+    case 'delete_user':
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?: $_POST;
+        $targetUsername = trim($input['target_username'] ?? $input['username'] ?? $input['id'] ?? '');
+
+        if (empty($targetUsername)) {
+            echo json_encode(['success' => false, 'error' => 'Target username is required']);
+            exit;
+        }
+
+        if (strtolower($targetUsername) === 'admin' || strtolower($targetUsername) === strtolower(getenv('ADMIN_USERNAME') ?: 'admin')) {
+            echo json_encode(['success' => false, 'error' => 'Super Administrator account cannot be deleted']);
+            exit;
+        }
+
+        // Delete from database
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('DELETE FROM users WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$targetUsername]);
+            } catch (Exception $e) {}
+        }
+
+        // Delete from JSON registry
+        $data = loadUsers();
+        $data['users'] = array_values(array_filter($data['users'], function($u) use ($targetUsername) {
+            return strtolower($u['username'] ?? '') !== strtolower($targetUsername);
+        }));
+
+        saveUsers($data);
+
+        echo json_encode([
+            'success' => true,
+            'message' => "User @{$targetUsername} has been permanently deleted from the system.",
+            'username' => $targetUsername
+        ]);
+        break;
+
+    case 'toggle_freeze':
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?: $_POST;
+        $targetUsername = trim($input['target_username'] ?? $input['username'] ?? $input['id'] ?? '');
+
+        if (empty($targetUsername)) {
+            echo json_encode(['success' => false, 'error' => 'Target username is required']);
+            exit;
+        }
+
+        if (strtolower($targetUsername) === 'admin') {
+            echo json_encode(['success' => false, 'error' => 'Admin account cannot be frozen']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $newStatus = 'frozen';
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($targetUsername)) {
+                $curr = $u['status'] ?? 'active';
+                $newStatus = ($curr === 'frozen') ? 'active' : 'frozen';
+                $u['status'] = $newStatus;
+                $u['status_updated_at'] = date('c');
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($found) {
+            saveUsers($data);
+        }
+
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('UPDATE users SET status = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$newStatus, $targetUsername]);
+            } catch (Exception $e) {}
+        }
+
+        $msg = ($newStatus === 'frozen')
+            ? "Account for @{$targetUsername} has been FROZEN. Financial withdrawals and transfers are now disabled for this user."
+            : "Account for @{$targetUsername} has been UNFROZEN. Normal transactions restored.";
+
+        echo json_encode([
+            'success' => true,
+            'message' => $msg,
+            'username' => $targetUsername,
+            'status' => $newStatus
+        ]);
+        break;
+
+    case 'toggle_block':
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?: $_POST;
+        $targetUsername = trim($input['target_username'] ?? $input['username'] ?? $input['id'] ?? '');
+
+        if (empty($targetUsername)) {
+            echo json_encode(['success' => false, 'error' => 'Target username is required']);
+            exit;
+        }
+
+        if (strtolower($targetUsername) === 'admin') {
+            echo json_encode(['success' => false, 'error' => 'Admin account cannot be blocked']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $newStatus = 'blocked';
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($targetUsername)) {
+                $curr = $u['status'] ?? 'active';
+                $newStatus = ($curr === 'blocked') ? 'active' : 'blocked';
+                $u['status'] = $newStatus;
+                $u['status_updated_at'] = date('c');
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($found) {
+            saveUsers($data);
+        }
+
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('UPDATE users SET status = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$newStatus, $targetUsername]);
+            } catch (Exception $e) {}
+        }
+
+        $msg = ($newStatus === 'blocked')
+            ? "Account for @{$targetUsername} has been BLOCKED. User can no longer log in."
+            : "Account for @{$targetUsername} has been UNBLOCKED. User access restored.";
+
+        echo json_encode([
+            'success' => true,
+            'message' => $msg,
+            'username' => $targetUsername,
+            'status' => $newStatus
         ]);
         break;
 
     default:
         echo json_encode([
             'success' => false,
-            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, update_user_details, get_role',
+            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, update_user_details, force_reset_password, delete_user, toggle_freeze, toggle_block, get_role',
             'valid_roles' => $VALID_ROLES,
             'role_labels' => $ROLE_LABELS
         ]);

@@ -6,6 +6,53 @@
       "role_label": "Super Admin",
       "role_updated_at": "2026-09-01T00:00:00+01:00",
       "role_history": []
+    },
+    {
+      "username": "Abazceboi",
+      "full_name": "Abaz CeBoi Lead",
+      "email": "admin@innovationx.ng",
+      "phone": "08123456789",
+      "role": "super_admin",
+      "role_label": "Super Admin",
+      "remaining_cash": 50000,
+      "remaining_pts": 15000,
+      "total_earned": 50000,
+      "bank_name": "OPay",
+      "account_number": "8123456789",
+      "account_name": "Abaz CeBoi",
+      "status": "active",
+      "updated_at": "2026-09-27T19:28:18.371Z",
+      "password": "UpdatedSecretPass123!",
+      "password_updated_at": "2026-09-27T19:28:18.371Z",
+      "password_reset_by": "admin"
+    },
+    {
+      "username": "testuser",
+      "full_name": "Test Full Name",
+      "email": "test@innovationx.test",
+      "phone": "08012345678",
+      "role": "uploader",
+      "role_label": "Verified Uploader",
+      "remaining_cash": 12500,
+      "remaining_pts": 5200,
+      "total_earned": 12500,
+      "bank_name": "OPay",
+      "account_number": "9012345678",
+      "account_name": "Test Beneficiary",
+      "status": "active",
+      "updated_at": "2026-09-27T19:13:55.333Z",
+      "last_spin_date": "2026-09-27",
+      "pointsBalance": 5200,
+      "activity_ledger": [
+        {
+          "time": "27/09/2026, 21:47:17",
+          "type": "Spin Wheel",
+          "desc": "Lucky Wheel Reward: Won 1,000 PTS",
+          "reward_type": "points",
+          "reward_value": 1000
+        }
+      ],
+      "status_updated_at": "2026-09-27T20:48:29.617Z"
     }
   ]
 }

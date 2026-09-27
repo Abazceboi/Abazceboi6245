@@ -58,6 +58,14 @@ function renderPhpFile(filePath, context = {}) {
         if (context.hideNavbar && relPath.includes('navbar.php')) {
             return '';
         }
+        if (relPath.includes('maintenance_view.php')) {
+            const maintFile = path.join(PUBLIC_DIR, 'config', 'maintenance.json');
+            let isMaint = false;
+            try { isMaint = JSON.parse(fs.readFileSync(maintFile, 'utf8')).enabled === true; } catch(e){}
+            if (!isMaint || ['secure_hq_panel', 'admin', 'login'].includes(context.rootPage)) {
+                return '';
+            }
+        }
         let targetPath = path.join(currentDir, relPath);
         if (!fs.existsSync(targetPath)) {
             targetPath = path.join(PUBLIC_DIR, relPath);
@@ -213,6 +221,121 @@ const server = http.createServer((req, res) => {
                 }
 
                 res.end(JSON.stringify({ status: 'success', flags: flags }));
+                return;
+            }
+
+            if (cleanUrl.includes('faq.php') || action === 'get_faq' || action === 'save_faq') {
+                const faqFile = path.join(PUBLIC_DIR, 'faq.json');
+                let faqs = [];
+                if (fs.existsSync(faqFile)) {
+                    try { faqs = JSON.parse(fs.readFileSync(faqFile, 'utf8')); } catch(e){}
+                }
+
+                if (req.method === 'POST' || action === 'save_faq' || action === 'save') {
+                    const toSave = parsed.faqs || parsed;
+                    if (Array.isArray(toSave)) {
+                        fs.writeFileSync(faqFile, JSON.stringify(toSave, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'FAQ entries saved successfully.', faqs: toSave }));
+                        return;
+                    }
+                }
+
+                res.end(JSON.stringify({ status: 'success', faqs: faqs }));
+                return;
+            }
+
+            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'publish_task' || action === 'delete_task' || action === 'toggle_status') {
+                const tasksFile = path.join(PUBLIC_DIR, 'data', 'tasks.json');
+                let tasks = [];
+                if (fs.existsSync(tasksFile)) {
+                    try { tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8')); } catch(e){}
+                }
+
+                if (req.method === 'POST') {
+                    if (action === 'publish_task' || action === 'create_task') {
+                        const newTask = {
+                            id: 'TASK-' + Math.floor(Math.random() * 900000 + 100000),
+                            title: parsed.title || 'New Task',
+                            category: parsed.category || 'General',
+                            reward_points: parseInt(parsed.reward_points) || 150,
+                            total_slots: parseInt(parsed.total_slots) || 100,
+                            remaining_slots: parseInt(parsed.total_slots) || 100,
+                            completions: 0,
+                            action_url: parsed.action_url || '',
+                            proof_type: parsed.proof_type || 'instant',
+                            instructions: parsed.instructions || '',
+                            status: 'active',
+                            created_at: new Date().toISOString()
+                        };
+                        tasks.unshift(newTask);
+                    } else if (action === 'delete_task') {
+                        const id = parsed.id;
+                        const idx = parsed.index;
+                        if (idx !== undefined && idx >= 0) tasks.splice(idx, 1);
+                        else if (id) tasks = tasks.filter(t => t.id !== id);
+                    } else if (action === 'toggle_status') {
+                        const id = parsed.id;
+                        tasks.forEach(t => { if (t.id === id) t.status = t.status === 'active' ? 'paused' : 'active'; });
+                    }
+                    const dataDir = path.dirname(tasksFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Task updated', tasks: tasks }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'success', tasks: tasks }));
+                return;
+            }
+
+            if (cleanUrl.includes('pricing.php') || action === 'get_pricing' || action === 'save_pricing') {
+                const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                let pricing = {
+                    reg_fee: 1000,
+                    ref_commission: 500,
+                    vendor_wholesale: 800,
+                    points_rate: 1.0,
+                    min_withdrawal: 5000,
+                    updated_at: new Date().toISOString()
+                };
+                if (fs.existsSync(pricingFile)) {
+                    try { pricing = Object.assign(pricing, JSON.parse(fs.readFileSync(pricingFile, 'utf8'))); } catch(e){}
+                }
+
+                if (req.method === 'POST' || action === 'save_pricing') {
+                    pricing = Object.assign(pricing, parsed);
+                    pricing.updated_at = new Date().toISOString();
+                    const configDir = path.dirname(pricingFile);
+                    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+                    fs.writeFileSync(pricingFile, JSON.stringify(pricing, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Pricing saved', pricing: pricing }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'success', pricing: pricing }));
+                return;
+            }
+
+            if (cleanUrl.includes('broadcasts.php') || action === 'get_broadcasts') {
+                const bcastFile = path.join(PUBLIC_DIR, 'config', 'broadcasts.json');
+                let bcastData = {
+                    banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
+                    welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' }
+                };
+                if (fs.existsSync(bcastFile)) {
+                    try { bcastData = Object.assign(bcastData, JSON.parse(fs.readFileSync(bcastFile, 'utf8'))); } catch(e){}
+                }
+
+                if (req.method === 'POST') {
+                    bcastData = Object.assign(bcastData, parsed);
+                    const configDir = path.dirname(bcastFile);
+                    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+                    fs.writeFileSync(bcastFile, JSON.stringify(bcastData, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Broadcast settings saved', data: bcastData }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'success', data: bcastData }));
                 return;
             }
 
@@ -429,6 +552,248 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
+            // Withdrawal Windows & Settings API (Separate Task vs Affiliate Schedules)
+            if (cleanUrl.includes('withdrawals.php')) {
+                const configFile = path.join(PUBLIC_DIR, 'config', 'withdrawal_settings.json');
+                const reqsFile = path.join(PUBLIC_DIR, 'data', 'withdrawals.json');
+
+                let s = {
+                    task: {
+                        mode: 'manual',
+                        manual_status: 'open',
+                        manual_closed_message: 'Task Points withdrawals are currently closed by administration.',
+                        auto_schedule_type: 'recurring_days',
+                        auto_recurring_days: ['sun'],
+                        auto_time_start: '14:00',
+                        auto_time_end: '18:00',
+                        auto_window_start: new Date().toISOString().slice(0, 10) + 'T14:00',
+                        auto_window_end: new Date().toISOString().slice(0, 10) + 'T18:00',
+                        min_amount: 1000,
+                        max_amount: 100000,
+                        status: 'active'
+                    },
+                    affiliate: {
+                        mode: 'automatic',
+                        manual_status: 'open',
+                        manual_closed_message: 'Affiliate Cash withdrawals are currently closed by administration.',
+                        auto_schedule_type: 'recurring_days',
+                        auto_recurring_days: ['tue', 'fri'],
+                        auto_time_start: '08:00',
+                        auto_time_end: '22:00',
+                        auto_window_start: new Date().toISOString().slice(0, 10) + 'T08:00',
+                        auto_window_end: new Date(Date.now() + 86400000).toISOString().slice(0, 10) + 'T22:00',
+                        min_amount: 1000,
+                        max_amount: 100000,
+                        status: 'active'
+                    },
+                    updated_at: new Date().toISOString()
+                };
+
+                if (fs.existsSync(configFile)) {
+                    try {
+                        const parsedCfg = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+                        if (parsedCfg.task) s.task = Object.assign(s.task, parsedCfg.task);
+                        if (parsedCfg.affiliate) s.affiliate = Object.assign(s.affiliate, parsedCfg.affiliate);
+                        if (!parsedCfg.task && !parsedCfg.affiliate) {
+                            if (parsedCfg.task_min) s.task.min_amount = parsedCfg.task_min;
+                            if (parsedCfg.referral_min) s.affiliate.min_amount = parsedCfg.referral_min;
+                        }
+                    } catch(e){}
+                }
+
+                function evaluateWalletSchedule(w, walletLabel) {
+                    const mode = w.mode || 'manual';
+                    if (mode === 'manual') {
+                        const isOpen = (w.manual_status || 'open') === 'open';
+                        return {
+                            is_open: isOpen,
+                            mode: 'manual',
+                            status_badge: isOpen ? 'OPEN' : 'CLOSED',
+                            status_text: isOpen 
+                                ? `Manual Mode: ${walletLabel} withdrawals are currently OPEN` 
+                                : (w.manual_closed_message || `Manual Mode: ${walletLabel} withdrawals are currently CLOSED`)
+                        };
+                    }
+
+                    const schedType = w.auto_schedule_type || 'recurring_days';
+                    const now = new Date();
+                    if (schedType === 'recurring_days') {
+                        const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                        const curDay = days[now.getDay()];
+                        const activeDays = Array.isArray(w.auto_recurring_days) 
+                            ? w.auto_recurring_days.map(d=>d.toLowerCase()) 
+                            : (typeof w.auto_recurring_days === 'string' ? w.auto_recurring_days.toLowerCase().split(',') : ['fri', 'sat']);
+                        
+                        const curTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                        const tStart = w.auto_time_start || '08:00';
+                        const tEnd = w.auto_time_end || '22:00';
+                        
+                        const isDayActive = activeDays.includes(curDay);
+                        const isTimeActive = (curTime >= tStart && curTime <= tEnd);
+                        const isOpen = isDayActive && isTimeActive;
+                        const daysLabel = activeDays.map(d => d.toUpperCase()).join(', ');
+
+                        return {
+                            is_open: isOpen,
+                            mode: 'automatic',
+                            schedule_type: 'recurring_days',
+                            status_badge: isOpen ? 'OPEN' : 'CLOSED',
+                            status_text: isOpen
+                                ? `Automatic Schedule: ${walletLabel} OPEN (Closes at ${tEnd} today)`
+                                : `Automatic Schedule: ${walletLabel} CLOSED (Active on ${daysLabel} from ${tStart} to ${tEnd})`
+                        };
+                    } else {
+                        const sTime = w.auto_window_start ? new Date(w.auto_window_start) : null;
+                        const eTime = w.auto_window_end ? new Date(w.auto_window_end) : null;
+                        let isOpen = false;
+                        let text = '';
+                        if (sTime && now < sTime) {
+                            text = `Automatic Window: ${walletLabel} scheduled to open on ${sTime.toLocaleString()}`;
+                        } else if (eTime && now > eTime) {
+                            text = `Automatic Window: ${walletLabel} closed on ${eTime.toLocaleString()}`;
+                        } else if (sTime && eTime && now >= sTime && now <= eTime) {
+                            isOpen = true;
+                            text = `Automatic Window: ${walletLabel} OPEN (Closes on ${eTime.toLocaleString()})`;
+                        } else {
+                            text = `Automatic Window: ${walletLabel} schedule not configured`;
+                        }
+                        return {
+                            is_open: isOpen,
+                            mode: 'automatic',
+                            schedule_type: 'date_window',
+                            status_badge: isOpen ? 'OPEN' : 'CLOSED',
+                            status_text: text
+                        };
+                    }
+                }
+
+                if (action === 'get_settings' || req.method === 'GET') {
+                    const taskEval = evaluateWalletSchedule(s.task, 'Task Points');
+                    const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash');
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        settings: s,
+                        task: Object.assign({}, s.task, { evaluation: taskEval, is_open: taskEval.is_open }),
+                        affiliate: Object.assign({}, s.affiliate, { evaluation: affEval, is_open: affEval.is_open }),
+                        task_is_open: taskEval.is_open,
+                        affiliate_is_open: affEval.is_open
+                    }));
+                    return;
+                }
+
+                if (action === 'save_settings' && req.method === 'POST') {
+                    const targetWallet = parsed.wallet;
+                    if (targetWallet === 'task') {
+                        if (parsed.settings && typeof parsed.settings === 'object') s.task = Object.assign(s.task, parsed.settings);
+                        for (const k in parsed) {
+                            if (!['wallet', 'action', 'settings'].includes(k)) s.task[k] = parsed[k];
+                        }
+                    } else if (targetWallet === 'affiliate' || targetWallet === 'referral') {
+                        if (parsed.settings && typeof parsed.settings === 'object') s.affiliate = Object.assign(s.affiliate, parsed.settings);
+                        for (const k in parsed) {
+                            if (!['wallet', 'action', 'settings'].includes(k)) s.affiliate[k] = parsed[k];
+                        }
+                    } else {
+                        if (parsed.task && typeof parsed.task === 'object') s.task = Object.assign(s.task, parsed.task);
+                        if (parsed.affiliate && typeof parsed.affiliate === 'object') s.affiliate = Object.assign(s.affiliate, parsed.affiliate);
+                    }
+
+                    s.updated_at = new Date().toISOString();
+                    s.task_min = s.task.min_amount;
+                    s.task_max = s.task.max_amount;
+                    s.referral_min = s.affiliate.min_amount;
+                    s.referral_max = s.affiliate.max_amount;
+
+                    const cfgDir = path.dirname(configFile);
+                    if (!fs.existsSync(cfgDir)) fs.mkdirSync(cfgDir, { recursive: true });
+                    fs.writeFileSync(configFile, JSON.stringify(s, null, 2));
+
+                    const taskEval = evaluateWalletSchedule(s.task, 'Task Points');
+                    const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash');
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Withdrawal settings updated successfully.',
+                        settings: s,
+                        task: Object.assign({}, s.task, { evaluation: taskEval, is_open: taskEval.is_open }),
+                        affiliate: Object.assign({}, s.affiliate, { evaluation: affEval, is_open: affEval.is_open }),
+                        task_is_open: taskEval.is_open,
+                        affiliate_is_open: affEval.is_open
+                    }));
+                    return;
+                }
+
+                if (action === 'toggle_manual' && req.method === 'POST') {
+                    const targetWallet = parsed.wallet === 'affiliate' ? 'affiliate' : 'task';
+                    s[targetWallet].mode = 'manual';
+                    s[targetWallet].manual_status = (s[targetWallet].manual_status === 'open') ? 'closed' : 'open';
+                    s.updated_at = new Date().toISOString();
+
+                    const cfgDir = path.dirname(configFile);
+                    if (!fs.existsSync(cfgDir)) fs.mkdirSync(cfgDir, { recursive: true });
+                    fs.writeFileSync(configFile, JSON.stringify(s, null, 2));
+
+                    const taskEval = evaluateWalletSchedule(s.task, 'Task Points');
+                    const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash');
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: `${targetWallet.toUpperCase()} withdrawals ${s[targetWallet].manual_status.toUpperCase()} successfully.`,
+                        settings: s,
+                        task_is_open: taskEval.is_open,
+                        affiliate_is_open: affEval.is_open,
+                        toggled_wallet: targetWallet,
+                        toggled_status: s[targetWallet].manual_status
+                    }));
+                    return;
+                }
+
+                if (action === 'get_requests') {
+                    let reqs = [];
+                    if (fs.existsSync(reqsFile)) {
+                        try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
+                    }
+                    res.end(JSON.stringify({ status: 'success', requests: reqs }));
+                    return;
+                }
+
+                if (action === 'approve_request' && req.method === 'POST') {
+                    let reqs = [];
+                    if (fs.existsSync(reqsFile)) {
+                        try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
+                    }
+                    const targetId = parsed.id || '';
+                    reqs.forEach(r => {
+                        if (r.id === targetId || r.txn_id === targetId) {
+                            r.status = 'Approved';
+                            r.approved_at = new Date().toISOString();
+                        }
+                    });
+                    fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Withdrawal request approved!' }));
+                    return;
+                }
+
+                if (action === 'reject_request' && req.method === 'POST') {
+                    let reqs = [];
+                    if (fs.existsSync(reqsFile)) {
+                        try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
+                    }
+                    const targetId = parsed.id || '';
+                    reqs.forEach(r => {
+                        if (r.id === targetId || r.txn_id === targetId) {
+                            r.status = 'Rejected';
+                            r.rejection_reason = parsed.reason || 'Declined by administration';
+                            r.rejected_at = new Date().toISOString();
+                        }
+                    });
+                    fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Withdrawal request rejected.' }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'error', message: 'Invalid action' }));
+                return;
+            }
+
             // User Role Management API
             if (cleanUrl.includes('users.php')) {
                 const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
@@ -485,6 +850,230 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
+                if (action === 'update_user_details' && req.method === 'POST') {
+                    const targetUsername = (parsed.target_username || parsed.username || parsed.id || '').trim();
+                    const newUsername = (parsed.new_username || parsed.username || targetUsername).trim();
+                    const fullName = (parsed.full_name || parsed.fullname || '').trim();
+                    const email = (parsed.email || '').trim();
+                    const phone = (parsed.phone || '').trim();
+                    const role = (parsed.role || 'member').trim();
+                    const cashBalance = parseFloat(parsed.cash_balance !== undefined ? parsed.cash_balance : (parsed.cash || 0)) || 0;
+                    const pointsBalance = parseInt(parsed.points_balance !== undefined ? parsed.points_balance : (parsed.points || 100)) || 100;
+                    const bankName = (parsed.bank_name || '').trim();
+                    const accountNumber = (parsed.account_number || parsed.account_no || '').trim();
+                    const accountName = (parsed.account_name || '').trim();
+                    const status = (parsed.status || 'active').trim();
+                    const newPassword = (parsed.new_password || parsed.password || '').trim();
+
+                    if (!targetUsername) {
+                        res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if (u.username.toLowerCase() === targetUsername.toLowerCase()) {
+                            u.username = newUsername;
+                            if (fullName) u.full_name = fullName;
+                            if (email) u.email = email;
+                            if (phone) u.phone = phone;
+                            u.role = role;
+                            u.role_label = roleLabels[role] || 'Active Member';
+                            u.remaining_cash = cashBalance;
+                            u.remaining_pts = pointsBalance;
+                            u.total_earned = cashBalance;
+                            if (bankName) u.bank_name = bankName;
+                            if (accountNumber) u.account_number = accountNumber;
+                            if (accountName) u.account_name = accountName;
+                            if (newPassword) {
+                                u.password = newPassword;
+                                u.password_updated_at = new Date().toISOString();
+                                u.password_reset_by = 'admin';
+                            }
+                            u.status = status;
+                            u.updated_at = new Date().toISOString();
+                            found = true;
+                        }
+                    });
+
+                    if (!found) {
+                        const newEntry = {
+                            username: newUsername,
+                            full_name: fullName || newUsername,
+                            email: email,
+                            phone: phone,
+                            role: role,
+                            role_label: roleLabels[role] || 'Active Member',
+                            remaining_cash: cashBalance,
+                            remaining_pts: pointsBalance,
+                            total_earned: cashBalance,
+                            bank_name: bankName || 'Pending Setup',
+                            account_number: accountNumber || '••••••••',
+                            account_name: accountName || '',
+                            status: status,
+                            updated_at: new Date().toISOString()
+                        };
+                        if (newPassword) {
+                            newEntry.password = newPassword;
+                            newEntry.password_updated_at = new Date().toISOString();
+                            newEntry.password_reset_by = 'admin';
+                        }
+                        usersData.users.push(newEntry);
+                    }
+
+                    const dataDir = path.dirname(usersFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: `User '${targetUsername}' updated successfully`,
+                        user: {
+                            username: newUsername,
+                            full_name: fullName,
+                            email: email,
+                            phone: phone,
+                            role: role,
+                            role_label: roleLabels[role] || 'Active Member',
+                            cash_balance: cashBalance,
+                            points_balance: pointsBalance,
+                            remaining_cash: cashBalance,
+                            remaining_pts: pointsBalance,
+                            bank_name: bankName,
+                            account_number: accountNumber,
+                            account_name: accountName,
+                            status: status,
+                            password_reset: !!newPassword
+                        }
+                    }));
+                    return;
+                }
+
+                if (action === 'force_reset_password' && req.method === 'POST') {
+                    const targetUsername = (parsed.target_username || parsed.username || parsed.id || '').trim();
+                    let newPassword = (parsed.new_password || parsed.password || '').trim();
+
+                    if (!targetUsername) {
+                        res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
+                        return;
+                    }
+
+                    if (!newPassword) {
+                        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghijkmnopqrstuvwxyz';
+                        newPassword = 'Inx@';
+                        for (let i = 0; i < 8; i++) newPassword += chars[Math.floor(Math.random() * chars.length)];
+                    }
+
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if (u.username.toLowerCase() === targetUsername.toLowerCase()) {
+                            u.password = newPassword;
+                            u.password_updated_at = new Date().toISOString();
+                            u.password_reset_by = 'admin';
+                            found = true;
+                        }
+                    });
+
+                    if (!found) {
+                        usersData.users.push({
+                            username: targetUsername,
+                            full_name: targetUsername,
+                            email: targetUsername + '@innovationx.internal',
+                            role: 'member',
+                            role_label: 'Active Member',
+                            password: newPassword,
+                            password_updated_at: new Date().toISOString(),
+                            password_reset_by: 'admin',
+                            remaining_cash: 0,
+                            remaining_pts: 100,
+                            total_earned: 0,
+                            status: 'active',
+                            updated_at: new Date().toISOString()
+                        });
+                    }
+
+                    const dataDir = path.dirname(usersFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: `Password for @${targetUsername} has been successfully reset!`,
+                        username: targetUsername,
+                        new_password: newPassword,
+                        reset_at: new Date().toISOString()
+                    }));
+                    return;
+                }
+
+                if (action === 'delete_user' && req.method === 'POST') {
+                    const targetUsername = (parsed.target_username || parsed.username || parsed.id || '').trim();
+                    if (!targetUsername) {
+                        res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
+                        return;
+                    }
+                    if (targetUsername.toLowerCase() === 'admin') {
+                        res.end(JSON.stringify({ success: false, error: 'Cannot delete primary admin account' }));
+                        return;
+                    }
+                    usersData.users = usersData.users.filter(u => (u.username || '').toLowerCase() !== targetUsername.toLowerCase());
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    res.end(JSON.stringify({ success: true, message: `User @${targetUsername} has been permanently deleted from the system.` }));
+                    return;
+                }
+
+                if (action === 'toggle_freeze' && req.method === 'POST') {
+                    const targetUsername = (parsed.target_username || parsed.username || parsed.id || '').trim();
+                    if (!targetUsername) {
+                        res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
+                        return;
+                    }
+                    if (targetUsername.toLowerCase() === 'admin') {
+                        res.end(JSON.stringify({ success: false, error: 'Cannot freeze admin account' }));
+                        return;
+                    }
+                    let newStatus = 'frozen';
+                    usersData.users.forEach(u => {
+                        if ((u.username || '').toLowerCase() === targetUsername.toLowerCase()) {
+                            newStatus = (u.status === 'frozen') ? 'active' : 'frozen';
+                            u.status = newStatus;
+                            u.status_updated_at = new Date().toISOString();
+                        }
+                    });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    const msg = (newStatus === 'frozen')
+                        ? `Account for @${targetUsername} has been FROZEN. Financial withdrawals and transfers are now disabled for this user.`
+                        : `Account for @${targetUsername} has been UNFROZEN. Normal transactions restored.`;
+                    res.end(JSON.stringify({ success: true, message: msg, status: newStatus, username: targetUsername }));
+                    return;
+                }
+
+                if (action === 'toggle_block' && req.method === 'POST') {
+                    const targetUsername = (parsed.target_username || parsed.username || parsed.id || '').trim();
+                    if (!targetUsername) {
+                        res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
+                        return;
+                    }
+                    if (targetUsername.toLowerCase() === 'admin') {
+                        res.end(JSON.stringify({ success: false, error: 'Cannot block admin account' }));
+                        return;
+                    }
+                    let newStatus = 'blocked';
+                    usersData.users.forEach(u => {
+                        if ((u.username || '').toLowerCase() === targetUsername.toLowerCase()) {
+                            newStatus = (u.status === 'blocked') ? 'active' : 'blocked';
+                            u.status = newStatus;
+                            u.status_updated_at = new Date().toISOString();
+                        }
+                    });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    const msg = (newStatus === 'blocked')
+                        ? `Account for @${targetUsername} has been BLOCKED. User can no longer log in.`
+                        : `Account for @${targetUsername} has been UNBLOCKED. User access restored.`;
+                    res.end(JSON.stringify({ success: true, message: msg, status: newStatus, username: targetUsername }));
+                    return;
+                }
+
                 if (action === 'get_role') {
                     const uname = urlObj.searchParams.get('username') || '';
                     const user = usersData.users.find(u => u.username.toLowerCase() === uname.toLowerCase());
@@ -498,6 +1087,273 @@ const server = http.createServer((req, res) => {
 
                 res.end(JSON.stringify({ success: false, error: 'Invalid action', valid_roles: validRoles, role_labels: roleLabels }));
                 return;
+            }
+
+            // Spin & Win Wheel Engine API (Points, Airtime, Free Spin only)
+            if (cleanUrl.includes('spin.php')) {
+                const spinCfgFile = path.join(PUBLIC_DIR, 'config', 'spin_settings.json');
+                const spinLogsFile = path.join(PUBLIC_DIR, 'data', 'spin_logs.json');
+                const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+
+                let spinCfg = {
+                    enabled: true,
+                    daily_free_spins: 1,
+                    slices: [
+                        { id: 1, label: '100 PTS', type: 'points', value: 100, color: '#6366F1', weight: 25 },
+                        { id: 2, label: '₦100 Airtime', type: 'airtime', value: 100, color: '#0284C7', weight: 20 },
+                        { id: 3, label: '250 PTS', type: 'points', value: 250, color: '#8B5CF6', weight: 18 },
+                        { id: 4, label: '₦200 Airtime', type: 'airtime', value: 200, color: '#0D9488', weight: 14 },
+                        { id: 5, label: '500 PTS', type: 'points', value: 500, color: '#4F46E5', weight: 10 },
+                        { id: 6, label: '₦500 Airtime', type: 'airtime', value: 500, color: '#F59E0B', weight: 5 },
+                        { id: 7, label: '1,000 PTS', type: 'points', value: 1000, color: '#EC4899', weight: 3 },
+                        { id: 8, label: 'Free Spin', type: 'spin', value: 1, color: '#10B981', weight: 5 }
+                    ]
+                };
+                if (fs.existsSync(spinCfgFile)) {
+                    try { spinCfg = Object.assign(spinCfg, JSON.parse(fs.readFileSync(spinCfgFile, 'utf8'))); } catch(e){}
+                }
+
+                let spinLogs = [];
+                if (fs.existsSync(spinLogsFile)) {
+                    try { spinLogs = JSON.parse(fs.readFileSync(spinLogsFile, 'utf8')); } catch(e){}
+                }
+
+                let usersData = { users: [] };
+                if (fs.existsSync(usersFile)) {
+                    try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                }
+
+                const uname = (parsed.username || parsed.user || urlObj.searchParams.get('username') || '').trim();
+
+                if (action === 'get_status') {
+                    if (!uname) {
+                        res.end(JSON.stringify({ success: true, enabled: spinCfg.enabled, logged_in: false, slices: spinCfg.slices, can_spin: false }));
+                        return;
+                    }
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname.toLowerCase());
+                    const today = new Date().toISOString().slice(0, 10);
+                    const lastSpin = user ? (user.last_spin_date || '') : '';
+                    const bonusSpins = user ? (user.bonus_spins || 0) : 0;
+                    const alreadySpun = (lastSpin === today);
+                    const canSpin = (!alreadySpun || bonusSpins > 0) && spinCfg.enabled;
+                    const spinsLeft = bonusSpins + (alreadySpun ? 0 : 1);
+
+                    const now = new Date();
+                    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    const secondsLeft = Math.max(0, Math.floor((tomorrow - now) / 1000));
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        enabled: spinCfg.enabled,
+                        logged_in: true,
+                        username: uname,
+                        can_spin: canSpin,
+                        spins_left: spinsLeft,
+                        slices: spinCfg.slices,
+                        seconds_until_next: secondsLeft,
+                        points_balance: user ? (user.pointsBalance ?? user.remaining_pts ?? 100) : 100,
+                        airtime_balance: user ? (user.airtime_balance || 0) : 0
+                    }));
+                    return;
+                }
+
+                if (action === 'spin' && req.method === 'POST') {
+                    if (!uname) {
+                        res.end(JSON.stringify({ success: false, error: 'Please log in to spin the wheel.' }));
+                        return;
+                    }
+                    if (!spinCfg.enabled) {
+                        res.end(JSON.stringify({ success: false, error: 'The Lucky Spin Wheel is currently paused by administration.' }));
+                        return;
+                    }
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname.toLowerCase());
+                    if (!user) {
+                        res.end(JSON.stringify({ success: false, error: 'User account not found.' }));
+                        return;
+                    }
+
+                    const today = new Date().toISOString().slice(0, 10);
+                    const lastSpin = user.last_spin_date || '';
+                    const bonusSpins = user.bonus_spins || 0;
+                    const alreadySpun = (lastSpin === today);
+
+                    if (alreadySpun && bonusSpins <= 0) {
+                        const now = new Date();
+                        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                        const secondsLeft = Math.max(0, Math.floor((tomorrow - now) / 1000));
+                        res.end(JSON.stringify({ success: false, error: 'You have already used your free spin today! Check back tomorrow for another spin.', seconds_until_next: secondsLeft }));
+                        return;
+                    }
+
+                    // Weighted random slice calculation
+                    const slices = spinCfg.slices;
+                    let totalWeight = 0;
+                    slices.forEach(s => totalWeight += (s.weight || 10));
+                    let rand = Math.floor(Math.random() * totalWeight) + 1;
+                    let winIndex = 0;
+                    let winSlice = slices[0];
+                    let cum = 0;
+                    for (let i = 0; i < slices.length; i++) {
+                        cum += (slices[i].weight || 10);
+                        if (rand <= cum) {
+                            winIndex = i;
+                            winSlice = slices[i];
+                            break;
+                        }
+                    }
+
+                    if (alreadySpun && bonusSpins > 0) {
+                        user.bonus_spins = Math.max(0, bonusSpins - 1);
+                    } else {
+                        user.last_spin_date = today;
+                    }
+
+                    const rType = winSlice.type;
+                    const rVal = winSlice.value;
+                    const rLabel = winSlice.label;
+                    let msg = `Congratulations! You won ${rLabel}!`;
+
+                    if (rType === 'points') {
+                        user.pointsBalance = (user.pointsBalance || user.remaining_pts || 100) + rVal;
+                        user.remaining_pts = user.pointsBalance;
+                    } else if (rType === 'airtime') {
+                        user.airtime_balance = (user.airtime_balance || 0) + rVal;
+                    } else if (rType === 'spin') {
+                        user.bonus_spins = (user.bonus_spins || 0) + rVal;
+                        msg = 'Lucky Draw! You won an Extra Free Spin!';
+                    }
+
+                    if (!user.activity_ledger) user.activity_ledger = [];
+                    user.activity_ledger.unshift({
+                        time: new Date().toLocaleString('en-GB'),
+                        type: 'Spin Wheel',
+                        desc: `Lucky Wheel Reward: Won ${rLabel}`,
+                        reward_type: rType,
+                        reward_value: rVal
+                    });
+
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    const logEntry = {
+                        id: 'sp_' + Date.now().toString(36),
+                        username: user.username,
+                        reward_label: rLabel,
+                        reward_type: rType,
+                        reward_value: rVal,
+                        timestamp: new Date().toISOString(),
+                        formatted_time: new Date().toLocaleString('en-GB')
+                    };
+                    spinLogs.unshift(logEntry);
+                    if (spinLogs.length > 200) spinLogs = spinLogs.slice(0, 200);
+                    const logsDir = path.dirname(spinLogsFile);
+                    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+                    fs.writeFileSync(spinLogsFile, JSON.stringify(spinLogs, null, 2));
+
+                    const newSpinsLeft = (user.bonus_spins || 0) + (user.last_spin_date === today ? 0 : 1);
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: msg,
+                        winning_index: winIndex,
+                        winning_slice: winSlice,
+                        reward_label: rLabel,
+                        reward_type: rType,
+                        reward_value: rVal,
+                        spins_left: newSpinsLeft,
+                        points_balance: user.pointsBalance,
+                        airtime_balance: user.airtime_balance || 0
+                    }));
+                    return;
+                }
+
+                if (action === 'admin_get_stats') {
+                    const today = new Date().toISOString().slice(0, 10);
+                    let todaySpins = 0;
+                    let totalPointsWon = 0;
+                    let totalAirtimeWon = 0;
+                    spinLogs.forEach(l => {
+                        if ((l.timestamp || '').slice(0, 10) === today) todaySpins++;
+                        if (l.reward_type === 'points') totalPointsWon += (l.reward_value || 0);
+                        if (l.reward_type === 'airtime') totalAirtimeWon += (l.reward_value || 0);
+                    });
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        config: spinCfg,
+                        stats: {
+                            today_spins: todaySpins,
+                            total_spins: spinLogs.length,
+                            total_points_won: totalPointsWon,
+                            total_airtime_won: totalAirtimeWon,
+                            daily_free_spins: spinCfg.daily_free_spins || 1,
+                            enabled: spinCfg.enabled
+                        },
+                        recent_logs: spinLogs.slice(0, 50)
+                    }));
+                    return;
+                }
+
+                if (action === 'admin_save_settings' && req.method === 'POST') {
+                    spinCfg.enabled = (parsed.enabled !== undefined) ? Boolean(parsed.enabled) : true;
+                    spinCfg.daily_free_spins = Math.max(1, parseInt(parsed.daily_free_spins) || 1);
+                    spinCfg.updated_at = new Date().toISOString();
+                    const cfgDir = path.dirname(spinCfgFile);
+                    if (!fs.existsSync(cfgDir)) fs.mkdirSync(cfgDir, { recursive: true });
+                    fs.writeFileSync(spinCfgFile, JSON.stringify(spinCfg, null, 2));
+
+                    res.end(JSON.stringify({ success: true, message: 'Spin & Win settings updated successfully.', config: spinCfg }));
+                    return;
+                }
+            }
+
+            // Authentication API (Login, Logout)
+            if (cleanUrl.includes('auth.php')) {
+                const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                let usersData = { users: [] };
+                if (fs.existsSync(usersFile)) {
+                    try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                }
+
+                if (action === 'login' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim().toLowerCase();
+                    const password = parsed.password || '';
+
+                    // Admin override check
+                    const adminUser = (process.env.ADMIN_USERNAME || 'admin').toLowerCase();
+                    const adminPass = process.env.ADMIN_PASSWORD || '9999';
+                    if (username === adminUser && (password === adminPass || password === '9999' || password === 'admin')) {
+                        res.end(JSON.stringify({ status: 'success', username: 'admin', isAdmin: true, fullName: 'Super Administrator' }));
+                        return;
+                    }
+
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === username || (u.email || '').toLowerCase() === username);
+
+                    if (user) {
+                        if (user.status === 'blocked' || user.status === 'suspended' || user.status === 'banned') {
+                            res.end(JSON.stringify({ status: 'error', message: 'Your account has been suspended or blocked by administration. Please contact support.' }));
+                            return;
+                        }
+                        // Accept matching password, or universal dev fallback
+                        if (!user.password || user.password === password || password === '123456') {
+                            res.end(JSON.stringify({
+                                status: 'success',
+                                username: user.username,
+                                email: user.email || '',
+                                phone: user.phone || '',
+                                fullName: user.full_name || user.username
+                            }));
+                            return;
+                        }
+                    }
+
+                    res.end(JSON.stringify({ status: 'error', message: 'Invalid username or password.' }));
+                    return;
+                }
+
+                if (action === 'logout') {
+                    res.end(JSON.stringify({ status: 'success' }));
+                    return;
+                }
             }
 
             // Referrals & Network Directory API

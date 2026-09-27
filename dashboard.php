@@ -123,6 +123,20 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                     </div>
                 </div>
 
+                <?php
+                $dashIsAdmin = false;
+                $dashAdminName = getenv('ADMIN_USERNAME') ?: 'admin';
+                if (strtolower($username) === strtolower($dashAdminName) || in_array($userRole, ['admin', 'super_admin'])) {
+                    $dashIsAdmin = true;
+                }
+                ?>
+                <?php if ($dashIsAdmin): ?>
+                <a href="secure_hq_panel.php" class="btn-dash-action" title="Admin HQ Control Panel" style="background:#6366F1;color:#FFFFFF;border:1px solid #4F46E5;padding:0 14px;gap:6px;font-weight:700;box-shadow:0 0 12px rgba(99,102,241,0.4)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span style="font-size:0.75rem">Admin HQ</span>
+                </a>
+                <?php endif; ?>
+
                 <!-- Telegram Community Quick Pill -->
                 <button type="button" class="btn-dash-action" onclick="openTelegramCommunityModal()" title="Join Official Telegram Community" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);padding:0 12px;gap:6px">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
@@ -212,6 +226,16 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                         <span>Unlisted Tokens OTC</span>
                     </div>
                     <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </a>
+
+                <a href="javascript:void(0)" onclick="selectDashDrawerTab('spin')" class="drawer-compact-link drawer-link" id="drawerLink_spin">
+                    <div class="drawer-link-left">
+                        <div class="drawer-link-icon" style="background:rgba(99,102,241,0.15);color:#818CF8;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"></path></svg>
+                        </div>
+                        <span>Lucky Spin &amp; Win</span>
+                    </div>
+                    <span class="badge" style="font-size:0.65rem;font-weight:700;background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;padding:2px 7px;border-radius:10px;">FREE SPIN</span>
                 </a>
 
                 <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-compact-link drawer-link" id="drawerLink_uploader">
@@ -560,6 +584,24 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                         <span class="module-tag">OTC Exchange</span>
                         <button type="button" onclick="switchDashTab('tokens')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
                             Trade Tokens
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Module 6: Lucky Spin & Win Wheel -->
+                <div class="module-card">
+                    <div class="module-card-head">
+                        <div class="module-icon-wrap" style="background:rgba(99,102,241,0.15);color:#818CF8;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+                        </div>
+                        <span class="module-badge" style="background:rgba(129,140,248,0.15);color:#818CF8;border-color:rgba(129,140,248,0.3)">Daily Bonus</span>
+                    </div>
+                    <div class="module-title">Lucky Spin &amp; Win</div>
+                    <div class="module-desc">Spin the wheel daily to win platform task points and instant airtime vouchers directly to your balance.</div>
+                    <div class="module-card-footer">
+                        <span class="module-tag">Points &amp; Airtime</span>
+                        <button type="button" onclick="switchDashTab('spin')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
+                            Spin Wheel
                         </button>
                     </div>
                 </div>
@@ -2415,6 +2457,164 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                             Submit Withdrawal Request
                         </button>
                     </form>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- LUCKY SPIN & WIN WHEEL PANE (POINTS & AIRTIME ONLY)      -->
+            <!-- ======================================================== -->
+            <div id="dashPane_spin" class="dash-service-pane" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
+                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        <span>Back to Overview</span>
+                    </button>
+                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        <span>Menu</span>
+                    </button>
+                </div>
+
+                <div class="dash-panel visible" id="spinWheelSection" style="border-color:rgba(99,102,241,0.35);box-shadow:0 18px 50px rgba(0,0,0,0.5),0 0 50px rgba(99,102,241,0.15)">
+                    <div class="dash-panel-header" style="flex-wrap:wrap;gap:10px;">
+                        <div class="dash-panel-title">
+                            <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #6366F1, #8B5CF6);display:flex;align-items:center;justify-content:center;color:#FFF">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"></path></svg>
+                            </div>
+                            <div>
+                                <span style="font-weight:800;font-size:1.15rem;color:var(--white-pure);">Lucky Spin &amp; Win</span>
+                                <div style="font-size:0.75rem;color:var(--text-gray);font-weight:500;">Win Task Points &amp; Instant Airtime Vouchers (No Naira cash)</div>
+                            </div>
+                        </div>
+                        <span class="dash-panel-badge" id="spinQuotaBadge" style="color:#A5B4FC;background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.3);font-size:0.75rem;font-weight:700;">1 FREE SPIN DAILY</span>
+                    </div>
+
+                    <!-- HUD Telemetry Grid -->
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;">
+                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
+                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Available Spins</div>
+                            <div id="spinUserSpinsCount" style="font-size:1.25rem;font-weight:800;color:#38BDF8;margin-top:2px;">1</div>
+                        </div>
+                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
+                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Next Free Spin</div>
+                            <div id="spinCooldownTimer" style="font-size:1.25rem;font-weight:800;color:#10B981;margin-top:2px;">Ready Now</div>
+                        </div>
+                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
+                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Task Points</div>
+                            <div id="spinUserPointsVal" style="font-size:1.25rem;font-weight:800;color:#818CF8;margin-top:2px;"><?= number_format($userPoints) ?> PTS</div>
+                        </div>
+                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
+                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Airtime Balance</div>
+                            <div id="spinUserAirtimeVal" style="font-size:1.25rem;font-weight:800;color:#F59E0B;margin-top:2px;">₦0.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Spin Wheel Stage -->
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 20px;">
+                        <div style="position:relative;width:340px;height:340px;max-width:92vw;max-height:92vw;display:flex;align-items:center;justify-content:center;">
+                            <!-- Pointer Needle Pin at 12 o'clock -->
+                            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6));">
+                                <svg width="34" height="42" viewBox="0 0 34 42" fill="none">
+                                    <path d="M17 40L3 10C1 6 3 2 7 2H27C31 2 33 6 31 10L17 40Z" fill="#F43F5E" stroke="#FFF" stroke-width="2"/>
+                                    <circle cx="17" cy="12" r="5" fill="#FFF"/>
+                                </svg>
+                            </div>
+
+                            <!-- Canvas Wheel -->
+                            <canvas id="spinWheelCanvas" width="340" height="340" style="border-radius:50%;box-shadow:0 0 35px rgba(99,102,241,0.25), 0 0 0 6px #1E293B, 0 0 0 10px rgba(99,102,241,0.4);"></canvas>
+
+                            <!-- Center Circular Spin Button -->
+                            <button type="button" id="spinCenterBtn" onclick="triggerWheelSpin()" style="position:absolute;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#4F46E5);border:4px solid #0F172A;box-shadow:0 4px 20px rgba(0,0,0,0.6), 0 0 15px rgba(99,102,241,0.6);color:#FFF;font-weight:900;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:0.04em;transition:transform 0.15s,box-shadow 0.15s;z-index:5;">
+                                SPIN
+                            </button>
+                        </div>
+
+                        <!-- CTA Button & Status Notice -->
+                        <div style="margin-top:22px;width:100%;max-width:340px;text-align:center;">
+                            <button type="button" id="spinActionBtn" onclick="triggerWheelSpin()" class="btn-dash-action btn-tech-primary" style="width:100%;height:48px;font-size:0.95rem;font-weight:800;letter-spacing:0.02em;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                <span id="spinActionBtnText">SPIN THE WHEEL</span>
+                            </button>
+                            <div id="spinStatusSubtext" style="font-size:0.75rem;color:var(--text-gray);margin-top:8px;">
+                                Each member gets 1 free spin every 24 hours. Rewards are credited instantly.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reward Slices Preview Grid -->
+                    <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;">
+                        <div style="font-size:0.82rem;font-weight:700;color:var(--white-pure);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                            <span>Wheel Rewards (Points &amp; Airtime Only)</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;">
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#818CF8;">100 PTS</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(2,132,199,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#38BDF8;">₦100 Airtime</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#A78BFA;">250 PTS</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(13,148,136,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#2DD4BF;">₦200 Airtime</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(79,70,229,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#6366F1;">500 PTS</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#FBBF24;">₦500 Airtime</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(236,72,153,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#F472B6;">1,000 PTS</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
+                                <div style="font-size:0.88rem;font-weight:800;color:#34D399;">Free Spin</div>
+                                <div style="font-size:0.65rem;color:var(--text-gray);">Bonus Turn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Winners Stream / Ticker -->
+                <div class="dash-panel visible" style="margin-top:20px;padding:18px;">
+                    <div style="font-size:0.84rem;font-weight:800;color:var(--white-pure);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+                        <span>Recent Platform Spin Winners</span>
+                        <span style="font-size:0.68rem;color:#10B981;font-weight:700;display:flex;align-items:center;gap:4px;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 1.5s infinite;"></span>
+                            LIVE
+                        </span>
+                    </div>
+                    <div id="spinRecentWinnersList" style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="font-size:0.78rem;color:var(--text-gray);padding:8px 0;">Loading winners...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPIN WIN CELEBRATION MODAL -->
+            <div class="receipt-overlay" id="spinWinModalOverlay" style="display:none;z-index:999999;align-items:center;justify-content:center;">
+                <div class="receipt-modal" style="max-width:380px;width:92%;padding:28px;text-align:center;border-color:rgba(99,102,241,0.5);box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 50px rgba(99,102,241,0.3);">
+                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(99,102,241,0.15);border:2px solid rgba(99,102,241,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#818CF8;font-size:2rem;">
+                        🎉
+                    </div>
+                    <h3 style="margin:0 0 6px;font-size:1.25rem;font-weight:800;color:var(--white-pure);">Congratulations!</h3>
+                    <p style="font-size:0.82rem;color:var(--text-gray);margin-bottom:18px;">You spun the lucky wheel and won:</p>
+                    <div id="spinWinPrizeDisplay" style="font-size:1.8rem;font-weight:900;color:#38BDF8;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:14px;margin-bottom:18px;letter-spacing:0.02em;">
+                        +100 PTS
+                    </div>
+                    <p id="spinWinPrizeDesc" style="font-size:0.75rem;color:var(--text-gray);margin-bottom:20px;line-height:1.4;">
+                        Your account has been updated with your reward immediately.
+                    </p>
+                    <button type="button" onclick="closeSpinWinModal()" class="btn-dash-action btn-tech-primary" style="width:100%;height:44px;font-size:0.9rem;font-weight:800;border-radius:10px;">
+                        Claim &amp; Continue
+                    </button>
                 </div>
             </div>
 
@@ -5202,8 +5402,12 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         let ws = {};
         try { ws = JSON.parse(localStorage.getItem('ix_withdrawal_settings') || '{}'); } catch(e) {}
 
-        const status = wallet === 'task' ? (ws.task_status || 'active') : (ws.referral_status || 'active');
-        const minAmount = wallet === 'task' ? (parseInt(ws.task_min) || 1000) : (parseInt(ws.referral_min) || 1000);
+        const targetConfig = (wallet === 'task') ? (ws.task || ws) : (ws.affiliate || ws);
+        const walletLabel = (wallet === 'task') ? 'Task Points' : 'Referral Cash';
+
+        const status = targetConfig.status || 'active';
+        const minAmount = parseInt(targetConfig.min_amount || (wallet === 'task' ? ws.task_min : ws.referral_min) || 1000);
+        const maxAmount = parseInt(targetConfig.max_amount || (wallet === 'task' ? ws.task_max : ws.referral_max) || 100000);
         const balance = wallet === 'task' ? pts : cash;
 
         const notice = document.getElementById('withdrawStatusNotice');
@@ -5221,75 +5425,104 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         const wAmtInput = document.getElementById('wAmount');
         if (wAmtInput) {
             wAmtInput.min = minAmount;
+            wAmtInput.max = maxAmount;
             wAmtInput.placeholder = 'Min: ₦' + minAmount.toLocaleString();
         }
 
-        // 1. Check Scheduled Manual Withdrawal Window
-        const manMode = ws.manual_mode_type || 'always_open';
-        if (manMode === 'scheduled_window') {
-            const now = new Date();
-            const sTime = ws.manual_window_start ? new Date(ws.manual_window_start) : null;
-            const eTime = ws.manual_window_end ? new Date(ws.manual_window_end) : null;
-
-            if (sTime && now < sTime) {
-                // Window not open yet
-                if (notice) {
-                    notice.style.display = 'block';
-                    notice.style.background = 'rgba(56, 189, 248, 0.08)';
-                    notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-                }
-                if (noticeTitle) {
-                    noticeTitle.textContent = 'Withdrawal Window Scheduled';
-                    noticeTitle.style.color = '#38BDF8';
-                }
-                if (noticeMsg) {
-                    noticeMsg.textContent = 'Withdrawals are currently closed and scheduled to open on ' + sTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + (eTime ? ' until ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '') + '. Please return then to request payout.';
-                }
-                if (progressWrap) progressWrap.style.display = 'none';
-                if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                return;
-            } else if (eTime && now > eTime) {
-                // Window has closed
+        // 1. Check Independent Wallet Mode (Manual vs Automatic)
+        const wMode = targetConfig.mode || 'manual';
+        if (wMode === 'manual') {
+            const isManualOpen = (targetConfig.manual_status || 'open') === 'open';
+            if (!isManualOpen) {
                 if (notice) {
                     notice.style.display = 'block';
                     notice.style.background = 'rgba(244, 63, 94, 0.08)';
                     notice.style.borderColor = 'rgba(244, 63, 94, 0.25)';
                 }
                 if (noticeTitle) {
-                    noticeTitle.textContent = 'Withdrawal Window Closed';
+                    noticeTitle.textContent = walletLabel + ' Withdrawals Currently Closed';
                     noticeTitle.style.color = '#F87171';
                 }
                 if (noticeMsg) {
-                    noticeMsg.textContent = 'The previous withdrawal window closed on ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + '. Please await the next scheduled window.';
+                    noticeMsg.textContent = targetConfig.manual_closed_message || (walletLabel + ' withdrawals are currently closed by administration. Please check back later.');
                 }
                 if (progressWrap) progressWrap.style.display = 'none';
                 if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
                 return;
             }
-        } else if (manMode === 'weekly_recurring') {
+        } else if (wMode === 'automatic') {
+            const schedType = targetConfig.auto_schedule_type || 'recurring_days';
             const now = new Date();
-            const dayNum = now.getDay(); // 0 Sun, 5 Fri, 6 Sat
-            const recDays = ws.manual_recurring_days || 'fri_sat';
-            let dayMatches = false;
-            if (recDays === 'fri_sat' && (dayNum === 5 || dayNum === 6)) dayMatches = true;
-            if (recDays === 'fri' && dayNum === 5) dayMatches = true;
-            if (recDays === 'sat_sun' && (dayNum === 6 || dayNum === 0)) dayMatches = true;
-            if (recDays === 'mon_to_fri' && dayNum >= 1 && dayNum <= 5) dayMatches = true;
 
-            if (!dayMatches) {
-                if (notice) {
-                    notice.style.display = 'block';
-                    notice.style.background = 'rgba(56, 189, 248, 0.08)';
-                    notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+            if (schedType === 'recurring_days') {
+                const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                const curDay = days[now.getDay()];
+                const activeDays = Array.isArray(targetConfig.auto_recurring_days) 
+                    ? targetConfig.auto_recurring_days.map(d=>d.toLowerCase()) 
+                    : (typeof targetConfig.auto_recurring_days === 'string' ? targetConfig.auto_recurring_days.toLowerCase().split(',') : ['fri', 'sat']);
+                
+                const curTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                const tStart = targetConfig.auto_time_start || '08:00';
+                const tEnd = targetConfig.auto_time_end || '22:00';
+
+                const isDayActive = activeDays.includes(curDay);
+                const isTimeActive = (curTime >= tStart && curTime <= tEnd);
+
+                if (!isDayActive || !isTimeActive) {
+                    const daysLabel = activeDays.map(d => d.toUpperCase()).join(', ');
+                    if (notice) {
+                        notice.style.display = 'block';
+                        notice.style.background = 'rgba(56, 189, 248, 0.08)';
+                        notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+                    }
+                    if (noticeTitle) {
+                        noticeTitle.textContent = walletLabel + ' Withdrawals Closed (Scheduled Window)';
+                        noticeTitle.style.color = '#38BDF8';
+                    }
+                    if (noticeMsg) {
+                        noticeMsg.textContent = 'Automatic withdrawal schedule for ' + walletLabel + ' is active on ' + (daysLabel || 'designated days') + ' between ' + tStart + ' and ' + tEnd + '. The portal is currently closed.';
+                    }
+                    if (progressWrap) progressWrap.style.display = 'none';
+                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
+                    return;
                 }
-                if (noticeTitle) {
-                    noticeTitle.textContent = 'Withdrawals Scheduled: Open on Specific Days';
-                    noticeTitle.style.color = '#38BDF8';
+            } else if (schedType === 'date_window') {
+                const sTime = targetConfig.auto_window_start ? new Date(targetConfig.auto_window_start) : null;
+                const eTime = targetConfig.auto_window_end ? new Date(targetConfig.auto_window_end) : null;
+
+                if (sTime && now < sTime) {
+                    if (notice) {
+                        notice.style.display = 'block';
+                        notice.style.background = 'rgba(56, 189, 248, 0.08)';
+                        notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+                    }
+                    if (noticeTitle) {
+                        noticeTitle.textContent = walletLabel + ' Withdrawal Window Scheduled';
+                        noticeTitle.style.color = '#38BDF8';
+                    }
+                    if (noticeMsg) {
+                        noticeMsg.textContent = walletLabel + ' withdrawals are currently closed and scheduled to open on ' + sTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + (eTime ? ' until ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '') + '.';
+                    }
+                    if (progressWrap) progressWrap.style.display = 'none';
+                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
+                    return;
+                } else if (eTime && now > eTime) {
+                    if (notice) {
+                        notice.style.display = 'block';
+                        notice.style.background = 'rgba(244, 63, 94, 0.08)';
+                        notice.style.borderColor = 'rgba(244, 63, 94, 0.25)';
+                    }
+                    if (noticeTitle) {
+                        noticeTitle.textContent = walletLabel + ' Withdrawal Window Closed';
+                        noticeTitle.style.color = '#F87171';
+                    }
+                    if (noticeMsg) {
+                        noticeMsg.textContent = 'The previous withdrawal window for ' + walletLabel + ' closed on ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + '. Please await the next scheduled payout session.';
+                    }
+                    if (progressWrap) progressWrap.style.display = 'none';
+                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
+                    return;
                 }
-                if (noticeMsg) noticeMsg.textContent = 'Withdrawal portal opens weekly on scheduled days (' + (recDays === 'fri_sat' ? 'Fridays & Saturdays' : recDays) + '). Today is not an active withdrawal day.';
-                if (progressWrap) progressWrap.style.display = 'none';
-                if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                return;
             }
         }
 
@@ -5300,8 +5533,8 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
                 notice.style.background = 'rgba(244,63,94,0.08)';
                 notice.style.borderColor = 'rgba(244,63,94,0.25)';
             }
-            if (noticeTitle) noticeTitle.textContent = 'Withdrawal Portal Paused';
-            if (noticeMsg) noticeMsg.textContent = (wallet === 'task' ? 'Task Points' : 'Referral Cash') + ' withdrawals are currently paused by administration. This service will be restored once Super Admin re-enables it.';
+            if (noticeTitle) noticeTitle.textContent = walletLabel + ' Withdrawal Portal Paused';
+            if (noticeMsg) noticeMsg.textContent = walletLabel + ' withdrawals are currently paused by administration. This service will be restored once Super Admin re-enables it.';
             if (progressWrap) progressWrap.style.display = 'none';
             if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
         } else if (balance < minAmount) {
@@ -5327,8 +5560,20 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         }
     };
 
-    // Initialize wallet portal on first load
+    window.syncWithdrawalSettingsFromServer = async function() {
+        try {
+            const res = await fetch('api/withdrawals.php?action=get_settings');
+            const data = await res.json();
+            if (data && data.status === 'success' && data.settings) {
+                localStorage.setItem('ix_withdrawal_settings', JSON.stringify(data.settings));
+                if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
+            }
+        } catch(e) {}
+    };
+
+    // Initialize wallet portal on first load and sync with server
     refreshWithdrawPortal();
+    syncWithdrawalSettingsFromServer();
 
     // =========================================================
     // REFERRALS ACCELERATOR & DOWNLINE DIRECTORY ENGINE
@@ -5503,14 +5748,18 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
             if (tabName === 'referrals' && typeof window.loadReferralsData === 'function') {
                 window.loadReferralsData();
             }
-            if (tabName === 'withdraw' && typeof window.refreshWithdrawPortal === 'function') {
-                window.refreshWithdrawPortal();
+            if (tabName === 'withdraw') {
+                if (typeof window.refreshWithdrawPortal === 'function') window.refreshWithdrawPortal();
+                if (typeof window.syncWithdrawalSettingsFromServer === 'function') window.syncWithdrawalSettingsFromServer();
             }
             if (tabName === 'settings' && typeof window.loadUserPreferences === 'function') {
                 window.loadUserPreferences();
             }
             if (tabName === 'tokens' && typeof window.refreshDashTokensData === 'function') {
                 window.refreshDashTokensData();
+            }
+            if (tabName === 'spin' && typeof window.loadSpinStatus === 'function') {
+                window.loadSpinStatus();
             }
         } else {
             const fallback = document.getElementById('dashPane_overview');
@@ -5646,9 +5895,11 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         window.setBalanceMaskState(!isCurrentlyMasked);
     };
 
-    // Initialize tab from URL hash (e.g. #settings, #withdraw) or default to overview
-    const initialHash = (location.hash || '').replace('#', '').trim();
-    const validTabs = ['overview', 'tasks', 'vtu', 'settings', 'bank', 'uploader', 'advert', 'referrals', 'withdraw'];
+    // Initialize tab from URL param or URL hash (e.g. ?tab=spin or #spin) or default to overview
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab') || '';
+    const initialHash = (tabParam || location.hash || '').replace('#', '').trim();
+    const validTabs = ['overview', 'tasks', 'vtu', 'settings', 'bank', 'uploader', 'advert', 'referrals', 'tokens', 'withdraw', 'spin'];
     const startTab = validTabs.includes(initialHash) ? initialHash : 'overview';
     try {
         history.replaceState({ tab: startTab }, '', '#' + startTab);
@@ -6074,6 +6325,403 @@ g('receiptDownload') && g('receiptDownload').addEventListener('click', function(
         } catch(e) {}
         loadDashTokenOrders();
     };
+
+    // ==========================================
+    // LUCKY SPIN & WIN CONTROLLER (POINTS & AIRTIME ONLY)
+    // ==========================================
+    const spinAuthUser = <?= json_encode($username) ?> || localStorage.getItem('ix_current_user') || 'Member';
+    const spinWheelSlices = [
+        { id: 1, label: '100 PTS', type: 'points', value: 100, color: '#4F46E5', text: '#FFFFFF' },
+        { id: 2, label: '₦100 Airtime', type: 'airtime', value: 100, color: '#0284C7', text: '#FFFFFF' },
+        { id: 3, label: '250 PTS', type: 'points', value: 250, color: '#7C3AED', text: '#FFFFFF' },
+        { id: 4, label: '₦200 Airtime', type: 'airtime', value: 200, color: '#0D9488', text: '#FFFFFF' },
+        { id: 5, label: '500 PTS', type: 'points', value: 500, color: '#6366F1', text: '#FFFFFF' },
+        { id: 6, label: '₦500 Airtime', type: 'airtime', value: 500, color: '#D97706', text: '#FFFFFF' },
+        { id: 7, label: '1,000 PTS', type: 'points', value: 1000, color: '#DB2777', text: '#FFFFFF' },
+        { id: 8, label: 'Free Spin', type: 'spin', value: 1, color: '#059669', text: '#FFFFFF' }
+    ];
+
+    let spinCurrentAngle = 0;
+    let isSpinning = false;
+    let spinCooldownInterval = null;
+    let secondsUntilNextSpin = 0;
+    let userAvailableSpins = 1;
+    let audioCtx = null;
+
+    function playWheelTickSound() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.045);
+        } catch(e) {}
+    }
+
+    function playWinChimeSound() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + idx * 0.1);
+                osc.stop(audioCtx.currentTime + idx * 0.1 + 0.36);
+            });
+        } catch(e) {}
+    }
+
+    window.drawSpinWheel = function(angle = 0) {
+        const canvas = document.getElementById('spinWheelCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const size = canvas.width;
+        const center = size / 2;
+        const radius = center - 12;
+        const numSlices = spinWheelSlices.length;
+        const sliceAngle = (2 * Math.PI) / numSlices;
+
+        ctx.clearRect(0, 0, size, size);
+
+        // Outer rim
+        ctx.beginPath();
+        ctx.arc(center, center, radius + 8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#0F172A';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#6366F1';
+        ctx.stroke();
+
+        // Decorative rim pegs
+        for (let i = 0; i < 24; i++) {
+            const pegAngle = (i * 2 * Math.PI) / 24;
+            const pegX = center + (radius + 4) * Math.cos(pegAngle);
+            const pegY = center + (radius + 4) * Math.sin(pegAngle);
+            ctx.beginPath();
+            ctx.arc(pegX, pegY, 2.5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#A5B4FC';
+            ctx.fill();
+        }
+
+        // Slices
+        for (let i = 0; i < numSlices; i++) {
+            const slice = spinWheelSlices[i];
+            const startA = angle + i * sliceAngle;
+            const endA = startA + sliceAngle;
+
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.arc(center, center, radius, startA, endA);
+            ctx.closePath();
+            ctx.fillStyle = slice.color;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.stroke();
+
+            // Label text
+            ctx.save();
+            ctx.translate(center, center);
+            ctx.rotate(startA + sliceAngle / 2);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = slice.text || '#FFFFFF';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(slice.label, radius - 20, 4);
+            ctx.restore();
+        }
+
+        // Inner glowing hub circle
+        ctx.beginPath();
+        ctx.arc(center, center, 36, 0, 2 * Math.PI);
+        ctx.fillStyle = '#0F172A';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#818CF8';
+        ctx.stroke();
+    };
+
+    window.loadSpinStatus = async function() {
+        try {
+            drawSpinWheel(spinCurrentAngle);
+            const res = await fetch('api/spin.php?action=get_status&username=' + encodeURIComponent(spinAuthUser) + '&t=' + Date.now());
+            const data = await res.json();
+            if (!data || !data.success) return;
+
+            userAvailableSpins = data.spins_left !== undefined ? data.spins_left : (data.can_spin ? 1 : 0);
+            secondsUntilNextSpin = data.seconds_until_next || 0;
+
+            const countEl = document.getElementById('spinUserSpinsCount');
+            if (countEl) countEl.textContent = userAvailableSpins;
+
+            const ptsEl = document.getElementById('spinUserPointsVal');
+            if (ptsEl && data.points_balance !== undefined) {
+                ptsEl.textContent = Number(data.points_balance).toLocaleString() + ' PTS';
+            }
+
+            const airtimeEl = document.getElementById('spinUserAirtimeVal');
+            if (airtimeEl && data.airtime_balance !== undefined) {
+                airtimeEl.textContent = '₦' + Number(data.airtime_balance).toFixed(2);
+            }
+
+            updateSpinButtonState();
+            startSpinCooldownCountdown();
+            loadSpinRecentWinners();
+        } catch(e) {
+            console.error('Error loading spin status:', e);
+        }
+    };
+
+    function updateSpinButtonState() {
+        const btn = document.getElementById('spinActionBtn');
+        const centerBtn = document.getElementById('spinCenterBtn');
+        const btnText = document.getElementById('spinActionBtnText');
+        const badge = document.getElementById('spinQuotaBadge');
+        const subtext = document.getElementById('spinStatusSubtext');
+
+        if (userAvailableSpins > 0) {
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('btn-tech-ghost');
+                btn.classList.add('btn-tech-primary');
+            }
+            if (btnText) btnText.textContent = `SPIN NOW (${userAvailableSpins} FREE)`;
+            if (badge) badge.textContent = `${userAvailableSpins} FREE SPIN${userAvailableSpins > 1 ? 'S' : ''} READY`;
+            if (subtext) subtext.innerHTML = 'You have a free spin ready! Tap <strong>SPIN NOW</strong> to claim your bonus.';
+            if (centerBtn) {
+                centerBtn.style.cursor = 'pointer';
+                centerBtn.style.opacity = '1';
+            }
+        } else {
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.remove('btn-tech-primary');
+                btn.classList.add('btn-tech-ghost');
+            }
+            if (btnText) btnText.textContent = 'COME BACK TOMORROW';
+            if (badge) badge.textContent = 'DAILY QUOTA CONSUMED';
+            if (subtext) subtext.innerHTML = 'Free spin used today. Resets automatically at <strong>midnight</strong>.';
+            if (centerBtn) {
+                centerBtn.style.cursor = 'not-allowed';
+                centerBtn.style.opacity = '0.7';
+            }
+        }
+    }
+
+    function startSpinCooldownCountdown() {
+        if (spinCooldownInterval) clearInterval(spinCooldownInterval);
+        const timerEl = document.getElementById('spinCooldownTimer');
+
+        function render() {
+            if (!timerEl) return;
+            if (userAvailableSpins > 0) {
+                timerEl.textContent = 'Ready Now';
+                timerEl.style.color = '#10B981';
+                return;
+            }
+            if (secondsUntilNextSpin <= 0) {
+                timerEl.textContent = 'Ready Now';
+                timerEl.style.color = '#10B981';
+                userAvailableSpins = 1;
+                updateSpinButtonState();
+                return;
+            }
+            const hrs = Math.floor(secondsUntilNextSpin / 3600);
+            const mins = Math.floor((secondsUntilNextSpin % 3600) / 60);
+            const secs = secondsUntilNextSpin % 60;
+            timerEl.textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            timerEl.style.color = '#F59E0B';
+            secondsUntilNextSpin--;
+        }
+
+        render();
+        spinCooldownInterval = setInterval(render, 1000);
+    }
+
+    window.triggerWheelSpin = async function() {
+        if (isSpinning) return;
+        if (userAvailableSpins <= 0) {
+            alert('You have used your free spin today! Please check back tomorrow.');
+            return;
+        }
+
+        const btn = document.getElementById('spinActionBtn');
+        const btnText = document.getElementById('spinActionBtnText');
+        isSpinning = true;
+        if (btn) btn.disabled = true;
+        if (btnText) btnText.textContent = 'SPINNING...';
+
+        try {
+            const res = await fetch('api/spin.php?action=spin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'spin', username: spinAuthUser })
+            });
+            const data = await res.json();
+
+            if (!data || !data.success) {
+                isSpinning = false;
+                if (btn) btn.disabled = false;
+                alert(data?.error || 'Unable to complete spin. Please try again.');
+                return;
+            }
+
+            const winIdx = data.winning_index !== undefined ? data.winning_index : 0;
+            const numSlices = spinWheelSlices.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+
+            // Target angle: pointer is at -pi/2 (top). Slice center is at (winIdx + 0.5) * sliceAngle
+            const targetSliceCenter = (winIdx + 0.5) * sliceAngle;
+            let targetAngle = -Math.PI / 2 - targetSliceCenter;
+
+            // Make sure it spins forward multiple full revolutions (5 full spins = 10*pi)
+            const fullSpins = 5;
+            const currentMod = spinCurrentAngle % (2 * Math.PI);
+            let diff = targetAngle - currentMod;
+            while (diff < 0) diff += (2 * Math.PI);
+            const totalRotation = diff + fullSpins * (2 * Math.PI);
+            const startAngle = spinCurrentAngle;
+            const endAngle = startAngle + totalRotation;
+
+            const duration = 4200; // 4.2 seconds
+            const startTime = performance.now();
+            let lastSliceIndex = -1;
+
+            function animate(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const easeOut = 1 - Math.pow(1 - progress, 5);
+                const currentAngle = startAngle + totalRotation * easeOut;
+                spinCurrentAngle = currentAngle;
+                drawSpinWheel(currentAngle);
+
+                const currentSlicePos = Math.floor((-currentAngle - Math.PI / 2) / sliceAngle) % numSlices;
+                if (currentSlicePos !== lastSliceIndex) {
+                    lastSliceIndex = currentSlicePos;
+                    playWheelTickSound();
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    playWinChimeSound();
+                    handleSpinResult(data);
+                }
+            }
+
+            requestAnimationFrame(animate);
+
+        } catch(e) {
+            console.error('Spin error:', e);
+            isSpinning = false;
+            if (btn) btn.disabled = false;
+            alert('Network error while spinning. Please try again.');
+        }
+    };
+
+    function handleSpinResult(data) {
+        userAvailableSpins = data.spins_left !== undefined ? data.spins_left : 0;
+        updateSpinButtonState();
+        startSpinCooldownCountdown();
+
+        // Update user points balances in HUD and cards
+        if (data.points_balance !== undefined) {
+            const currentPts = data.points_balance;
+            const ptsEls = ['deckTaskPtsVal', 'drawerTaskPoints', 'userPointsDisplay', 'hudTaskPts', 'spinUserPointsVal'];
+            ptsEls.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = Number(currentPts).toLocaleString() + ' PTS';
+            });
+            localStorage.setItem('ix_wallet_points', String(currentPts));
+        }
+
+        // Update airtime balance
+        if (data.airtime_balance !== undefined) {
+            const airEl = document.getElementById('spinUserAirtimeVal');
+            if (airEl) airEl.textContent = '₦' + Number(data.airtime_balance).toFixed(2);
+        }
+
+        // Display celebration modal
+        const prizeEl = document.getElementById('spinWinPrizeDisplay');
+        const descEl = document.getElementById('spinWinPrizeDesc');
+        const modal = document.getElementById('spinWinModalOverlay');
+
+        if (prizeEl) {
+            prizeEl.textContent = data.reward_label || 'Reward Won!';
+            if (data.reward_type === 'points') {
+                prizeEl.style.color = '#818CF8';
+            } else if (data.reward_type === 'airtime') {
+                prizeEl.style.color = '#38BDF8';
+            } else {
+                prizeEl.style.color = '#10B981';
+            }
+        }
+
+        if (descEl) {
+            if (data.reward_type === 'points') {
+                descEl.textContent = `${data.reward_value} Task Points credited directly to your points balance for conversion or withdrawal.`;
+            } else if (data.reward_type === 'airtime') {
+                descEl.textContent = `₦${data.reward_value} Airtime Voucher credited. You can recharge VTU directly without spending your cash!`;
+            } else {
+                descEl.textContent = 'You earned +1 Extra Free Spin! Tap spin again to try your luck!';
+            }
+        }
+
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+
+        loadSpinRecentWinners();
+    }
+
+    window.closeSpinWinModal = function() {
+        const modal = document.getElementById('spinWinModalOverlay');
+        if (modal) modal.style.display = 'none';
+        updateSpinButtonState();
+    };
+
+    async function loadSpinRecentWinners() {
+        const list = document.getElementById('spinRecentWinnersList');
+        if (!list) return;
+        try {
+            const res = await fetch('api/spin.php?action=admin_get_stats&t=' + Date.now());
+            const data = await res.json();
+            const logs = data?.recent_logs || [];
+            if (!logs.length) {
+                list.innerHTML = '<div style="font-size:0.75rem;color:var(--text-gray);padding:4px 0;">Be the first winner today! Spin the wheel above.</div>';
+                return;
+            }
+            list.innerHTML = logs.slice(0, 5).map(l => {
+                const u = l.username || 'member';
+                const maskedUser = u.length > 3 ? (u.slice(0, 3) + '***') : (u + '***');
+                const badgeColor = l.reward_type === 'points' ? '#818CF8' : (l.reward_type === 'airtime' ? '#38BDF8' : '#10B981');
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;font-size:0.78rem;">
+                        <span style="font-weight:700;color:var(--white-pure);">${maskedUser}</span>
+                        <span style="font-weight:800;color:${badgeColor};">${l.reward_label || ''}</span>
+                        <span style="font-size:0.7rem;color:var(--text-gray);">${l.formatted_time ? l.formatted_time.slice(0, 11) : 'Recent'}</span>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) {}
+    }
 
     // Close modals
  g('receiptClose') && g('receiptClose').addEventListener('click', () => close(receiptOv));

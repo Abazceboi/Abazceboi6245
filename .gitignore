@@ -10,6 +10,7 @@ node_modules/
 *.bak2
 *.tmp
 *.log
+*.old
 scratch/
 
 # Database files
