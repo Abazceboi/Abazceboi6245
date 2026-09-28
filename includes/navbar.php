@@ -174,7 +174,7 @@ function isActive($page, $currentPage) {
         <a href="register.php" class="btn-nav-register">
             <span>Sign Up</span>
         </a>
-        <button class="hamburger" id="hamburger" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="mobileDrawer" onclick="if(window.toggleLandingDrawer)toggleLandingDrawer();">
+        <button class="hamburger" id="hamburger" type="button" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="mobileDrawer">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="17" x2="21" y2="17"></line></svg>
         </button>
     </div>
@@ -270,7 +270,10 @@ window.closeLandingDrawer = function() {
     document.body.style.overflow = '';
 };
 
-window.toggleLandingDrawer = function() {
+window.toggleLandingDrawer = function(e) {
+    if (e && typeof e.stopPropagation === 'function') {
+        e.stopPropagation();
+    }
     var d = document.getElementById('mobileDrawer');
     if (d && d.classList.contains('open')) {
         window.closeLandingDrawer();
@@ -278,6 +281,55 @@ window.toggleLandingDrawer = function() {
         window.openLandingDrawer();
     }
 };
+
+(function initLandingDrawerBindings() {
+    function bindDrawer() {
+        var h = document.getElementById('hamburger');
+        var b = document.querySelector('.drawer-backdrop');
+        var c = document.getElementById('drawerCloseBtn');
+        var d = document.getElementById('mobileDrawer');
+
+        if (h && !h.dataset.drawerInit) {
+            h.dataset.drawerInit = 'true';
+            h.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.toggleLandingDrawer(e);
+            });
+        }
+
+        if (b && !b.dataset.drawerInit) {
+            b.dataset.drawerInit = 'true';
+            b.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.closeLandingDrawer();
+            });
+        }
+
+        if (c && !c.dataset.drawerInit) {
+            c.dataset.drawerInit = 'true';
+            c.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.closeLandingDrawer();
+            });
+        }
+
+        if (d && !d.dataset.drawerInit) {
+            d.dataset.drawerInit = 'true';
+            d.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    window.closeLandingDrawer();
+                });
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindDrawer);
+    } else {
+        bindDrawer();
+    }
+})();
 
 // Uses global window.togglePlatformTheme and syncThemeIcons from includes/header.php
 document.addEventListener('DOMContentLoaded', function() {

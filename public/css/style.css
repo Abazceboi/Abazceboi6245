@@ -1137,9 +1137,15 @@ button, input, select { font-family: inherit; outline: none; border: none; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  pointer-events: auto !important;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.hamburger * {
+  pointer-events: none;
 }
 .hamburger:hover {
   background: rgba(56, 189, 248, 0.18);
