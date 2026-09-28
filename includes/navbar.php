@@ -168,23 +168,6 @@ function isActive($page, $currentPage) {
             <svg id="themeIconSun" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             <svg id="themeIconMoon" class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
-        <?php
-        $navIsAdmin = false;
-        if (session_status() === PHP_SESSION_NONE) { @session_start(); }
-        if (!empty($_SESSION['admin_auth_step']) && $_SESSION['admin_auth_step'] === 2) {
-            $navIsAdmin = true;
-        } else if (!empty($_SESSION['username'])) {
-            $navAdminUsername = getenv('ADMIN_USERNAME') ?: 'admin';
-            if (strtolower($_SESSION['username']) === strtolower($navAdminUsername) || in_array($_SESSION['role'] ?? '', ['admin', 'super_admin'])) {
-                $navIsAdmin = true;
-            }
-        }
-        ?>
-        <a href="secure_hq_panel.php" class="btn-nav-admin" id="navAdminBtn" style="<?= $navIsAdmin ? 'display:inline-flex;' : 'display:none;' ?>background:#6366F1;color:#FFFFFF;padding:8px 14px;border-radius:10px;font-size:0.8rem;font-weight:700;align-items:center;gap:6px;text-decoration:none;box-shadow:0 2px 10px rgba(99,102,241,0.35);" title="Admin HQ Control Center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Admin HQ</span>
-        </a>
-
         <a href="login.php" class="btn-nav-login">
             <span>Sign In</span>
         </a>
@@ -230,10 +213,6 @@ function isActive($page, $currentPage) {
         <a href="jobbers.php" class="drawer-quick-tile drawer-link">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             <span>Tasks</span>
-        </a>
-        <a href="secure_hq_panel.php" class="drawer-quick-tile drawer-link" id="drawerAdminTile" style="<?= $navIsAdmin ? '' : 'display:none;' ?>background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.4);color:#818CF8;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Admin HQ</span>
         </a>
     </div>
 
