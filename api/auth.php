@@ -145,159 +145,24 @@ if ($action === 'register') {
 
 if ($action === 'login') {
     $data = json_decode(file_get_contents('php://input'), true);
-    $username = trim($data['username'] ?? '');
-    $password = $data['password'] ?? '';
+    if (!is_array($data)) {
+        $data = $_POST;
+    }
+    $username = trim($data['username'] ?? $data['user'] ?? '');
+    $password = $data['password'] ?? $data['pass'] ?? '';
     
     if (empty($username) || empty($password)) {
         echo json_encode(['status' => 'error', 'message' => 'Username and password are required.']);
         exit;
     }
 
-    $lowerUser = strtolower($username);
-    $adminUsernames = ['admin', 'abas6245', 'abazceboi'];
-    $isPotentialAdmin = in_array($lowerUser, $adminUsernames);
-    $adminMasterPass = getenv('ADMIN_PASSWORD') ?: '';
-    $fallbackAdminPasswords = ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
-    if (!empty($adminMasterPass)) {
-        $fallbackAdminPasswords[] = $adminMasterPass;
-    }
-
-    $matchedUser = null;
-    $authSuccess = false;
-
-    // 1. Check SQL database if connection is available
-    if ($pdo) {
-        try {
-            $stmt = $pdo->prepare('SELECT id, username, "passwordHash", email, phone, "fullName", role FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)');
-            $stmt->execute([$username, $username]);
-            $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            try {
-                $stmt = $pdo->prepare('SELECT id, username, passwordHash, email, phone, fullName, role FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)');
-                $stmt->execute([$username, $username]);
-                $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
-            } catch (Exception $e2) {
-                $dbUser = null;
-            }
-        }
-
-        if ($dbUser) {
-            $dbHash = $dbUser['passwordhash'] ?? $dbUser['passwordHash'] ?? '';
-            $dbRole = strtolower($dbUser['role'] ?? 'member');
-            $isAdminUser = $isPotentialAdmin || in_array($dbRole, ['admin', 'super_admin']);
-
-            if (!empty($dbHash) && password_verify($password, $dbHash)) {
-                $authSuccess = true;
-            } elseif ($isAdminUser && in_array($password, $fallbackAdminPasswords)) {
-                $authSuccess = true;
-            } elseif ($password === ($dbUser['password'] ?? '')) {
-                $authSuccess = true;
-            }
-
-            if ($authSuccess) {
-                $matchedUser = [
-                    'id' => $dbUser['id'] ?? $dbUser['username'],
-                    'username' => $dbUser['username'],
-                    'email' => $dbUser['email'] ?? '',
-                    'phone' => $dbUser['phone'] ?? '',
-                    'fullName' => $dbUser['fullName'] ?? $dbUser['fullname'] ?? $dbUser['username'],
-                    'role' => $isAdminUser ? 'super_admin' : $dbRole,
-                    'is_admin' => $isAdminUser
-                ];
-            }
-        }
-    }
-
-    // 2. If not found in DB or DB unavailable, check data/users.json
-    if (!$authSuccess) {
-        $jsonUsers = loadJsonUsers();
-        foreach ($jsonUsers as $u) {
-            $uName = $u['username'] ?? '';
-            $uEmail = $u['email'] ?? '';
-            if (strtolower($uName) === $lowerUser || (!empty($uEmail) && strtolower($uEmail) === $lowerUser)) {
-                $uRole = strtolower($u['role'] ?? 'member');
-                $isAdminUser = $isPotentialAdmin || in_array(strtolower($uName), $adminUsernames) || in_array($uRole, ['admin', 'super_admin']);
-                
-                $storedPass = $u['password'] ?? $u['password_hash'] ?? $u['passwordHash'] ?? '';
-                $passMatches = false;
-
-                if (!empty($storedPass)) {
-                    if (password_verify($password, $storedPass)) {
-                        $passMatches = true;
-                    } elseif ($storedPass === $password) {
-                        $passMatches = true;
-                    }
-                }
-
-                if ($isAdminUser && (in_array($password, $fallbackAdminPasswords) || $passMatches)) {
-                    $authSuccess = true;
-                } elseif ($passMatches || $password === '123456') {
-                    $authSuccess = true;
-                }
-
-                if ($authSuccess) {
-                    $matchedUser = [
-                        'id' => $u['id'] ?? $uName,
-                        'username' => $uName,
-                        'email' => $uEmail,
-                        'phone' => $u['phone'] ?? '',
-                        'fullName' => $u['full_name'] ?? $u['fullName'] ?? $uName,
-                        'role' => $isAdminUser ? 'super_admin' : $uRole,
-                        'is_admin' => $isAdminUser
-                    ];
-                    break;
-                }
-            }
-        }
-    }
-
-    // 3. Fallback for super-admin credentials if not yet stored in DB/JSON
-    if (!$authSuccess && $isPotentialAdmin && in_array($password, $fallbackAdminPasswords)) {
-        $authSuccess = true;
-        $canonicalUsername = ($lowerUser === 'admin') ? 'admin' : (($lowerUser === 'abas6245') ? 'Abas6245' : 'Abazceboi');
-        $matchedUser = [
-            'id' => 'adm-' . $lowerUser,
-            'username' => $canonicalUsername,
-            'email' => 'admin@innovationx.ng',
-            'phone' => '08123456789',
-            'fullName' => 'System Super Admin',
-            'role' => 'super_admin',
-            'is_admin' => true
-        ];
-    }
-
-    if ($authSuccess && $matchedUser) {
-        $uRole = $matchedUser['role'];
-        $isAdmin = (bool)$matchedUser['is_admin'];
-
-        $_SESSION['user_id'] = $matchedUser['id'];
-        $_SESSION['username'] = $matchedUser['username'];
-        $_SESSION['email'] = $matchedUser['email'];
-        $_SESSION['phone'] = $matchedUser['phone'];
-        $_SESSION['fullName'] = $matchedUser['fullName'];
-        $_SESSION['role'] = $uRole;
-        $_SESSION['is_admin'] = $isAdmin;
-        if ($isAdmin) {
-            $_SESSION['admin_auth_step'] = 2;
-        }
-
-        if (function_exists('setAuthCookie')) {
-            setAuthCookie($matchedUser['id'], $matchedUser['username'], $isAdmin, $matchedUser['email'], $matchedUser['phone'], $matchedUser['fullName'], $uRole);
-        }
-
-        echo json_encode([
-            'status' => 'success', 
-            'username' => $matchedUser['username'],
-            'email' => $matchedUser['email'],
-            'phone' => $matchedUser['phone'],
-            'fullName' => $matchedUser['fullName'],
-            'role' => $uRole,
-            'isAdmin' => $isAdmin
-        ]);
+    if (function_exists('authenticateUserCredentials')) {
+        $result = authenticateUserCredentials($username, $password);
+        echo json_encode($result);
         exit;
     }
 
-    echo json_encode(['status' => 'error', 'message' => 'Invalid username or password.']);
+    echo json_encode(['status' => 'error', 'message' => 'Authentication system unavailable.']);
     exit;
 }
 

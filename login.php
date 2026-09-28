@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/config/app.php';
 
-// If user explicitly visited login.php?action=logout or login.php?logout=1, clear session immediately
-if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logout']) || isset($_GET['logged_out'])) {
+$loginError = '';
+
+// Only clear session on EXPLICIT logout actions, NEVER on logged_out=1 toast parameter!
+if ((isset($_GET['action']) && $_GET['action'] === 'logout') || isset($_GET['logout'])) {
     if (function_exists('clearAuthCookie')) {
         clearAuthCookie();
     }
@@ -20,6 +22,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
     @session_destroy();
 }
 
+// Server-side Direct POST Fallback Handler (works even if JS fetch fails or times out)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $uName = trim($_POST['user'] ?? $_POST['username'] ?? '');
+    $uPass = $_POST['pass'] ?? $_POST['password'] ?? '';
+    if (!empty($uName) && !empty($uPass) && function_exists('authenticateUserCredentials')) {
+        $authResult = authenticateUserCredentials($uName, $uPass);
+        if (!empty($authResult['success']) || (!empty($authResult['status']) && $authResult['status'] === 'success')) {
+            $u = strtolower($authResult['username'] ?? '');
+            $isAdm = !empty($authResult['isAdmin']) || in_array($u, ['admin', 'superadmin', 'abas6245', 'abazceboi']);
+            header("Location: " . ($isAdm ? "secure_hq_panel.php" : "dashboard.php"));
+            exit;
+        } else {
+            $loginError = $authResult['message'] ?? 'Invalid username or password.';
+        }
+    } else if (empty($uName) || empty($uPass)) {
+        $loginError = 'Please enter both your username and password.';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -322,9 +342,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
                 </div>
             </div>
 
-            <div id="loginStatusAlert" style="display:none;margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"></div>
+            <div id="loginStatusAlert" style="<?= !empty($loginError) ? 'display:block;background:rgba(239, 68, 68, 0.12);border:1px solid rgba(239, 68, 68, 0.35);color:#FCA5A5;' : 'display:none;' ?>margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"><?= htmlspecialchars($loginError ?? '') ?></div>
 
-            <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+            <form id="loginForm" method="POST" action="login.php" onsubmit="handleLoginSubmit(event)">
                 <div class="form-group">
                     <label for="loginUser">Username or Email</label>
                     <input type="text" id="loginUser" name="user" class="form-input" placeholder="Your username or email" required autocomplete="username">
@@ -397,47 +417,79 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
     }
 
     function handleLoginSubmit(e) {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         const btn = document.getElementById('btnLoginSubmit');
-        const user = document.getElementById('loginUser').value.trim();
-        const pass = document.getElementById('loginPass').value;
+        const user = (document.getElementById('loginUser').value || '').trim();
+        const pass = document.getElementById('loginPass').value || '';
         const box = document.getElementById('loginStatusAlert');
         if (box) box.style.display = 'none';
+
+        if (!user || !pass) {
+            showLoginAlert('Please enter both your username and password.');
+            return;
+        }
 
         btn.disabled = true;
         btn.innerHTML = `<span>Signing In...</span>`;
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
         fetch('api/auth.php?action=login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: user, password: pass })
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username: user, password: pass }),
+            signal: controller.signal
         })
-        .then(res => res.json())
+        .then(res => {
+            clearTimeout(timeoutId);
+            return res.json();
+        })
         .then(data => {
-            if (data.status === 'success') {
+            if (data.status === 'success' || data.success === true) {
                 showLoginAlert('Login successful! Redirecting...', true);
+                
+                const token = data.token || data.session_token;
+                if (token) {
+                    const isSecure = location.protocol === 'https:' ? '; Secure' : '';
+                    document.cookie = 'ix_session=' + encodeURIComponent(token) + '; path=/; max-age=2592000; SameSite=Lax' + isSecure;
+                    localStorage.setItem('ix_session_token', token);
+                }
+
                 localStorage.setItem('ix_current_user', data.username);
                 if (data.email) localStorage.setItem('ix_user_email', data.email);
                 if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                 if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
+                localStorage.setItem('ix_is_admin', data.isAdmin ? 'true' : 'false');
+
+                const u = (data.username || '').toLowerCase();
+                const isAdmin = Boolean(data.isAdmin || u === 'admin' || u === 'superadmin' || u === 'abas6245' || u === 'abazceboi');
+                const targetUrl = isAdmin ? 'secure_hq_panel.php' : 'dashboard.php';
+
                 setTimeout(() => {
-                    const u = (data.username || '').toLowerCase();
-                    if (data.isAdmin || u === 'admin' || u === 'superadmin' || u === 'abas6245' || u === 'abazceboi') {
-                        window.location.replace('secure_hq_panel.php');
-                    } else {
-                        window.location.replace('dashboard.php');
-                    }
-                }, 300);
+                    window.location.replace(targetUrl);
+                }, 200);
             } else {
                 showLoginAlert(data.message || 'Invalid username or password.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Sign In to Dashboard</span>`;
+                btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
             }
         })
         .catch(err => {
-            showLoginAlert('A network error occurred. Please try again.');
+            clearTimeout(timeoutId);
+            console.warn('AJAX login fetch failed or timed out, executing native server POST fallback:', err);
+            const form = document.getElementById('loginForm');
+            if (form) {
+                showLoginAlert('Connecting directly to secure server...', true);
+                form.submit();
+                return;
+            }
+            showLoginAlert('Unable to reach server. Please check your network and try again.');
             btn.disabled = false;
-            btn.innerHTML = `<span>Sign In to Dashboard</span>`;
+            btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
         });
     }
 
@@ -459,6 +511,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
                 localStorage.removeItem('ix_user_email');
                 localStorage.removeItem('ix_user_phone');
                 localStorage.removeItem('ix_user_fullname');
+                localStorage.removeItem('ix_session_token');
+                localStorage.removeItem('ix_is_admin');
                 sessionStorage.clear();
             } catch(e) {}
 

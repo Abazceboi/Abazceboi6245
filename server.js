@@ -248,9 +248,11 @@ const server = http.createServer((req, res) => {
                             userRole
                         );
 
-                        res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; HttpOnly; SameSite=Lax`);
+                        res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`);
                         res.end(JSON.stringify({
                             status: 'success',
+                            token: cookieVal,
+                            session_token: cookieVal,
                             username: matched.username,
                             email: matched.email || '',
                             phone: matched.phone || '',

@@ -3,7 +3,21 @@ require_once __DIR__ . '/config/app.php';
 
 $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
 if (!$authUser) {
-    header("Location: login.php");
+    // If not authenticated via PHP session or Cookie header, check if client has token in localStorage before bouncing
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying Admin Session...</title><script>'
+        . '(function(){'
+        . 'try{'
+        . 'var t = localStorage.getItem("ix_session_token");'
+        . 'if(t){'
+        . 'var s = location.protocol === "https:" ? "; Secure" : "";'
+        . 'document.cookie = "ix_session=" + encodeURIComponent(t) + "; path=/; max-age=2592000; SameSite=Lax" + s;'
+        . 'location.reload();'
+        . 'return;'
+        . '}'
+        . '}catch(e){}'
+        . 'location.replace("login.php");'
+        . '})();'
+        . '</script></head><body style="background:#0A0A0F;color:#7DD3FC;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><p>Verifying secure admin credentials...</p></body></html>';
     exit;
 }
 
