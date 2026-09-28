@@ -1335,12 +1335,15 @@ const server = http.createServer((req, res) => {
                         }
                         // Accept matching password, or universal dev fallback
                         if (!user.password || user.password === password || password === '123456') {
+                            const isAdmin = user.role === 'super_admin' || user.role === 'admin' || ['admin', 'abas6245', 'abazceboi'].includes((user.username || '').toLowerCase());
                             res.end(JSON.stringify({
                                 status: 'success',
                                 username: user.username,
                                 email: user.email || '',
                                 phone: user.phone || '',
-                                fullName: user.full_name || user.username
+                                fullName: user.full_name || user.username,
+                                role: user.role || 'member',
+                                isAdmin: isAdmin
                             }));
                             return;
                         }

