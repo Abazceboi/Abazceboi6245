@@ -27,15 +27,34 @@ $MASTER_PIN = getenv('ADMIN_PIN') ?: '9999';
 
 if (isset($_GET['logout_admin'])) {
     unset($_SESSION['admin_auth_step']);
+    if (function_exists('clearAuthCookie')) {
+        clearAuthCookie();
+    }
     header("Location: login.php");
     exit;
 }
 
-if (($_SESSION['admin_auth_step'] ?? 0) !== 2) {
+// Seamless access for verified super-admins with signed session cookie persistence
+$isPinStepPassed = (isset($_SESSION['admin_auth_step']) && $_SESSION['admin_auth_step'] === 2)
+    || !empty($authUser['is_admin'])
+    || (!empty($authUser['admin_auth_step']) && $authUser['admin_auth_step'] === 2);
+
+if (!$isPinStepPassed) {
     $pinError = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['master_pin'])) {
         if ($_POST['master_pin'] === $MASTER_PIN) {
             $_SESSION['admin_auth_step'] = 2;
+            if (function_exists('setAuthCookie')) {
+                setAuthCookie(
+                    $authUser['user_id'] ?? 'admin',
+                    $authUser['username'] ?? 'admin',
+                    true,
+                    $authUser['email'] ?? '',
+                    $authUser['phone'] ?? '',
+                    $authUser['fullName'] ?? '',
+                    $authUser['role'] ?? 'super_admin'
+                );
+            }
             header("Location: secure_hq_panel.php");
             exit;
         } else {

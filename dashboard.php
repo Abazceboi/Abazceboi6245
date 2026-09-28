@@ -52,6 +52,28 @@ if ($pdo) {
     }
 }
 
+// Graceful fallback to data/users.json if SQL DB has no matching record or is unavailable
+$usersJsonFile = __DIR__ . '/data/users.json';
+if (file_exists($usersJsonFile)) {
+    $uData = @json_decode(@file_get_contents($usersJsonFile), true);
+    $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
+    foreach ($allUsers as $ju) {
+        if (strtolower($ju['username'] ?? '') === strtolower($username)) {
+            if ($userPoints === 100 && (isset($ju['remaining_pts']) || isset($ju['pointsBalance']))) {
+                $userPoints = (int)($ju['pointsBalance'] ?? $ju['remaining_pts'] ?? $userPoints);
+            }
+            if ($userCash === 0.00 && isset($ju['remaining_cash'])) {
+                $userCash = (float)($ju['remaining_cash'] ?? $userCash);
+            }
+            if (!empty($ju['role'])) $userRole = $ju['role'];
+            if (!empty($ju['phone']) && empty($userPhone)) $userPhone = $ju['phone'];
+            if (!empty($ju['email']) && empty($userEmail)) $userEmail = $ju['email'];
+            if (!empty($ju['full_name']) && empty($userFullName)) $userFullName = $ju['full_name'];
+            break;
+        }
+    }
+}
+
 $totalLiquid = $userCash + $userPoints;
 
 // OTC Unlisted Tokens Config
