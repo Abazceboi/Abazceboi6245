@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Active page detection helper
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 function isActive($page, $currentPage) {
@@ -345,59 +345,9 @@ function isActive($page, $currentPage) {
 </aside>
 
 <script>
-window.syncThemeIcons = function() {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
-    const sun = document.getElementById('themeIconSun');
-    const moon = document.getElementById('themeIconMoon');
-    if (current === 'light') {
-        if (sun) sun.style.display = 'none';
-        if (moon) moon.style.display = 'block';
-    } else {
-        if (sun) sun.style.display = 'block';
-        if (moon) moon.style.display = 'none';
-    }
-};
-
-window.togglePlatformTheme = function(e) {
-    try {
-        var evt = e || window.event;
-        var x = (evt && evt.clientX) ? evt.clientX + 'px' : 'calc(100% - 40px)';
-        var y = (evt && evt.clientY) ? evt.clientY + 'px' : '30px';
-        document.documentElement.style.setProperty('--theme-x', x);
-        document.documentElement.style.setProperty('--theme-y', y);
-
-        var current = document.documentElement.getAttribute('data-theme') || 'dark';
-        var next = (current === 'light') ? 'dark' : 'light';
-
-        var updateTheme = function() {
-            document.documentElement.setAttribute('data-theme', next);
-            if (document.body) {
-                document.body.setAttribute('data-theme', next);
-            }
-            try {
-                localStorage.setItem('ix_theme', next);
-                localStorage.setItem('theme', next);
-            } catch(err) {}
-            syncThemeIcons();
-            if (typeof syncThemeUI === 'function') syncThemeUI(next);
-        };
-
-        if (document.startViewTransition) {
-            document.documentElement.setAttribute('data-animating-theme', next);
-            var transition = document.startViewTransition(updateTheme);
-            transition.finished.then(function() {
-                document.documentElement.removeAttribute('data-animating-theme');
-            });
-        } else {
-            updateTheme();
-        }
-    } catch(err) {
-        try { updateTheme(); } catch(e2) {}
-    }
-};
-
+// Uses global window.togglePlatformTheme and syncThemeIcons from includes/header.php
 document.addEventListener('DOMContentLoaded', function() {
-    syncThemeIcons();
+    if (typeof syncThemeIcons === 'function') syncThemeIcons();
 
     // Dropdown Click & Hover Stabilization
     document.querySelectorAll('.nav-dropdown-btn').forEach(function(btn) {

@@ -11402,23 +11402,12 @@ html, body {
 
 
 /* ---------------------------------------------------------------------- */
-/* THEME TOGGLE VIEW TRANSITION ANIMATIONS                                */
+/* LUXURY CIRCULAR THEME TOGGLE VIEW TRANSITION ANIMATIONS                 */
 /* ---------------------------------------------------------------------- */
-@property --theme-wipe-radius {
-  syntax: '<length>';
-  initial-value: 0px;
-  inherits: false;
-}
-
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
-}
-
-::view-transition-group(root) {
-  animation-duration: 0.85s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 ::view-transition-old(root) {
@@ -11426,35 +11415,38 @@ html, body {
 }
 
 ::view-transition-new(root) {
-  z-index: 9999;
-  -webkit-mask-image: radial-gradient(
-    circle at var(--theme-x, calc(100% - 40px)) var(--theme-y, 30px),
-    #000 0px,
-    #000 var(--theme-wipe-radius),
-    rgba(0, 0, 0, 0.85) calc(var(--theme-wipe-radius) + 25px),
-    rgba(0, 0, 0, 0.5) calc(var(--theme-wipe-radius) + 65px),
-    rgba(0, 0, 0, 0.2) calc(var(--theme-wipe-radius) + 105px),
-    transparent calc(var(--theme-wipe-radius) + 150px)
-  );
-  mask-image: radial-gradient(
-    circle at var(--theme-x, calc(100% - 40px)) var(--theme-y, 30px),
-    #000 0px,
-    #000 var(--theme-wipe-radius),
-    rgba(0, 0, 0, 0.85) calc(var(--theme-wipe-radius) + 25px),
-    rgba(0, 0, 0, 0.5) calc(var(--theme-wipe-radius) + 65px),
-    rgba(0, 0, 0, 0.2) calc(var(--theme-wipe-radius) + 105px),
-    transparent calc(var(--theme-wipe-radius) + 150px)
-  );
-  animation: themeWipeReveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  z-index: 999999;
 }
 
-@keyframes themeWipeReveal {
-  from {
-    --theme-wipe-radius: 0px;
-  }
-  to {
-    --theme-wipe-radius: 160vmax;
-  }
+/* Smooth transition for theme colors across whole document */
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning .navbar,
+html.theme-transitioning .admin-sidebar,
+html.theme-transitioning .admin-main,
+html.theme-transitioning .admin-topbar,
+html.theme-transitioning .bento-card,
+html.theme-transitioning .data-card,
+html.theme-transitioning .dash-panel,
+html.theme-transitioning .module-card,
+html.theme-transitioning .stat-card,
+html.theme-transitioning .dash-hud-deck {
+  transition: background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* Icon rotation and morph bounce */
+.theme-icon,
+.theme-icon-sun,
+.theme-icon-moon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+
+.theme-toggling .theme-icon,
+.theme-toggling .theme-icon-sun,
+.theme-toggling .theme-icon-moon {
+  transform: rotate(360deg) scale(1.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -11462,6 +11454,10 @@ html, body {
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;
+  }
+  html.theme-transitioning,
+  html.theme-transitioning * {
+    transition: none !important;
   }
 }
 

@@ -3756,20 +3756,19 @@ select.has-custom-dropdown {
         document.body.style.overflow = isOpen ? 'hidden' : '';
     };
 
-    // Platform-wide Theme Toggle with immediate icon & DOM updates
-    window.togglePlatformTheme = function(e) {
-        if (e && e.preventDefault) e.preventDefault();
-        const html = document.documentElement;
-        const current = html.getAttribute('data-theme') || 'dark';
-        const next = (current === 'light') ? 'dark' : 'light';
-        html.setAttribute('data-theme', next);
-        if (document.body) document.body.setAttribute('data-theme', next);
-        try {
-            localStorage.setItem('ix_theme', next);
-            localStorage.setItem('theme', next);
-        } catch(err) {}
-        syncThemeIcons(next);
-    };
+    // Platform-wide Theme Toggle uses global circular transition from includes/header.php
+    if (!window.togglePlatformTheme) {
+        window.togglePlatformTheme = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'dark';
+            const next = (current === 'light') ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            if (document.body) document.body.setAttribute('data-theme', next);
+            try { localStorage.setItem('ix_theme', next); localStorage.setItem('theme', next); } catch(err) {}
+            syncThemeIcons(next);
+        };
+    }
 
     function syncThemeIcons(theme) {
         const sun = document.querySelector('.theme-icon-sun');
