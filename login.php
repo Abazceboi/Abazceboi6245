@@ -225,6 +225,69 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
             color: #0284C7 !important;
         }
 
+        /* Dynamic Sign-Out Toast Pop-Up Notification */
+        .logout-toast-popup {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-25px);
+            z-index: 999999;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 20px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #7DD3FC;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0;
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            max-width: 90vw;
+        }
+        .logout-toast-popup.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .logout-toast-close {
+            background: none;
+            border: none;
+            color: #94A3B8;
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+            padding: 2px 6px;
+            margin-left: 6px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logout-toast-close:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        [data-theme="light"] .logout-toast-popup {
+            background: rgba(255, 255, 255, 0.96);
+            border-color: rgba(2, 132, 199, 0.35);
+            color: #0369A1;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(2, 132, 199, 0.1);
+        }
+        [data-theme="light"] .logout-toast-close {
+            color: #64748B;
+        }
+        [data-theme="light"] .logout-toast-close:hover {
+            color: #0F172A;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
         @media (max-width: 520px) {
             .auth-card {
                 padding: 30px 20px;
@@ -237,6 +300,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
     </style>
 </head>
 <body>
+    <!-- Floating Sign-Out Pop-Up Notification (only pops up immediately upon sign out) -->
+    <div id="logoutToast" class="logout-toast-popup" role="alert" aria-live="assertive">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        <span>You have been safely signed out.</span>
+        <button type="button" class="logout-toast-close" onclick="dismissLogoutToast()" aria-label="Dismiss">&times;</button>
+    </div>
+
     <div class="auth-wrapper">
         <div class="auth-card">
             <div class="auth-header">
@@ -253,22 +323,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
             </div>
 
             <div id="loginStatusAlert" style="display:none;margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"></div>
-
-            <?php if (!empty($_GET['logged_out'])): ?>
-            <div style="margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.35);color:#7DD3FC;display:flex;align-items:center;gap:8px">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-                <span>You have been safely signed out.</span>
-            </div>
-            <script>
-                // Clean up sensitive client-side session caches
-                try {
-                    localStorage.removeItem('ix_current_user');
-                    localStorage.removeItem('ix_user_email');
-                    localStorage.removeItem('ix_user_phone');
-                    localStorage.removeItem('ix_user_fullname');
-                } catch(e) {}
-            </script>
-            <?php endif; ?>
 
             <form id="loginForm" onsubmit="handleLoginSubmit(event)">
                 <div class="form-group">
@@ -386,6 +440,47 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout' || isset($_GET['logou
             btn.innerHTML = `<span>Sign In to Dashboard</span>`;
         });
     }
+
+    function dismissLogoutToast() {
+        const toast = document.getElementById('logoutToast');
+        if (!toast) return;
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 350);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('logged_out') || urlParams.has('logout')) {
+            // Clean up client-side caches
+            try {
+                localStorage.removeItem('ix_current_user');
+                localStorage.removeItem('ix_user_email');
+                localStorage.removeItem('ix_user_phone');
+                localStorage.removeItem('ix_user_fullname');
+                sessionStorage.clear();
+            } catch(e) {}
+
+            const toast = document.getElementById('logoutToast');
+            if (toast) {
+                toast.style.display = 'flex';
+                // Trigger smooth pop-up slide animation
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        toast.classList.add('show');
+                    }, 50);
+                });
+                // Automatically dismiss after 4 seconds
+                setTimeout(dismissLogoutToast, 4000);
+            }
+
+            // Remove the logged_out param so page refresh doesn't trigger it again
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+    });
     </script>
 </body>
 </html>

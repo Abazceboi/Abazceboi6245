@@ -30,7 +30,7 @@ if (isset($_GET['logout_admin'])) {
     if (function_exists('clearAuthCookie')) {
         clearAuthCookie();
     }
-    header("Location: login.php");
+    header("Location: login.php?logged_out=1");
     exit;
 }
 
