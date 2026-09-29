@@ -193,7 +193,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
                 </button>
 
                 <!-- Logout Action -->
-                <a href="logout.php" class="btn-dash-action btn-dash-logout" title="Sign Out">
+                <a href="logout.php" onclick="try{localStorage.removeItem('ix_session_token');localStorage.removeItem('ix_current_user');localStorage.removeItem('ix_is_admin');sessionStorage.clear();}catch(e){}" class="btn-dash-action btn-dash-logout" title="Sign Out">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 </a>
             </div>
@@ -340,7 +340,7 @@ window.toggleDashDrawer = window.toggleDashDrawer || function() {
             </div>
 
             <!-- Sign Out Button -->
-            <a href="logout.php" class="drawer-logout-btn">
+            <a href="logout.php" onclick="try{localStorage.removeItem('ix_session_token');localStorage.removeItem('ix_current_user');localStorage.removeItem('ix_is_admin');sessionStorage.clear();}catch(e){}" class="drawer-logout-btn">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 <span>Sign Out</span>
             </a>

@@ -1166,7 +1166,7 @@ select.has-custom-dropdown {
         </nav>
 
         <div class="sidebar-footer">
-            <a href="logout.php" class="sidebar-signout-btn" title="Sign Out of Administration">
+            <a href="logout.php" onclick="try{localStorage.removeItem('ix_session_token');localStorage.removeItem('ix_current_user');localStorage.removeItem('ix_is_admin');sessionStorage.clear();}catch(e){}" class="sidebar-signout-btn" title="Sign Out of Administration">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 <span>Sign Out</span>
             </a>

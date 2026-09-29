@@ -56,6 +56,10 @@ function renderPhpFile(filePath, context = {}) {
     }
 
     content = content.replace(/(?:require_once|require|include_once|include)\s+__DIR__\s*\.\s*['"]([^'"]+)['"];?/g, (match, relPath) => {
+        // Backend config / logic / session files contain no HTML layout - do not inline them
+        if (relPath.includes('config/') || relPath.includes('auth_helper') || relPath.includes('db.php')) {
+            return '';
+        }
         if (context.hideNavbar && relPath.includes('navbar.php')) {
             return '';
         }
@@ -107,6 +111,7 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?php\s*echo\s*json_encode\([^)]*\);\s*\?>/g, '{}');
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
     content = content.replace(/<\?=[\s\S]*?\?>/g, '');
+    content = content.replace(/<\?php[\s\S]*$/g, '');
 
     if (['dashboard', 'admin', 'login', 'register'].includes(context.rootPage)) {
         content = content.replace(/<div class="payout-toast-container"[\s\S]*?<\/div>/g, '');
@@ -119,6 +124,33 @@ const server = http.createServer((req, res) => {
     let cleanUrl = req.url.split('?')[0];
     if (cleanUrl === '/' || cleanUrl === '') {
         cleanUrl = '/index.php';
+    }
+
+    // 0. Dedicated Logout Handler (Clears session cookie and cleanly redirects to login.php)
+    if (cleanUrl === '/logout.php' || cleanUrl === '/logout' || cleanUrl.endsWith('/logout.php')) {
+        const expiredCookie = 'ix_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; SameSite=Lax';
+        const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers['accept'] || '').includes('json');
+        if (isAjax) {
+            res.writeHead(200, {
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Set-Cookie': expiredCookie
+            });
+            res.end(JSON.stringify({ status: 'success', redirect: '/login.php?logged_out=1' }));
+            return;
+        }
+        res.writeHead(302, {
+            'Location': '/login.php?logged_out=1',
+            'Set-Cookie': expiredCookie
+        });
+        res.end();
+        return;
+    }
+
+    // Dedicated Admin Entrypoint Redirect
+    if (cleanUrl === '/admin.php' || cleanUrl === '/admin' || cleanUrl.endsWith('/admin.php')) {
+        res.writeHead(302, { 'Location': '/secure_hq_panel.php' });
+        res.end();
+        return;
     }
 
     // 1. Direct Synchronous API Router for /api/ & Direct POST Form Handlers
