@@ -183,4 +183,22 @@ if ($action === 'logout') {
     exit;
 }
 
+if ($action === 'verify_admin_pin' || $action === 'verify_pin') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($data)) {
+        $data = $_POST;
+    }
+    $pin = trim($data['master_pin'] ?? $data['pin'] ?? '');
+    if (empty($pin)) {
+        echo json_encode(['status' => 'error', 'message' => 'Master security PIN is required.']);
+        exit;
+    }
+    if (function_exists('verifyAdminMasterPin')) {
+        echo json_encode(verifyAdminMasterPin($pin));
+        exit;
+    }
+    echo json_encode(['status' => 'error', 'message' => 'Verification service unavailable.']);
+    exit;
+}
+
 echo json_encode(['status' => 'error', 'message' => 'Invalid action.']);

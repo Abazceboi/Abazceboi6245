@@ -51,9 +51,8 @@ if (isset($_GET['logout_admin'])) {
     exit;
 }
 
-// Seamless access for verified super-admins with signed session cookie persistence
+// Strict 2-Step Verification Check: Admin MUST enter Master Security PIN to pass Step 2
 $isPinStepPassed = (isset($_SESSION['admin_auth_step']) && $_SESSION['admin_auth_step'] === 2)
-    || !empty($authUser['is_admin'])
     || (!empty($authUser['admin_auth_step']) && $authUser['admin_auth_step'] === 2);
 
 if (!$isPinStepPassed) {
@@ -69,7 +68,8 @@ if (!$isPinStepPassed) {
                     $authUser['email'] ?? '',
                     $authUser['phone'] ?? '',
                     $authUser['fullName'] ?? '',
-                    $authUser['role'] ?? 'super_admin'
+                    $authUser['role'] ?? 'super_admin',
+                    2
                 );
             }
             header("Location: secure_hq_panel.php");
@@ -84,7 +84,7 @@ if (!$isPinStepPassed) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Verification | ' . htmlspecialchars(APP_NAME) . '</title>
+    <title>Admin 2-Step Verification | ' . htmlspecialchars(APP_NAME) . '</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -107,12 +107,15 @@ if (!$isPinStepPassed) {
         <div class="pin-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         </div>
-        <h2>Admin Verification</h2>
-        <p>Enter your security PIN to access the control panel</p>
+        <h2>Admin 2-Step Verification</h2>
+        <p>Enter your 4-digit Master Security PIN (Default: 9999) to unlock the Admin HQ Panel</p>
         ' . ($pinError ? '<div class="pin-error">' . htmlspecialchars($pinError) . '</div>' : '') . '
-        <form method="POST">
+        <form method="POST" action="secure_hq_panel.php">
             <input type="password" name="master_pin" class="pin-input" maxlength="6" autofocus required autocomplete="off" placeholder="••••">
-            <button type="submit" class="pin-btn">Verify & Continue</button>
+            <button type="submit" class="pin-btn">Verify & Unlock Dashboard</button>
+            <div style="margin-top:16px">
+                <a href="logout.php" style="color:#94A3B8;font-size:0.8rem;text-decoration:none">Sign out</a>
+            </div>
         </form>
     </div>
 </body>
