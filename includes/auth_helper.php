@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 function getSessionSecret(): string {
-    return getenv('SESSION_SECRET') ?: 'ix_platform_crypt_secret_2026_x';
+    return getenv('SESSION_SECRET') ?: ($_ENV['SESSION_SECRET'] ?? ($_SERVER['SESSION_SECRET'] ?? 'ix_platform_crypt_secret_2026_x'));
 }
 
 function isRequestHttps(): bool {
@@ -107,15 +107,24 @@ function getAuthenticatedUser(): ?array {
     }
 
     if (!empty($cookieToken)) {
-        $cookieToken = urldecode(trim($cookieToken, "\"'"));
+        $cookieToken = trim($cookieToken, "\"'");
         $parts = explode('.', $cookieToken);
         if (count($parts) === 2) {
             $payload = $parts[0];
             $sig = $parts[1];
             $secret = getSessionSecret();
             
-            if (hash_equals(hash_hmac('sha256', $payload, $secret), $sig)) {
-                $data = json_decode(base64_decode($payload), true);
+            // Check both raw payload and normalized payload (spaces restored to plus)
+            $normalizedPayload = str_replace(' ', '+', $payload);
+            $isValid = hash_equals(hash_hmac('sha256', $payload, $secret), $sig)
+                    || hash_equals(hash_hmac('sha256', $normalizedPayload, $secret), $sig);
+
+            if ($isValid) {
+                $decodedJson = base64_decode($normalizedPayload);
+                if (!$decodedJson) {
+                    $decodedJson = base64_decode($payload);
+                }
+                $data = json_decode($decodedJson, true);
                 if (!empty($data['user_id']) && !empty($data['username'])) {
                     $uName = $data['username'];
                     $isAdmin = !empty($data['is_admin']) || in_array(strtolower($uName), ['admin', 'abas6245', 'abazceboi']);

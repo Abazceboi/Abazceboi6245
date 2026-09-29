@@ -4,18 +4,21 @@ require_once __DIR__ . '/config/db.php';
 
 $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
 if (!$authUser) {
-    // If not authenticated via PHP session or Cookie header, check if client has token in localStorage before bouncing
+    // If not authenticated via PHP session or Cookie header, check if client has token in localStorage before bouncing (once only)
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying Session...</title><script>'
         . '(function(){'
         . 'try{'
+        . 'var retried = sessionStorage.getItem("ix_auth_retried");'
         . 'var t = localStorage.getItem("ix_session_token");'
-        . 'if(t){'
+        . 'if(t && !retried){'
+        . 'sessionStorage.setItem("ix_auth_retried", "1");'
         . 'var s = location.protocol === "https:" ? "; Secure" : "";'
         . 'document.cookie = "ix_session=" + encodeURIComponent(t) + "; path=/; max-age=2592000; SameSite=Lax" + s;'
         . 'location.reload();'
         . 'return;'
         . '}'
         . '}catch(e){}'
+        . 'sessionStorage.removeItem("ix_auth_retried");'
         . 'location.replace("login.php");'
         . '})();'
         . '</script></head><body style="background:#0A0A0F;color:#7DD3FC;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><p>Verifying member credentials...</p></body></html>';

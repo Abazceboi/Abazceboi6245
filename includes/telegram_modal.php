@@ -83,7 +83,7 @@ if (file_exists($telegramConfigFile)) {
 <script>
 (function() {
     // Expose Global Config & Modal Controls
-    window.ixTelegramConfig = <?= json_encode($telegramConfig) ?>;
+    window.ixTelegramConfig = <?= json_encode($telegramConfig ?? []) ?> || {};
 
     // Load any localStorage overrides from admin real-time sync
     try {

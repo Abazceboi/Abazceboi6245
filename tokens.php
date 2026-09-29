@@ -458,8 +458,8 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
 
 <script>
 let currentTradeType = 'buy';
-let tokensData = <?= json_encode($tokensList) ?>;
-let activePlatformBank = <?= json_encode($platformBank) ?>;
+let tokensData = <?= json_encode($tokensList ?? []) ?> || [];
+let activePlatformBank = <?= json_encode($platformBank ?? []) ?> || {};
 
 function setTradeType(type) {
     currentTradeType = type;

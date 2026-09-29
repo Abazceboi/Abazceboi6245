@@ -40,6 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginError = 'Please enter both your username and password.';
     }
 }
+if (!empty($_GET['error'])) {
+    $loginError = htmlspecialchars($_GET['error']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -344,10 +347,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div id="loginStatusAlert" style="<?= !empty($loginError) ? 'display:block;background:rgba(239, 68, 68, 0.12);border:1px solid rgba(239, 68, 68, 0.35);color:#FCA5A5;' : 'display:none;' ?>margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"><?= htmlspecialchars($loginError ?? '') ?></div>
 
-            <form id="loginForm" method="POST" action="login.php" onsubmit="handleLoginSubmit(event)">
+            <form id="loginForm" method="POST" action="login.php" onsubmit="event.preventDefault(); handleLoginSubmit(event); return false;">
                 <div class="form-group">
                     <label for="loginUser">Username or Email</label>
-                    <input type="text" id="loginUser" name="user" class="form-input" placeholder="Your username or email" required autocomplete="username">
+                    <input type="text" id="loginUser" name="user" class="form-input" placeholder="Your username or email" required autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('loginPass').focus();}">
                 </div>
 
                 <div class="form-group">
@@ -356,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a href="mailto:<?= htmlspecialchars(SUPPORT_EMAIL) ?>?subject=Password%20Reset%20Request" style="font-size:0.75rem;color:#7DD3FC;text-decoration:none;font-weight:700">Forgot Password?</a>
                     </div>
                     <div class="input-wrap-relative">
-                        <input type="password" id="loginPass" name="pass" class="form-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-right:42px">
+                        <input type="password" id="loginPass" name="pass" class="form-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-right:42px" onkeydown="if(event.key==='Enter'){event.preventDefault();handleLoginSubmit(event);}">
                         <button type="button" class="pass-toggle-btn" onclick="togglePassVisibility('loginPass', this)" aria-label="Toggle password visibility">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
@@ -370,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </label>
                 </div>
 
-                <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+                <button type="button" class="btn-login-submit" id="btnLoginSubmit" onclick="handleLoginSubmit(event)">
                     <span>Sign In to Dashboard</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
@@ -433,15 +436,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         btn.innerHTML = `<span>Signing In...</span>`;
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
 
-        fetch('api/auth.php?action=login', {
+        fetch('/api/auth.php?action=login', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ username: user, password: pass }),
+            body: JSON.stringify({ action: 'login', username: user, password: pass }),
             signal: controller.signal
         })
         .then(res => {
@@ -455,7 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const token = data.token || data.session_token;
                 if (token) {
                     const isSecure = location.protocol === 'https:' ? '; Secure' : '';
-                    document.cookie = 'ix_session=' + encodeURIComponent(token) + '; path=/; max-age=2592000; SameSite=Lax' + isSecure;
+                    document.cookie = 'ix_session=' + token + '; path=/; max-age=2592000; SameSite=Lax' + isSecure;
                     localStorage.setItem('ix_session_token', token);
                 }
 
@@ -471,7 +474,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 setTimeout(() => {
                     window.location.replace(targetUrl);
-                }, 200);
+                }, 100);
             } else {
                 showLoginAlert(data.message || 'Invalid username or password.');
                 btn.disabled = false;
@@ -480,16 +483,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         })
         .catch(err => {
             clearTimeout(timeoutId);
-            console.warn('AJAX login fetch failed or timed out, executing native server POST fallback:', err);
+            console.error('Login request failed, using server POST fallback:', err);
             const form = document.getElementById('loginForm');
             if (form) {
-                showLoginAlert('Connecting directly to secure server...', true);
                 form.submit();
-                return;
+            } else {
+                showLoginAlert('Unable to complete login. Please verify your connection or try again.');
+                btn.disabled = false;
+                btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
             }
-            showLoginAlert('Unable to reach server. Please check your network and try again.');
-            btn.disabled = false;
-            btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
         });
     }
 
@@ -504,6 +506,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            showLoginAlert(urlParams.get('error') || 'Invalid username or password.');
+        }
         if (urlParams.has('logged_out') || urlParams.has('logout')) {
             // Clean up client-side caches
             try {

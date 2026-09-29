@@ -92,7 +92,8 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*WHATSAPP_SUPPORT\s*\?>/g, '2347037765714');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
-    content = content.replace(/<\?=\s*htmlspecialchars\(\$username\)\s*\?>/g, 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$username\)\s*\?>/g, context.username || 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$loginError\s*\?\?\s*''\)\s*\?>/g, context.loginError || '');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pinFromQuery\)\s*\?>/g, '');
 
     const activePage = path.basename(filePath, '.php');
@@ -100,6 +101,10 @@ function renderPhpFile(filePath, context = {}) {
         return pageName === activePage ? 'active' : '';
     });
 
+    content = content.replace(/<\?=\s*json_encode\(\$(?:tokensList|allUsers|coupons|tasks|vendors|records|items|data|list|dashTokensList)[^)]*\)\s*\?>/gi, '[]');
+    content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
+    content = content.replace(/<\?=\s*json_encode\([^)]*\)\s*\?>/g, '{}');
+    content = content.replace(/<\?php\s*echo\s*json_encode\([^)]*\);\s*\?>/g, '{}');
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
     content = content.replace(/<\?=[\s\S]*?\?>/g, '');
 
@@ -116,10 +121,11 @@ const server = http.createServer((req, res) => {
         cleanUrl = '/index.php';
     }
 
-    // 1. Direct Synchronous API Router for /api/
-    if (cleanUrl.startsWith('/api/')) {
+    // 1. Direct Synchronous API Router for /api/ & Direct POST Form Handlers
+    if (cleanUrl.startsWith('/api/') || (req.method === 'POST' && (cleanUrl.includes('login') || cleanUrl.includes('auth')))) {
         const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-        const action = urlObj.searchParams.get('action') || '';
+        let action = urlObj.searchParams.get('action') || '';
+        if (cleanUrl.includes('login') && !action) action = 'login';
         const configFile = path.join(PUBLIC_DIR, 'config', 'vtu_settings.json');
 
         let vtuConfig = {
@@ -144,10 +150,9 @@ const server = http.createServer((req, res) => {
         }
 
         const handleApi = (parsed) => {
-            res.setHeader('Content-Type', 'application/json; charset=UTF-8');
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            res.setHeader('Access-Control-Allow-Headers', '*');
 
             if (req.method === 'OPTIONS') {
                 res.writeHead(204);
@@ -155,8 +160,8 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            // Dedicated Authentication API (Login, Register, Logout)
-            if (cleanUrl.includes('auth.php')) {
+            // Dedicated Authentication API (Login, Register, Logout) and direct form POSTs
+            if (cleanUrl.includes('auth.php') || cleanUrl.includes('login') || action === 'login' || action === 'register' || action === 'logout') {
                 const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                 const couponsFile = path.join(PUBLIC_DIR, 'data', 'coupons.json');
 
@@ -184,10 +189,17 @@ const server = http.createServer((req, res) => {
                 };
 
                 if (action === 'login' && req.method === 'POST') {
-                    const username = (parsed.username || '').trim();
-                    const password = (parsed.password || '');
+                    const username = (parsed.username || parsed.user || '').trim();
+                    const password = (parsed.password || parsed.pass || '');
+                    const isHtmlFormPost = !(req.headers['content-type'] || '').includes('json') && !cleanUrl.includes('/api/');
 
                     if (!username || !password) {
+                        if (isHtmlFormPost) {
+                            res.writeHead(302, { 'Location': '/login.php?error=' + encodeURIComponent('Please enter both your username and password.') });
+                            res.end();
+                            return;
+                        }
+                        res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                         res.end(JSON.stringify({ status: 'error', message: 'Username and password are required.' }));
                         return;
                     }
@@ -248,6 +260,16 @@ const server = http.createServer((req, res) => {
                             userRole
                         );
 
+                        if (isHtmlFormPost) {
+                            res.writeHead(302, {
+                                'Location': isAdmin ? '/secure_hq_panel.php' : '/dashboard.php',
+                                'Set-Cookie': `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`
+                            });
+                            res.end();
+                            return;
+                        }
+
+                        res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                         res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`);
                         res.end(JSON.stringify({
                             status: 'success',
@@ -263,6 +285,13 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    if (isHtmlFormPost) {
+                        res.writeHead(302, { 'Location': '/login.php?error=' + encodeURIComponent('Invalid username or password.') });
+                        res.end();
+                        return;
+                    }
+
+                    res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                     res.end(JSON.stringify({ status: 'error', message: 'Invalid username or password.' }));
                     return;
                 }
@@ -2049,7 +2078,21 @@ const server = http.createServer((req, res) => {
             req.on('data', chunk => { body += chunk; });
             req.on('end', () => {
                 let parsed = {};
-                try { if (body) parsed = JSON.parse(body); } catch(e){}
+                try {
+                    if (body) {
+                        const trimmed = body.trim();
+                        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                            parsed = JSON.parse(trimmed);
+                        } else {
+                            const params = new URLSearchParams(trimmed);
+                            for (const [k, v] of params.entries()) {
+                                parsed[k] = v;
+                            }
+                            if (parsed.user && !parsed.username) parsed.username = parsed.user;
+                            if (parsed.pass && !parsed.password) parsed.password = parsed.pass;
+                        }
+                    }
+                } catch(e){}
                 handleApi(parsed);
             });
         } else {
@@ -2081,7 +2124,31 @@ const server = http.createServer((req, res) => {
 
         if (ext === '.php') {
             try {
-                const rendered = renderPhpFile(filePath, {});
+                let context = {};
+                const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+                if (urlObj.searchParams.get('error')) {
+                    context.loginError = urlObj.searchParams.get('error');
+                }
+                const cookieHeader = req.headers.cookie || '';
+                const match = cookieHeader.match(/ix_session=([^;]+)/);
+                if (match) {
+                    try {
+                        const rawVal = decodeURIComponent(match[1]).trim();
+                        const parts = rawVal.split('.');
+                        if (parts.length === 2) {
+                            const normPayload = parts[0].replace(/ /g, '+');
+                            const jsonStr = Buffer.from(normPayload, 'base64').toString('utf8');
+                            const u = JSON.parse(jsonStr);
+                            if (u && u.username) {
+                                context.username = u.username;
+                                context.userFullName = u.fullName || u.username;
+                                context.userRole = u.role;
+                                context.isAdmin = Boolean(u.is_admin);
+                            }
+                        }
+                    } catch(e) {}
+                }
+                const rendered = renderPhpFile(filePath, context);
                 res.writeHead(200, {
                     'Content-Type': 'text/html; charset=UTF-8',
                     'Cache-Control': 'no-cache, no-store, must-revalidate'
