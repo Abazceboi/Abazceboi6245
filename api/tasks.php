@@ -126,6 +126,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'success', 'tasks' => $tasks]);
         exit;
     }
+
+    $submissionsFile = __DIR__ . '/../data/task_submissions.json';
+    $getSubmissions = function() use ($submissionsFile) {
+        if (!file_exists($submissionsFile)) return [];
+        $raw = @file_get_contents($submissionsFile);
+        $d = json_decode($raw, true);
+        return is_array($d) ? $d : [];
+    };
+    $saveSubmissions = function($subs) use ($submissionsFile) {
+        $dir = dirname($submissionsFile);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        file_put_contents($submissionsFile, json_encode(array_values($subs), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    };
+
+    if ($action === 'submit_task_proof') {
+        $taskId = trim($input['task_id'] ?? '');
+        $username = trim($input['username'] ?? 'Member');
+        $proofUrl = trim($input['proof_url'] ?? $input['proof'] ?? '');
+        $notes = trim($input['notes'] ?? '');
+
+        $task = null;
+        foreach ($tasks as &$t) {
+            if (($t['id'] ?? '') === $taskId) {
+                $task = &$t;
+                break;
+            }
+        }
+
+        if (!$task) {
+            echo json_encode(['status' => 'error', 'message' => 'Task not found']);
+            exit;
+        }
+
+        $subs = $getSubmissions();
+        $newSub = [
+            'id' => 'SUB-' . strtoupper(substr(uniqid(), -6)),
+            'task_id' => $taskId,
+            'task_title' => $task['title'] ?? 'Task',
+            'username' => $username,
+            'proof_url' => $proofUrl,
+            'notes' => $notes,
+            'reward_points' => intval($task['reward_points'] ?? 150),
+            'status' => 'pending',
+            'submitted_at' => date('Y-m-d H:i:s')
+        ];
+
+        array_unshift($subs, $newSub);
+        $saveSubmissions($subs);
+
+        echo json_encode(['status' => 'success', 'message' => 'Task proof submitted! Our review team or uploader will verify shortly.', 'submission' => $newSub]);
+        exit;
+    }
+
+    if ($action === 'approve_task_proof') {
+        $subId = trim($input['submission_id'] ?? '');
+        $subs = $getSubmissions();
+        $targetSub = null;
+        foreach ($subs as &$s) {
+            if (($s['id'] ?? '') === $subId) {
+                $s['status'] = 'approved';
+                $s['reviewed_at'] = date('Y-m-d H:i:s');
+                $targetSub = $s;
+                break;
+            }
+        }
+        $saveSubmissions($subs);
+
+        if ($targetSub) {
+            // Credit points to user
+            $usersFile = __DIR__ . '/../data/users.json';
+            if (file_exists($usersFile)) {
+                $uData = json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
+                foreach (($uData['users'] ?? []) as &$u) {
+                    if (strtolower($u['username'] ?? '') === strtolower($targetSub['username'])) {
+                        $u['remaining_pts'] = intval($u['remaining_pts'] ?? 100) + intval($targetSub['reward_points']);
+                        $u['pointsBalance'] = $u['remaining_pts'];
+                        $u['tasks_completed'] = intval($u['tasks_completed'] ?? 0) + 1;
+                        if (!isset($u['activity_ledger'])) $u['activity_ledger'] = [];
+                        array_unshift($u['activity_ledger'], [
+                            'time' => date('d/m/Y, H:i'),
+                            'type' => 'Task Reward',
+                            'desc' => "Earned {$targetSub['reward_points']} PTS for {$targetSub['task_title']}",
+                            'reward_type' => 'points',
+                            'reward_value' => $targetSub['reward_points']
+                        ]);
+                        break;
+                    }
+                }
+                file_put_contents($usersFile, json_encode($uData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            }
+        }
+
+        echo json_encode(['status' => 'success', 'message' => 'Submission approved and points credited!']);
+        exit;
+    }
+
+    if ($action === 'reject_task_proof') {
+        $subId = trim($input['submission_id'] ?? '');
+        $subs = $getSubmissions();
+        foreach ($subs as &$s) {
+            if (($s['id'] ?? '') === $subId) {
+                $s['status'] = 'rejected';
+                $s['reviewed_at'] = date('Y-m-d H:i:s');
+                break;
+            }
+        }
+        $saveSubmissions($subs);
+        echo json_encode(['status' => 'success', 'message' => 'Submission rejected']);
+        exit;
+    }
+}
+
+if ($action === 'get_submissions') {
+    $submissionsFile = __DIR__ . '/../data/task_submissions.json';
+    $subs = [];
+    if (file_exists($submissionsFile)) {
+        $subs = json_decode(file_get_contents($submissionsFile), true) ?: [];
+    }
+    echo json_encode(['status' => 'success', 'submissions' => $subs]);
+    exit;
 }
 
 echo json_encode(['status' => 'error', 'message' => 'Invalid action']);

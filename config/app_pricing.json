@@ -1,8 +1,8 @@
 {
   "reg_fee": 1200,
-  "ref_commission": 600,
+  "ref_commission": 850,
   "vendor_wholesale": 800,
-  "points_rate": 1,
+  "points_rate": 2.5,
   "min_withdrawal": 5000,
-  "updated_at": "2026-09-27T18:18:37.414Z"
+  "updated_at": "2026-09-30T22:29:26.241Z"
 }

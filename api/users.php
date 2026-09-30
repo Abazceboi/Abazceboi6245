@@ -693,10 +693,164 @@ switch ($action) {
         ]);
         break;
 
+    case 'get_profile':
+        $username = trim($_GET['username'] ?? $_POST['username'] ?? '');
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username required']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $target = null;
+        foreach ($data['users'] as $u) {
+            if (strtolower($u['username']) === strtolower($username)) {
+                $target = $u;
+                break;
+            }
+        }
+
+        if (!$target) {
+            echo json_encode(['success' => false, 'error' => 'User not found']);
+            exit;
+        }
+
+        // Return sanitized profile
+        unset($target['password']);
+        unset($target['password_hash']);
+        echo json_encode([
+            'success' => true,
+            'user' => $target,
+            'points_balance' => (int)($target['remaining_pts'] ?? $target['pointsBalance'] ?? 100),
+            'cash_balance' => (float)($target['remaining_cash'] ?? $target['cashBalance'] ?? 0.0),
+            'role' => $target['role'] ?? 'member',
+            'bank_name' => $target['bank_name'] ?? 'Pending Setup',
+            'account_number' => $target['account_number'] ?? '••••••••',
+            'account_name' => $target['account_name'] ?? ($target['full_name'] ?? $target['username']),
+            'referral_code' => $target['referral_code'] ?? 'REF-' . substr(md5($username), 0, 6),
+            'streak_count' => (int)($target['streak_count'] ?? 1)
+        ]);
+        break;
+
+    case 'update_bank_details':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $username = trim($input['username'] ?? '');
+        $bankName = trim($input['bank_name'] ?? '');
+        $accNum   = trim($input['account_number'] ?? $input['account_no'] ?? '');
+        $accName  = trim($input['account_name'] ?? '');
+
+        if (empty($username) || empty($bankName) || empty($accNum)) {
+            echo json_encode(['success' => false, 'error' => 'Username, bank name, and account number are required']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($username)) {
+                $u['bank_name'] = $bankName;
+                $u['account_number'] = $accNum;
+                $u['account_name'] = $accName ?: ($u['full_name'] ?? $u['username']);
+                $u['bank_updated_at'] = date('c');
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($found) {
+            saveUsers($data);
+        }
+
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('UPDATE users SET "bankName" = ?, "accountNumber" = ?, "accountName" = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$bankName, $accNum, $accName, $username]);
+            } catch (Exception $e) {}
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Settlement bank details successfully updated!',
+            'bank_name' => $bankName,
+            'account_number' => $accNum,
+            'account_name' => $accName
+        ]);
+        break;
+
+    case 'claim_daily_streak':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $username = trim($input['username'] ?? '');
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username required']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $ptsReward = 50;
+        $newStreak = 1;
+        $found = false;
+
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($username)) {
+                $lastClaim = $u['last_streak_claim'] ?? '';
+                $today = date('Y-m-d');
+                if ($lastClaim === $today) {
+                    echo json_encode(['success' => false, 'error' => 'You have already claimed your daily streak reward today. Come back tomorrow!']);
+                    exit;
+                }
+
+                $currStreak = (int)($u['streak_count'] ?? 0);
+                $newStreak = $currStreak + 1;
+                $ptsReward = 50 + ($newStreak * 5); // 55, 60, etc.
+
+                $u['streak_count'] = $newStreak;
+                $u['last_streak_claim'] = $today;
+                $u['remaining_pts'] = intval($u['remaining_pts'] ?? 100) + $ptsReward;
+                $u['pointsBalance'] = $u['remaining_pts'];
+
+                if (!isset($u['activity_ledger'])) $u['activity_ledger'] = [];
+                array_unshift($u['activity_ledger'], [
+                    'time' => date('d/m/Y, H:i'),
+                    'type' => 'Daily Streak',
+                    'desc' => "Claimed Day {$newStreak} Streak Reward: +{$ptsReward} PTS",
+                    'reward_type' => 'points',
+                    'reward_value' => $ptsReward
+                ]);
+
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($found) {
+            saveUsers($data);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Streak bonus claimed! +{$ptsReward} Task Points added to your wallet.",
+            'points_awarded' => $ptsReward,
+            'streak_count' => $newStreak
+        ]);
+        break;
+
     default:
         echo json_encode([
             'success' => false,
-            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, update_user_details, force_reset_password, delete_user, toggle_freeze, toggle_block, get_role',
+            'error' => 'Invalid action. Valid actions: get_users, update_role, update_permissions, update_user_details, force_reset_password, delete_user, toggle_freeze, toggle_block, get_role, get_profile, update_bank_details, claim_daily_streak',
             'valid_roles' => $VALID_ROLES,
             'role_labels' => $ROLE_LABELS
         ]);

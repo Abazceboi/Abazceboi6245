@@ -97,6 +97,19 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$username\)\s*\?>/g, context.username || 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$userRole\)\s*\?>/g, context.userRole || 'member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$initials\)\s*\?>/g, (context.username || 'MB').substring(0, 2).toUpperCase());
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$userFullName\)\s*\?>/g, context.userFullName || context.username || 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$bankName\)\s*\?>/g, context.bankName || 'OPay Digital Services');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountNumber\)\s*\?>/g, context.accountNumber || '0801234567');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountName\)\s*\?>/g, context.accountName || context.userFullName || context.username || 'Member');
+    content = content.replace(/<\?=\s*number_format\(\$userCash,\s*2\)\s*\?>/g, Number(context.userCash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    content = content.replace(/<\?=\s*number_format\(\$userPoints\)\s*\?>/g, Number(context.userPoints || 100).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*number_format\(\$totalLiquidNaira,\s*2\)\s*\?>/g, Number(context.totalLiquidNaira || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    content = content.replace(/<\?=\s*number_format\(\$ptsInNaira,\s*2\)\s*\?>/g, Number(context.ptsInNaira || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, Number(context.ptsRate || 1.0).toFixed(2));
+    content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, Number(context.minCashWd || 5000).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*\$streakCount\s*\?>/g, String(context.streakCount || 1));
     content = content.replace(/<\?=\s*htmlspecialchars\(\$loginError\s*\?\?\s*''\)\s*\?>/g, context.loginError || '');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pinFromQuery\)\s*\?>/g, '');
 
@@ -812,7 +825,97 @@ const server = http.createServer((req, res) => {
                     const dataDir = path.dirname(tasksFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+
+                    // Task proof submissions
+                    const subsFile = path.join(PUBLIC_DIR, 'data', 'task_submissions.json');
+                    let subs = [];
+                    if (fs.existsSync(subsFile)) {
+                        try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
+                    }
+
+                    if (action === 'submit_task_proof') {
+                        const newSub = {
+                            id: 'SUB-' + Math.floor(Math.random() * 900000 + 100000),
+                            task_id: parsed.task_id || '',
+                            task_title: parsed.task_title || 'Sponsored Task',
+                            username: parsed.username || 'Member',
+                            proof_url: parsed.proof_url || parsed.proof || '',
+                            notes: parsed.notes || '',
+                            reward_points: parseInt(parsed.reward_points) || 150,
+                            status: 'pending',
+                            submitted_at: new Date().toISOString()
+                        };
+                        subs.unshift(newSub);
+                        fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Task proof submitted! Our review team or uploader will verify shortly.', submission: newSub }));
+                        return;
+                    }
+
+                    if (action === 'approve_task_proof') {
+                        const subId = parsed.submission_id;
+                        let targetSub = null;
+                        subs.forEach(s => {
+                            if (s.id === subId) {
+                                s.status = 'approved';
+                                s.reviewed_at = new Date().toISOString();
+                                targetSub = s;
+                            }
+                        });
+                        fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
+
+                        if (targetSub) {
+                            const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                            if (fs.existsSync(usersFile)) {
+                                try {
+                                    const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                                    uData.users.forEach(u => {
+                                        if ((u.username || '').toLowerCase() === (targetSub.username || '').toLowerCase()) {
+                                            u.remaining_pts = (parseInt(u.remaining_pts) || 100) + (parseInt(targetSub.reward_points) || 150);
+                                            u.pointsBalance = u.remaining_pts;
+                                            u.tasks_completed = (parseInt(u.tasks_completed) || 0) + 1;
+                                            u.activity_ledger = u.activity_ledger || [];
+                                            u.activity_ledger.unshift({
+                                                time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                                                type: 'Task Reward',
+                                                desc: `Earned ${targetSub.reward_points} PTS for ${targetSub.task_title}`,
+                                                reward_type: 'points',
+                                                reward_value: targetSub.reward_points
+                                            });
+                                        }
+                                    });
+                                    fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                                } catch(e){}
+                            }
+                        }
+
+                        res.end(JSON.stringify({ status: 'success', message: 'Submission approved and points credited!' }));
+                        return;
+                    }
+
+                    if (action === 'reject_task_proof') {
+                        const subId = parsed.submission_id;
+                        subs.forEach(s => {
+                            if (s.id === subId) {
+                                s.status = 'rejected';
+                                s.reviewed_at = new Date().toISOString();
+                            }
+                        });
+                        fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Submission rejected' }));
+                        return;
+                    }
+
                     res.end(JSON.stringify({ status: 'success', message: 'Task updated', tasks: tasks }));
+                    return;
+                }
+
+                if (action === 'get_submissions') {
+                    const subsFile = path.join(PUBLIC_DIR, 'data', 'task_submissions.json');
+                    let subs = [];
+                    if (fs.existsSync(subsFile)) {
+                        try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
+                    }
+                    res.end(JSON.stringify({ status: 'success', submissions: subs }));
                     return;
                 }
 
@@ -1617,6 +1720,109 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
+                if (action === 'get_profile') {
+                    const uname = (urlObj.searchParams.get('username') || parsed.username || '').trim();
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname.toLowerCase());
+                    if (user) {
+                        const sanitized = Object.assign({}, user);
+                        delete sanitized.password;
+                        delete sanitized.password_hash;
+                        res.end(JSON.stringify({
+                            success: true,
+                            user: sanitized,
+                            points_balance: parseInt(user.remaining_pts !== undefined ? user.remaining_pts : (user.pointsBalance || 100)) || 100,
+                            cash_balance: parseFloat(user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0)) || 0,
+                            role: user.role || 'member',
+                            bank_name: user.bank_name || 'Pending Setup',
+                            account_number: user.account_number || '••••••••',
+                            account_name: user.account_name || user.full_name || user.username,
+                            referral_code: user.referral_code || 'REF-' + Math.floor(Math.random() * 900000 + 100000),
+                            streak_count: parseInt(user.streak_count || 1)
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'update_bank_details' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const bankName = (parsed.bank_name || '').trim();
+                    const accNum   = (parsed.account_number || parsed.account_no || '').trim();
+                    const accName  = (parsed.account_name || '').trim();
+
+                    if (!username || !bankName || !accNum) {
+                        res.end(JSON.stringify({ success: false, error: 'Username, bank name, and account number are required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                            u.bank_name = bankName;
+                            u.account_number = accNum;
+                            u.account_name = accName || u.full_name || u.username;
+                            u.bank_updated_at = new Date().toISOString();
+                            found = true;
+                        }
+                    });
+
+                    if (found) {
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                        res.end(JSON.stringify({
+                            success: true,
+                            message: 'Settlement bank details successfully updated!',
+                            bank_name: bankName,
+                            account_number: accNum,
+                            account_name: accName
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'claim_daily_streak' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (!user) {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                        return;
+                    }
+
+                    const today = new Date().toISOString().split('T')[0];
+                    if (user.last_streak_claim === today) {
+                        res.end(JSON.stringify({ success: false, error: 'You have already claimed your daily streak reward today. Come back tomorrow!' }));
+                        return;
+                    }
+
+                    const currStreak = parseInt(user.streak_count || 0);
+                    const newStreak = currStreak + 1;
+                    const ptsReward = 50 + (newStreak * 5);
+
+                    user.streak_count = newStreak;
+                    user.last_streak_claim = today;
+                    user.remaining_pts = (parseInt(user.remaining_pts) || 100) + ptsReward;
+                    user.pointsBalance = user.remaining_pts;
+                    user.activity_ledger = user.activity_ledger || [];
+                    user.activity_ledger.unshift({
+                        time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                        type: 'Daily Streak',
+                        desc: `Claimed Day ${newStreak} Streak Reward: +${ptsReward} PTS`,
+                        reward_type: 'points',
+                        reward_value: ptsReward
+                    });
+
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: `Streak bonus claimed! +${ptsReward} Task Points added to your wallet.`,
+                        points_awarded: ptsReward,
+                        streak_count: newStreak
+                    }));
+                    return;
+                }
+
                 res.end(JSON.stringify({ success: false, error: 'Invalid action', valid_roles: validRoles, role_labels: roleLabels }));
                 return;
             }
@@ -2378,6 +2584,49 @@ const server = http.createServer((req, res) => {
                     context.userRole = u.role;
                     context.isAdmin = Boolean(u.is_admin);
                     context.adminAuthStep = Number(u.admin_auth_step !== undefined ? u.admin_auth_step : (context.isAdmin ? 1 : 0));
+
+                    try {
+                        const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                        if (fs.existsSync(usersFile)) {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const users = uData.users || (Array.isArray(uData) ? uData : []);
+                            const userRecord = users.find(x => (x.username && x.username.toLowerCase() === u.username.toLowerCase()) || x.id == u.user_id);
+                            if (userRecord) {
+                                context.bankName = userRecord.bank_name || 'OPay Digital Services';
+                                context.accountNumber = userRecord.account_number || '0801234567';
+                                context.accountName = userRecord.account_name || userRecord.full_name || u.username;
+                                context.userFullName = userRecord.full_name || u.fullName || u.username;
+                                context.userRole = userRecord.role || u.role;
+                                context.userCash = parseFloat(userRecord.remaining_cash !== undefined ? userRecord.remaining_cash : (userRecord.cashBalance || 0));
+                                context.userPoints = parseInt(userRecord.remaining_pts !== undefined ? userRecord.remaining_pts : (userRecord.pointsBalance || 100));
+                                context.streakCount = parseInt(userRecord.streak_count || 1);
+                            }
+                        }
+                        const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                        let ptsRate = 1.0;
+                        if (fs.existsSync(pricingFile)) {
+                            const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
+                            ptsRate = parseFloat(pData.points_rate || 1.0);
+                        }
+                        context.ptsRate = ptsRate;
+                        context.ptsInNaira = (context.userPoints || 100) * ptsRate;
+                        context.totalLiquidNaira = (context.userCash || 0) + context.ptsInNaira;
+
+                        const wdFile = path.join(PUBLIC_DIR, 'config', 'withdrawal_settings.json');
+                        if (fs.existsSync(wdFile)) {
+                            const wdData = JSON.parse(fs.readFileSync(wdFile, 'utf8'));
+                            context.minCashWd = parseFloat(wdData.affiliate && wdData.affiliate.min_amount ? wdData.affiliate.min_amount : 5000);
+                        }
+                    } catch(e) {}
+                }
+
+                // Protect User, Uploader, and Vendor Dashboards
+                if (['dashboard', 'uploader_dashboard', 'vendor_dashboard'].some(p => cleanUrl.includes(p))) {
+                    if (!u || !u.username) {
+                        res.writeHead(302, { 'Location': '/login.php' });
+                        res.end();
+                        return;
+                    }
                 }
 
                 // Strict Admin 2-Step Verification PIN Enforcement

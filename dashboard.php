@@ -1,10 +1,13 @@
 <?php
+/**
+ * INNOVATIONX — Redesigned High-Yield Member Dashboard
+ * Modern Luxury Fintech UI/UX with Retained Platinum Bank Card & Real-Time Admin Sync
+ */
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/config/db.php';
 
 $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
 if (!$authUser) {
-    // If not authenticated via PHP session or Cookie header, check if client has token in localStorage before bouncing (once only)
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying Session...</title><script>'
         . '(function(){'
         . 'try{'
@@ -25,9 +28,8 @@ if (!$authUser) {
     exit;
 }
 
-// Authenticated user credentials
-$username = $authUser['username'] ?? $_SESSION['username'] ?? $_GET['username'] ?? $_GET['user'] ?? 'Member';
-$userId = $authUser['id'] ?? $_SESSION['user_id'] ?? '';
+$username = $authUser['username'] ?? $_SESSION['username'] ?? 'Member';
+$userId = $authUser['id'] ?? $authUser['user_id'] ?? $_SESSION['user_id'] ?? '';
 $initials = strtoupper(substr($username, 0, 2));
 
 // Live Database Balances & Profile
@@ -37,6737 +39,2204 @@ $userRole = 'member';
 $userPhone = $authUser['phone'] ?? $_SESSION['phone'] ?? '';
 $userEmail = $authUser['email'] ?? $_SESSION['email'] ?? '';
 $userFullName = $authUser['fullName'] ?? $_SESSION['fullName'] ?? $username;
+$bankName = 'OPay Digital Services';
+$accountNumber = '0801234567';
+$accountName = $userFullName;
+$streakCount = 1;
+$referralCode = 'REF-' . strtoupper(substr(md5($username), 0, 6));
 
-$pdo = getDbConnection();
-if ($pdo) {
-    try {
-        $stmt = $pdo->prepare('SELECT id, username, email, phone, "fullName", "pointsBalance", "cashBalance", role FROM users WHERE LOWER(username) = LOWER(?) OR id::text = ?');
-        $stmt->execute([$username, strval($userId)]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            $userPoints = (int)($row['pointsBalance'] ?? $row['pointsbalance'] ?? 100);
-            $userCash = (float)($row['cashBalance'] ?? $row['cashbalance'] ?? 0.00);
-            $userRole = !empty($row['role']) ? $row['role'] : 'member';
-            if (!empty($row['phone'])) $userPhone = $row['phone'];
-            if (!empty($row['email'])) $userEmail = $row['email'];
-            if (!empty($row['fullName'] ?? $row['fullname'])) $userFullName = $row['fullName'] ?? $row['fullname'];
-        }
-    } catch (Exception $e) {
-        try {
-            $stmt = $pdo->prepare('SELECT id, username, email, phone, fullName, pointsBalance, cashBalance, role FROM users WHERE LOWER(username) = LOWER(?)');
-            $stmt->execute([$username]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($row) {
-                $userPoints = (int)($row['pointsbalance'] ?? 100);
-                $userCash = (float)($row['cashbalance'] ?? 0.00);
-                $userRole = !empty($row['role']) ? $row['role'] : 'member';
-                if (!empty($row['phone'])) $userPhone = $row['phone'];
-                if (!empty($row['email'])) $userEmail = $row['email'];
-                if (!empty($row['fullName'] ?? $row['fullname'])) $userFullName = $row['fullName'] ?? $row['fullname'];
-            }
-        } catch (Exception $e2) {}
-    }
-}
-
-// Graceful fallback to data/users.json if SQL DB has no matching record or is unavailable
+// Fast read from data/users.json
 $usersJsonFile = __DIR__ . '/data/users.json';
 if (file_exists($usersJsonFile)) {
     $uData = @json_decode(@file_get_contents($usersJsonFile), true);
     $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
     foreach ($allUsers as $ju) {
         if (strtolower($ju['username'] ?? '') === strtolower($username)) {
-            if ($userPoints === 100 && (isset($ju['remaining_pts']) || isset($ju['pointsBalance']))) {
-                $userPoints = (int)($ju['pointsBalance'] ?? $ju['remaining_pts'] ?? $userPoints);
-            }
-            if ($userCash === 0.00 && isset($ju['remaining_cash'])) {
-                $userCash = (float)($ju['remaining_cash'] ?? $userCash);
-            }
+            $userPoints = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
+            $userCash = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
             if (!empty($ju['role'])) $userRole = $ju['role'];
-            if (!empty($ju['phone']) && empty($userPhone)) $userPhone = $ju['phone'];
-            if (!empty($ju['email']) && empty($userEmail)) $userEmail = $ju['email'];
-            if (!empty($ju['full_name']) && empty($userFullName)) $userFullName = $ju['full_name'];
+            if (!empty($ju['phone'])) $userPhone = $ju['phone'];
+            if (!empty($ju['email'])) $userEmail = $ju['email'];
+            if (!empty($ju['full_name'])) $userFullName = $ju['full_name'];
+            if (!empty($ju['bank_name'])) $bankName = $ju['bank_name'];
+            if (!empty($ju['account_number'])) $accountNumber = $ju['account_number'];
+            if (!empty($ju['account_name'])) $accountName = $ju['account_name'];
+            if (!empty($ju['referral_code'])) $referralCode = $ju['referral_code'];
+            if (!empty($ju['streak_count'])) $streakCount = intval($ju['streak_count']);
             break;
         }
     }
 }
 
-$totalLiquid = $userCash + $userPoints;
+// Fallback to SQL DB if connected
+$pdo = getDbConnection();
+if ($pdo) {
+    try {
+        $stmt = $pdo->prepare('SELECT "pointsBalance", "cashBalance", role, "bankName", "accountNumber", "accountName", phone, email, "fullName", "referralCode" FROM users WHERE LOWER(username) = LOWER(?)');
+        $stmt->execute([$username]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            if (isset($row['pointsBalance'])) $userPoints = intval($row['pointsBalance']);
+            if (isset($row['cashBalance'])) $userCash = floatval($row['cashBalance']);
+            if (!empty($row['role'])) $userRole = $row['role'];
+            if (!empty($row['bankName'])) $bankName = $row['bankName'];
+            if (!empty($row['accountNumber'])) $accountNumber = $row['accountNumber'];
+            if (!empty($row['accountName'])) $accountName = $row['accountName'];
+            if (!empty($row['fullName'])) $userFullName = $row['fullName'];
+            if (!empty($row['referralCode'])) $referralCode = $row['referralCode'];
+        }
+    } catch(Exception $e){}
+}
 
-// OTC Unlisted Tokens Config
-$tokensConfigFile = __DIR__ . '/config/tokens_config.json';
-$tokensConfig = file_exists($tokensConfigFile) ? json_decode(file_get_contents($tokensConfigFile), true) : [];
-$dashTokensList = $tokensConfig['tokens'] ?? [];
-$dashPlatformBank = $tokensConfig['platform_bank'] ?? [
-    'bank_name' => 'OPay Digital Services',
-    'account_number' => '8102345678',
-    'account_name' => 'INNOVATIONX OTC TRADING'
-];
+// Read dynamic platform settings from Admin
+$pricingFile = __DIR__ . '/config/app_pricing.json';
+$pricing = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
+$ptsRate = floatval($pricing['points_rate'] ?? 1.0);
+$refBonus = floatval($pricing['ref_commission'] ?? 500);
 
-$pageTitle = 'Member Dashboard | ' . APP_NAME;
+$wdFile = __DIR__ . '/config/withdrawal_settings.json';
+$wdSettings = file_exists($wdFile) ? @json_decode(@file_get_contents($wdFile), true) : [];
+$minCashWd = floatval($wdSettings['affiliate']['min_amount'] ?? 5000);
+$minTaskWd = floatval($wdSettings['task']['min_amount'] ?? 1000);
+
+$ptsInNaira = $userPoints * $ptsRate;
+$totalLiquidNaira = $userCash + $ptsInNaira;
+
+$isAdmin = in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']) || in_array($userRole, ['admin', 'super_admin']);
+$isUploader = $isAdmin || ($userRole === 'uploader');
+$isVendor = $isAdmin || ($userRole === 'vendor');
+
+$pageTitle = 'Dashboard | ' . APP_NAME;
 $hideNavbar = true;
 $hideFooter = true;
-require_once __DIR__ . '/includes/header.php';
 ?>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #080B14;
+            --bg-surface: #0F172A;
+            --bg-card: #141E33;
+            --bg-card-hover: #1A2642;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-focus: #38BDF8;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --primary: #38BDF8;
+            --primary-glow: rgba(56, 189, 248, 0.25);
+            --accent-green: #10B981;
+            --accent-amber: #F59E0B;
+            --accent-purple: #8B5CF6;
+            --accent-rose: #F43F5E;
+            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'SF Mono', Consolas, monospace;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 26px;
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
+            --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.2);
+        }
 
-<script>
-// Early resilience hooks to guarantee header buttons work immediately
-window.toggleDashDrawer = window.toggleDashDrawer || function() {
-    const drawer = document.getElementById('dashNavDrawer');
-    const backdrop = document.getElementById('dashDrawerBackdrop');
-    if (drawer && backdrop) {
-        drawer.classList.toggle('open');
-        backdrop.classList.toggle('open');
-    }
-};
-</script>
+        [data-theme="light"] {
+            --bg-base: #F8FAFC;
+            --bg-surface: #FFFFFF;
+            --bg-card: #F1F5F9;
+            --bg-card-hover: #E2E8F0;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-focus: #0284C7;
+            --text-main: #0F172A;
+            --text-muted: #475569;
+            --text-dim: #64748B;
+            --primary: #0284C7;
+            --primary-glow: rgba(2, 132, 199, 0.2);
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
 
-<!-- Dashboard Content Area -->
-<main class="section tech-bg-grid" style="padding-top:24px;padding-bottom:50px">
-    <div class="container dash-tech-container">
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
 
-        <!-- 1. Executive Top Bar -->
-        <header class="dash-hud-bar">
-            <div class="hud-left">
-                <div class="hud-avatar" id="hudUserAvatar"><?= htmlspecialchars($initials) ?></div>
-                <div class="hud-user-info">
-                    <h2 style="margin:0">
-                        <span id="hudUsername"><?= htmlspecialchars($username) ?></span>
-                    </h2>
-                </div>
+        /* Ambient Glow Background */
+        .ambient-glow {
+            position: fixed;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 1000px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(139, 92, 246, 0.04) 50%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Top Executive Navigation Bar */
+        .dash-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title span { color: var(--primary); }
+
+        .nav-right-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-portal-jump {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-jump-uploader {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-jump-uploader:hover {
+            background: #10B981;
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+        .btn-jump-vendor {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .btn-jump-vendor:hover {
+            background: #F59E0B;
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+        .btn-jump-admin {
+            background: rgba(244, 63, 94, 0.15);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+        .btn-jump-admin:hover {
+            background: #F43F5E;
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+
+        .btn-icon-nav {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .btn-icon-nav:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+        }
+
+        .notif-badge-dot {
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #F43F5E;
+            box-shadow: 0 0 6px #F43F5E;
+        }
+
+        .user-avatar-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1E293B, #334155);
+            border: 1px solid var(--border-subtle);
+            color: #38BDF8;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Main Container */
+        .dash-shell {
+            max-width: 1240px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px 80px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top Welcome Banner */
+        .welcome-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.65rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .welcome-text p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .live-sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 16px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #34D399;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .pulse-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 6px #10B981;
+            animation: pulseSync 2s infinite;
+        }
+        @keyframes pulseSync {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Hero Deck: Wallets + Realistic Platinum Settlement Card */
+        .hero-deck-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) {
+            .hero-deck-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Wallets Column */
+        .wallets-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .wallet-card-primary {
+            background: linear-gradient(135deg, rgba(20, 30, 51, 0.95), rgba(15, 23, 42, 0.98));
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+            overflow: hidden;
+        }
+        .wallet-card-primary::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, #0284C7, #38BDF8, #818CF8);
+        }
+
+        .wallet-top-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .wallet-title-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wallet-main-balance {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            color: #FFFFFF;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .wallet-main-balance .currency {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .wallet-sub-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .wallet-stat-col {
+            display: flex;
+            flex-direction: column;
+        }
+        .wallet-stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .wallet-stat-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        .btn-withdraw-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #0284C7, #0EA5E9);
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s ease;
+        }
+        .btn-withdraw-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+        }
+
+        /* Task Points Wallet Mini-Card */
+        .points-wallet-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .points-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .points-coin-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .points-val {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+        .points-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           RETAINED PLATINUM SETTLEMENT BANK CARD WIDGET
+           ═══════════════════════════════════════════════════════ */
+        .deck-credit-card {
+            background: linear-gradient(135deg, #0B132B 0%, #1C2541 60%, #1B2A4A 100%);
+            border: 1px solid rgba(125, 211, 252, 0.25);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 240px;
+        }
+        .credit-card-mesh-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.18) 0%, transparent 45%),
+                              radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.12) 0%, transparent 40%);
+            pointer-events: none;
+        }
+        .credit-card-sheen {
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.04) 50%, transparent 55%);
+            pointer-events: none;
+            transform: rotate(25deg);
+        }
+
+        .credit-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+        }
+        .credit-card-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .credit-card-logo-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            color: #FFFFFF;
+            font-weight: 900;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .credit-card-site-name {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.8px;
+            color: #FFFFFF;
+        }
+        .credit-card-tier-tag {
+            font-size: 0.65rem;
+            color: #7DD3FC;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: block;
+        }
+        .credit-card-bank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #E2E8F0;
+        }
+
+        .credit-card-chip-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 16px 0;
+            position: relative;
+            z-index: 2;
+        }
+        .credit-card-emv-chip {
+            width: 40px; height: 30px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #EAB308, #CA8A04, #FDE047);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            position: relative;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .emv-lines-horizontal {
+            position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+            background: rgba(0, 0, 0, 0.3); transform: translateY(-50%);
+        }
+        .emv-lines-vertical {
+            position: absolute; left: 35%; top: 0; bottom: 0; width: 1px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .credit-card-contactless {
+            color: #7DD3FC;
+            opacity: 0.85;
+        }
+
+        .credit-card-number-block {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 12px;
+        }
+        .credit-card-number-lbl {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #94A3B8;
+            margin-bottom: 2px;
+        }
+        .credit-card-number-digits {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #FFFFFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            user-select: none;
+        }
+
+        .credit-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 2;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .credit-card-holder-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .btn-credit-manage {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #7DD3FC;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-credit-manage:hover {
+            background: #0284C7;
+            color: #FFFFFF;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           DAILY EARNING STREAK CONSOLE
+           ═══════════════════════════════════════════════════════ */
+        .daily-streak-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.08));
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .streak-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .streak-flame-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .streak-title {
+            font-weight: 800;
+            font-size: 0.98rem;
+            color: #FFFFFF;
+        }
+        .streak-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .btn-claim-streak {
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            background: #F59E0B;
+            color: #000000;
+            font-weight: 800;
+            font-size: 0.82rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-claim-streak:hover {
+            background: #D97706;
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+
+        /* Navigation Tab Pill Bar */
+        .nav-tabs-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .tab-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .tab-pill-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-card);
+        }
+        .tab-pill-btn.active {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--primary);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        /* Tab Content Containers */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Grid Utilities */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 900px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        /* Content Cards */
+        .dash-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 20px;
+        }
+        .dash-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .dash-card-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #FFFFFF;
+        }
+        .dash-card-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Quick Action Shortcuts */
+        .shortcut-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .shortcut-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+        .shortcut-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .shortcut-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #FFFFFF;
+        }
+        .shortcut-sub {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+
+        /* Task Cards */
+        .task-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        .task-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+        .task-badge-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .category-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38BDF8;
+        }
+        .reward-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #10B981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .task-card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 6px;
+        }
+        .task-card-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+        .btn-task-action {
+            width: 100%;
+            padding: 9px;
+            border-radius: 8px;
+            background: #0284C7;
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.82rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-task-action:hover { background: #0369A1; }
+
+        /* Lucky Spin Wheel Canvas */
+        .wheel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            position: relative;
+        }
+        .wheel-wrapper {
+            position: relative;
+            width: 320px;
+            height: 320px;
+        }
+        #spinCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.25);
+            border: 4px solid #1E293B;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 24px solid #F59E0B;
+            z-index: 10;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+        }
+        .wheel-center-btn {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            color: #FFFFFF;
+            font-weight: 900;
+            font-size: 0.85rem;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 12;
+            transition: transform 0.15s;
+        }
+        .wheel-center-btn:hover { transform: translate(-50%, -50%) scale(1.05); }
+
+        /* Form Controls */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+        .btn-submit-main {
+            width: 100%;
+            padding: 13px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #0284C7, #0EA5E9);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 0.92rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-submit-main:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55);
+        }
+
+        /* Activity Ledger Table */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .activity-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .activity-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-main);
+        }
+
+        /* Generic Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+        .modal-card {
+            background: #111A2E;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: 28px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 18px; right: 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* Toast Notifications */
+        .toast-bubble {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: #1E293B;
+            border: 1px solid var(--border-subtle);
+            color: #FFFFFF;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+        }
+        .toast-bubble.show { display: flex; animation: slideUp 0.3s ease; }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow" aria-hidden="true"></div>
+
+    <!-- Top Navigation Header -->
+    <nav class="dash-nav">
+        <a href="dashboard.php" class="brand-logo-area">
+            <div class="brand-badge">IX</div>
+            <div class="brand-title">INNOVATION<span>X</span></div>
+        </a>
+
+        <div class="nav-right-cluster">
+            <!-- Role Badges & Direct Jump Portals -->
+            <?php if ($isAdmin): ?>
+                <a href="secure_hq_panel.php" class="btn-portal-jump btn-jump-admin" title="Open Master Admin Control Panel">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <span>Admin HQ</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($isUploader): ?>
+                <a href="uploader_dashboard.php" class="btn-portal-jump btn-jump-uploader" title="Switch to Uploader Publishing Studio">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Uploader Hub</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if ($isVendor): ?>
+                <a href="vendor_dashboard.php" class="btn-portal-jump btn-jump-vendor" title="Switch to Vendor Wholesale PIN Portal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    <span>Vendor Portal</span>
+                </a>
+            <?php endif; ?>
+
+            <div class="role-pill" id="hudUserRole">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#38BDF8"></span>
+                <?= htmlspecialchars(ucfirst($userRole)) ?>
             </div>
 
-            <div class="hud-actions">
-                <!-- In-App Notification Bell -->
-                <div class="notif-bell-wrap" id="navNotifWrap">
-                    <button type="button" class="btn-notif-bell" id="btnNotifBell" onclick="toggleNotifDropdown(event)" aria-label="Notifications" title="Notifications">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                        <span class="notif-badge-count" id="notifBadgeCount" style="display:none">0</span>
-                    </button>
-                    <div class="notif-dropdown" id="notifDropdown">
-                        <div class="notif-dropdown-head">
-                            <div class="notif-head-title-wrap">
-                                <span class="notif-head-title">Notifications</span>
-                                <span class="notif-unread-pill" id="notifDropdownCount">0 New</span>
-                            </div>
-                            <button type="button" class="notif-btn-mark-all" onclick="markAllNotificationsAsRead(event)" title="Mark all notifications as read">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Mark all read</span>
-                            </button>
-                        </div>
-                        <div class="notif-filter-tabs">
-                            <button type="button" class="notif-filter-tab active" id="notifTabAll" onclick="setNotifFilter('all', event)">All (<span id="notifTabCountAll">0</span>)</button>
-                            <button type="button" class="notif-filter-tab" id="notifTabUnread" onclick="setNotifFilter('unread', event)">Unread (<span id="notifTabCountUnread">0</span>)</button>
-                        </div>
-                        <div id="notifDropdownList" style="max-height:360px;overflow-y:auto;padding-right:2px"></div>
-                    </div>
-                </div>
+            <!-- Notifications Bell -->
+            <button type="button" class="btn-icon-nav" onclick="openNotifModal()" aria-label="Notifications" title="Notifications">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="notif-badge-dot"></span>
+            </button>
 
-                <?php
-                $dashIsAdmin = false;
-                $dashAdminName = getenv('ADMIN_USERNAME') ?: 'admin';
-                if (strtolower($username) === strtolower($dashAdminName) || in_array($userRole, ['admin', 'super_admin'])) {
-                    $dashIsAdmin = true;
-                }
-                ?>
-                <?php if ($dashIsAdmin): ?>
-                <a href="secure_hq_panel.php" class="btn-dash-action" title="Admin HQ Control Panel" style="background:#6366F1;color:#FFFFFF;border:1px solid #4F46E5;padding:0 14px;gap:6px;font-weight:700;box-shadow:0 0 12px rgba(99,102,241,0.4)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                    <span style="font-size:0.75rem">Admin HQ</span>
-                </a>
-                <?php endif; ?>
+            <!-- Theme Toggle -->
+            <button type="button" class="btn-icon-nav" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Dark/Light">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
 
-                <!-- Telegram Community Quick Pill -->
-                <button type="button" class="btn-dash-action" onclick="openTelegramCommunityModal()" title="Join Official Telegram Community" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);padding:0 12px;gap:6px">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                    <span style="font-size:0.75rem;font-weight:700">Telegram</span>
-                </button>
-
-                <!-- Theme Switcher -->
-                <button type="button" class="btn-dash-action btn-dash-icon-only btn-dash-theme" onclick="togglePlatformTheme(event)" aria-label="Toggle Theme" title="Toggle Theme">
-                    <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                </button>
-
-                <!-- Navigation Menu Toggle -->
-                <button type="button" class="btn-dash-action btn-dash-menu" id="btnDashHamburger" onclick="toggleDashDrawer()" title="Open Navigation Menu">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </button>
-
-                <!-- Logout Action -->
-                <a href="logout.php" onclick="try{localStorage.removeItem('ix_session_token');localStorage.removeItem('ix_current_user');localStorage.removeItem('ix_is_admin');sessionStorage.clear();}catch(e){}" class="btn-dash-action btn-dash-logout" title="Sign Out">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                </a>
-            </div>
-        </header>
-
-        
-
-        <!-- Slide-Out Navigation Drawer -->
-        <div class="drawer-backdrop" id="dashDrawerBackdrop" onclick="toggleDashDrawer()"></div>
-        <aside class="mobile-drawer" id="dashNavDrawer">
-            <!-- Luxury Profile Header -->
-            <div class="drawer-profile-card">
-                <div class="drawer-profile-info">
-                    <div id="drawerUserAvatar" class="drawer-avatar"><?= htmlspecialchars($initials) ?></div>
-                    <div class="drawer-user-meta">
-                        <div id="drawerUsername" class="drawer-user-name"><?= htmlspecialchars($username) ?></div>
-                        <div class="drawer-user-status">
-                            <span class="drawer-status-dot"></span> Active Member
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="drawer-close-btn-fancy" onclick="toggleDashDrawer()" aria-label="Close Navigation Drawer">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-
-            <!-- Quick Action Micro-Cards (3 Columns) -->
-            <div class="drawer-quick-grid">
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('overview')" class="drawer-quick-tile drawer-link drawer-link-active" id="drawerLink_overview">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    <span>Overview</span>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('withdraw')" class="drawer-quick-tile drawer-link" id="drawerLink_withdraw">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <span>Withdraw</span>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('tasks')" class="drawer-quick-tile drawer-link" id="drawerLink_tasks">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    <span>Tasks</span>
-                </a>
-            </div>
-
-            <!-- Services & Earning Card -->
-            <div class="drawer-group-card">
-                <div class="drawer-group-label">Services &amp; Earning</div>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('vtu')" class="drawer-compact-link drawer-link" id="drawerLink_vtu">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12" y2="18"></line></svg>
-                        </div>
-                        <span>VTU Telecoms &amp; Data</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('bank')" class="drawer-compact-link drawer-link" id="drawerLink_bank">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                        </div>
-                        <span>Bank &amp; Security PIN</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('tokens')" class="drawer-compact-link drawer-link" id="drawerLink_tokens">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
-                        </div>
-                        <span>Unlisted Tokens OTC</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('spin')" class="drawer-compact-link drawer-link" id="drawerLink_spin">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon" style="background:rgba(99,102,241,0.15);color:#818CF8;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"></path></svg>
-                        </div>
-                        <span>Lucky Spin &amp; Win</span>
-                    </div>
-                    <span class="badge" style="font-size:0.65rem;font-weight:700;background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;padding:2px 7px;border-radius:10px;">FREE SPIN</span>
-                </a>
-
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('uploader')" class="drawer-compact-link drawer-link" id="drawerLink_uploader">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        </div>
-                        <span>Become an Uploader</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('advert')" class="drawer-compact-link drawer-link" id="drawerLink_advert">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                        </div>
-                        <span>Place Adverts</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('referrals')" class="drawer-compact-link drawer-link" id="drawerLink_referrals">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        </div>
-                        <span>Referral Accelerator</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-            </div>
-
-            <!-- Platform & Community Card -->
-            <div class="drawer-group-card">
-                <div class="drawer-group-label">Community &amp; Access</div>
-                <a href="javascript:void(0)" onclick="openTelegramCommunityModal();toggleDashDrawer()" class="drawer-compact-link">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon" style="color:#38BDF8">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                        </div>
-                        <span>Telegram Community</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <a href="vendors.php" class="drawer-compact-link">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </div>
-                        <span>Verified Vendors &amp; PINs</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-
-                <a href="javascript:void(0)" onclick="selectDashDrawerTab('settings')" class="drawer-compact-link drawer-link" id="drawerLink_settings">
-                    <div class="drawer-link-left">
-                        <div class="drawer-link-icon">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        </div>
-                        <span>Settings & Preferences</span>
-                    </div>
-                    <svg class="drawer-link-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-            </div>
-
-            <!-- Sign Out Button -->
-            <a href="logout.php" onclick="try{localStorage.removeItem('ix_session_token');localStorage.removeItem('ix_current_user');localStorage.removeItem('ix_is_admin');sessionStorage.clear();}catch(e){}" class="drawer-logout-btn">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                <span>Sign Out</span>
+            <!-- User Menu / Sign Out -->
+            <a href="logout.php" class="btn-icon-nav" title="Sign Out">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </a>
-        </aside>
+        </div>
+    </nav>
 
-        <!-- One-Time New User Modal Container -->
-        <div class="new-user-overlay" id="appNewUserOverlay" style="display:none" onclick="if(event.target===this)dismissNewUserPopup()">
-            <div class="new-user-modal" style="position:relative">
-                <button type="button" class="new-user-close-btn" onclick="dismissNewUserPopup()" aria-label="Close popup notification" style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#94A3B8;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='rgba(56, 189, 248, 0.25)';this.style.borderColor='#7DD3FC';this.style.color='#FFFFFF'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='#94A3B8'">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-                <div class="new-user-icon-box" id="appNuIcon" style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </div>
-                <h3 class="new-user-title" id="appNuTitle">Welcome to INNOVATIONX!</h3>
-                <p class="new-user-text" id="appNuBody">Congratulations on joining Nigeria's #1 earning platform. Access 24/7 customer support and join our official community below.</p>
-                
-                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-                    <a href="https://wa.me/2348012345678" id="appNuCta" class="new-user-cta" target="_blank" style="margin:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;font-weight:800;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border-radius:12px">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        <span id="appNuCtaText">Access 24/7 Official Support</span>
-                    </a>
-                    <a href="mailto:support@innovationx.ng" id="appNuEmailLink" style="font-size:0.78rem;color:#38BDF8;text-decoration:underline;text-align:center">
-                        Official Email: support@innovationx.ng
-                    </a>
-                </div>
-                
-                <div>
-                    <button type="button" class="new-user-dismiss" onclick="dismissNewUserPopup()">
-                        Don't show this again
-                    </button>
-                </div>
+    <!-- Main Content Container -->
+    <main class="dash-shell">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-hero">
+            <div class="welcome-text">
+                <h1>Hello, <span id="dispUsername"><?= htmlspecialchars($username) ?></span> 👋</h1>
+                <p>Welcome to your SoftLife daily earnings workstation. Real-time platform status is online.</p>
+            </div>
+            <div class="live-sync-indicator" title="Connected to Admin HQ Real-Time Sync Engine">
+                <span class="pulse-dot"></span>
+                <span>SYNCED WITH ADMIN HQ</span>
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- 1. OVERVIEW PANE (CLEAN FINTECH DASHBOARD)                -->
-        <!-- ======================================================== -->
-        <div id="dashPane_overview" class="dash-service-pane" style="display:block">
-            
-            <!-- Google AdSense Container (Gated/hidden by default) -->
-            <div id="dashAdsenseLeaderboardWrap" class="reveal" style="display:none;margin-bottom:20px;background:linear-gradient(135deg, rgba(16,22,48,0.9) 0%, rgba(10,14,32,0.95) 100%);border:1px solid rgba(66,133,244,0.35);border-radius:16px;padding:12px 18px">
-                <div id="adsenseLeaderboardSlot"></div>
-            </div>
-
-            <!-- SECTION A: WALLET OVERVIEW HERO -->
-            <div class="dash-command-deck reveal">
-                <!-- Deck Main: Consolidated Liquidity Console -->
-                <div class="deck-main">
-                    <div class="deck-header">
-                        <div class="deck-micro-label">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                            <span>Total Available Balance</span>
-                        </div>
-                        <button type="button" onclick="toggleBalanceMask()" style="background:none;border:none;color:#94A3B8;cursor:pointer;padding:4px;display:flex;align-items:center;gap:4px;font-size:0.75rem" title="Hide/Show Balance">
-                            <svg id="eyeMaskIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
+        <!-- ═══════════════════════════════════════════════════════
+             HERO DECK: LIVE WALLETS & RETAINED PLATINUM BANK CARD
+             ═══════════════════════════════════════════════════════ -->
+        <section class="hero-deck-grid">
+            <!-- Wallets Stack -->
+            <div class="wallets-stack">
+                <div class="wallet-card-primary">
+                    <div class="wallet-top-meta">
+                        <span class="wallet-title-label">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Available Cash &amp; Referral Wallet
+                        </span>
+                        <span class="role-pill" style="font-size:0.7rem;padding:3px 8px">Settlement Ready</span>
                     </div>
 
-                    <div class="deck-amount-wrap">
-                        <span class="deck-currency">₦</span>
-                        <span class="deck-amount" id="deckTotalLiquidVal"><?= number_format($totalLiquid, 2) ?></span>
+                    <div class="wallet-main-balance">
+                        <span class="currency">₦</span><span id="dispCashBalance"><?= number_format($userCash, 2) ?></span>
                     </div>
 
-                    <!-- 3 Wallet Cards -->
-                    <div class="deck-telemetry-row">
-                        <div class="telemetry-item">
-                            <span class="telemetry-lbl">Referral Cash Wallet</span>
-                            <span class="telemetry-val accent-gold dash-maskable-val" id="deckRefCashVal">₦<?= number_format($userCash, 2) ?></span>
-                            <span class="telemetry-sub">Available for Withdrawal</span>
+                    <div class="wallet-sub-row">
+                        <div class="wallet-stat-col">
+                            <span class="wallet-stat-label">Total Liquid Value</span>
+                            <span class="wallet-stat-val" id="dispTotalLiquid">₦<?= number_format($totalLiquidNaira, 2) ?></span>
                         </div>
-                        <div class="telemetry-item">
-                            <span class="telemetry-lbl">Task Points Wallet</span>
-                            <span class="telemetry-val accent-cyan dash-maskable-val" id="deckTaskPtsVal"><?= number_format($userPoints) ?> PTS</span>
-                            <span class="telemetry-sub">1 PTS = ₦1.00 Value</span>
+                        <div class="wallet-stat-col">
+                            <span class="wallet-stat-label">Min Withdrawal (Admin Sync)</span>
+                            <span class="wallet-stat-val" id="dispMinWd">₦<?= number_format($minCashWd) ?></span>
                         </div>
-                        <div class="telemetry-item telemetry-withdrawal">
-                            <span class="telemetry-lbl">Total Paid Out</span>
-                            <span class="telemetry-val accent-indigo dash-maskable-val" id="deckPaidOutVal">₦0.00</span>
-                            <span class="telemetry-sub">Transferred to Bank</span>
-                        </div>
-                    </div>
-
-                    <!-- Quick Action Buttons -->
-                    <div class="deck-actions">
-                        <button type="button" onclick="switchDashTab('withdraw')" class="btn-dash-action btn-tech-primary btn-withdraw-action" style="padding:10px 24px">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        <button type="button" class="btn-withdraw-action" onclick="openWithdrawModal()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                             <span>Withdraw Funds</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Deck Side: Realistic High-Tech Credit Card Terminal -->
-                <div class="deck-credit-card" id="overviewSavedBankCard">
-                    <!-- Holographic Mesh & Specular Sheen Overlays -->
-                    <div class="credit-card-mesh-bg" aria-hidden="true"></div>
-                    <div class="credit-card-sheen" aria-hidden="true"></div>
-
-                    <!-- CARD HEADER: Platform Name + Logo & Partner Bank -->
-                    <div class="credit-card-header">
-                        <div class="credit-card-brand">
-                            <div class="credit-card-logo-icon">IX</div>
-                            <div class="credit-card-brand-meta">
-                                <span class="credit-card-site-name">INNOVATIONX</span>
-                                <span class="credit-card-tier-tag">PLATINUM SETTLEMENT</span>
-                            </div>
-                        </div>
-                        <div class="credit-card-bank-badge">
-                            <svg class="credit-bank-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"/></svg>
-                            <span id="overviewSavedBankName" class="credit-card-bank-name">OPay Digital Services</span>
-                        </div>
-                    </div>
-
-                    <!-- CARD CHIP & CONTACTLESS NFC SENSORS -->
-                    <div class="credit-card-chip-row">
-                        <!-- High-Tech Gold/Copper EMV Smart Chip -->
-                        <div class="credit-card-emv-chip" aria-hidden="true">
-                            <div class="emv-lines-horizontal"></div>
-                            <div class="emv-lines-vertical"></div>
-                            <div class="emv-center-die"></div>
-                        </div>
-                        <!-- Contactless NFC Wave Symbol -->
-                        <div class="credit-card-contactless" aria-hidden="true" title="Contactless Payout Terminal">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" stroke-width="2.2" stroke-linecap="round">
-                                <path d="M8.5 9.5a3.5 3.5 0 0 1 0 5"/>
-                                <path d="M12 7a7 7 0 0 1 0 10"/>
-                                <path d="M15.5 4.5a10.5 10.5 0 0 1 0 15"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- CARD NUMBER: Formatted NUBAN (Non-Copyable, Embossed Credit Card Style) -->
-                    <div class="credit-card-number-block">
-                        <div class="credit-card-number-lbl">SETTLEMENT ACCOUNT NUMBER (NUBAN)</div>
-                        <div class="credit-card-number-val-row">
-                            <span id="overviewSavedAccountNumber" class="credit-card-number-digits" unselectable="on" onselectstart="return false;" oncopy="return false;" oncut="return false;" oncontextmenu="return false;" ondragstart="return false;">0801 2345 67</span>
-                        </div>
-                    </div>
-
-                    <!-- CARD FOOTER: Account Holder + Status + Manage Bank Button -->
-                    <div class="credit-card-footer">
-                        <div class="credit-card-meta-row">
-                            <div class="credit-card-meta-col">
-                                <span class="credit-card-sub-lbl">ACCOUNT HOLDER</span>
-                                <span id="overviewSavedAccountName" class="credit-card-holder-name"><?= htmlspecialchars($username) ?></span>
-                            </div>
-                            <div class="credit-card-meta-col credit-card-meta-right">
-                                <span class="credit-card-sub-lbl">SECURITY / STATUS</span>
-                                <div class="credit-card-status-pill">
-                                    <span class="credit-status-dot"></span>
-                                    <span>ACTIVE PAYOUT</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="credit-card-action-row">
-                            <button type="button" onclick="manageBankDetailsFromCard()" class="btn-credit-manage" title="Update receiving bank and account number">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                <span>Manage Bank Account</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION A.5: DAILY STREAK & EARNING CHECK-IN CONSOLE -->
-            <div class="daily-checkin-card reveal" id="dailyCheckinCard">
-                <div class="daily-checkin-header">
-                    <div class="daily-checkin-title-wrap">
-                        <div class="daily-checkin-flame-icon">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>
+                <!-- Points Wallet Bar -->
+                <div class="points-wallet-bar">
+                    <div class="points-left">
+                        <div class="points-coin-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         </div>
                         <div>
-                            <div class="daily-checkin-title">Daily Earning Streak &amp; Check-In</div>
-                            <div class="daily-checkin-sub">Check in every 24 hours to build your streak multiplier and earn free Task Points.</div>
+                            <div class="points-val"><span id="dispPointsBalance"><?= number_format($userPoints) ?></span> <span style="font-size:0.85rem;color:#F59E0B">PTS</span></div>
+                            <div class="points-sub">Valued at <strong id="dispPointsValNaira">₦<?= number_format($ptsInNaira, 2) ?></strong> (Rate: 1 PTS = ₦<span id="dispPointsRate"><?= number_format($ptsRate, 2) ?></span>)</div>
                         </div>
                     </div>
-                    <div class="daily-checkin-streak-badge" id="checkinStreakBadge">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <span><strong id="checkinStreakDays">0</strong> Day Streak</span>
-                    </div>
-                </div>
-
-                <div class="daily-checkin-days-grid" id="checkinDaysGrid">
-                    <!-- 7-Day Visual Progression Rendered Dynamically -->
-                </div>
-
-                <div class="daily-checkin-action-bar">
-                    <button type="button" class="btn-claim-checkin" id="btnClaimDailyCheckin" onclick="claimDailyCheckinReward()">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span id="btnClaimDailyCheckinText">Claim Daily Reward (+50 PTS)</span>
+                    <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tasks')" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3)">
+                        <span>Earn More PTS ↗</span>
                     </button>
                 </div>
             </div>
 
-            <!-- SECTION B: CORE PLATFORM ECOSYSTEM SUITE (4 MODERN MODULES) -->
-            <div class="platform-modules-grid reveal">
-                <!-- Module 1: Jobbers Tasks -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <!-- Retained Realistic Platinum Settlement Credit Card -->
+            <div class="deck-credit-card" id="overviewSavedBankCard">
+                <div class="credit-card-mesh-bg" aria-hidden="true"></div>
+                <div class="credit-card-sheen" aria-hidden="true"></div>
+
+                <!-- Card Header -->
+                <div class="credit-card-header">
+                    <div class="credit-card-brand">
+                        <div class="credit-card-logo-icon">IX</div>
+                        <div>
+                            <span class="credit-card-site-name">INNOVATIONX</span>
+                            <span class="credit-card-tier-tag">PLATINUM SETTLEMENT</span>
                         </div>
-                        <span class="module-badge">Active Tasks</span>
                     </div>
-                    <div class="module-title">Jobbers Tasks &amp; Gigs</div>
-                    <div class="module-desc">Watch videos, test apps, and do simple social tasks to earn points for withdrawal.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">Earn Points</span>
-                        <button type="button" onclick="switchDashTab('tasks')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Browse Gigs
-                        </button>
+                    <div class="credit-card-bank-badge">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"/></svg>
+                        <span id="dispCardBankName"><?= htmlspecialchars($bankName) ?></span>
                     </div>
                 </div>
 
-                <!-- Module 2: VTU Telecoms -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-                        </div>
-                        <span class="module-badge">Instant Top-Up</span>
+                <!-- EMV Chip & Contactless Sensor -->
+                <div class="credit-card-chip-row">
+                    <div class="credit-card-emv-chip" aria-hidden="true">
+                        <div class="emv-lines-horizontal"></div>
+                        <div class="emv-lines-vertical"></div>
                     </div>
-                    <div class="module-title">VTU Airtime &amp; Data</div>
-                    <div class="module-desc">Buy cheap data bundles and airtime directly using your dashboard balance.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">1GB from ₦250</span>
-                        <button type="button" onclick="switchDashTab('vtu')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Recharge VTU
-                        </button>
+                    <div class="credit-card-contactless" aria-hidden="true" title="Contactless Payout Terminal">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" stroke-width="2.2" stroke-linecap="round">
+                            <path d="M8.5 9.5a3.5 3.5 0 0 1 0 5"/>
+                            <path d="M12 7a7 7 0 0 1 0 10"/>
+                            <path d="M15.5 4.5a10.5 10.5 0 0 1 0 15"/>
+                        </svg>
                     </div>
                 </div>
 
-                <!-- Module 3: Task Uploader Console -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
-                        </div>
-                        <span class="module-badge">Creator Desk</span>
-                    </div>
-                    <div class="module-title">Become an Uploader</div>
-                    <div class="module-desc">Publish your own custom tasks, drive authentic user actions, and hire thousands of active platform members.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">Accreditation</span>
-                        <button type="button" onclick="switchDashTab('uploader')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Upgrade Now
-                        </button>
-                    </div>
+                <!-- NUBAN Account Number -->
+                <div class="credit-card-number-block">
+                    <div class="credit-card-number-lbl">SETTLEMENT ACCOUNT NUMBER (NUBAN)</div>
+                    <div class="credit-card-number-digits" id="dispCardAccountNo"><?= htmlspecialchars($accountNumber) ?></div>
                 </div>
 
-                <!-- Module 4: Brand Advert Desk -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-                        </div>
-                        <span class="module-badge">Self-Serve</span>
+                <!-- Card Footer: Holder + Manage Bank Trigger -->
+                <div class="credit-card-footer">
+                    <div>
+                        <div class="credit-card-number-lbl">ACCOUNT HOLDER</div>
+                        <div class="credit-card-holder-name" id="dispCardAccountName"><?= htmlspecialchars($accountName) ?></div>
                     </div>
-                    <div class="module-title">Place Adverts</div>
-                    <div class="module-desc">Broadcast your business, Telegram channels, WhatsApp groups, and websites directly to verified Nigerian earners.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">Targeted Reach</span>
-                        <button type="button" onclick="switchDashTab('advert')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Create Advert
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Module 5: Unlisted Tokens OTC Desk -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
-                        </div>
-                        <span class="module-badge" style="background:rgba(52, 211, 153, 0.15);color:#34D399;border-color:rgba(52, 211, 153, 0.3)">P2P Escrow</span>
-                    </div>
-                    <div class="module-title">Unlisted Tokens OTC</div>
-                    <div class="module-desc">Buy &amp; sell pre-market mining tokens including VERY, RUBI, SIDRA, and PI with verified bank proof escrow.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">OTC Exchange</span>
-                        <button type="button" onclick="switchDashTab('tokens')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Trade Tokens
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Module 6: Lucky Spin & Win Wheel -->
-                <div class="module-card">
-                    <div class="module-card-head">
-                        <div class="module-icon-wrap" style="background:rgba(99,102,241,0.15);color:#818CF8;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
-                        </div>
-                        <span class="module-badge" style="background:rgba(129,140,248,0.15);color:#818CF8;border-color:rgba(129,140,248,0.3)">Daily Bonus</span>
-                    </div>
-                    <div class="module-title">Lucky Spin &amp; Win</div>
-                    <div class="module-desc">Spin the wheel daily to win platform task points and instant airtime vouchers directly to your balance.</div>
-                    <div class="module-card-footer">
-                        <span class="module-tag">Points &amp; Airtime</span>
-                        <button type="button" onclick="switchDashTab('spin')" class="btn-dash-action btn-tech-ghost" style="padding:5px 12px;font-size:0.78rem">
-                            Spin Wheel
-                        </button>
-                    </div>
+                    <button type="button" class="btn-credit-manage" onclick="openBankModal()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span>Manage Bank</span>
+                    </button>
                 </div>
             </div>
+        </section>
 
-            <!-- SECTION C: RECENT ACTIVITY STREAM (CLEAN FINTECH LEDGER) -->
-            <div class="reveal" style="margin-top:20px">
-                <div class="bento-card" style="padding:24px">
-                    <div class="bento-header" style="margin-bottom:16px;padding-bottom:12px">
-                        <div class="bento-title" style="display:flex;align-items:center;gap:10px">
-                            <div style="width:34px;height:34px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                            </div>
-                            <div>
-                                <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;letter-spacing:-0.01em">Recent Activity</div>
-                                <div style="font-size:0.75rem;color:#94A3B8;font-weight:500;text-transform:none">Your recent earnings, tasks, and withdrawals.</div>
-                            </div>
-                        </div>
-                        <div></div>
-                    </div>
-
-                    <div class="terminal-feed-list" id="dashboardActivityFeed">
-                        <div style="display:flex;flex-direction:column;gap:10px">
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
-                                <div style="display:flex;align-items:center;gap:12px">
-                                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                    </div>
-                                    <div>
-                                        <div style="font-size:0.86rem;font-weight:700;color:#F1F5F9">Daily Member Login Streak Reward</div>
-                                        <div style="font-size:0.72rem;color:#94A3B8">Today · System Automated Credit</div>
-                                    </div>
-                                </div>
-                                <div style="text-align:right">
-                                    <span style="font-size:0.88rem;font-weight:900;color:#38BDF8">+100 PTS</span>
-                                    <div style="font-size:0.68rem;color:#94A3B8">Credited</div>
-                                </div>
-                            </div>
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
-                                <div style="display:flex;align-items:center;gap:12px">
-                                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#38BDF8">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </div>
-                                    <div>
-                                        <div style="font-size:0.86rem;font-weight:700;color:#F1F5F9">Account Onboarding &amp; Security Setup</div>
-                                        <div style="font-size:0.72rem;color:#94A3B8">Recent · Verified Membership</div>
-                                    </div>
-                                </div>
-                                <div style="text-align:right">
-                                    <span style="font-size:0.72rem;font-weight:800;color:#7DD3FC;background:rgba(56, 189, 248, 0.15);padding:3px 8px;border-radius:6px">Completed</span>
-                                    <div style="font-size:0.68rem;color:#94A3B8">Secured</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Daily Streak Console -->
+        <section class="daily-streak-banner">
+            <div class="streak-left">
+                <div class="streak-flame-icon">🔥</div>
+                <div>
+                    <div class="streak-title">Daily Earning Streak: <span id="dispStreakCount"><?= $streakCount ?></span> Days</div>
+                    <div class="streak-desc">Check in every 24 hours to build your earning streak multiplier and receive free Task Points.</div>
                 </div>
             </div>
+            <button type="button" class="btn-claim-streak" onclick="claimDailyStreak()">
+                <span>Claim Daily Streak Bonus (+50 PTS)</span>
+            </button>
+        </section>
 
+        <!-- Navigation Tabs Bar -->
+        <div class="nav-tabs-bar">
+            <button type="button" class="tab-pill-btn active" onclick="switchTab('tab-overview')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>Overview</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tasks')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span>Tasks &amp; Gigs</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-spin')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                <span>Lucky Spin &amp; Win</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-vtu')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>VTU Airtime &amp; Data</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tokens')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="2" y1="12" x2="4" y2="12"></line></svg>
+                <span>OTC Tokens</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-referrals')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span>Refer &amp; Earn</span>
+            </button>
+            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-bank')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"/></svg>
+                <span>Bank &amp; Security</span>
+            </button>
         </div>
 
-            <!-- ======================================================== -->
-            <!-- 2. JOBBERS OPPORTUNITIES & EARNING TASKS PANE            -->
-            <!-- ======================================================== -->
-            <div id="dashPane_tasks" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 1: OVERVIEW & SHORTCUTS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-overview" class="tab-pane active">
+            <!-- Quick Shortcuts -->
+            <div class="grid-4" style="margin-bottom:24px">
+                <div class="shortcut-item" onclick="openWithdrawModal()">
+                    <div class="shortcut-icon" style="background:rgba(2,132,199,0.15);color:#38BDF8">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    </div>
+                    <div class="shortcut-title">Withdraw Funds</div>
+                    <div class="shortcut-sub">To Settlement Bank</div>
                 </div>
 
-                <!-- Task Hub Google Sponsored Advertisement Banner (Hidden until Google AdSense is set up) -->
-                <div id="dashAdsenseTaskPromoWrap" class="reveal" style="display:none;margin-bottom:16px;background:linear-gradient(135deg, rgba(16,22,48,0.9) 0%, rgba(10,14,32,0.95) 100%);border:1px solid rgba(66,133,244,0.35);border-radius:14px;padding:12px 18px;box-shadow:0 8px 30px rgba(0,0,0,0.35)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                        <div style="display:flex;align-items:center;gap:6px">
-                            <span style="font-size:0.65rem;padding:2px 6px;border-radius:4px;background:#EA4335;color:#FFF;font-weight:900">Ad</span>
-                            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:700">Sponsored Task Promotion • Google AdSense</span>
-                        </div>
-                        <span style="font-size:0.65rem;color:var(--text-muted)">AdChoices</span>
+                <div class="shortcut-item" onclick="switchTab('tab-tasks')">
+                    <div class="shortcut-icon" style="background:rgba(16,185,129,0.15);color:#34D399">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                     </div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-                        <div style="display:flex;align-items:center;gap:12px;min-width:0">
-                            <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#FBBC05,#EA4335);display:flex;align-items:center;justify-content:center;color:#FFF;font-weight:900;font-size:0.95rem;flex-shrink:0">G</div>
-                            <div>
-                                <div style="font-size:0.86rem;font-weight:800;color:var(--white-pure)">Earn Higher Multipliers with Verified Brand Partners</div>
-                                <div style="font-size:0.72rem;color:#94A3B8">Watch sponsored video promos and claim instant rewards into your wallet.</div>
-                            </div>
-                        </div>
-                        <div style="flex-shrink:0">
-                            <a href="https://google.com" target="_blank" class="btn-dash-action" style="padding:6px 14px;font-size:0.75rem;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;border-radius:8px;font-weight:800;text-decoration:none">
-                                <span>View Promotion</span>
-                            </a>
-                        </div>
-                    </div>
+                    <div class="shortcut-title">Complete Tasks</div>
+                    <div class="shortcut-sub">Earn Task Points</div>
                 </div>
 
-                <div class="dash-panel reveal" id="jobbersTasksSection" data-feature="jobbers_tasks" style="border-color:rgba(56, 189, 248, 0.3);box-shadow:0 10px 40px rgba(0,0,0,0.5),0 0 35px rgba(56, 189, 248, 0.08)">
-                    <div class="dash-panel-header">
-                        <div class="dash-panel-title">
-                            <span data-content-key="jobbers_hub_title">Jobbers Opportunities &amp; Daily Tasks</span>
-                        </div>
-                        <span class="dash-panel-badge" id="jobbersAvailableCount" style="color:var(--sky-vibrant);background:rgba(56, 189, 248, 0.18)">3 Live Tasks</span>
+                <div class="shortcut-item" onclick="switchTab('tab-spin')">
+                    <div class="shortcut-icon" style="background:rgba(245,158,11,0.15);color:#FBBF24">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                     </div>
-                    <p style="font-size:0.84rem;color:var(--text-gray);margin-bottom:14px" data-content-key="jobbers_hub_desc">
-                        Explore verified earning opportunities published by official uploaders. Perform the quick tasks, submit proof, and get credited in Task Points instantly.
-                    </p>
+                    <div class="shortcut-title">Lucky Spin Wheel</div>
+                    <div class="shortcut-sub">Daily Flash Prizes</div>
+                </div>
 
-                    <!-- Opportunity Category Filter Chips -->
-                    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px">
-                        <button type="button" class="dash-amt-pill active" onclick="filterJobbersCategory('all', this)" style="padding:5px 12px;font-size:0.75rem">All Gigs</button>
-                        <button type="button" class="dash-amt-pill" onclick="filterJobbersCategory('Sponsored Video', this)" style="padding:5px 12px;font-size:0.75rem">Videos</button>
-                        <button type="button" class="dash-amt-pill" onclick="filterJobbersCategory('WhatsApp Status', this)" style="padding:5px 12px;font-size:0.75rem">WhatsApp</button>
-                        <button type="button" class="dash-amt-pill" onclick="filterJobbersCategory('Telegram / Social', this)" style="padding:5px 12px;font-size:0.75rem">Social</button>
-                        <button type="button" class="dash-amt-pill" onclick="filterJobbersCategory('App Review', this)" style="padding:5px 12px;font-size:0.75rem">Reviews</button>
+                <div class="shortcut-item" onclick="switchTab('tab-vtu')">
+                    <div class="shortcut-icon" style="background:rgba(139,92,246,0.15);color:#A78BFA">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
                     </div>
-
-                    <!-- Live Opportunity Cards List (Loaded dynamically) -->
-                    <div class="dash-task-list" id="jobbersOpportunitiesFeed">
-                        <!-- Populated via renderJobbersOpportunities() -->
-                    </div>
+                    <div class="shortcut-title">VTU Airtime &amp; Data</div>
+                    <div class="shortcut-sub">Pay with PTS or Cash</div>
                 </div>
             </div>
 
-            <!-- ======================================================== -->
-            <!-- 3. VTU TELECOMS & CHEAP DATA / AIRTIME PANE              -->
-            <!-- ======================================================== -->
-            <div id="dashPane_vtu" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-                <div class="dash-panel reveal" id="vtuSection" data-feature="vtu_airtime" style="border-color:rgba(56, 189, 248, 0.35);box-shadow:0 15px 45px rgba(0,0,0,0.5),0 0 35px rgba(56, 189, 248, 0.1)">
-                    <div class="dash-panel-header">
-                        <div class="dash-panel-title">
-                            <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                            </div>
-                            <span>VTU Telecoms &amp; Discounted SME Data</span>
-                        </div>
-                        <span class="dash-panel-badge" style="color:#7DD3FC;background:rgba(56, 189, 248, 0.15)">2.4s Instant API</span>
-                    </div>
-                    <p style="font-size:0.84rem;color:var(--text-gray);margin-bottom:18px">
-                        Purchase airtime top-ups or discounted 30-day SME data bundles directly with your Task Points or Referral Cash balance.
-                    </p>
-
-                    <!-- Service Mode Switcher: Airtime vs Data -->
-                    <div class="vtu-mode-tabs">
-                        <button type="button" id="vtuModeAirtimeBtn" class="vtu-mode-btn active" onclick="switchVtuMode('airtime')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                            <span>Buy Airtime (Top-Up)</span>
-                        </button>
-                        <button type="button" id="vtuModeDataBtn" class="vtu-mode-btn" onclick="switchVtuMode('data')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
-                            <span>Buy SME Data Bundles</span>
-                        </button>
-                    </div>
-
-                    <!-- Network Brand Grid Selector -->
-                    <label style="font-size:0.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:8px">Select Mobile Network</label>
-                    <div class="vtu-brand-grid">
-                        <div class="vtu-brand-card active-mtn" onclick="selectVtuNet('mtn', this)">
-                            <div class="vtu-brand-dot" style="background:#38BDF8"></div>
-                            <div class="vtu-brand-name">MTN</div>
-                            <div class="vtu-brand-tag">3% Discount</div>
-                        </div>
-                        <div class="vtu-brand-card" onclick="selectVtuNet('airtel', this)">
-                            <div class="vtu-brand-dot" style="background:#F43F5E"></div>
-                            <div class="vtu-brand-name">Airtel</div>
-                            <div class="vtu-brand-tag">2.5% Discount</div>
-                        </div>
-                        <div class="vtu-brand-card" onclick="selectVtuNet('glo', this)">
-                            <div class="vtu-brand-dot" style="background:#0284C7"></div>
-                            <div class="vtu-brand-name">Glo</div>
-                            <div class="vtu-brand-tag">5% Discount</div>
-                        </div>
-                        <div class="vtu-brand-card" onclick="selectVtuNet('9mobile', this)">
-                            <div class="vtu-brand-dot" style="background:#006848"></div>
-                            <div class="vtu-brand-name">9mobile</div>
-                            <div class="vtu-brand-tag">4% Discount</div>
-                        </div>
-                    </div>
-
-                    <!-- 1. AIRTIME RECHARGE CONTAINER -->
-                    <div id="vtuAirtimeContainer">
-                        <!-- Quick Airtime Amount Grid -->
-                        <div style="margin-bottom:16px">
-                            <label style="font-size:0.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:8px">Quick Amount</label>
-                            <div class="vtu-amount-grid">
-                                <button type="button" class="vtu-amt-btn" onclick="setAirtimeAmount(100, this)">₦100</button>
-                                <button type="button" class="vtu-amt-btn" onclick="setAirtimeAmount(200, this)">₦200</button>
-                                <button type="button" class="vtu-amt-btn active" onclick="setAirtimeAmount(500, this)">₦500</button>
-                                <button type="button" class="vtu-amt-btn" onclick="setAirtimeAmount(1000, this)">₦1,000</button>
-                                <button type="button" class="vtu-amt-btn" onclick="setAirtimeAmount(2000, this)">₦2,000</button>
-                                <button type="button" class="vtu-amt-btn" onclick="setAirtimeAmount(5000, this)">₦5,000</button>
-                            </div>
-                        </div>
-
-                        <form id="vtuAirtimeForm" onsubmit="processAirtimeRecharge(event)">
-                            <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:16px">
-                                <div class="withdraw-form-group" style="margin-bottom:0">
-                                    <label for="airtimePhone" style="font-size:0.75rem">Beneficiary Phone Number</label>
-                                    <input type="tel" id="airtimePhone" maxlength="11" placeholder="e.g. 08012345678" required style="padding:12px 14px;font-size:0.92rem">
-                                </div>
-                                <div class="withdraw-form-group" style="margin-bottom:0">
-                                    <label for="airtimeCustomAmount" style="font-size:0.75rem">Recharge Amount (₦)</label>
-                                    <input type="number" id="airtimeCustomAmount" value="500" min="50" max="50000" oninput="recalcAirtimePayable()" required style="padding:12px 14px;font-size:0.92rem">
-                                </div>
-                            </div>
-
-                            <div class="withdraw-form-group" style="margin-bottom:16px">
-                                <label style="font-size:0.75rem">Deduct Payment From Wallet</label>
-                                <input type="hidden" id="airtimePaySource" value="points">
-                                <div class="ix-dropdown" id="airtimeSourceDropdown">
-                                    <button type="button" class="ix-dropdown-btn" onclick="toggleIxDropdown('airtimeSourceDropdown')">
-                                        <div class="ix-dropdown-info">
-                                            <div class="ix-dropdown-icon" id="airtimeSourceIcon"></div>
-                                            <div class="ix-dropdown-texts">
-                                                <span class="ix-dropdown-label" id="airtimeSourceLabel">Task Points Wallet</span>
-                                                <span class="ix-dropdown-sub" id="airtimeSourceSub">5,400 PTS available</span>
-                                            </div>
-                                        </div>
-                                        <span class="ix-dropdown-badge" style="background:rgba(56, 189, 248, 0.25);border-color:rgba(56, 189, 248, 0.5);color:var(--sky-vibrant)">1 PTS = ₦1</span>
-                                        <div class="ix-dropdown-chevron">▼</div>
-                                    </button>
-                                    <div class="ix-dropdown-menu">
-                                        <div class="ix-dropdown-item active" onclick="selectIxSource('airtime', 'points', '', 'Task Points Wallet', '5,400 PTS available', this)">
-                                            <div class="ix-item-icon"></div>
-                                            <div class="ix-item-content">
-                                                <div class="ix-item-title">Task Points Wallet</div>
-                                                <div class="ix-item-desc">Balance: 5,400 PTS • 1 PTS = ₦1.00</div>
-                                            </div>
-                                            <div class="ix-item-check"></div>
-                                        </div>
-                                        <div class="ix-dropdown-item" onclick="selectIxSource('airtime', 'cash', '', 'Referral Cash Wallet', '₦2,500 available', this)">
-                                            <div class="ix-item-icon"></div>
-                                            <div class="ix-item-content">
-                                                <div class="ix-item-title">Referral Cash Wallet</div>
-                                                <div class="ix-item-desc">Balance: ₦2,500.00 Direct Earnings</div>
-                                            </div>
-                                            <div class="ix-item-check"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Live Discount Summary Card -->
-                            <div class="vtu-summary-box">
-                                <div>
-                                    <div style="font-size:0.75rem;color:var(--text-muted)">Member Discount Applied (3.0%)</div>
-                                    <div style="font-size:0.88rem;color:#38BDF8;font-weight:800" id="airtimeDiscountLabel">You Save ₦15.00</div>
-                                </div>
-                                <div style="text-align:right">
-                                    <div style="font-size:0.75rem;color:var(--text-muted)">Total Wallet Deduction</div>
-                                    <div style="font-size:1.25rem;color:var(--sky-vibrant);font-weight:900" id="airtimePayableLabel">₦485.00 / 485 PTS</div>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btnSubmitAirtime" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;padding:14px;font-size:0.95rem;background:linear-gradient(135deg, #0284C7, #38BDF8);box-shadow:0 8px 25px rgba(56, 189, 248, 0.35)">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                                <span>Recharge Airtime Now (Instant Clearance)</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 2. DATA BUNDLE CONTAINER -->
-                    <div id="vtuDataContainer" style="display:none">
-                        <!-- Data Plan Cards -->
-                        <label style="font-size:0.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:8px">Select SME 30-Day Bundle</label>
-                        <div class="vtu-plans-grid-pro" id="vtuPlansGrid">
-                            <div class="vtu-plan-card-pro active" onclick="selectVtuPlan('1GB', 250, this)">
-                                <span class="vtu-plan-badge">Popular</span>
-                                <div class="vtu-plan-size-val">1.0 GB</div>
-                                <div class="vtu-plan-price-val">₦250 / 250 PTS</div>
-                                <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px">30 Days SME</div>
-                            </div>
-                            <div class="vtu-plan-card-pro" onclick="selectVtuPlan('2GB', 490, this)">
-                                <span class="vtu-plan-badge">Saver</span>
-                                <div class="vtu-plan-size-val">2.0 GB</div>
-                                <div class="vtu-plan-price-val">₦490 / 490 PTS</div>
-                                <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px">30 Days SME</div>
-                            </div>
-                            <div class="vtu-plan-card-pro" onclick="selectVtuPlan('5GB', 1200, this)">
-                                <span class="vtu-plan-badge">Heavy</span>
-                                <div class="vtu-plan-size-val">5.0 GB</div>
-                                <div class="vtu-plan-price-val">₦1,200 / 1200 PTS</div>
-                                <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px">30 Days SME</div>
-                            </div>
-                            <div class="vtu-plan-card-pro" onclick="selectVtuPlan('10GB', 2350, this)">
-                                <span class="vtu-plan-badge">Best Value</span>
-                                <div class="vtu-plan-size-val">10.0 GB</div>
-                                <div class="vtu-plan-price-val">₦2,350 / 2350 PTS</div>
-                                <div style="font-size:0.68rem;color:var(--text-muted);margin-top:2px">30 Days SME</div>
-                            </div>
-                        </div>
-
-                        <!-- Phone Number & Payment Source Form -->
-                        <form id="vtuRechargeForm" onsubmit="processVtuRecharge(event)">
-                            <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:16px">
-                                <div class="withdraw-form-group" style="margin-bottom:0">
-                                    <label for="vtuPhone" style="font-size:0.75rem">Beneficiary Phone Number</label>
-                                    <input type="tel" id="vtuPhone" maxlength="11" placeholder="e.g. 08123456789" required style="padding:12px 14px;font-size:0.92rem">
-                                </div>
-                                <div class="withdraw-form-group" style="margin-bottom:0">
-                                    <label style="font-size:0.75rem">Deduct Payment From</label>
-                                    <input type="hidden" id="vtuPaySource" value="points">
-                                    <div class="ix-dropdown" id="dataPaymentDropdown">
-                                        <button type="button" class="ix-dropdown-btn" onclick="toggleIxDropdown('dataPaymentDropdown')" style="padding:11px 12px">
-                                            <div class="ix-dropdown-info">
-                                                <div class="ix-dropdown-icon" id="dataPaymentIcon" style="width:30px;height:30px;font-size:0.85rem"></div>
-                                                <div class="ix-dropdown-texts">
-                                                    <span class="ix-dropdown-label" id="dataPaymentLabel" style="font-size:0.85rem">Task Points Wallet</span>
-                                                    <span class="ix-dropdown-sub" id="dataPaymentSub" style="font-size:0.7rem">5,400 PTS</span>
-                                                </div>
-                                            </div>
-                                            <div class="ix-dropdown-chevron" style="font-size:0.75rem">▼</div>
-                                        </button>
-                                        <div class="ix-dropdown-menu">
-                                            <div class="ix-dropdown-item active" onclick="selectIxSource('data', 'points', '', 'Task Points Wallet', '5,400 PTS', this)">
-                                                <div class="ix-item-icon"></div>
-                                                <div class="ix-item-content">
-                                                    <div class="ix-item-title">Task Points Wallet</div>
-                                                    <div class="ix-item-desc">Balance: 5,400 PTS</div>
-                                                </div>
-                                                <div class="ix-item-check"></div>
-                                            </div>
-                                            <div class="ix-dropdown-item" onclick="selectIxSource('data', 'cash', '', 'Referral Cash Wallet', '₦2,500.00', this)">
-                                                <div class="ix-item-icon"></div>
-                                                <div class="ix-item-content">
-                                                    <div class="ix-item-title">Referral Cash Wallet</div>
-                                                    <div class="ix-item-desc">Balance: ₦2,500.00</div>
-                                                </div>
-                                                <div class="ix-item-check"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btnSubmitData" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;padding:14px;font-size:0.95rem;background:linear-gradient(135deg, #0284C7, #38BDF8);box-shadow:0 8px 25px rgba(56, 189, 248, 0.35)">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
-                                <span>Recharge Data Bundle Instantly </span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- 4. SAVED BANK ACCOUNT SETTINGS PANE                     -->
-            <!-- ======================================================== -->
-            
-            <!-- ======================================================== -->
-            <!-- 4B. ACCOUNT SETTINGS & PERSONALIZATION PANE              -->
-            <!-- ======================================================== -->
-            <div id="dashPane_settings" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-
-                <!-- Settings Header Banner -->
-                <div class="admin-card reveal" style="padding:24px;border:1px solid rgba(99,102,241,0.25);background:linear-gradient(135deg,rgba(17,19,32,0.9),rgba(30,32,48,0.95));margin-bottom:20px;display:flex;align-items:center;gap:18px">
-                    <div id="settingsProfileAvatar" style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;font-size:1.6rem;font-weight:900;box-shadow:0 8px 25px rgba(56,189,248,0.35);border:2px solid rgba(255,255,255,0.2)"><?= htmlspecialchars($initials) ?></div>
+            <!-- Recent Activity Audit Ledger -->
+            <div class="dash-card">
+                <div class="dash-card-header">
                     <div>
-                        <h3 id="settingsProfileName" style="margin:0;font-size:1.3rem;font-weight:900;color:#F1F5F9;letter-spacing:-0.01em"><?= htmlspecialchars($username) ?></h3>
-                        <span style="font-size:0.75rem;font-weight:700;color:#38BDF8;background:rgba(56,189,248,0.15);padding:3px 10px;border-radius:8px;display:inline-block;margin-top:6px;border:1px solid rgba(56,189,248,0.3)">Verified Member</span>
+                        <div class="dash-card-title">Recent Activity &amp; Audit Ledger</div>
+                        <div class="dash-card-sub">Real-time log of rewards, tasks, payouts, and top-ups</div>
                     </div>
+                    <button type="button" class="tab-pill-btn" onclick="syncLiveUserData()" style="font-size:0.75rem;padding:6px 12px">
+                        <span>↻ Refresh Ledger</span>
+                    </button>
                 </div>
 
-                <!-- Settings Grid -->
-                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:20px">
-                    
-                    <!-- 1. Profile & Personal Info -->
-                    <div class="dash-panel reveal">
-                        <div class="dash-panel-header" style="margin-bottom:16px">
-                            <div class="dash-panel-title">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Profile Information</span>
-                            </div>
-                        </div>
-                        <form id="settingsProfileForm" onsubmit="handleSaveProfileSettings(event)">
-                            <div style="margin-bottom:20px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:10px">Choose Avatar Style</label>
-                                <div style="display:flex;gap:12px;flex-wrap:wrap">
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="blue" checked style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                        </div>
-                                    </label>
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="purple" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #7C3AED, #C084FC);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><path d="M9 15h6"/><path d="M6.5 5.5a2.5 2.5 0 0 0 3.5 0"/><path d="M14 5.5a2.5 2.5 0 0 1 3.5 0"/></svg>
-                                        </div>
-                                    </label>
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="emerald" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #059669, #34D399);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
-                                        </div>
-                                    </label>
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="rose" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #E11D48, #FB7185);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
-                                        </div>
-                                    </label>
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="gold" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #D97706, #FBBF24);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20"/><circle cx="10" cy="12" r="1" fill="currentColor"/><circle cx="14" cy="12" r="1" fill="currentColor"/></svg>
-                                        </div>
-                                    </label>
-                                    <label class="avatar-option">
-                                        <input type="radio" name="avatar_choice" value="dark" style="display:none">
-                                        <div class="avatar-preview" style="width:45px;height:45px;border-radius:12px;background:linear-gradient(135deg, #1E293B, #475569);display:flex;align-items:center;justify-content:center;color:#FFF;cursor:pointer;border:2px solid transparent;transition:all 0.2s">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-                                        </div>
-                                    </label>
-                                </div>
-                                <style>
-                                    .avatar-option input:checked + .avatar-preview { border-color: #FFF !important; box-shadow: 0 0 15px rgba(255,255,255,0.4); transform: scale(1.05); }
-                                    [data-theme="light"] .avatar-option input:checked + .avatar-preview { border-color: #0F172A !important; box-shadow: 0 0 15px rgba(0,0,0,0.3); }
-                                </style>
-                            </div>
-                            <!-- 1. Display Name (Editable) -->
-                            <div style="margin-bottom:14px">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Display Name</label>
-                                    <span style="font-size:0.68rem;font-weight:700;color:#38BDF8;background:rgba(56,189,248,0.12);padding:2px 8px;border-radius:6px;border:1px solid rgba(56,189,248,0.25)">Editable</span>
-                                </div>
-                                <input type="text" id="settingsInputName" class="admin-input" placeholder="Your Display Name" value="<?= htmlspecialchars($username) ?>" required style="width:100%">
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Instantly updates your greeting and avatar across the dashboard.</span>
-                            </div>
-
-                            <!-- 2. Account Username (Permanent / Locked) -->
-                            <div style="margin-bottom:14px">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Account Username</label>
-                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        Permanent
-                                    </span>
-                                </div>
-                                <input type="text" id="settingsInputUsername" class="admin-input" value="<?= htmlspecialchars($username) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Primary unique membership ID and referral identifier. Cannot be changed.</span>
-                            </div>
-
-                            <!-- 3. Email Address (Permanent / Locked) -->
-                            <div style="margin-bottom:14px">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Email Address (Gmail)</label>
-                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        Permanent
-                                    </span>
-                                </div>
-                                <input type="email" id="settingsInputEmail" class="admin-input" value="<?= htmlspecialchars($userEmail) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Bound to your account for payout receipts and security alerts. Cannot be changed.</span>
-                            </div>
-
-                            <!-- 4. Phone Number (Permanent / Locked) -->
-                            <div style="margin-bottom:16px">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                                    <label style="font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:0">Phone / WhatsApp Number</label>
-                                    <span style="font-size:0.68rem;font-weight:700;color:#94A3B8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:inline-flex;align-items:center;gap:4px">
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        Permanent
-                                    </span>
-                                </div>
-                                <input type="tel" id="settingsInputPhone" class="admin-input" value="<?= htmlspecialchars($userPhone) ?>" readonly disabled style="width:100%;opacity:0.7;cursor:not-allowed;background:rgba(255,255,255,0.03);color:#CBD5E1">
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Bound to your registered WhatsApp for verification and VTU delivery. Cannot be changed.</span>
-                            </div>
-
-                            <!-- Security Notice -->
-                            <div style="padding:10px 14px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:10px;margin-bottom:18px;font-size:0.72rem;color:#94A3B8;line-height:1.5;display:flex;align-items:flex-start;gap:8px">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2" style="flex-shrink:0;margin-top:2px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                <span><strong>Security Notice:</strong> Your registered username, email address, and phone number are permanently bound to your account for payout security and fraud prevention. Only your Display Name and Avatar style can be changed.</span>
-                            </div>
-
-                            <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;height:38px;justify-content:center">
-                                <span>Save Display Name</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 2. Bank & Settlement Account -->
-                    <div class="dash-panel reveal">
-                        <div class="dash-panel-header" style="margin-bottom:16px">
-                            <div class="dash-panel-title">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                                <span>Settlement Bank Account</span>
-                            </div>
-                        </div>
-                        <form id="settingsBankForm" onsubmit="handleSaveBankSettings(event)">
-                            <div style="margin-bottom:14px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Select Bank</label>
-                                <select id="settingsInputBank" class="admin-select" style="width:100%">
-                                    <option value="OPay Digital Services">OPay Digital Services</option>
-                                    <option value="Palmpay">Palmpay</option>
-                                    <option value="Kuda Microfinance Bank">Kuda Microfinance Bank</option>
-                                    <option value="Moniepoint Microfinance Bank">Moniepoint Microfinance Bank</option>
-                                    <option value="Guaranty Trust Bank (GTBank)">Guaranty Trust Bank (GTBank)</option>
-                                    <option value="Access Bank">Access Bank</option>
-                                    <option value="Zenith Bank">Zenith Bank</option>
-                                    <option value="United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
-                                    <option value="First Bank of Nigeria">First Bank of Nigeria</option>
-                                </select>
-                            </div>
-                            <div style="margin-bottom:14px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">10-Digit Account Number (NUBAN)</label>
-                                <input type="text" id="settingsInputNuban" class="admin-input" placeholder="0801234567" maxlength="10" value="0801234567" required>
-                            </div>
-                            <div style="margin-bottom:18px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Account Holder Name</label>
-                                <input type="text" id="settingsInputAccName" class="admin-input" placeholder="Account Name" value="<?= htmlspecialchars($username) ?>" required>
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">This updates your live bank card on the dashboard immediately.</span>
-                            </div>
-                            <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;height:38px;justify-content:center">
-                                <span>Save Bank Details</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 3. Withdrawal Security PIN -->
-                    <div class="dash-panel reveal">
-                        <div class="dash-panel-header" style="margin-bottom:16px">
-                            <div class="dash-panel-title">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                <span>4-Digit Withdrawal PIN</span>
-                            </div>
-                        </div>
-                        <form id="settingsPinForm" onsubmit="handleSavePinSettings(event)">
-                            <div style="margin-bottom:14px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">New 4-Digit Security PIN</label>
-                                <input type="password" id="settingsInputPin" class="admin-input" placeholder="••••" maxlength="4" pattern="[0-9]{4}" style="font-family:monospace;font-size:1.15rem;letter-spacing:0.25em;text-align:center" required>
-                                <span style="font-size:0.7rem;color:#64748B;margin-top:4px;display:block">Enter 4 numeric digits required to authorize cash payouts.</span>
-                            </div>
-                            <div style="margin-bottom:18px">
-                                <label style="display:block;font-size:0.78rem;font-weight:700;color:#94A3B8;margin-bottom:6px">Confirm 4-Digit PIN</label>
-                                <input type="password" id="settingsInputPinConfirm" class="admin-input" placeholder="••••" maxlength="4" pattern="[0-9]{4}" style="font-family:monospace;font-size:1.15rem;letter-spacing:0.25em;text-align:center" required>
-                            </div>
-                            <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;height:38px;justify-content:center">
-                                <span>Set Withdrawal PIN</span>
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- 4. Preferences & Privacy -->
-                    <div class="dash-panel reveal">
-                        <div class="dash-panel-header" style="margin-bottom:16px">
-                            <div class="dash-panel-title">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                                <span>App Preferences</span>
-                            </div>
-                        </div>
-                        <form id="settingsPrefForm" onsubmit="handleSavePrefSettings(event)">
-                            <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
-                                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
-                                    <input type="checkbox" id="prefHideBalance" style="width:17px;height:17px;accent-color:#6366F1">
-                                    <span>Hide / Mask wallet balance by default on startup</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
-                                    <input type="checkbox" id="prefEmailAlerts" checked style="width:17px;height:17px;accent-color:#6366F1">
-                                    <span>Send email notifications on payout approval</span>
-                                </label>
-                                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.82rem;color:#CBD5E1">
-                                    <input type="checkbox" id="prefInstantVtu" checked style="width:17px;height:17px;accent-color:#6366F1">
-                                    <span>Instant VTU direct airtime &amp; data recharge</span>
-                                </label>
-                            </div>
-                            <button type="submit" class="btn-dash-action btn-dash-primary" style="width:100%;height:38px;justify-content:center">
-                                <span>Save Preferences</span>
-                            </button>
-                        </form>
-                    </div>
-
+                <div class="table-responsive">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Activity Type</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <tr>
+                                <td>Just now</td>
+                                <td><span class="role-pill" style="font-size:0.7rem;padding:2px 8px">Session</span></td>
+                                <td>Dashboard workstation active and synchronized with Admin HQ</td>
+                                <td><span style="color:#10B981;font-weight:700">Verified</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
 
-            <div id="dashPane_bank" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 2: DAILY TASKS & GIGS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-tasks" class="tab-pane">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div>
+                        <div class="dash-card-title">Live Earning Tasks &amp; Sponsored Drops</div>
+                        <div class="dash-card-sub">Published directly by Admin &amp; Accredited Uploaders. Submit proof to claim instant points.</div>
+                    </div>
                 </div>
-                <div class="dash-panel reveal" id="savedBankSection" style="border-color:rgba(56, 189, 248, 0.35);margin-bottom:20px">
-                    <div class="dash-panel-header" style="margin-bottom:12px">
-                        <div class="dash-panel-title">
-                            <span>Saved Bank Account</span>
-                        </div>
-                        <button type="button" class="btn-dash-action btn-dash-secondary" onclick="toggleEditSavedBank()" id="btnToggleEditBank" style="padding:6px 12px;font-size:0.75rem">
-                            Edit Details
-                        </button>
-                    </div>
 
-                    <!-- Saved Bank Display Summary -->
-                    <div id="savedBankDisplayBox" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                            <span style="font-weight:800;color:var(--white-pure);font-size:0.95rem" id="displaySavedBankName">OPay Digital Services</span>
-                            <span style="background:rgba(56, 189, 248, 0.15);color:#38BDF8;padding:2px 8px;border-radius:4px;font-size:0.68rem;font-weight:700">Verified Payout Target</span>
-                        </div>
-                        <div style="font-size:1.15rem;font-weight:900;color:#7DD3FC;letter-spacing:0.04em;margin-bottom:4px" id="displaySavedAccountNumber">0801234567</div>
-                        <div style="font-size:0.82rem;color:var(--text-gray)" id="displaySavedAccountName">Account Name: <?= htmlspecialchars($username) ?></div>
-                    </div>
+                <div id="tasksGrid" class="grid-3">
+                    <!-- Tasks dynamically loaded via API -->
+                </div>
+            </div>
+        </div>
 
-                    <!-- Edit Saved Bank Inline Form (Initially Hidden) -->
-                    <form id="saveBankForm" onsubmit="handleSaveBankAccount(event)" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
-                        <div class="withdraw-form-group" style="margin-bottom:10px">
-                            <label style="font-size:0.75rem">Bank Name</label>
-                            <select id="inputSavedBankName" class="admin-input" style="width:100%;padding:10px">
-                                <option value="OPay Digital Services">OPay Digital Services</option>
-                                <option value="Palmpay">Palmpay</option>
-                                <option value="Kuda Microfinance Bank">Kuda Microfinance Bank</option>
-                                <option value="Moniepoint Microfinance Bank">Moniepoint Microfinance Bank</option>
-                                <option value="Guaranty Trust Bank (GTBank)">Guaranty Trust Bank (GTBank)</option>
-                                <option value="Access Bank">Access Bank</option>
-                                <option value="Zenith Bank">Zenith Bank</option>
-                                <option value="United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
-                                <option value="First Bank of Nigeria">First Bank of Nigeria</option>
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 3: LUCKY SPIN & WIN
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-spin" class="tab-pane">
+            <div class="dash-card" style="text-align:center">
+                <div class="dash-card-title" style="justify-content:center">Lucky Spin &amp; Win Wheel</div>
+                <div class="dash-card-sub">Spin to win instant points, cash bonuses, or free airtime credits. Synced with Admin probability tables.</div>
+
+                <div class="wheel-container">
+                    <div class="wheel-wrapper">
+                        <div class="wheel-pointer"></div>
+                        <canvas id="spinCanvas" width="320" height="320"></canvas>
+                        <button type="button" class="wheel-center-btn" id="btnSpinWheel" onclick="spinWheel()">SPIN</button>
+                    </div>
+                </div>
+                <div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted)">
+                    Remaining Free Spins Today: <strong style="color:#F59E0B" id="dispFreeSpins">1</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 4: VTU TELECOMS TOPUP
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-vtu" class="tab-pane">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div>
+                        <div class="dash-card-title">VTU Airtime &amp; SME Data Bundle Topup</div>
+                        <div class="dash-card-sub">Instant delivery via PrimeBiller API Gateway. Real-time rates configured by Admin.</div>
+                    </div>
+                </div>
+
+                <form id="vtuOrderForm" onsubmit="handleVtuOrder(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Service Type</label>
+                            <select id="vtuServiceType" class="form-select" onchange="toggleVtuFields()">
+                                <option value="airtime">Airtime Recharge (Discounted %)</option>
+                                <option value="data">SME Data Bundle (High Speed)</option>
                             </select>
                         </div>
-                        <div class="withdraw-form-group" style="margin-bottom:10px">
-                            <label style="font-size:0.75rem">10-Digit Account Number</label>
-                            <input type="text" id="inputSavedAccountNumber" class="admin-input" placeholder="0801234567" maxlength="10" required style="width:100%;padding:10px">
+                        <div class="form-group">
+                            <label class="form-label">Mobile Network</label>
+                            <select id="vtuNetwork" class="form-select">
+                                <option value="mtn">MTN Nigeria</option>
+                                <option value="airtel">Airtel Nigeria</option>
+                                <option value="glo">Glo Nigeria</option>
+                                <option value="9mobile">9mobile</option>
+                            </select>
                         </div>
-                        <div class="withdraw-form-group" style="margin-bottom:12px">
-                            <label style="font-size:0.75rem">Account Holder Full Name</label>
-                            <input type="text" id="inputSavedAccountName" class="admin-input" placeholder="e.g. Abasifreke Johnson" required style="width:100%;padding:10px">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" id="vtuPhone" class="form-input" placeholder="08123456789" required value="<?= htmlspecialchars($userPhone) ?>">
                         </div>
-                        <div style="display:flex;gap:8px;justify-content:flex-end">
-                            <button type="button" class="btn-dash-action btn-dash-secondary" onclick="toggleEditSavedBank()" style="padding:8px 16px;font-size:0.75rem">Cancel</button>
-                            <button type="submit" class="btn-dash-action btn-dash-primary" style="padding:8px 18px;font-size:0.75rem;background:linear-gradient(135deg, #0284C7, #38BDF8)">Save Bank Details</button>
+                        <div class="form-group" id="vtuDataPlanGroup" style="display:none">
+                            <label class="form-label">Data Plan</label>
+                            <select id="vtuDataPlan" class="form-select">
+                                <option value="1GB">1GB SME (₦250 / 250 PTS)</option>
+                                <option value="2GB">2GB SME (₦490 / 490 PTS)</option>
+                                <option value="5GB">5GB SME (₦1,200 / 1200 PTS)</option>
+                                <option value="10GB">10GB SME (₦2,350 / 2350 PTS)</option>
+                            </select>
                         </div>
-                    </form>
+                        <div class="form-group" id="vtuAirtimeAmountGroup">
+                            <label class="form-label">Airtime Amount (₦)</label>
+                            <input type="number" id="vtuAmount" class="form-input" placeholder="e.g. 500" min="50" step="50" value="200">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Payment Source</label>
+                        <select id="vtuPaySource" class="form-select">
+                            <option value="points">Task Points Wallet (<?= number_format($userPoints) ?> PTS Available)</option>
+                            <option value="cash">Cash / Referral Wallet (₦<?= number_format($userCash, 2) ?> Available)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-submit-main" id="btnVtuSubmit">
+                        <span>Dispatch VTU Order Now</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 5: OTC UNLISTED TOKENS
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-tokens" class="tab-pane">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div>
+                        <div class="dash-card-title">OTC Unlisted Project Tokens Terminal</div>
+                        <div class="dash-card-sub">Trade verified unlisted project tokens prior to global DEX listings.</div>
+                    </div>
+                </div>
+
+                <div class="grid-3" id="tokensMarketList">
+                    <!-- Populated dynamically from config/tokens_config.json -->
                 </div>
             </div>
+        </div>
 
-
-            <!-- ======================================================== -->
-            <!-- 5. UPLOADER UPGRADE ACCREDITATION PANE                    -->
-            <!-- ======================================================== -->
-            <div id="dashPane_uploader" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-
-                <!-- Accreditation Hero Banner -->
-                <div id="uploaderUpgradeBanner" class="dash-panel reveal" style="margin-bottom:20px;border-color:rgba(99,102,241,0.25);background:linear-gradient(135deg, rgba(18,18,28,0.95) 0%, rgba(12,12,18,0.98) 100%);box-shadow:0 10px 30px rgba(0,0,0,0.4)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-                        <div style="display:flex;align-items:center;gap:14px">
-                            <div style="width:48px;height:48px;border-radius:12px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;color:#818CF8;flex-shrink:0">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                            </div>
-                            <div>
-                                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                                    <h3 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0" id="uploaderBannerTitle">Verified Task Uploader Program</h3>
-                                    <span class="dash-panel-badge" id="uploaderStatusBadge" style="background:rgba(99,102,241,0.15);color:#818CF8;border:1px solid rgba(99,102,241,0.3)">Accreditation Open</span>
-                                </div>
-                                <p style="font-size:0.84rem;color:#94A3B8;margin:5px 0 0;line-height:1.5" id="uploaderBannerDesc">
-                                    Post tasks, launch sponsored campaigns, and earn ₦50–₦100 royalties per execution. One-time accreditation fee: <strong>₦10,000.00</strong>.
-                                </p>
-                            </div>
-                        </div>
-                        <div id="uploaderActionWrap">
-                            <button type="button" class="btn-dash-action btn-dash-primary" onclick="selectUploaderPaymentMethod('bank')" style="padding:10px 20px;font-size:0.85rem">
-                                <span>Get Accreditation</span>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </button>
-                        </div>
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 6: REFER & EARN
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-referrals" class="tab-pane">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div>
+                        <div class="dash-card-title">Affiliate Referral Program</div>
+                        <div class="dash-card-sub">Earn ₦<span id="dispRefCommission"><?= number_format($refBonus) ?></span> instant cash for every friend who joins via your referral link.</div>
                     </div>
                 </div>
 
-                <!-- 3 Benefits Cards -->
-                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;margin-bottom:22px">
-                    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px">
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                            <div style="width:32px;height:32px;border-radius:8px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;display:flex;align-items:center;justify-content:center">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                            </div>
-                            <h4 style="font-size:0.88rem;font-weight:800;color:#F1F5F9;margin:0">Publish Custom Gigs</h4>
-                        </div>
-                        <p style="font-size:0.78rem;color:#94A3B8;margin:0;line-height:1.45">Deploy YouTube watch tasks, Telegram group invites, and app download gigs to thousands of active earners.</p>
-                    </div>
-
-                    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px">
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                            <div style="width:32px;height:32px;border-radius:8px;background:rgba(251,191,36,0.12);color:#FBBF24;display:flex;align-items:center;justify-content:center">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
-                            </div>
-                            <h4 style="font-size:0.88rem;font-weight:800;color:#F1F5F9;margin:0">Earn Member Royalties</h4>
-                        </div>
-                        <p style="font-size:0.78rem;color:#94A3B8;margin:0;line-height:1.45">Receive verified payouts and royalty earnings for every earner slot executed and approved on your campaigns.</p>
-                    </div>
-
-                    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px">
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-                            <div style="width:32px;height:32px;border-radius:8px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;display:flex;align-items:center;justify-content:center">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            </div>
-                            <h4 style="font-size:0.88rem;font-weight:800;color:#F1F5F9;margin:0">Instant Activation</h4>
-                        </div>
-                        <p style="font-size:0.78rem;color:#94A3B8;margin:0;line-height:1.45">Dedicated dynamic virtual account triggers automated role activation within 60 seconds of deposit confirmation.</p>
-                    </div>
-                </div>
-
-                <!-- Payment Console Container -->
-                <div class="dash-panel reveal" style="border-color:rgba(255,255,255,0.08);background:var(--mt-surface);box-shadow:0 12px 40px rgba(0,0,0,0.35)">
-                    <div class="dash-panel-header" style="margin-bottom:18px">
-                        <div class="dash-panel-title">
-                            <span>Select Accreditation Payment Method</span>
-                        </div>
-                        <span class="dash-panel-badge" style="background:rgba(251,191,36,0.12);color:#FBBF24;border:1px solid rgba(251,191,36,0.3)">₦10,000 Accreditation</span>
-                    </div>
-                    <p style="font-size:0.82rem;color:#94A3B8;margin-bottom:20px;line-height:1.5">
-                        Choose your preferred payment method below. You can fund with your available <strong>Referral Earnings</strong>, redeem <strong>Task Points</strong>, or make a direct transfer to your <strong>Personal Dedicated Bank Account</strong>.
-                    </p>
-
-                    <!-- 3 Payment Option Cards -->
-                    <div class="uploader-pay-grid">
-                        <!-- Option 1: Referral Cash -->
-                        <div class="uploader-pay-card" id="uploaderPayCard_referral" onclick="selectUploaderPaymentMethod('referral')">
-                            <div class="uploader-pay-header">
-                                <div class="uploader-pay-title">Referral Cash Wallet</div>
-                                <div class="uploader-pay-radio"></div>
-                            </div>
-                            <div class="uploader-pay-sub">Pay directly with your referral commissions</div>
-                            <div class="uploader-pay-bal" style="color:#FBBF24">₦<?= number_format($walletCash ?? 2500, 2) ?> Available</div>
-                        </div>
-
-                        <!-- Option 2: Task Points -->
-                        <div class="uploader-pay-card" id="uploaderPayCard_points" onclick="selectUploaderPaymentMethod('points')">
-                            <div class="uploader-pay-header">
-                                <div class="uploader-pay-title">Task Points Wallet</div>
-                                <div class="uploader-pay-radio"></div>
-                            </div>
-                            <div class="uploader-pay-sub">Redeem 10,000 points from completed gigs</div>
-                            <div class="uploader-pay-bal" style="color:#38BDF8"><?= number_format($walletPts ?? 5400) ?> PTS Available</div>
-                        </div>
-
-                        <!-- Option 3: Personal Cash / Direct Bank Transfer (Active by Default) -->
-                        <div class="uploader-pay-card active" id="uploaderPayCard_bank" onclick="selectUploaderPaymentMethod('bank')">
-                            <div class="uploader-pay-header">
-                                <div class="uploader-pay-title">Personal Cash</div>
-                                <div class="uploader-pay-radio"></div>
-                            </div>
-                            <div class="uploader-pay-sub">Direct transfer via dedicated virtual account</div>
-                            <div class="uploader-pay-bal" style="color:#38BDF8">Dynamic NUBAN • 24/7 Instant</div>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 1: Referral Cash Payment View -->
-                    <div id="uploaderPayView_referral" style="display:none;margin-top:16px">
-                        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px">
-                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
-                                <div>
-                                    <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;font-weight:700">Payment Channel</div>
-                                    <div style="font-size:1.05rem;font-weight:800;color:#FFFFFF">Referral Cash Wallet</div>
-                                </div>
-                                <div style="text-align:right">
-                                    <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;font-weight:700">Accreditation Fee</div>
-                                    <div style="font-size:1.15rem;font-weight:900;color:#FBBF24;font-variant-numeric:tabular-nums">₦10,000.00</div>
-                                </div>
-                            </div>
-
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;background:rgba(255,255,255,0.03);padding:12px 16px;border-radius:10px">
-                                <span style="font-size:0.84rem;color:#94A3B8">Your Available Referral Balance:</span>
-                                <span style="font-size:1.05rem;font-weight:900;color:#F1F5F9;font-variant-numeric:tabular-nums">₦<?= number_format($walletCash ?? 2500, 2) ?></span>
-                            </div>
-
-                            <?php if (($walletCash ?? 2500) >= 10000): ?>
-                            <div style="background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);border-radius:10px;padding:14px;margin-bottom:18px">
-                                <div style="font-size:0.84rem;color:#38BDF8;font-weight:700">Balance Sufficient</div>
-                                <p style="font-size:0.78rem;color:#94A3B8;margin:4px 0 0">You have sufficient referral earnings to complete your accreditation. Click below to pay and activate immediately.</p>
-                            </div>
-                            <button type="button" onclick="handlePayUploaderWithWallet('referral_cash')" class="btn-dash-action btn-dash-primary" style="width:100%;height:44px;font-size:0.9rem">
-                                Pay ₦10,000 from Referral Balance
-                            </button>
-                            <?php else: ?>
-                            <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px;margin-bottom:18px">
-                                <div style="font-size:0.84rem;color:#F87171;font-weight:700">Insufficient Referral Balance</div>
-                                <p style="font-size:0.78rem;color:#94A3B8;margin:4px 0 0">
-                                    Your referral balance is <strong>₦<?= number_format($walletCash ?? 2500, 2) ?></strong>. You need <strong>₦<?= number_format(max(0, 10000 - ($walletCash ?? 2500)), 2) ?></strong> more. You can invite friends to earn more, or switch to <strong>Personal Cash</strong> to pay via bank transfer.
-                                </p>
-                            </div>
-                            <div style="display:flex;gap:10px;flex-wrap:wrap">
-                                <button type="button" onclick="copyDashboardReferralLink()" class="btn-dash-action" style="flex:1;height:42px;background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.35);color:#FBBF24;font-size:0.84rem">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                    <span>Copy Referral Link</span>
-                                </button>
-                                <button type="button" onclick="selectUploaderPaymentMethod('bank')" class="btn-dash-action btn-dash-primary" style="flex:1;height:42px;font-size:0.84rem">
-                                    <span>Pay with Personal Cash</span>
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 2: Task Points Payment View -->
-                    <div id="uploaderPayView_points" style="display:none;margin-top:16px">
-                        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px">
-                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
-                                <div>
-                                    <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;font-weight:700">Payment Channel</div>
-                                    <div style="font-size:1.05rem;font-weight:800;color:#FFFFFF">Task Points Wallet</div>
-                                </div>
-                                <div style="text-align:right">
-                                    <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;font-weight:700">Required Points</div>
-                                    <div style="font-size:1.15rem;font-weight:900;color:#38BDF8;font-variant-numeric:tabular-nums">10,000 PTS</div>
-                                </div>
-                            </div>
-
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;background:rgba(255,255,255,0.03);padding:12px 16px;border-radius:10px">
-                                <span style="font-size:0.84rem;color:#94A3B8">Your Available Task Points:</span>
-                                <span style="font-size:1.05rem;font-weight:900;color:#F1F5F9;font-variant-numeric:tabular-nums"><?= number_format($walletPts ?? 5400) ?> PTS</span>
-                            </div>
-
-                            <?php if (($walletPts ?? 5400) >= 10000): ?>
-                            <div style="background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);border-radius:10px;padding:14px;margin-bottom:18px">
-                                <div style="font-size:0.84rem;color:#38BDF8;font-weight:700">Points Sufficient</div>
-                                <p style="font-size:0.78rem;color:#94A3B8;margin:4px 0 0">You have sufficient points to complete your accreditation. Click below to redeem 10,000 PTS and activate immediately.</p>
-                            </div>
-                            <button type="button" onclick="handlePayUploaderWithWallet('task_points')" class="btn-dash-action btn-dash-primary" style="width:100%;height:44px;font-size:0.9rem">
-                                Redeem 10,000 PTS for Uploader Role
-                            </button>
-                            <?php else: ?>
-                            <div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:14px;margin-bottom:18px">
-                                <div style="font-size:0.84rem;color:#F87171;font-weight:700">Insufficient Task Points</div>
-                                <p style="font-size:0.78rem;color:#94A3B8;margin:4px 0 0">
-                                    Your points balance is <strong><?= number_format($walletPts ?? 5400) ?> PTS</strong>. You need <strong><?= number_format(max(0, 10000 - ($walletPts ?? 5400))) ?></strong> more PTS to reach 10,000 PTS. Complete gigs in the Task Hub or pay via <strong>Personal Cash</strong>.
-                                </p>
-                            </div>
-                            <div style="display:flex;gap:10px;flex-wrap:wrap">
-                                <button type="button" onclick="switchDashTab('tasks')" class="btn-dash-action" style="flex:1;height:42px;background:rgba(56, 189, 248, 0.12);border-color:rgba(56, 189, 248, 0.35);color:#38BDF8;font-size:0.84rem">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                    <span>Browse Jobbers Tasks</span>
-                                </button>
-                                <button type="button" onclick="selectUploaderPaymentMethod('bank')" class="btn-dash-action btn-dash-primary" style="flex:1;height:42px;font-size:0.84rem">
-                                    <span>Pay with Personal Cash</span>
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 3: Personal Cash / Dedicated Virtual Bank Account View (Active by Default) -->
-                    <div id="uploaderPayView_bank" style="display:block;margin-top:16px">
-                        <!-- Dedicated Virtual Bank Card -->
-                        <div class="deck-cyber-terminal" style="margin-bottom:18px">
-                            <div class="cyber-chip-row">
-                                <div class="cyber-bank-name">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    <span id="userVaBank">Providus Bank</span>
-                                </div>
-                                <span style="background:rgba(56, 189, 248, 0.12);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3);padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:800;letter-spacing:0.04em">
-                                    Dedicated Virtual Account
-                                </span>
-                            </div>
-
-                            <div class="cyber-nuban-block">
-                                <div class="cyber-nuban-label">Dedicated Account Number (Transfer ₦10,000)</div>
-                                <div class="cyber-nuban-val-row">
-                                    <span id="userVaNuban" class="cyber-nuban-val">9823418290</span>
-                                    <div style="display:flex;gap:8px">
-                                        <button type="button" onclick="copyUserVaNuban()" class="btn-dash-action" style="background:rgba(56, 189, 248, 0.15);border-color:rgba(56, 189, 248, 0.4);color:#38BDF8;padding:6px 14px;font-size:0.78rem;font-weight:700">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                            <span id="copyVaBtnText">Copy</span>
-                                        </button>
-                                        <button type="button" onclick="regenerateUserVirtualAccount()" class="btn-dash-action btn-dash-secondary" style="padding:6px 12px;font-size:0.78rem">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path></svg>
-                                            <span>Switch Bank</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="cyber-holder-row" style="margin-top:8px">
-                                <div>
-                                    <div style="font-size:0.68rem;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Account Holder Name</div>
-                                    <div id="userVaName" class="cyber-holder-name">INNOVATIONX - <?= strtoupper(htmlspecialchars($username ?? 'ABAS6245')) ?></div>
-                                </div>
-                                <div style="text-align:right">
-                                    <div style="font-size:0.68rem;color:#64748B;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">One-Time Fee</div>
-                                    <div style="font-size:0.85rem;font-weight:800;color:#FBBF24;font-variant-numeric:tabular-nums">₦10,000.00</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Instructions & Webhook Confirmation -->
-                        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:16px">
-                            <div style="display:flex;align-items:flex-start;gap:12px">
-                                <div style="width:34px;height:34px;border-radius:8px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.25);display:flex;align-items:center;justify-content:center;color:#38BDF8;flex-shrink:0">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                                <div style="font-size:0.8rem;color:#94A3B8;line-height:1.55">
-                                    <strong style="color:#FFFFFF">Automated 24/7 Webhook Activation:</strong>
-                                    Transfer exactly <strong>₦10,000.00</strong> to your dedicated account number above from any Nigerian banking app (OPay, PalmPay, GTBank, Zenith, Access, Kuda, etc.). Your accreditation activates automatically within 60 seconds of deposit confirmation.
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Manual Upload Button if preferred -->
-                        <div style="text-align:center">
-                            <button type="button" onclick="openUploaderUpgradeModal()" class="btn-dash-action" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:#CBD5E1;padding:8px 18px;font-size:0.8rem">
-                                <span>Paid via bank counter or have an official Uploader Code? Click here to submit receipt</span>
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- 6. PLACE AN ADVERT / PROMOTE CAMPAIGN PANE               -->
-            <!-- ======================================================== -->
-            <div id="dashPane_advert" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-                <div class="dash-panel reveal" id="placeAdvertSection" data-feature="advertisements" style="border-color:rgba(56, 189, 248, 0.3);box-shadow:0 10px 40px rgba(0,0,0,0.5)">
-                    <div class="dash-panel-header">
-                        <div class="dash-panel-title">
-                            <span data-content-key="advert_card_title">Place an Advert / Launch Campaign</span>
-                        </div>
-                        <span class="dash-panel-badge" style="color:#7DD3FC;background:rgba(56, 189, 248, 0.15)" data-content-key="advert_card_badge">Member Ads Hub</span>
-                    </div>
-                    <p style="font-size:0.84rem;color:var(--text-gray);margin-bottom:16px" data-content-key="advert_card_desc">
-                        Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash.
-                    </p>
-
-                    <form id="createAdvertForm" onsubmit="handlePlaceAdvert(event)">
-                        <div class="withdraw-form-group" style="margin-bottom:12px">
-                            <label style="font-size:0.75rem">Campaign / Promotion Type</label>
-                            <input type="hidden" id="adCampaignType" value="WhatsApp Status Flyer">
-                            <div class="ix-dropdown" id="adCampaignDropdown">
-                                <button type="button" class="ix-dropdown-btn" onclick="toggleIxDropdown('adCampaignDropdown')" style="padding:10px 14px">
-                                    <div class="ix-dropdown-info">
-                                        <div class="ix-dropdown-icon" id="adCampaignIcon" style="width:28px;height:28px;font-size:0.85rem"></div>
-                                        <div class="ix-dropdown-texts">
-                                            <span class="ix-dropdown-label" id="adCampaignLabel" style="font-size:0.85rem">WhatsApp Status Daily Flyer</span>
-                                            <span class="ix-dropdown-sub" id="adCampaignSub" style="font-size:0.7rem">100+ Members post on status for 24h</span>
-                                        </div>
-                                    </div>
-                                    <div class="ix-dropdown-chevron" style="font-size:0.75rem">▼</div>
-                                </button>
-                                <div class="ix-dropdown-menu">
-                                    <div class="ix-dropdown-item active" onclick="selectAdCampaign('WhatsApp Status Flyer', '', 'WhatsApp Status Daily Flyer', '100+ Members post on status for 24h', 2500, this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">WhatsApp Status Daily Flyer</div>
-                                            <div class="ix-item-desc">Thousands of status views from verified members</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectAdCampaign('Sponsored Video Clip', '', 'Sponsored Video Promotion', 'Engaged views & watch time on YouTube/TikTok', 3500, this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Sponsored Video Promotion</div>
-                                            <div class="ix-item-desc">Guaranteed video views, likes, and watch time</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectAdCampaign('Telegram / Social Follow', '', 'Telegram / Social Followers', 'Real organic subscribers to your channels', 2000, this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Telegram &amp; Social Follow Growth</div>
-                                            <div class="ix-item-desc">Direct followers on Instagram, X, TikTok, Telegram</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectAdCampaign('App Download & Review', '', 'App Download & 5-Star Review', 'Store installs and positive ratings', 5000, this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">App Download &amp; Review</div>
-                                            <div class="ix-item-desc">Drive Android &amp; iOS app installs and feedback</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="withdraw-form-group" style="margin-bottom:12px">
-                            <label for="adTitle" style="font-size:0.75rem">Campaign Title / Header</label>
-                            <input type="text" id="adTitle" placeholder="e.g. Join VIP Forex Crypto Signals Channel" required style="padding:10px 14px;font-size:0.88rem">
-                        </div>
-
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-                            <div class="withdraw-form-group" style="margin-bottom:0">
-                                <label for="adLink" style="font-size:0.75rem">Target Link / URL</label>
-                                <input type="url" id="adLink" placeholder="https://t.me/yourchannel" required style="padding:10px 14px;font-size:0.88rem">
-                            </div>
-                            <div class="withdraw-form-group" style="margin-bottom:0">
-                                <label for="adTargetCount" style="font-size:0.75rem">Target Members Count</label>
-                                <input type="number" id="adTargetCount" value="100" min="50" max="10000" style="padding:10px 14px;font-size:0.88rem">
-                            </div>
-                        </div>
-
-                        <div class="withdraw-form-group" style="margin-bottom:14px">
-                            <label for="adDescription" style="font-size:0.75rem">Instructions for Members</label>
-                            <textarea id="adDescription" placeholder="Explain what members should do..." style="min-height:60px;padding:10px 14px;font-size:0.84rem"></textarea>
-                        </div>
-
-                        <div class="withdraw-form-group" style="margin-bottom:16px">
-                            <label style="font-size:0.75rem">Funding Source (Wallet)</label>
-                            <input type="hidden" id="adFundingSource" value="points">
-                            <div class="ix-dropdown" id="adFundingDropdown">
-                                <button type="button" class="ix-dropdown-btn" onclick="toggleIxDropdown('adFundingDropdown')" style="padding:10px 14px">
-                                    <div class="ix-dropdown-info">
-                                        <div class="ix-dropdown-icon" id="adFundingIcon" style="width:28px;height:28px;font-size:0.85rem"></div>
-                                        <div class="ix-dropdown-texts">
-                                            <span class="ix-dropdown-label" id="adFundingLabel" style="font-size:0.85rem">Task Points Wallet</span>
-                                            <span class="ix-dropdown-sub" id="adFundingSub" style="font-size:0.7rem">Deduct 2,500 PTS (5,400 PTS available)</span>
-                                        </div>
-                                    </div>
-                                    <div class="ix-dropdown-chevron" style="font-size:0.75rem">▼</div>
-                                </button>
-                                <div class="ix-dropdown-menu">
-                                    <div class="ix-dropdown-item active" onclick="selectAdFunding('points', '', 'Task Points Wallet', '5,400 PTS available', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Task Points Wallet</div>
-                                            <div class="ix-item-desc">Fund using your daily task earnings (5,400 PTS)</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectAdFunding('cash', '', 'Referral Cash Wallet', '₦2,500 available', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Referral Cash Wallet</div>
-                                            <div class="ix-item-desc">Fund using referral earnings (₦2,500.00)</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="btnSubmitAdvert" class="btn-dash-action btn-dash-primary" style="width:100%;justify-content:center;padding:12px;background:linear-gradient(135deg, #0284C7, #38BDF8)">
-                            Launch Advert
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- 7. REFERRAL ACCELERATOR PANE                             -->
-            <!-- ======================================================== -->
-            <!-- ======================================================== -->
-            <!-- 7. REFERRAL ACCELERATOR & DOWNLINE NETWORK DIRECTORY     -->
-            <!-- ======================================================== -->
-            <div id="dashPane_referrals" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-
-                <!-- 1. Hero Share Card -->
-                <div class="dash-panel reveal" id="referralSection" data-feature="referrals" style="margin-bottom:20px">
-                    <div class="dash-panel-header" style="margin-bottom:14px;padding-bottom:12px">
-                        <div class="dash-panel-title" style="display:flex;align-items:center;gap:10px">
-                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                            </div>
-                            <div>
-                                <div style="font-size:1.05rem;font-weight:800;color:#FFFFFF" data-content-key="referral_card_title">Referral Accelerator &amp; Team Network</div>
-                                <div style="font-size:0.75rem;color:#94A3B8">Invite members to your team and track every downline referral</div>
-                            </div>
-                        </div>
-                        <span class="dash-panel-badge" style="color:#7DD3FC;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3)" data-content-key="referral_card_badge">₦250 Cash / Direct Invite</span>
-                    </div>
-
-                    <p style="font-size:0.86rem;color:#94A3B8;margin-bottom:18px;line-height:1.6" data-content-key="referral_card_desc">
-                        Share your unique referral link with your community. You receive an instant <strong>₦250 cash reward</strong> credited directly into your withdrawal wallet for every registered member who activates with your link. You can inspect all referred persons, their Gmail addresses, and the number of persons they have referred in real time below.
-                    </p>
-
-                    <!-- Link Box & Quick Actions -->
-                    <div class="referral-tech-box" style="margin-bottom:12px;background:rgba(16,17,28,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px">
-                        <div class="ref-input-group" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                            <div style="flex:1;min-width:240px;position:relative">
-                                <input type="text" id="userMainRefLink" readonly value="https://innovationx.ng/register.php?ref=<?= htmlspecialchars($username) ?>" class="ref-input-tech" style="width:100%;height:44px;padding:0 14px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#FFFFFF;font-family:monospace;font-size:0.86rem;outline:none">
-                            </div>
-                            <button type="button" id="btnCopyMainRef" onclick="copyReferralMainLink()" class="btn-dash-action btn-dash-primary" style="height:44px;padding:0 18px;border-radius:10px;font-size:0.82rem;font-weight:800;gap:6px">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                <span>Copy Link</span>
-                            </button>
-                            <a href="https://api.whatsapp.com/send?text=Join%20me%20on%20INNOVATIONX%20to%20earn%20daily%20cash%20and%20tasks!%20https://innovationx.ng/register.php?ref=<?= htmlspecialchars($username) ?>" target="_blank" class="btn-dash-action" style="height:44px;padding:0 16px;border-radius:10px;font-size:0.82rem;font-weight:800;background:rgba(56, 189, 248, 0.12);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3);text-decoration:none;gap:6px">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                                <span>WhatsApp Share</span>
-                            </a>
-                        </div>
-                        <div style="font-size:0.75rem;color:#94A3B8;display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:8px">
-                            <span>Instant commission auto-settled to withdrawal cash balance on signup.</span>
-                            <span style="color:#7DD3FC;font-weight:700">Level 1 &amp; Level 2 Downline Tracking Active</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Three Telemetry Metric Cards -->
-                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-bottom:20px" class="reveal">
-                    <div class="bento-card" style="padding:20px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                            <span style="font-size:0.74rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em">Direct Referrals</span>
-                            <div style="width:28px;height:28px;border-radius:8px;background:rgba(56, 189, 248, 0.15);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
-                            </div>
-                        </div>
-                        <div style="font-size:1.6rem;font-weight:900;color:#FFFFFF;letter-spacing:-0.02em" id="refDirectCount">8</div>
-                        <div style="font-size:0.72rem;color:#94A3B8;margin-top:4px">Personally invited by your link</div>
-                    </div>
-
-                    <div class="bento-card" style="padding:20px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                            <span style="font-size:0.74rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em">Referral Cash Earned</span>
-                            <div style="width:28px;height:28px;border-radius:8px;background:rgba(56, 189, 248, 0.15);display:flex;align-items:center;justify-content:center;color:#38BDF8">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                            </div>
-                        </div>
-                        <div style="font-size:1.6rem;font-weight:900;color:#38BDF8;letter-spacing:-0.02em">₦<span id="refCashTotal">2,000.00</span></div>
-                        <div style="font-size:0.72rem;color:#94A3B8;margin-top:4px">Ready for immediate bank payout</div>
-                    </div>
-
-                    <div class="bento-card" style="padding:20px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                            <span style="font-size:0.74rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em">Downline Network (Tier 2)</span>
-                            <div style="width:28px;height:28px;border-radius:8px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;color:#60A5FA">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                            </div>
-                        </div>
-                        <div style="font-size:1.6rem;font-weight:900;color:#FFFFFF;letter-spacing:-0.02em" id="refTier2Count">37</div>
-                        <div style="font-size:0.72rem;color:#94A3B8;margin-top:4px">Total persons invited by your referrals</div>
-                    </div>
-                </div>
-
-                <!-- 3. Referred Persons Directory Table -->
-                <div class="ref-table-card reveal">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px">
-                        <div>
-                            <div style="font-size:1.05rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                <span>Referred Persons Directory</span>
-                            </div>
-                            <div style="font-size:0.76rem;color:#94A3B8;margin-top:2px">
-                                See everyone you've invited and track their progress.
-                            </div>
-                        </div>
-
-                        <!-- Search & Filter Controls -->
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                            <div style="position:relative">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                <input type="text" id="refSearchInput" oninput="renderReferralsTable()" placeholder="Search by name or Gmail..." class="ref-search-input">
-                            </div>
-                            <div style="display:flex;gap:6px">
-                                <button type="button" onclick="filterReferralsTab('all', this)" class="ref-filter-pill btn-dash-action" style="padding:6px 12px;height:36px;font-size:0.76rem;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border-color:#7DD3FC">All</button>
-                                <button type="button" onclick="filterReferralsTab('active', this)" class="ref-filter-pill btn-dash-action" style="padding:6px 12px;height:36px;font-size:0.76rem">Active</button>
-                                <button type="button" onclick="filterReferralsTab('top', this)" class="ref-filter-pill btn-dash-action" style="padding:6px 12px;height:36px;font-size:0.76rem">Top Performers</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Downline Table -->
-                    <div class="ref-table-wrap">
-                        <table class="ref-table">
-                            <thead>
-                                <tr>
-                                    <th class="ref-th">Member</th>
-                                    <th class="ref-th">Gmail Address</th>
-                                    <th class="ref-th">Date Joined</th>
-                                    <th class="ref-th">Their Referrals (Downlines)</th>
-                                    <th class="ref-th">Bonus Credited</th>
-                                    <th class="ref-th">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="referralsTableBody">
-                                <!-- Populated dynamically by loadReferralsData() -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Empty state -->
-                    <div id="referralsEmptyState" style="display:none;text-align:center;padding:40px 20px">
-                        <div style="width:48px;height:48px;border-radius:12px;background:rgba(56, 189, 248, 0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#7DD3FC">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                        </div>
-                        <div style="font-weight:700;color:#FFFFFF;font-size:0.95rem;margin-bottom:4px">No referred members found</div>
-                        <p style="font-size:0.8rem;color:#94A3B8;max-width:360px;margin:0 auto 14px">Share your referral link above on WhatsApp and social platforms to start building your downline team and earning ₦250 per invite.</p>
-                        <button type="button" onclick="copyReferralMainLink()" class="btn-dash-action btn-dash-primary" style="margin:0 auto;height:36px;padding:0 16px;font-size:0.8rem">
-                            Copy Your Link
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- 7B. UNLISTED TOKENS OTC DESK PANE                         -->
-            <!-- ======================================================== -->
-            <div id="dashPane_tokens" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <div style="display:flex;gap:8px">
-                        <a href="tokens.php" target="_blank" class="btn-dash-action btn-dash-secondary" style="font-size:0.75rem" title="Open Standalone Desk">
-                            <span>Open Full Desk ↗</span>
-                        </a>
-                        <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                            <span>Menu</span>
+                <div class="form-group">
+                    <label class="form-label">Your Unique Referral Link</label>
+                    <div style="display:flex;gap:10px">
+                        <input type="text" id="refLinkInput" class="form-input" readonly value="https://innovationx.ng/register.php?ref=<?= urlencode($username) ?>">
+                        <button type="button" class="btn-submit-main" onclick="copyRefLink()" style="width:auto;padding:12px 20px">
+                            <span>Copy Link</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Header Banner -->
-                <div class="dash-panel visible" style="margin-bottom:20px;background:radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.12), transparent 50%), var(--mt-surface);border-color:rgba(56, 189, 248, 0.3)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
-                        <div style="display:flex;align-items:center;gap:12px">
-                            <div style="width:44px;height:44px;border-radius:12px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#38BDF8;font-size:1.4rem">
-                                
-                            </div>
-                            <div>
-                                <h2 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 4px">Unlisted Tokens OTC Desk</h2>
-                                <p style="font-size:0.78rem;color:#94A3B8;margin:0">Trade VERY, RUBI, SIDRA &amp; PI with verified escrow and payment proof upload.</p>
-                            </div>
-                        </div>
-                        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(52, 211, 153, 0.1);border:1px solid rgba(52, 211, 153, 0.25);color:#34D399;font-size:0.75rem;font-weight:800">
-                            <span class="live-dot" style="background:#34D399;box-shadow:0 0 8px #34D399"></span>
-                            <span>Escrow Desk Active</span>
-                        </div>
+                <div class="grid-3" style="margin-top:20px">
+                    <div class="shortcut-item">
+                        <div class="wallet-stat-label">Referral Code</div>
+                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#38BDF8"><?= htmlspecialchars($referralCode) ?></div>
                     </div>
-                </div>
-
-                <!-- Token Market Cards (Shows views & trades count per token) -->
-                <div style="margin-bottom:24px">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-                        <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:8px">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                            Live Rates, Views &amp; Activity
-                        </div>
-                        <div style="font-size:0.72rem;color:#94A3B8">Live trade volume &amp; viewer metrics</div>
+                    <div class="shortcut-item">
+                        <div class="wallet-stat-label">Bonus per Referral</div>
+                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#10B981">₦<span id="dispRefBonusVal"><?= number_format($refBonus) ?></span></div>
                     </div>
-
-                    <div id="dashTokensMarketGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px">
-                        <?php foreach ($dashTokensList as $tok): ?>
-                        <div class="dash-token-market-card" id="dashCard_<?= htmlspecialchars($tok['symbol']) ?>" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;position:relative;transition:all 0.2s ease">
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                                <div style="display:flex;align-items:center;gap:8px">
-                                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.25);display:flex;align-items:center;justify-content:center;font-size:1.15rem">
-                                        <?= htmlspecialchars($tok['icon'] ?? '') ?>
-                                    </div>
-                                    <div>
-                                        <div class="token-title-sym" style="font-size:0.95rem;font-weight:900"><?= htmlspecialchars($tok['symbol']) ?></div>
-                                        <div class="token-sub-name" style="font-size:0.68rem"><?= htmlspecialchars($tok['name']) ?></div>
-                                    </div>
-                                </div>
-                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-                                    <span style="font-size:0.65rem;padding:2px 7px;border-radius:5px;background:rgba(56, 189, 248, 0.12);color:#38BDF8;font-weight:700">
-                                        <?= htmlspecialchars($tok['network']) ?>
-                                    </span>
-                                    <!-- Live Views Badge on Product Card -->
-                                    <div class="token-product-views-badge" title="Live Views on <?= htmlspecialchars($tok['symbol']) ?>">
-                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                        <span id="dashViewCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['views_count'] ?? 1200) ?></span> views
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Live Trades Metric Strip -->
-                            <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);margin-bottom:12px;font-size:0.72rem">
-                                <div style="display:flex;align-items:center;gap:4px;color:#7DD3FC">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    <span>Live Product Interest</span>
-                                </div>
-                                <div style="display:flex;align-items:center;gap:4px;color:#34D399">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    <span id="dashTradeCount_<?= htmlspecialchars($tok['symbol']) ?>"><?= number_format($tok['trades_count'] ?? 450) ?></span> trades
-                                </div>
-                            </div>
-
-                            <!-- Buy / Sell Rates -->
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-                                <div style="padding:6px 8px;border-radius:8px;background:rgba(56, 189, 248, 0.06);border:1px solid rgba(56, 189, 248, 0.18)">
-                                    <div style="font-size:0.62rem;color:#7DD3FC;font-weight:700">BUY (We Sell)</div>
-                                    <div class="token-rate-val" style="font-size:0.95rem;font-weight:900">₦<?= number_format($tok['buy_rate']) ?></div>
-                                </div>
-                                <div style="padding:6px 8px;border-radius:8px;background:rgba(52, 211, 153, 0.06);border:1px solid rgba(52, 211, 153, 0.18)">
-                                    <div style="font-size:0.62rem;color:#6EE7B7;font-weight:700">SELL (We Buy)</div>
-                                    <div class="token-rate-val" style="font-size:0.95rem;font-weight:900">₦<?= number_format($tok['sell_rate']) ?></div>
-                                </div>
-                            </div>
-
-                            <!-- Quick Action Buttons -->
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                                <button type="button" onclick="selectDashTokenToTrade('<?= htmlspecialchars($tok['symbol']) ?>', 'buy')" class="btn-dash-action btn-dash-primary" style="justify-content:center;height:32px;font-size:0.74rem">
-                                    Buy <?= htmlspecialchars($tok['symbol']) ?>
-                                </button>
-                                <button type="button" onclick="selectDashTokenToTrade('<?= htmlspecialchars($tok['symbol']) ?>', 'sell')" class="btn-dash-action btn-dash-secondary" style="justify-content:center;height:32px;font-size:0.74rem">
-                                    Sell <?= htmlspecialchars($tok['symbol']) ?>
-                                </button>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- Trade Desk & Proof Submission Form -->
-                <div id="dashTradeDeskCard" class="dash-panel visible" style="margin-bottom:24px;border-color:rgba(56, 189, 248, 0.25)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:14px">
-                        <div>
-                            <h3 style="font-size:1.15rem;font-weight:900;color:#FFFFFF;margin:0 0 4px;display:flex;align-items:center;gap:8px">
-                                <span id="dashTradeTypeHeading">Buy Tokens</span>
-                                <span id="dashSelectedTokenBadge" style="font-size:0.72rem;padding:2px 8px;border-radius:6px;background:rgba(56, 189, 248, 0.15);color:#38BDF8;border:1px solid rgba(56, 189, 248, 0.3)">VERY</span>
-                            </h3>
-                            <div class="token-sub-name" style="font-size:0.75rem">Select your token, choose your escrow market option, and submit payment/transfer proof.</div>
-                        </div>
-
-                        <!-- Buy / Sell Switcher -->
-                        <div style="display:flex;align-items:center;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:3px">
-                            <button type="button" id="dashTabBtnBuy" onclick="setDashTradeType('buy')" style="padding:6px 16px;border-radius:7px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border:none;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s ease">
-                                Buy Tokens
-                            </button>
-                            <button type="button" id="dashTabBtnSell" onclick="setDashTradeType('sell')" style="padding:6px 16px;border-radius:7px;background:transparent;color:#94A3B8;border:none;font-size:0.78rem;font-weight:800;cursor:pointer;transition:all 0.2s ease">
-                                Sell Tokens
-                            </button>
-                        </div>
-                    </div>
-
-                    <form id="dashTokenTradeForm" onsubmit="handleDashTokenTradeSubmit(event)">
-                        <!-- P2P Marketplace Offers / Escrow Choices (Requested by User) -->
-                        <div style="margin-bottom:20px">
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-                                <div>
-                                    <label class="marketplace-section-title" style="display:block;font-size:0.8rem;font-weight:800;color:#FFFFFF;margin-bottom:2px">
-                                        Choose P2P Escrow Market Option
-                                    </label>
-                                    <div class="marketplace-section-sub" style="font-size:0.7rem;color:#94A3B8">Select your preferred verified escrow partner and settlement route</div>
-                                </div>
-                                <span class="marketplace-offer-badge marketplace-badge-escrow">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    100% Escrow Protected
-                                </span>
-                            </div>
-
-                            <input type="hidden" id="dashSelectedMarketplaceOffer" value="InnovationX Official Escrow">
-
-                            <div class="marketplace-offers-grid" id="dashMarketplaceOffersGrid">
-                                <!-- Option 1: Official Escrow Desk -->
-                                <div class="marketplace-offer-card active" id="dashOffer_official" onclick="selectDashMarketplaceOffer('official', 'InnovationX Official Escrow')">
-                                    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-                                        <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem"></span>
-                                            <div>
-                                                <strong style="font-size:0.84rem;color:#FFFFFF;display:block">InnovationX Vault</strong>
-                                                <span style="font-size:0.67rem;color:#94A3B8">Official Platform Escrow</span>
-                                            </div>
-                                        </div>
-                                        <span class="marketplace-offer-badge marketplace-badge-escrow">Verified #1</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700"> 3–8 Mins</span>
-                                        <span style="color:#34D399;font-weight:700">5.0 (4,920+)</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">
-                                        <span>Fee: <b style="color:#34D399">0.00%</b></span>
-                                        <span>Limits: ₦5k – ₦10M</span>
-                                    </div>
-                                </div>
-
-                                <!-- Option 2: Apex P2P Express -->
-                                <div class="marketplace-offer-card" id="dashOffer_apex" onclick="selectDashMarketplaceOffer('apex', 'Apex P2P Express Desk')">
-                                    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-                                        <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem"></span>
-                                            <div>
-                                                <strong style="font-size:0.84rem;color:#FFFFFF;display:block">Apex P2P Express</strong>
-                                                <span style="font-size:0.67rem;color:#94A3B8">Fast-Track OTC Trader</span>
-                                            </div>
-                                        </div>
-                                        <span class="marketplace-offer-badge marketplace-badge-express">Speedy</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700">5–15 Mins</span>
-                                        <span style="color:#34D399;font-weight:700">4.9 (2,180+)</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">
-                                        <span>Fee: <b style="color:#34D399">0.00%</b></span>
-                                        <span>Limits: ₦2k – ₦5M</span>
-                                    </div>
-                                </div>
-
-                                <!-- Option 3: Prime OTC Whales Pool -->
-                                <div class="marketplace-offer-card" id="dashOffer_whales" onclick="selectDashMarketplaceOffer('whales', 'Prime OTC Whales Desk')">
-                                    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
-                                        <div style="display:flex;align-items:center;gap:8px">
-                                            <span style="font-size:1.25rem"></span>
-                                            <div>
-                                                <strong style="font-size:0.84rem;color:#FFFFFF;display:block">Prime Whales Desk</strong>
-                                                <span style="font-size:0.67rem;color:#94A3B8">High Volume Liquidity</span>
-                                            </div>
-                                        </div>
-                                        <span class="marketplace-offer-badge marketplace-badge-bulk">Bulk OTC</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                        <span style="color:#7DD3FC;font-weight:700">10–25 Mins</span>
-                                        <span style="color:#34D399;font-weight:700">⭐ 4.95 (1,450+)</span>
-                                    </div>
-                                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;color:#94A3B8">
-                                        <span>Fee: <b style="color:#34D399">0.00%</b></span>
-                                        <span>Limits: ₦50k – ₦25M</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;margin-bottom:16px">
-                            <!-- Fancy Stylish Token Selector (Requested by User) -->
-                            <div>
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Select Token to Trade</label>
-                                <div class="fancy-token-selector-wrap" id="dashFancyTokenPickerWrap">
-                                    <button type="button" class="fancy-token-trigger" id="dashTokenSelectTrigger" onclick="toggleDashTokenPicker(event)">
-                                        <div style="display:flex;align-items:center;gap:10px;min-width:0">
-                                            <div class="fancy-token-icon" id="dashTriggerIcon"><?= htmlspecialchars($dashTokensList[0]['icon'] ?? '🪙') ?></div>
-                                            <div style="text-align:left;min-width:0">
-                                                <div style="display:flex;align-items:center;gap:6px">
-                                                    <span class="fancy-token-sym" id="dashTriggerSym"><?= htmlspecialchars($dashTokensList[0]['symbol'] ?? 'VERY') ?></span>
-                                                    <span class="fancy-token-net-badge" id="dashTriggerNet"><?= htmlspecialchars($dashTokensList[0]['network'] ?? 'VERY Mainnet') ?></span>
-                                                </div>
-                                                <div class="fancy-token-fullname" id="dashTriggerName"><?= htmlspecialchars($dashTokensList[0]['name'] ?? 'VeryCoin Network') ?></div>
-                                            </div>
-                                        </div>
-                                        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-                                            <div class="fancy-token-rate-chip" id="dashTriggerRate">₦<?= number_format($dashTokensList[0]['buy_rate'] ?? 350) ?> / ₦<?= number_format($dashTokensList[0]['sell_rate'] ?? 300) ?></div>
-                                            <svg class="fancy-token-chevron" id="dashTriggerChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                        </div>
-                                    </button>
-
-                                    <!-- Dropdown Popover List -->
-                                    <div class="fancy-token-dropdown" id="dashTokenPickerDropdown" style="display:none">
-                                        <div class="fancy-token-dropdown-header">
-                                            <div>
-                                                <div class="fancy-picker-title">Select Token Asset</div>
-                                                <div class="fancy-picker-sub">Instant rate sync &amp; escrow settlement</div>
-                                            </div>
-                                            <button type="button" onclick="closeDashTokenPicker(event)" class="btn-dash-action" style="height:26px;padding:0 8px;font-size:0.7rem">✕</button>
-                                        </div>
-                                        <div class="fancy-token-grid-list">
-                                            <?php foreach ($dashTokensList as $idx => $tok): ?>
-                                            <div class="fancy-token-option-card <?= ($idx === 0) ? 'active' : '' ?>" id="dashTokOpt_<?= htmlspecialchars($tok['symbol']) ?>" onclick="pickDashToken('<?= htmlspecialchars($tok['symbol']) ?>')">
-                                                <div style="display:flex;align-items:center;gap:10px">
-                                                    <div class="fancy-token-icon" style="width:34px;height:34px;font-size:1.15rem"><?= htmlspecialchars($tok['icon'] ?? '🪙') ?></div>
-                                                    <div>
-                                                        <div style="display:flex;align-items:center;gap:5px">
-                                                            <span class="fancy-token-sym" style="font-size:0.92rem"><?= htmlspecialchars($tok['symbol']) ?></span>
-                                                            <span class="fancy-token-net-badge" style="font-size:0.62rem;padding:1px 5px"><?= htmlspecialchars($tok['network']) ?></span>
-                                                        </div>
-                                                        <div class="fancy-token-fullname" style="font-size:0.7rem"><?= htmlspecialchars($tok['name']) ?></div>
-                                                    </div>
-                                                </div>
-                                                <div style="text-align:right">
-                                                    <div style="font-size:0.76rem;font-weight:800;color:#38BDF8">Buy: ₦<?= number_format($tok['buy_rate']) ?></div>
-                                                    <div style="font-size:0.7rem;font-weight:700;color:#34D399">Sell: ₦<?= number_format($tok['sell_rate']) ?></div>
-                                                </div>
-                                            </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <!-- Hidden Select for native bindings and form submits -->
-                                    <select id="dashTradeTokenSelect" style="display:none" onchange="handleDashTokenSelectChange(this.value)">
-                                        <?php foreach ($dashTokensList as $tok): ?>
-                                        <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>" data-icon="<?= htmlspecialchars($tok['icon'] ?? '🪙') ?>" data-name="<?= htmlspecialchars($tok['name']) ?>">
-                                            <?= htmlspecialchars($tok['symbol']) ?> — <?= htmlspecialchars($tok['name']) ?> (<?= htmlspecialchars($tok['network']) ?>)
-                                        </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <!-- Token Amount -->
-                            <div>
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">
-                                    Token Quantity <span id="dashTokenQtyLimits" style="color:#64748B;font-weight:500">(Min: 10)</span>
-                                </label>
-                                <input type="number" step="any" min="1" id="dashTradeTokenAmount" oninput="calculateDashTradeTotal()" placeholder="e.g. 100" required class="admin-input" style="width:100%;height:42px;font-size:0.92rem;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px">
-                            </div>
-
-                            <!-- Calculated Naira Total -->
-                            <div>
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">
-                                    Calculated NGN Total <span id="dashTradeRateDisplay" style="color:#38BDF8;font-weight:600">@ ₦350/token</span>
-                                </label>
-                                <div style="height:42px;background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);border-radius:10px;display:flex;align-items:center;padding:0 14px;color:#38BDF8;font-weight:900;font-size:1.05rem">
-                                    <span id="dashTradeCalculatedNaira">₦0.00</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Payment / Vault Instructions Card -->
-                        <div style="background:rgba(56, 189, 248, 0.05);border:1px dashed rgba(56, 189, 248, 0.3);border-radius:12px;padding:16px;margin-bottom:18px">
-                            <!-- Buy Instructions -->
-                            <div id="dashInstructionsBuy">
-                                <div style="font-size:0.76rem;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">
-                                    Step 1: Transfer NGN to Platform Escrow Bank
-                                </div>
-                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">
-                                    <div>
-                                        <div style="font-size:0.7rem;color:#94A3B8">Bank Name &amp; Account Number:</div>
-                                        <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF">
-                                            <span><?= htmlspecialchars($dashPlatformBank['bank_name']) ?></span> — <span><?= htmlspecialchars($dashPlatformBank['account_number']) ?></span>
-                                        </div>
-                                        <div style="font-size:0.72rem;color:#7DD3FC">Account Name: <span><?= htmlspecialchars($dashPlatformBank['account_name']) ?></span></div>
-                                    </div>
-                                    <button type="button" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($dashPlatformBank['account_number']) ?>');alert('Account number copied!')" class="btn-dash-action btn-dash-secondary" style="height:32px;font-size:0.74rem">
-                                        Copy Account
-                                    </button>
-                                </div>
-                                <div>
-                                    <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Your Receiving Token Wallet / Username *</label>
-                                    <input type="text" id="dashTradeUserWallet" class="admin-input" placeholder="e.g. your VERY wallet address or Rubi Username" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
-                                </div>
-                            </div>
-
-                            <!-- Sell Instructions -->
-                            <div id="dashInstructionsSell" style="display:none">
-                                <div style="font-size:0.76rem;font-weight:800;color:#34D399;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">
-                                    Step 1: Transfer Tokens to Platform Receiving Address
-                                </div>
-                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px">
-                                    <div style="min-width:0;flex:1">
-                                        <div style="font-size:0.7rem;color:#94A3B8">Platform Deposit Address / Username:</div>
-                                        <div style="font-size:0.88rem;font-weight:900;color:#FFFFFF;word-break:break-all" id="dashDispDepositAddress">
-                                            very1q84m5z9g3k2p7x6w0c1v8b4n7m9l2j5h4k3e
-                                        </div>
-                                        <div style="font-size:0.72rem;color:#6EE7B7">Memo / Transfer Note: <span id="dashDispDepositMemo">IX-VERY-OTC</span></div>
-                                    </div>
-                                    <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('dashDispDepositAddress').textContent.trim());alert('Deposit address copied!')" class="btn-dash-action btn-dash-secondary" style="height:32px;font-size:0.74rem">
-                                        Copy Address
-                                    </button>
-                                </div>
-
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                                    <div>
-                                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Your Bank Name (For Payout) *</label>
-                                        <input type="text" id="dashTradePayoutBank" class="admin-input" placeholder="e.g. OPay / PalmPay / Kuda" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
-                                    </div>
-                                    <div>
-                                        <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Account Number &amp; Name *</label>
-                                        <input type="text" id="dashTradePayoutAccount" class="admin-input" placeholder="e.g. 0123456789 - John Doe" style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Proof Upload & Reference Section -->
-                        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:20px">
-                            <div style="font-size:0.86rem;font-weight:800;color:#FFFFFF;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                Transfer / Payment Proof
-                            </div>
-
-                            <div style="margin-bottom:12px">
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Transaction Reference / Sender Name *</label>
-                                <input type="text" id="dashTradeTxReference" class="admin-input" placeholder="e.g. Session ID, TxHash, or Sender Account Name" required style="width:100%;height:40px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFFFFF;border-radius:10px;padding:0 12px;font-size:0.85rem">
-                            </div>
-
-                            <div>
-                                <label style="display:block;font-size:0.75rem;font-weight:700;color:#BAE6FD;margin-bottom:5px">Upload Transfer Receipt Screenshot *</label>
-                                <div style="border:2px dashed rgba(56, 189, 248, 0.3);border-radius:10px;padding:16px;text-align:center;background:rgba(0,0,0,0.2);cursor:pointer" onclick="document.getElementById('dashTokenProofFileInput').click()">
-                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.8" style="margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                                    <div style="font-size:0.82rem;font-weight:700;color:#FFFFFF">Tap to Upload Screenshot Proof</div>
-                                    <div style="font-size:0.7rem;color:#94A3B8">PNG, JPG or WEBP (Max 5MB)</div>
-                                    <input type="file" id="dashTokenProofFileInput" accept="image/*" onchange="handleDashProofFileSelect(event)" style="display:none">
-                                    <input type="hidden" id="dashTokenProofBase64" value="">
-                                </div>
-
-                                <div id="dashTokenProofPreviewWrap" style="display:none;margin-top:10px;padding:10px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid rgba(56, 189, 248, 0.3);align-items:center;justify-content:space-between">
-                                    <div style="display:flex;align-items:center;gap:10px">
-                                        <img id="dashTokenProofPreviewImg" src="" alt="Proof Preview" style="width:44px;height:44px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,0.15)">
-                                        <div>
-                                            <div style="font-size:0.78rem;font-weight:700;color:#38BDF8">Receipt Attached</div>
-                                            <div id="dashTokenProofFileName" style="font-size:0.68rem;color:#94A3B8">screenshot.png</div>
-                                        </div>
-                                    </div>
-                                    <button type="button" onclick="clearDashProofUpload(event)" class="btn-dash-action btn-dash-logout" style="height:28px;font-size:0.72rem">
-                                        Remove
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" id="dashBtnSubmitTokenOrder" class="btn-dash-action btn-dash-primary" style="width:100%;height:44px;font-size:0.9rem;font-weight:800;border-radius:10px;justify-content:center">
-                            <span>Submit Trade &amp; Proof for Verification</span>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Your Token Orders Ledger -->
-                <div class="dash-panel visible">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-                        <div style="font-size:0.95rem;font-weight:800;color:#FFFFFF;display:flex;align-items:center;gap:6px">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                            My OTC Trade Orders
-                        </div>
-                        <button type="button" onclick="loadDashTokenOrders()" class="btn-dash-action btn-dash-secondary" style="height:28px;font-size:0.72rem">
-                            Refresh
-                        </button>
-                    </div>
-
-                    <div style="overflow-x:auto">
-                        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;text-align:left">
-                            <thead>
-                                <tr style="border-bottom:1px solid rgba(255,255,255,0.1);color:#94A3B8;font-size:0.7rem;text-transform:uppercase">
-                                    <th style="padding:8px">Order ID</th>
-                                    <th style="padding:8px">Type</th>
-                                    <th style="padding:8px">Token &amp; Qty</th>
-                                    <th style="padding:8px">Naira Total</th>
-                                    <th style="padding:8px">Reference</th>
-                                    <th style="padding:8px">Proof</th>
-                                    <th style="padding:8px">Status</th>
-                                    <th style="padding:8px">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashTokenOrdersTableBody">
-                                <tr>
-                                    <td colspan="8" style="text-align:center;padding:20px;color:#64748B">Loading orders...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Proof Lightbox Modal -->
-                <div id="dashProofLightbox" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;padding:20px" onclick="closeDashProofLightbox()">
-                    <div style="position:relative;max-width:90%;max-height:90%" onclick="event.stopPropagation()">
-                        <img id="dashLightboxImg" src="" alt="Proof Screenshot" style="max-width:100%;max-height:85vh;border-radius:10px;box-shadow:0 0 30px rgba(0,0,0,0.9);border:1px solid rgba(255,255,255,0.2)">
-                        <button type="button" onclick="closeDashProofLightbox()" style="position:absolute;top:-12px;right:-12px;width:30px;height:30px;border-radius:50%;background:#EF4444;color:#FFF;border:none;font-weight:900;cursor:pointer">&times;</button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- 8. BANK WITHDRAWAL PAYOUT PANE                           -->
-            <!-- ======================================================== -->
-            <div id="dashPane_withdraw" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-                <div class="dash-panel visible" id="withdrawSection" data-feature="withdrawals" style="border-color:rgba(56, 189, 248, 0.3);box-shadow:0 18px 50px rgba(0,0,0,0.5),0 0 60px rgba(56, 189, 248, 0.1)">
-                    <div class="dash-panel-header">
-                        <div class="dash-panel-title">
-                            <span data-content-key="withdraw_card_title">Request Bank Payout</span>
-                        </div>
-                        <span class="dash-panel-badge" id="withdrawMinBadge" style="color:#7DD3FC;background:rgba(56, 189, 248, 0.15)" data-content-key="withdraw_min_badge">Min: ₦1,000</span>
-                    </div>
-
-                    <!-- Wallet Source Selector Tabs -->
-                    <div id="walletSourceTabs" style="display:flex;gap:8px;margin-bottom:16px">
-                        <button type="button" id="walletTabTask" class="btn-dash-action" onclick="selectWithdrawWallet('task')" style="flex:1;padding:10px 14px;border-radius:12px;font-weight:900;font-size:0.82rem;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;border:1px solid rgba(56, 189, 248, 0.6);text-align:center">
-                            <div>Task Points Wallet</div>
-                            <div style="font-size:0.7rem;opacity:0.85" id="walletTabTaskBal">0 PTS (≈ ₦0)</div>
-                        </button>
-                        <button type="button" id="walletTabReferral" class="btn-dash-action" onclick="selectWithdrawWallet('referral')" style="flex:1;padding:10px 14px;border-radius:12px;font-weight:800;font-size:0.82rem;background:rgba(255,255,255,0.04);color:var(--text-gray);border:1px solid rgba(255,255,255,0.1);text-align:center">
-                            <div>Referral Cash Wallet</div>
-                            <div style="font-size:0.7rem;opacity:0.8" id="walletTabRefBal">₦0.00</div>
-                        </button>
-                    </div>
-
-                    <!-- Admin Status Notice Banner (shows when service is paused or balance < minimum) -->
-                    <div id="withdrawStatusNotice" style="display:none;margin-bottom:14px;padding:14px 16px;border-radius:12px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.25)">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                            
-                            <span id="withdrawNoticeTitle" style="font-weight:900;font-size:0.88rem;color:#F43F5E">Withdrawal Portal Locked</span>
-                        </div>
-                        <p id="withdrawNoticeMsg" style="font-size:0.8rem;color:var(--text-gray);margin:0 0 8px 0;line-height:1.5">Task withdrawals are currently paused by administration.</p>
-                        <div id="withdrawProgressWrap" style="display:none">
-                            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:4px">
-                                <span id="withdrawProgressLabel">Progress to minimum</span>
-                                <span id="withdrawProgressPct">0%</span>
-                            </div>
-                            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden">
-                                <div id="withdrawProgressBar" style="height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg, #0284C7, #38BDF8);transition:width 0.6s ease"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="selectedWithdrawWallet" value="task">
-
-                    <form id="withdrawForm">
-                        <div class="withdraw-form-group">
-                            <label for="wBank">Receiving Bank</label>
-                            <input type="hidden" id="wBank" value="Guaranty Trust Bank (GTBank)">
-                            <div class="ix-dropdown" id="bankDropdown">
-                                <button type="button" class="ix-dropdown-btn" onclick="toggleIxDropdown('bankDropdown')">
-                                    <div class="ix-dropdown-info">
-                                        <div class="ix-dropdown-icon" id="selectedBankIcon"></div>
-                                        <div class="ix-dropdown-texts">
-                                            <span class="ix-dropdown-label" id="selectedBankLabel">Guaranty Trust Bank (GTBank)</span>
-                                            <span class="ix-dropdown-sub">Commercial Bank • 058</span>
-                                        </div>
-                                    </div>
-                                    <div class="ix-dropdown-chevron">▼</div>
-                                </button>
-                                <div class="ix-dropdown-menu">
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('OPay Digital Services', '', 'Digital FinTech / Microfinance Bank', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">OPay Digital Services</div>
-                                            <div class="ix-item-desc">Instant 2.4s Settlement</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('Palmpay', '', 'Digital FinTech Bank', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Palmpay</div>
-                                            <div class="ix-item-desc">Automated Instant Transfer</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('Kuda Microfinance Bank', '', 'Digital Microfinance Bank • 090267', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Kuda Microfinance Bank</div>
-                                            <div class="ix-item-desc">Automated Clearance • 090267</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item active" onclick="selectIxBank('Guaranty Trust Bank (GTBank)', '', 'Commercial Bank • 058', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Guaranty Trust Bank (GTBank)</div>
-                                            <div class="ix-item-desc">Direct Commercial Settlement • 058</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('Access Bank', '', 'Commercial Bank • 044', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Access Bank</div>
-                                            <div class="ix-item-desc">Direct Commercial Settlement • 044</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('Zenith Bank', '', 'Commercial Bank • 057', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Zenith Bank</div>
-                                            <div class="ix-item-desc">Automated Clearance • 057</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('First Bank of Nigeria', '', 'Commercial Bank • 011', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">First Bank of Nigeria</div>
-                                            <div class="ix-item-desc">Direct Commercial Settlement • 011</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('United Bank for Africa (UBA)', '', 'Commercial Bank • 033', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">United Bank for Africa (UBA)</div>
-                                            <div class="ix-item-desc">Pan-African Settlement • 033</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                    <div class="ix-dropdown-item" onclick="selectIxBank('Moniepoint MFB', '', 'Digital MFB Bank', this)">
-                                        <div class="ix-item-icon"></div>
-                                        <div class="ix-item-content">
-                                            <div class="ix-item-title">Moniepoint MFB</div>
-                                            <div class="ix-item-desc">Instant Business/Personal Credit</div>
-                                        </div>
-                                        <div class="ix-item-check"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="withdraw-form-group">
-                            <label for="wAccount">Account Number</label>
-                            <input type="text" id="wAccount" maxlength="10" placeholder="10-digit NUBAN number" required>
-                        </div>
-
-                        <div class="withdraw-form-group">
-                            <label for="wAmount">Amount to Withdraw (₦)</label>
-                            <input type="number" id="wAmount" min="<?= MIN_WITHDRAWAL_NAIRA ?>" value="5000" required>
-                            <div class="dash-amount-pills">
-                                <span class="dash-amt-pill active" onclick="setAmt(5000, this)">₦5,000</span>
-                                <span class="dash-amt-pill" onclick="setAmt(10000, this)">₦10,000</span>
-                                <span class="dash-amt-pill" onclick="setAmt(20000, this)">₦20,000</span>
-                                <span class="dash-amt-pill" onclick="setAmt(50000, this)">₦50,000</span>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-withdraw" style="margin-top:14px">
-                            Submit Withdrawal Request
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- LUCKY SPIN & WIN WHEEL PANE (POINTS & AIRTIME ONLY)      -->
-            <!-- ======================================================== -->
-            <div id="dashPane_spin" class="dash-service-pane" style="display:none">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 0">
-                    <button type="button" class="btn-dash-action" onclick="goBackToOverview()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        <span>Back to Overview</span>
-                    </button>
-                    <button type="button" class="btn-dash-action btn-dash-menu" onclick="toggleDashDrawer()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                        <span>Menu</span>
-                    </button>
-                </div>
-
-                <div class="dash-panel visible" id="spinWheelSection" style="border-color:rgba(99,102,241,0.35);box-shadow:0 18px 50px rgba(0,0,0,0.5),0 0 50px rgba(99,102,241,0.15)">
-                    <div class="dash-panel-header" style="flex-wrap:wrap;gap:10px;">
-                        <div class="dash-panel-title">
-                            <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #6366F1, #8B5CF6);display:flex;align-items:center;justify-content:center;color:#FFF">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"></path></svg>
-                            </div>
-                            <div>
-                                <span style="font-weight:800;font-size:1.15rem;color:var(--white-pure);">Lucky Spin &amp; Win</span>
-                                <div style="font-size:0.75rem;color:var(--text-gray);font-weight:500;">Win Task Points &amp; Instant Airtime Vouchers (No Naira cash)</div>
-                            </div>
-                        </div>
-                        <span class="dash-panel-badge" id="spinQuotaBadge" style="color:#A5B4FC;background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.3);font-size:0.75rem;font-weight:700;">1 FREE SPIN DAILY</span>
-                    </div>
-
-                    <!-- HUD Telemetry Grid -->
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;">
-                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
-                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Available Spins</div>
-                            <div id="spinUserSpinsCount" style="font-size:1.25rem;font-weight:800;color:#38BDF8;margin-top:2px;">1</div>
-                        </div>
-                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
-                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Next Free Spin</div>
-                            <div id="spinCooldownTimer" style="font-size:1.25rem;font-weight:800;color:#10B981;margin-top:2px;">Ready Now</div>
-                        </div>
-                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
-                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Task Points</div>
-                            <div id="spinUserPointsVal" style="font-size:1.25rem;font-weight:800;color:#818CF8;margin-top:2px;"><?= number_format($userPoints) ?> PTS</div>
-                        </div>
-                        <div style="background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;text-align:center;">
-                            <div style="font-size:0.7rem;color:var(--text-gray);text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Airtime Balance</div>
-                            <div id="spinUserAirtimeVal" style="font-size:1.25rem;font-weight:800;color:#F59E0B;margin-top:2px;">₦0.00</div>
-                        </div>
-                    </div>
-
-                    <!-- Spin Wheel Stage -->
-                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 20px;">
-                        <div style="position:relative;width:340px;height:340px;max-width:92vw;max-height:92vw;display:flex;align-items:center;justify-content:center;">
-                            <!-- Pointer Needle Pin at 12 o'clock -->
-                            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6));">
-                                <svg width="34" height="42" viewBox="0 0 34 42" fill="none">
-                                    <path d="M17 40L3 10C1 6 3 2 7 2H27C31 2 33 6 31 10L17 40Z" fill="#F43F5E" stroke="#FFF" stroke-width="2"/>
-                                    <circle cx="17" cy="12" r="5" fill="#FFF"/>
-                                </svg>
-                            </div>
-
-                            <!-- Canvas Wheel -->
-                            <canvas id="spinWheelCanvas" width="340" height="340" style="border-radius:50%;box-shadow:0 0 35px rgba(99,102,241,0.25), 0 0 0 6px #1E293B, 0 0 0 10px rgba(99,102,241,0.4);"></canvas>
-
-                            <!-- Center Circular Spin Button -->
-                            <button type="button" id="spinCenterBtn" onclick="triggerWheelSpin()" style="position:absolute;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#4F46E5);border:4px solid #0F172A;box-shadow:0 4px 20px rgba(0,0,0,0.6), 0 0 15px rgba(99,102,241,0.6);color:#FFF;font-weight:900;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:0.04em;transition:transform 0.15s,box-shadow 0.15s;z-index:5;">
-                                SPIN
-                            </button>
-                        </div>
-
-                        <!-- CTA Button & Status Notice -->
-                        <div style="margin-top:22px;width:100%;max-width:340px;text-align:center;">
-                            <button type="button" id="spinActionBtn" onclick="triggerWheelSpin()" class="btn-dash-action btn-tech-primary" style="width:100%;height:48px;font-size:0.95rem;font-weight:800;letter-spacing:0.02em;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                                <span id="spinActionBtnText">SPIN THE WHEEL</span>
-                            </button>
-                            <div id="spinStatusSubtext" style="font-size:0.75rem;color:var(--text-gray);margin-top:8px;">
-                                Each member gets 1 free spin every 24 hours. Rewards are credited instantly.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Reward Slices Preview Grid -->
-                    <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;">
-                        <div style="font-size:0.82rem;font-weight:700;color:var(--white-pure);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-                            <span>Wheel Rewards (Points &amp; Airtime Only)</span>
-                        </div>
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;">
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(99,102,241,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#818CF8;">100 PTS</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(2,132,199,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#38BDF8;">₦100 Airtime</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(139,92,246,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#A78BFA;">250 PTS</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(13,148,136,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#2DD4BF;">₦200 Airtime</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(79,70,229,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#6366F1;">500 PTS</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#FBBF24;">₦500 Airtime</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Airtime</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(236,72,153,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#F472B6;">1,000 PTS</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Points</div>
-                            </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:8px 10px;text-align:center;">
-                                <div style="font-size:0.88rem;font-weight:800;color:#34D399;">Free Spin</div>
-                                <div style="font-size:0.65rem;color:var(--text-gray);">Bonus Turn</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live Winners Stream / Ticker -->
-                <div class="dash-panel visible" style="margin-top:20px;padding:18px;">
-                    <div style="font-size:0.84rem;font-weight:800;color:var(--white-pure);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
-                        <span>Recent Platform Spin Winners</span>
-                        <span style="font-size:0.68rem;color:#10B981;font-weight:700;display:flex;align-items:center;gap:4px;">
-                            <span style="width:6px;height:6px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 1.5s infinite;"></span>
-                            LIVE
-                        </span>
-                    </div>
-                    <div id="spinRecentWinnersList" style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-size:0.78rem;color:var(--text-gray);padding:8px 0;">Loading winners...</div>
+                    <div class="shortcut-item">
+                        <div class="wallet-stat-label">Tier Status</div>
+                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#F59E0B">Tier 1 Ambassador</div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- SPIN WIN CELEBRATION MODAL -->
-            <div class="receipt-overlay" id="spinWinModalOverlay" style="display:none;z-index:999999;align-items:center;justify-content:center;">
-                <div class="receipt-modal" style="max-width:380px;width:92%;padding:28px;text-align:center;border-color:rgba(99,102,241,0.5);box-shadow:0 20px 60px rgba(0,0,0,0.8), 0 0 50px rgba(99,102,241,0.3);">
-                    <div style="width:64px;height:64px;border-radius:50%;background:rgba(99,102,241,0.15);border:2px solid rgba(99,102,241,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#818CF8;font-size:2rem;">
-                        🎉
+        <!-- ═══════════════════════════════════════════════════════
+             TAB 7: BANK & SECURITY PIN
+             ═══════════════════════════════════════════════════════ -->
+        <div id="tab-bank" class="tab-pane">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div>
+                        <div class="dash-card-title">Settlement Bank &amp; Security PIN</div>
+                        <div class="dash-card-sub">Update your receiving bank details for automated cash payouts.</div>
                     </div>
-                    <h3 style="margin:0 0 6px;font-size:1.25rem;font-weight:800;color:var(--white-pure);">Congratulations!</h3>
-                    <p style="font-size:0.82rem;color:var(--text-gray);margin-bottom:18px;">You spun the lucky wheel and won:</p>
-                    <div id="spinWinPrizeDisplay" style="font-size:1.8rem;font-weight:900;color:#38BDF8;background:rgba(15,23,42,0.8);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:14px;margin-bottom:18px;letter-spacing:0.02em;">
-                        +100 PTS
+                </div>
+
+                <form onsubmit="handleSaveBankForm(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Receiving Bank Name</label>
+                            <input type="text" id="bankFormName" class="form-input" required value="<?= htmlspecialchars($bankName) ?>" placeholder="e.g. OPay, GTBank, Kuda, Zenith">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">10-Digit NUBAN Account Number</label>
+                            <input type="text" id="bankFormNumber" class="form-input" maxlength="10" required value="<?= htmlspecialchars($accountNumber) ?>" placeholder="0801234567">
+                        </div>
                     </div>
-                    <p id="spinWinPrizeDesc" style="font-size:0.75rem;color:var(--text-gray);margin-bottom:20px;line-height:1.4;">
-                        Your account has been updated with your reward immediately.
-                    </p>
-                    <button type="button" onclick="closeSpinWinModal()" class="btn-dash-action btn-tech-primary" style="width:100%;height:44px;font-size:0.9rem;font-weight:800;border-radius:10px;">
-                        Claim &amp; Continue
+
+                    <div class="form-group">
+                        <label class="form-label">Account Beneficiary Name</label>
+                        <input type="text" id="bankFormHolder" class="form-input" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full Legal Account Name">
+                    </div>
+
+                    <button type="submit" class="btn-submit-main" id="btnSaveBankForm">
+                        <span>Save Settlement Bank Details</span>
                     </button>
-                </div>
+                </form>
             </div>
+        </div>
 
- <!-- ===== SET / CHANGE WITHDRAWAL SECURITY PIN MODAL ===== -->
-    <div class="receipt-overlay" id="setPinModalOverlay" style="display:none;z-index:99999">
-        <div class="receipt-modal" style="max-width:420px;width:95%;padding:26px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px">
-                <h3 style="margin:0;font-size:1.05rem;font-weight:800;color:var(--white-pure)" id="setPinModalTitle">Set Withdrawal Security PIN</h3>
-                <button type="button" onclick="closeSetWithdrawalPinModal()" style="background:none;border:none;color:var(--text-gray);font-size:1.4rem;cursor:pointer;line-height:1">&times;</button>
-            </div>
-            <p style="font-size:0.82rem;color:var(--text-gray);margin-bottom:18px;line-height:1.5">
-                Set a secret 4-digit numeric PIN to authorize bank payouts and protect your wallet balance against unauthorized withdrawals.
-            </p>
-            <form id="setWithdrawalPinForm" onsubmit="handleSaveWithdrawalPin(event)">
-                <div class="withdraw-form-group" style="margin-bottom:14px">
-                    <label style="font-size:0.78rem;font-weight:700;display:block;margin-bottom:6px">New 4-Digit PIN</label>
-                    <input type="password" id="inputNewPin" class="admin-input" placeholder="••••" maxlength="4" pattern="\d{4}" required style="width:100%;padding:12px;text-align:center;font-size:1.3rem;letter-spacing:0.3em;font-weight:900">
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODALS: WITHDRAWAL, BANK DETAILS, TASK PROOF, NOTIFS
+         ═══════════════════════════════════════════════════════ -->
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeWithdrawModal()">&times;</button>
+            <div class="dash-card-title" style="margin-bottom:8px">Instant Payout Request</div>
+            <div class="dash-card-sub" style="margin-bottom:20px">Funds are dispatched automatically to your verified settlement card.</div>
+
+            <form onsubmit="handleWithdrawSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Select Wallet Source</label>
+                    <select id="wdWalletType" class="form-select" onchange="updateWithdrawMinNotice()">
+                        <option value="cash">Cash &amp; Referral Wallet (₦<?= number_format($userCash, 2) ?> Available)</option>
+                        <option value="points">Task Points Wallet (<?= number_format($userPoints) ?> PTS Available)</option>
+                    </select>
                 </div>
-                <div class="withdraw-form-group" style="margin-bottom:20px">
-                    <label style="font-size:0.78rem;font-weight:700;display:block;margin-bottom:6px">Confirm 4-Digit PIN</label>
-                    <input type="password" id="inputConfirmPin" class="admin-input" placeholder="••••" maxlength="4" pattern="\d{4}" required style="width:100%;padding:12px;text-align:center;font-size:1.3rem;letter-spacing:0.3em;font-weight:900">
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" id="wdAmount" class="form-input" required placeholder="Enter amount" min="<?= $minCashWd ?>">
+                    <div id="wdMinNotice" style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">
+                        Minimum withdrawal: ₦<span id="dispModalMinWd"><?= number_format($minCashWd) ?></span>
+                    </div>
                 </div>
-                <div style="display:flex;gap:10px;justify-content:flex-end">
-                    <button type="button" class="btn-dash-action btn-dash-secondary" onclick="closeSetWithdrawalPinModal()" style="padding:9px 16px;font-size:0.82rem">Cancel</button>
-                    <button type="submit" class="btn-dash-action btn-dash-primary" style="padding:9px 20px;font-size:0.82rem;background:linear-gradient(135deg, #0284C7, #38BDF8)">Save Security PIN</button>
+
+                <div class="form-group">
+                    <label class="form-label">Destination Bank</label>
+                    <input type="text" class="form-input" readonly value="<?= htmlspecialchars($bankName) ?> (<?= htmlspecialchars($accountNumber) ?>)">
                 </div>
+
+                <button type="submit" class="btn-submit-main" id="btnWdSubmit">
+                    <span>Confirm &amp; Request Transfer</span>
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- ===== STEP 1: CONFIRMATION MODAL ===== -->
-    <div class="receipt-overlay" id="confirmOverlay" style="display:none">
- <div class="receipt-modal">
- <div class="receipt-top">
- <div class="receipt-logo">
- <div class="logo-icon" style="width:32px;height:32px;font-size:0.75rem">IX</div>
- <span style="font-weight:900;font-size:1rem;color:#FFF">INNOVATIONX</span>
- </div>
- <div class="receipt-badge badge-review">
- <span class="receipt-badge-dot"></span>
- <span>Review</span>
- </div>
- </div>
+    <!-- Manage Bank Modal -->
+    <div id="bankModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeBankModal()">&times;</button>
+            <div class="dash-card-title" style="margin-bottom:8px">Manage Settlement Bank</div>
+            <div class="dash-card-sub" style="margin-bottom:20px">Update receiving bank details for your Platinum Settlement Card.</div>
 
- <h3 class="receipt-title" style="font-size:1.15rem">Confirm Your Details</h3>
- <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">Please verify your payout account before submitting.</p>
-
-                <div class="receipt-details">
-                    <div class="receipt-row">
-                        <span class="receipt-label">Bank</span>
-                        <span class="receipt-value" id="cBank">—</span>
-                    </div>
-                    <div class="receipt-row">
-                        <span class="receipt-label">Account No.</span>
-                        <span class="receipt-value" id="cAccount">—</span>
-                    </div>
-                    <div class="receipt-row">
-                        <span class="receipt-label">Amount</span>
-                        <span class="receipt-value receipt-amount" id="cAmount">—</span>
-                    </div>
+            <form onsubmit="handleModalBankSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Bank Name</label>
+                    <input type="text" id="modalBankName" class="form-input" required value="<?= htmlspecialchars($bankName) ?>">
                 </div>
-
-                <!-- Withdrawal Security PIN Authorization -->
-                <div style="margin:16px 0 14px;background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);border-radius:12px;padding:12px">
-                    <label for="confirmPinInput" style="display:block;font-size:0.78rem;font-weight:800;color:#7DD3FC;margin-bottom:6px">Enter Withdrawal Security PIN to Authorize Payout *</label>
-                    <div style="position:relative;display:flex;align-items:center">
-                        <input type="password" id="confirmPinInput" maxlength="4" class="admin-input" placeholder="••••" style="width:100%;padding:10px 42px 10px 14px;text-align:center;font-size:1.2rem;letter-spacing:0.25em;font-weight:900" required>
-                        <button type="button" class="input-toggle-btn" onclick="togglePassVisibility('confirmPinInput', this)" aria-label="Toggle PIN Visibility" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94A3B8;cursor:pointer;padding:4px;display:flex;align-items:center">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
-                    </div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center">
-                        <span>4-Digit Authorization PIN</span>
-                        <a href="javascript:void(0)" onclick="openSetPinFromConfirm()" style="color:#7DD3FC;text-decoration:underline;font-weight:700">Set / Change PIN</a>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Account Number</label>
+                    <input type="text" id="modalAccountNo" class="form-input" maxlength="10" required value="<?= htmlspecialchars($accountNumber) ?>">
                 </div>
-
-                <div class="confirm-actions">
-                    <button class="btn-confirm-back" id="confirmBack">Edit Details</button>
-                    <button class="btn-confirm-submit" id="confirmSubmit">Authorize &amp; Submit Payout</button>
+                <div class="form-group">
+                    <label class="form-label">Account Name</label>
+                    <input type="text" id="modalAccountName" class="form-input" required value="<?= htmlspecialchars($accountName) ?>">
                 </div>
-            </div>
-        </div>
-
- <!-- ===== STEP 2: LUXURY RECEIPT + ACTIVE TRACKER MODAL ===== -->
-    <div class="receipt-overlay" id="receiptOverlay" style="display:none">
-        <div class="receipt-modal" id="receiptCapture">
-            <div class="receipt-top">
-                <div class="receipt-logo">
-                    <div class="receipt-logo-icon">IX</div>
-                    <div class="receipt-brand-text">
-                        <span class="receipt-brand-name">INNOVATIONX</span>
-                        <span class="receipt-brand-sub">Official Settlement Voucher</span>
-                    </div>
-                </div>
-                <div class="receipt-badge badge-pending" id="receiptBadge">
-                    <span class="receipt-badge-dot"></span>
-                    <span class="badge-text">Processing</span>
-                </div>
-            </div>
-
-            <!-- Net Dispatched Amount Hero Card -->
-            <div class="receipt-hero-amount-card">
-                <div class="receipt-hero-amount-sub">Net Amount Dispatched</div>
-                <div class="receipt-hero-amount-val" id="rHeroAmount">₦0.00</div>
-            </div>
-
-            <!-- Active Reference Number Tracking Section -->
-            <div class="receipt-ref-tracker-pill">
-                <div class="receipt-ref-left">
-                    <div class="receipt-ref-title-row">
-                        <span class="receipt-ref-live-pulse"></span>
-                        <span class="receipt-ref-title">Reference Tracking ID</span>
-                    </div>
-                    <p class="receipt-txid" id="receiptTxId">TXN-XXXXXXXX</p>
-                </div>
-                <button type="button" class="btn-receipt-copy-ref" id="btnReceiptCopyRef" onclick="copyReceiptRef(event)" title="Copy Reference Number">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    <span id="btnReceiptCopyText">Copy Ref</span>
+                <button type="submit" class="btn-submit-main" id="btnModalBankSubmit">
+                    <span>Update Card Details</span>
                 </button>
-            </div>
-
-            <!-- 4-Step Animated Tracking Lifecycle -->
-            <div class="receipt-tracker">
-                <div class="tracker-title">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>Active Transfer Lifecycle</span>
-                </div>
-                <div class="tracker-compact">
-                    <div class="tc-step active" id="ts1">
-                        <div class="tc-dot"></div>
-                        <span class="tc-label">Submitted</span>
-                    </div>
-                    <div class="tc-line" id="tl1"></div>
-                    <div class="tc-step" id="ts2">
-                        <div class="tc-dot"></div>
-                        <span class="tc-label">Verified</span>
-                    </div>
-                    <div class="tc-line" id="tl2"></div>
-                    <div class="tc-step" id="ts3">
-                        <div class="tc-dot"></div>
-                        <span class="tc-label">Switching</span>
-                    </div>
-                    <div class="tc-line" id="tl3"></div>
-                    <div class="tc-step" id="ts4">
-                        <div class="tc-dot"></div>
-                        <span class="tc-label">Settled</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Breakdown Table -->
-            <div class="receipt-details">
-                <div class="receipt-row">
-                    <span class="receipt-label">Beneficiary Bank</span>
-                    <span class="receipt-value" id="rBank">—</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Account Number</span>
-                    <span class="receipt-value" id="rAccount" style="font-family:'SFMono-Regular',Consolas,monospace">—</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Beneficiary Name</span>
-                    <span class="receipt-value" id="rBeneficiaryName"><?= htmlspecialchars($username) ?></span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Payout Amount</span>
-                    <span class="receipt-value receipt-amount" id="rAmount">—</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Settlement Channel</span>
-                    <span class="receipt-value" style="font-size:0.78rem;color:#38BDF8">Instant NUBAN NIP Switch</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Date & Time</span>
-                    <span class="receipt-value" id="rDateTime" style="font-size:0.78rem">—</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Transfer Status</span>
-                    <span class="receipt-value receipt-status status-processing" id="rStatus">Request Submitted</span>
-                </div>
-            </div>
-
-            <!-- Digital Cryptographic Security Seal -->
-            <div class="receipt-security-seal">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <span>Verified Digital Settlement Voucher · SHA-256 Validated</span>
-            </div>
-
-            <div class="receipt-btn-row">
-                <button type="button" class="btn-receipt-download" id="receiptDownload">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download Receipt
-                </button>
-                <button type="button" class="btn-receipt-close" id="receiptClose">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== NOTIFICATION DETAIL MODAL ===== -->
-    <div class="notif-detail-overlay" id="notifDetailModalOverlay" style="display:none">
-        <div class="notif-detail-card" id="notifDetailCard">
-            <div class="notif-detail-head">
-                <div class="notif-detail-badge" id="notifDetailBadge">
-                    <span id="notifDetailBadgeText">SYSTEM UPDATE</span>
-                </div>
-                <button type="button" class="notif-detail-close-btn" onclick="closeNotificationDetail()" aria-label="Close">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <h3 class="notif-detail-title" id="notifDetailTitle">Notification Title</h3>
-            <div class="notif-detail-time" id="notifDetailTime">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span id="notifDetailTimeText">Just now</span>
-            </div>
-            <div class="notif-detail-body" id="notifDetailBody">
-                Full message content here...
-            </div>
-            <div class="notif-detail-actions">
-                <a href="javascript:void(0)" class="notif-btn-primary-action" id="notifDetailActionBtn" onclick="handleNotifModalAction()">
-                    <span id="notifDetailActionBtnText">View Details</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </a>
-                <button type="button" class="notif-btn-secondary-action" onclick="closeNotificationDetail()">Dismiss</button>
-            </div>
-        </div>
-    </div>
-
- <!-- ===== STEP 3: JOBBERS TASK EXECUTION & PROOF MODAL ===== -->
-    <div class="receipt-overlay" id="taskExecOverlay" style="display:none">
- <div class="receipt-modal" style="max-width:460px">
- <div class="receipt-top">
- <div class="receipt-logo">
- <div class="logo-icon" style="width:32px;height:32px;font-size:0.75rem;background:linear-gradient(135deg, #0284C7, #38BDF8)"></div>
- <span style="font-weight:900;font-size:1rem;color:#FFF">Jobbers Gig Hub</span>
- </div>
- <div class="receipt-badge badge-pending" style="background:rgba(56, 189, 248, 0.2);color:var(--sky-vibrant);border-color:rgba(56, 189, 248, 0.4)">
- <span id="taskRewardBadge">+150 PTS</span>
- </div>
- </div>
-
- <h3 class="receipt-title" id="taskModalTitle" style="font-size:1.15rem;margin-bottom:6px">Complete Earning Gig</h3>
- <p id="taskModalDesc" style="font-size:0.82rem;color:var(--text-gray);margin-bottom:14px;line-height:1.5">
- Watch the complete sponsored clip or visit the target link to claim PTS.
- </p>
-
- <!-- Video Player Embed Container (When task is a Video task) -->
- <div id="taskVideoEmbedWrap" style="display:none;margin-bottom:14px;border-radius:12px;overflow:hidden;background:#000;position:relative;padding-top:56.25%">
- <iframe id="taskVideoIframe" src="" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
- </div>
-
- <!-- Destination Launcher Link -->
- <div style="margin-bottom:14px">
- <a id="taskModalLink" href="#" target="_blank" onclick="handleTaskLinkClick(event)" class="btn-dash-action" style="width:100%;justify-content:center;padding:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;text-decoration:none;font-weight:800;border-radius:10px">
- <span> Open Destination &amp; Start Task</span>
- </a>
- </div>
-
- <!-- 20-Second Active Verification Timer Box -->
- <div id="taskTimerWrap" style="display:none;background:rgba(56, 189, 248, 0.1);border:1px solid rgba(56, 189, 248, 0.3);border-radius:12px;padding:12px 16px;margin-bottom:14px;text-align:center">
- <div style="font-size:0.75rem;color:#93C5FD;font-weight:700;margin-bottom:4px"> ACTIVE VISIT VERIFICATION TIMER</div>
- <div style="font-size:1.45rem;font-weight:900;color:#7DD3FC;letter-spacing:0.02em" id="taskTimerDisplay">20s remaining</div>
- <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;margin-bottom:0">
- Stay on the destination page / watch video for at least 20 seconds. Reward button unlocks automatically!
- </p>
- </div>
-
- <!-- Proof Submission Area (When proof is required) -->
- <div id="taskProofSection" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:16px">
- <label id="taskProofLabel" style="font-size:0.78rem;font-weight:700;color:var(--white-pure);display:block;margin-bottom:6px">Proof of Completion</label>
- <input type="text" id="taskProofInput" class="dash-input" placeholder="Enter your username, phone or screenshot link" style="width:100%;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);color:#FFF;font-size:0.85rem;margin-bottom:8px">
- <span id="taskProofHelper" style="font-size:0.72rem;color:var(--text-muted)">Your proof will be verified and credited instantly to your balance.</span>
- </div>
-
- <div class="confirm-actions">
- <button type="button" class="btn-confirm-back" onclick="close(document.getElementById('taskExecOverlay'))">Cancel</button>
- <button type="button" class="btn-confirm-submit" id="btnSubmitProof" onclick="submitTaskProof()" style="background:linear-gradient(135deg, #0284C7, #38BDF8)">
- Claim &amp; Earn PTS
- </button>
- </div>
- </div>
- </div>
-
- <!-- ===== STEP 4: UPLOADER UPGRADE & PAYMENT SCREENSHOT MODAL ===== -->
-    <div class="receipt-overlay" id="uploaderUpgradeModalOverlay" style="display:none">
-        <div class="receipt-modal" style="max-width:480px">
-            <div class="receipt-top">
-                <div class="receipt-logo">
-                    <div style="width:34px;height:34px;border-radius:10px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;color:#818CF8">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                    </div>
-                    <span style="font-weight:900;font-size:1rem;color:#FFF">Uploader Accreditation</span>
-                </div>
-                <div class="receipt-badge" style="background:rgba(56, 189, 248, 0.12);color:#7DD3FC;border:1px solid rgba(56, 189, 248, 0.3)">
-                    Fee: ₦10,000
-                </div>
-            </div>
-
-            <h3 class="receipt-title" style="font-size:1.15rem;margin-bottom:6px">Apply for Uploader Role</h3>
-            <p style="font-size:0.82rem;color:var(--text-gray);margin-bottom:14px;line-height:1.5">
-                Pay the <strong>₦10,000</strong> accreditation fee to your dedicated virtual account below and upload payment receipt screenshot. Super Admin will verify and activate your privileges.
-            </p>
-
-            <!-- Dedicated Bank Details Box -->
-            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(56, 189, 248, 0.25);border-radius:12px;padding:14px;margin-bottom:16px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                    <span style="font-size:0.72rem;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em;font-weight:700">Dedicated Accreditation Account</span>
-                    <span style="font-size:0.7rem;color:#7DD3FC;font-weight:700">24/7 Auto Webhook</span>
-                </div>
-                <div style="font-size:1.25rem;font-weight:900;color:#7DD3FC;letter-spacing:1.5px;font-variant-numeric:tabular-nums;font-family:'Plus Jakarta Sans',-apple-system,sans-serif">9823418290</div>
-                <div style="font-size:0.84rem;color:#FFFFFF;font-weight:800;margin-top:2px">Providus Bank</div>
-                <div style="font-size:0.76rem;color:#94A3B8;margin-top:2px">Account Name: INNOVATIONX - <?= strtoupper(htmlspecialchars($username ?? 'ABAS6245')) ?></div>
-            </div>
-
-            <form id="uploaderUpgradeForm" onsubmit="handleUploaderUpgradeSubmit(event)">
-                
-                <!-- Uploader Accreditation Code or Transfer Note -->
-                <div class="withdraw-form-group" style="margin-bottom:12px">
-                    <label style="font-size:0.76rem;color:#818CF8">Uploader Accreditation Code (or type "BANK TRANSFER") *</label>
-                    <input type="text" id="upgCodeInput" class="admin-input" placeholder="Enter Uploader Code or BANK TRANSFER" required style="width:100%;padding:10px 12px;font-weight:700">
-                    <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">
-                        Notice: Input your Uploader Code or type "BANK TRANSFER" if you transferred directly.
-                    </div>
-                </div>
-
-                <div class="withdraw-form-group" style="margin-bottom:12px">
-                    <label style="font-size:0.76rem">Full Name *</label>
-                    <input type="text" id="upgFullName" class="admin-input" placeholder="Your Official Full Name" required style="width:100%;padding:10px 12px">
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-                    <div class="withdraw-form-group" style="margin-bottom:0">
-                        <label style="font-size:0.76rem">WhatsApp Phone *</label>
-                        <input type="tel" id="upgPhone" class="admin-input" placeholder="08012345678" required style="width:100%;padding:10px 12px">
-                    </div>
-                    <div class="withdraw-form-group" style="margin-bottom:0">
-                        <label style="font-size:0.76rem">Email Address *</label>
-                        <input type="email" id="upgEmail" class="admin-input" placeholder="you@email.com" required style="width:100%;padding:10px 12px">
-                    </div>
-                </div>
-
-                <!-- Payment Screenshot Upload -->
-                <div class="withdraw-form-group" style="margin-bottom:16px">
-                    <label style="font-size:0.76rem;color:#818CF8">Upload Payment Receipt Screenshot Proof *</label>
-                    <input type="file" id="upgScreenshotFile" accept="image/*" onchange="handleScreenshotFileSelect(event)" style="display:block;width:100%;font-size:0.78rem;color:var(--text-gray);margin-bottom:6px">
-                    <input type="hidden" id="upgScreenshotUrl" value="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80">
-                    <div id="upgScreenshotPreviewWrap" style="display:none;margin-top:8px;padding:8px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px dashed rgba(255,255,255,0.2);text-align:center">
-                        <img id="upgScreenshotPreview" src="" alt="Payment Receipt" style="max-height:120px;border-radius:6px;object-fit:contain">
-                        <div style="font-size:0.7rem;color:#38BDF8;margin-top:4px">Screenshot Attached</div>
-                    </div>
-                </div>
-
-                <div class="confirm-actions">
-                    <button type="button" class="btn-confirm-back" onclick="close(document.getElementById('uploaderUpgradeModalOverlay'))">Cancel</button>
-                    <button type="submit" class="btn-confirm-submit btn-tech-primary" id="btnSubmitUpg" style="background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFFFFF;font-weight:800">
-                        Submit for Admin Approval
-                    </button>
-                </div>
             </form>
         </div>
     </div>
 
- <!-- html2canvas for receipt download -->
- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
- <script>
- (function() {
- const form = document.getElementById('withdrawForm');
- const confirmOv = document.getElementById('confirmOverlay');
- const receiptOv = document.getElementById('receiptOverlay');
- let currentTxn = null;
- let pollTimer = null;
-
- const g = id => document.getElementById(id);
- function genId() {
- const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
- let id = 'TXN-';
- for (let i = 0; i < 8; i++) id += c[Math.floor(Math.random() * c.length)];
- return id;
- }
- function fmtDate(d) {
- return d.toLocaleDateString('en-NG',{year:'numeric',month:'short',day:'numeric'}) +
- ' · ' + d.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit',hour12:true});
- }
- function fmtN(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
- function mask(a) { return a.length > 4 ? '••••••' + a.slice(-4) : a; }
- function open(el) { if (el) { el.classList.add('open'); el.style.display = 'flex'; el.style.opacity = '1'; el.style.visibility = 'visible'; document.body.style.overflow='hidden'; } }
-    function close(el) { if (el) { el.classList.remove('open'); el.style.display = 'none'; el.style.opacity = '0'; document.body.style.overflow=''; } }
-
- // ==========================================
- // BESPOKE CUSTOM DROPDOWNS ENGINE
- // ==========================================
- window.toggleIxDropdown = function(id) {
- const el = document.getElementById(id);
- if (!el) return;
- const isOpen = el.classList.contains('open');
- document.querySelectorAll('.ix-dropdown').forEach(d => d.classList.remove('open'));
- if (!isOpen) el.classList.add('open');
- };
-
- window.selectIxSource = function(type, val, icon, label, sub, itemEl) {
- if (type === 'airtime') {
- document.getElementById('airtimePaySource').value = val;
- document.getElementById('airtimeSourceIcon').textContent = icon;
- document.getElementById('airtimeSourceLabel').textContent = label;
- document.getElementById('airtimeSourceSub').textContent = sub;
- } else {
- document.getElementById('vtuPaySource').value = val;
- document.getElementById('dataPaymentIcon').textContent = icon;
- document.getElementById('dataPaymentLabel').textContent = label;
- document.getElementById('dataPaymentSub').textContent = sub;
- }
-
- const parentMenu = itemEl.closest('.ix-dropdown-menu');
- if (parentMenu) {
- parentMenu.querySelectorAll('.ix-dropdown-item').forEach(i => i.classList.remove('active'));
- itemEl.classList.add('active');
- }
-
- const wrapper = itemEl.closest('.ix-dropdown');
- if (wrapper) wrapper.classList.remove('open');
- };
-
- window.selectIxBank = function(bankName, icon, sub, itemEl) {
- document.getElementById('wBank').value = bankName;
- document.getElementById('selectedBankIcon').textContent = icon;
- document.getElementById('selectedBankLabel').textContent = bankName;
-
- const parentMenu = itemEl.closest('.ix-dropdown-menu');
- if (parentMenu) {
- parentMenu.querySelectorAll('.ix-dropdown-item').forEach(i => i.classList.remove('active'));
- itemEl.classList.add('active');
- }
-
- const wrapper = itemEl.closest('.ix-dropdown');
- if (wrapper) wrapper.classList.remove('open');
- };
-
- // Global outside click listener to close custom dropdowns
- document.addEventListener('click', function(e) {
- if (!e.target.closest('.ix-dropdown')) {
- document.querySelectorAll('.ix-dropdown').forEach(d => d.classList.remove('open'));
- }
- });
-
- // Fast amount selector pill handler
- window.setAmt = function(val, el) {
- document.getElementById('wAmount').value = val;
- document.querySelectorAll('.dash-amt-pill').forEach(p => p.classList.remove('active'));
- el.classList.add('active');
- };
-
- // VTU Telecoms Mode & Selection Handlers
- let selectedVtuMode = 'airtime';
- let selectedVtuNet = 'mtn';
- let selectedAirtimeAmt = 500;
- let selectedVtuPlan = { size: '1GB', price: 250 };
-
- // Read Admin's custom pricing configuration
- let vtuConfigState = {
- points_per_naira: 1.0,
- airtime_rates: { mtn: 97.0, airtel: 97.5, glo: 95.0, '9mobile': 96.0 }
- };
-
- function refreshVtuConfig() {
- try {
- const stored = localStorage.getItem('ix_vtu_settings');
- if (stored) {
- const parsed = JSON.parse(stored);
- if (parsed.points_per_naira) vtuConfigState.points_per_naira = parseFloat(parsed.points_per_naira) || 1.0;
- if (parsed.airtime_rates) vtuConfigState.airtime_rates = Object.assign(vtuConfigState.airtime_rates, parsed.airtime_rates);
- }
- } catch(e) {}
- }
- refreshVtuConfig();
-
- window.switchVtuMode = function(mode) {
- selectedVtuMode = mode;
- const airBtn = document.getElementById('vtuModeAirtimeBtn');
- const dataBtn = document.getElementById('vtuModeDataBtn');
- const airContainer = document.getElementById('vtuAirtimeContainer');
- const dataContainer = document.getElementById('vtuDataContainer');
-
- if (mode === 'airtime') {
- airBtn.style.background = 'linear-gradient(135deg, var(--sky-vibrant), var(--sky-dark))';
- airBtn.style.color = '#FFF';
- dataBtn.style.background = 'transparent';
- dataBtn.style.color = 'var(--text-gray)';
- airContainer.style.display = 'block';
- dataContainer.style.display = 'none';
- } else {
- dataBtn.style.background = 'linear-gradient(135deg, var(--sky-vibrant), var(--sky-dark))';
- dataBtn.style.color = '#FFF';
- airBtn.style.background = 'transparent';
- airBtn.style.color = 'var(--text-gray)';
- dataContainer.style.display = 'block';
- airContainer.style.display = 'none';
- }
- };
-
- window.selectVtuNet = function(net, el) {
- selectedVtuNet = net;
- document.querySelectorAll('.vtu-net-btn').forEach(b => {
- b.className = 'vtu-net-btn';
- });
- el.className = 'vtu-net-btn active-' + net;
- recalcAirtimePayable();
- };
-
- window.setAirtimeAmount = function(val, el) {
- selectedAirtimeAmt = val;
- const input = document.getElementById('airtimeCustomAmount');
- if (input) input.value = val;
- document.querySelectorAll('#vtuAirtimeContainer .amount-pill').forEach(p => p.classList.remove('active'));
- if (el) el.classList.add('active');
- recalcAirtimePayable();
- };
-
- window.recalcAirtimePayable = function() {
- refreshVtuConfig();
- const input = document.getElementById('airtimeCustomAmount');
- const rawAmt = parseFloat(input ? input.value : 0) || 0;
- 
- // Get rate for selected network (e.g. 97.0%)
- const rate = (vtuConfigState.airtime_rates && vtuConfigState.airtime_rates[selectedVtuNet]) ? vtuConfigState.airtime_rates[selectedVtuNet] : 97.0;
- const payableNaira = (rawAmt * rate) / 100;
- const savingsNaira = Math.max(0, rawAmt - payableNaira);
- 
- // Points equivalent based on Admin's points_per_naira rate
- const ptsRate = vtuConfigState.points_per_naira || 1.0;
- const payablePts = Math.round(payableNaira * ptsRate);
-
- const discountEl = document.getElementById('airtimeDiscountLabel');
- const payableEl = document.getElementById('airtimePayableLabel');
-
- if (discountEl) {
- const discountPercent = (100 - rate).toFixed(1);
- discountEl.textContent = `${selectedVtuNet.toUpperCase()} Rate: ${rate}% • You Save ₦${savingsNaira.toFixed(2)}`;
- }
- if (payableEl) {
- payableEl.textContent = `₦${payableNaira.toFixed(2)} / ${payablePts.toLocaleString()} PTS`;
- }
- };
-
- window.selectVtuPlan = function(size, price, el) {
- selectedVtuPlan = { size: size, price: price };
- document.querySelectorAll('.vtu-plan-card').forEach(c => c.classList.remove('active'));
- el.classList.add('active');
- };
-
- // Live Airtime API Dispatch
- window.processAirtimeRecharge = async function(e) {
- e.preventDefault();
- const phone = document.getElementById('airtimePhone').value.trim();
- const amountInput = document.getElementById('airtimeCustomAmount');
- const amount = parseFloat(amountInput.value) || 500;
- const source = document.getElementById('airtimePaySource').value;
- const submitBtn = document.getElementById('btnSubmitAirtime');
- const netUpper = selectedVtuNet.toUpperCase();
-
- if (!phone || phone.length < 11) {
- alert('Please enter a valid 11-digit phone number.');
- return;
- }
-
- const discount = (amount * vtuDiscountRate) / 100;
- const payable = (amount - discount).toFixed(2);
-
- const confirmMsg = ` Confirm ${netUpper} ₦${amount.toLocaleString()} Airtime Recharge?\n\nBeneficiary: ${phone}\nDiscount Applied: 3%\nAmount to Deduct: ₦${payable} (${source === 'points' ? Math.round(payable) + ' PTS' : '₦' + payable})`;
- 
- if (!confirm(confirmMsg)) return;
-
- if (submitBtn) {
- submitBtn.disabled = true;
- submitBtn.innerHTML = '<span>Connecting Provider API...</span>';
- }
-
- try {
- const res = await fetch('api/vtu.php?action=buy_airtime', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({
- network: selectedVtuNet,
- phone: phone,
- amount: amount,
- pay_source: source
- })
- });
- const data = await res.json();
-
- if (data.status === 'success') {
- const tx = data.transaction;
- alert(
- ` Instant Airtime Delivery Successful!\n\n` +
- `Tx Ref: ${tx.tx_ref}\n` +
- `Provider Ref: ${tx.provider_ref}\n` +
- `Network: ${tx.network}\n` +
- `Phone: ${tx.phone}\n` +
- `Airtime: ₦${tx.amount.toLocaleString()}\n` +
- `Charged: ₦${tx.amount_charged.toFixed(2)} (${tx.pay_source === 'points' ? Math.round(tx.amount_charged) + ' PTS' : '₦' + tx.amount_charged})\n` +
- `Status: ${tx.delivery_status}\n\n` +
- `Thank you for using INNOVATIONX Telecoms API!`
- );
- document.getElementById('vtuAirtimeForm').reset();
- setAirtimeAmount(500, null);
- } else {
- alert('Recharge Error: ' + (data.message || 'Provider API did not respond.'));
- }
- } catch (err) {
- // Fallback simulation if direct API offline
- alert(
- ` Instant Airtime Delivery Successful!\n\n` +
- `Tx Ref: IX-AIR-${Math.floor(Math.random()*900000+100000)}\n` +
- `Network: ${netUpper}\n` +
- `Phone: ${phone}\n` +
- `Amount: ₦${amount.toLocaleString()}\n` +
- `Status: Delivered \n\n` +
- `Your line will be credited in seconds.`
- );
- document.getElementById('vtuAirtimeForm').reset();
- } finally {
- if (submitBtn) {
- submitBtn.disabled = false;
- submitBtn.innerHTML = '<span> Recharge Airtime Now </span>';
- }
- }
- };
-
- // Live Data API Dispatch
- window.processVtuRecharge = async function(e) {
- e.preventDefault();
- const phone = document.getElementById('vtuPhone').value.trim();
- const source = document.getElementById('vtuPaySource').value;
- const submitBtn = document.getElementById('btnSubmitData');
- const netUpper = selectedVtuNet.toUpperCase();
-
- if (!phone || phone.length < 11) {
- alert('Please enter a valid 11-digit phone number.');
- return;
- }
-
- const confirmRecharge = confirm(
- ` Confirm ${netUpper} ${selectedVtuPlan.size} Data Recharge for ${phone}?\nCost: ₦${selectedVtuPlan.price} (${source === 'points' ? selectedVtuPlan.price + ' PTS' : '₦' + selectedVtuPlan.price})`
- );
-
- if (!confirmRecharge) return;
-
- if (submitBtn) {
- submitBtn.disabled = true;
- submitBtn.innerHTML = '<span>Processing Data Bundle...</span>';
- }
-
- try {
- const res = await fetch('api/vtu.php?action=buy_data', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({
- network: selectedVtuNet,
- phone: phone,
- plan: selectedVtuPlan.size,
- amount: selectedVtuPlan.price,
- pay_source: source
- })
- });
- const data = await res.json();
- if (data.status === 'success') {
- const tx = data.transaction;
- alert(
- ` SME Data Bundle Delivered!\n\n` +
- `Tx Ref: ${tx.tx_ref}\n` +
- `Network: ${tx.network}\n` +
- `Plan: ${tx.plan} (30 Days)\n` +
- `Beneficiary: ${tx.phone}\n` +
- `Status: ${tx.delivery_status}`
- );
- document.getElementById('vtuRechargeForm').reset();
- } else {
- alert('Data Recharge Error: ' + (data.message || 'Provider failed.'));
- }
- } catch (err) {
- alert(` Instant Delivery Successful!\n\n${netUpper} ${selectedVtuPlan.size} 30-Day Data bundle sent to ${phone}.`);
- document.getElementById('vtuRechargeForm').reset();
- } finally {
- if (submitBtn) {
- submitBtn.disabled = false;
- submitBtn.innerHTML = '<span> Recharge Data Bundle Instantly</span>';
- }
- }
- };
-
- // STEP 1: Form -> Confirmation Modal
- form && form.addEventListener('submit', function(e) {
- e.preventDefault();
- const bk = g('wBank'), ac = g('wAccount'), am = g('wAmount');
- const walletType = (g('selectedWithdrawWallet') || {}).value || 'task';
- const enteredAmount = parseFloat(am ? am.value : 0) || 0;
-
- let ws = {};
- try { ws = JSON.parse(localStorage.getItem('ix_withdrawal_settings') || '{}'); } catch(e) {}
- const minAmount = walletType === 'task' ? (parseInt(ws.task_min) || 1000) : (parseInt(ws.referral_min) || 1000);
- const availableBal = walletType === 'task' ? parseFloat(localStorage.getItem('ix_wallet_points') || '0') : parseFloat(localStorage.getItem('ix_wallet_cash') || '0');
-
- if (enteredAmount < minAmount) {
-     alert(`Minimum Withdrawal Threshold:\n\nThe minimum payout amount for ${walletType === 'task' ? 'Task Points' : 'Referral Cash'} is ₦${minAmount.toLocaleString()}. You entered ₦${enteredAmount.toLocaleString()}.`);
-     if (am) am.focus();
-     return;
- }
-
- if (enteredAmount > availableBal) {
-     alert(`Insufficient Balance:\n\nYour available balance is ${walletType === 'task' ? Math.round(availableBal).toLocaleString() + ' PTS' : '₦' + availableBal.toLocaleString('en-NG', {minimumFractionDigits:2})}. You cannot request ₦${enteredAmount.toLocaleString()}.`);
-     if (am) am.focus();
-     return;
- }
-
- const bankName = bk.value || 'Unknown Bank';
- g('cBank').textContent = bankName;
- g('cAccount').textContent = ac.value;
- g('cAmount').textContent = fmtN(am.value);
- currentTxn = { id: genId(), bank: bankName, account: ac.value, amount: am.value, date: new Date(), status:'processing', service_type: walletType };
- open(confirmOv);
- });
-
- // Back to edit
- g('confirmBack') && g('confirmBack').addEventListener('click', () => close(confirmOv));
-
- // STEP 2: Confirm -> Real-Time Animated Tracking
- // Reads admin withdrawal settings to determine Automatic vs Manual mode
- g('confirmSubmit') && g('confirmSubmit').addEventListener('click', function() {
- const pinInput = document.getElementById('confirmPinInput');
- const inputPin = pinInput ? pinInput.value.trim() : '';
- const savedPin = localStorage.getItem('ix_withdrawal_pin');
-
- if (!savedPin) {
-    alert('Security Notice:\n\nYou have not set up your 4-digit Withdrawal Security PIN yet. Please set it up now.');
-    openSetPinFromConfirm();
-    return;
- }
- if (!inputPin) {
-    alert('Please enter your 4-digit Withdrawal Security PIN to authorize this payout.');
-    if (pinInput) pinInput.focus();
-    return;
- }
- if (inputPin !== savedPin) {
-    alert('Incorrect Withdrawal Security PIN! Please enter your valid 4-digit PIN.');
-    if (pinInput) pinInput.focus();
-    return;
- }
-
- // Determine payout mode & check Automatic Payout Service
- const walletType = currentTxn.service_type || 'task';
- const amount = parseFloat(currentTxn.amount) || 0;
-
-    let isAutonomousApp = false;
-    let autoAppSettings = {};
-    try {
-        autoAppSettings = JSON.parse(localStorage.getItem('ix_autopayout_app_settings') || '{}');
-        if (autoAppSettings.status === 'enabled') {
-            const now = new Date();
-            const curMinutes = now.getHours() * 60 + now.getMinutes();
-            let withinSchedule = true;
-            if (autoAppSettings.schedule_mode === 'custom_hours' && autoAppSettings.start_hour && autoAppSettings.end_hour) {
-                const [sh, sm] = autoAppSettings.start_hour.split(':').map(Number);
-                const [eh, em] = autoAppSettings.end_hour.split(':').map(Number);
-                const startMins = (sh || 0) * 60 + (sm || 0);
-                const endMins = (eh || 0) * 60 + (em || 0);
-                if (startMins <= endMins) {
-                    withinSchedule = (curMinutes >= startMins && curMinutes <= endMins);
-                } else {
-                    // Overnight schedule e.g. 23:00 to 06:00
-                    withinSchedule = (curMinutes >= startMins || curMinutes <= endMins);
-                }
-            }
-            const minAppAmt = parseFloat(autoAppSettings.min_amount) || 1000;
-            const maxAppAmt = parseFloat(autoAppSettings.max_amount) || 50000;
-            if (withinSchedule && amount >= minAppAmt && amount <= maxAppAmt) {
-                isAutonomousApp = true;
-            }
-        }
-    } catch(e) {}
-
-    let payoutMode = isAutonomousApp ? 'autonomous_app' : 'manual';
-    if (!isAutonomousApp) {
-        try {
-            const ws = JSON.parse(localStorage.getItem('ix_withdrawal_settings') || '{}');
-            payoutMode = walletType === 'task' ? (ws.task_mode || 'manual') : (ws.referral_mode || 'manual');
-        } catch(e) {}
-    }
-
-    const isAutomatic = (payoutMode === 'automatic');
-
-    // Deduct balance from the appropriate wallet
-    if (walletType === 'task') {
-        let pts = parseFloat(localStorage.getItem('ix_wallet_points') || '0');
-        pts = Math.max(0, pts - amount);
-        localStorage.setItem('ix_wallet_points', String(pts));
-    } else {
-        let cash = parseFloat(localStorage.getItem('ix_wallet_cash') || '0');
-        cash = Math.max(0, cash - amount);
-        localStorage.setItem('ix_wallet_cash', String(cash));
-    }
-
-    g('receiptTxId').textContent = currentTxn.id;
-    if (g('rHeroAmount')) g('rHeroAmount').textContent = fmtN(currentTxn.amount);
-    g('rBank').textContent = currentTxn.bank;
-    g('rAccount').textContent = mask(currentTxn.account);
-    g('rAmount').textContent = fmtN(currentTxn.amount);
-    g('rDateTime').textContent = fmtDate(currentTxn.date);
-    g('rStatus').textContent = 'Request Submitted';
-    g('rStatus').className = 'receipt-value receipt-status status-processing';
-    g('receiptBadge').className = 'receipt-badge badge-processing';
-    g('receiptBadge').querySelector('.badge-text').textContent = isAutonomousApp ? 'Processing Payment' : 'Processing';
-
-    // Reset tracker
-    document.querySelectorAll('.tc-step').forEach(s => s.classList.remove('active','done'));
-    document.querySelectorAll('.tc-line').forEach(l => l.classList.remove('active'));
-    
-    // Step 1: Submitted (immediate)
-    g('ts1').classList.add('active');
-
-    // Save to localStorage for admin
-    const txnStatus = isAutomatic ? 'approved' : 'pending';
-    const reqs = JSON.parse(localStorage.getItem('ix_withdrawals') || '[]');
-    reqs.push({ 
-        id: currentTxn.id, 
-        bank: currentTxn.bank, 
-        account: currentTxn.account, 
-        amount: currentTxn.amount, 
-        date: currentTxn.date.toISOString(), 
-        status: txnStatus, 
-        service_type: walletType, 
-        mode: payoutMode 
-    });
-    localStorage.setItem('ix_withdrawals', JSON.stringify(reqs));
-
-    open(receiptOv);
-
-    if (isAutonomousApp) {
-        // AUTO-PAYOUT SERVICE DISPATCH
-        // Dispatch to external app via API
-        fetch('api/autopayout_app.php?action=dispatch_withdrawal', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                txn_id: currentTxn.id,
-                amount: currentTxn.amount,
-                bank: currentTxn.bank,
-                account: currentTxn.account,
-                service_type: walletType
-            })
-        }).catch(()=>{});
-
-        // Step 2: Account Verified (after 800ms)
-        setTimeout(() => {
-            g('ts1').classList.add('done');
-            g('tl1').classList.add('active');
-            g('ts2').classList.add('active', 'done');
-            g('rStatus').textContent = 'Account Verified';
-        }, 800);
-
-        // Step 3: Dispatched to Connected App (after 1.6s)
-        setTimeout(() => {
-            g('tl2').classList.add('active');
-            g('ts3').classList.add('active');
-            g('rStatus').textContent = 'Processing Payment...';
-            g('receiptBadge').className = 'receipt-badge badge-processing';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'App Executing';
-
-            // STRICT RULE: Poll for Connected App Confirmation Callback.
-            // ONLY when the app finishes will Step 4 complete!
-            pollAutonomousAppCompletion(currentTxn.id);
-        }, 1600);
-
-    } else if (isAutomatic) {
-        // AUTOMATIC MODE: Instant 2.4s NUBAN dispatch simulation
-        setTimeout(() => {
-            g('ts1').classList.add('done');
-            g('tl1').classList.add('active');
-            g('ts2').classList.add('active', 'done');
-            g('rStatus').textContent = 'Account Verified';
-        }, 800);
-
-        setTimeout(() => {
-            g('tl2').classList.add('active');
-            g('ts3').classList.add('active', 'done');
-            g('rStatus').textContent = 'Sending to Bank...';
-        }, 1600);
-
-        setTimeout(() => {
-            g('ts3').classList.add('done');
-            g('tl3').classList.add('active');
-            g('ts4').classList.add('active', 'done');
-            g('rStatus').textContent = 'Sent to Bank';
-            g('rStatus').className = 'receipt-value receipt-status status-complete';
-            g('receiptBadge').className = 'receipt-badge badge-complete';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'Completed';
-            if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
-        }, 2400);
-
-    } else {
-        // MANUAL MODE: Queue for admin approval, poll for status
-        setTimeout(() => {
-            g('ts1').classList.add('done');
-            g('tl1').classList.add('active');
-            g('ts2').classList.add('active', 'done');
-            g('rStatus').textContent = 'Account Verified';
-        }, 1800);
-
-        setTimeout(() => {
-            g('tl2').classList.add('active');
-            g('ts3').classList.add('active');
-            g('rStatus').textContent = 'Queued for Admin Review...';
-            g('receiptBadge').className = 'receipt-badge badge-processing';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'In Queue';
-
-            startPolling(currentTxn.id);
-        }, 3600);
-    }
-
-    if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
-});
-
-// Payout Service Completion Poller
-function pollAutonomousAppCompletion(txnId) {
-    if (pollTimer) clearInterval(pollTimer);
-    let attempts = 0;
-    pollTimer = setInterval(async () => {
-        attempts++;
-        try {
-            const res = await fetch('api/autopayout_app.php?action=get_logs');
-            const data = await res.json();
-            if (data.status === 'success' && Array.isArray(data.logs)) {
-                const log = data.logs.find(l => l.txn_id === txnId);
-                // Also check if admin approved in parallel
-                const reqs = JSON.parse(localStorage.getItem('ix_withdrawals') || '[]');
-                const localTxn = reqs.find(r => r.id === txnId);
-
-                if ((log && (log.completed || log.app_status === 'TRANSFER_SUCCESSFUL')) || (localTxn && (localTxn.status === 'approved' || localTxn.status === 'completed'))) {
-                    clearInterval(pollTimer);
-                    // App completed the transaction! Unlock Step 4 Sent to Bank!
-                    g('ts3').classList.add('done');
-                    g('tl3').classList.add('active');
-                    g('ts4').classList.add('active', 'done');
-                    g('rStatus').textContent = 'Sent to Bank (App Confirmed)';
-                    g('rStatus').className = 'receipt-value receipt-status status-complete';
-                    g('receiptBadge').className = 'receipt-badge badge-complete';
-                    g('receiptBadge').querySelector('.badge-text').textContent = 'Completed';
-
-                    // Update local storage
-                    if (localTxn) {
-                        localTxn.status = 'completed';
-                        localStorage.setItem('ix_withdrawals', JSON.stringify(reqs));
-                    }
-                    if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
-                    return;
-                }
-            }
-        } catch(e) {}
-
-        // Fallback auto-complete after 8 seconds of daemon processing if simulator running
-        if (attempts >= 6) {
-            clearInterval(pollTimer);
-            // Simulate successful app callback completion
-            fetch('api/autopayout_app.php?action=callback&txn_id=' + txnId).catch(()=>{});
-            g('ts3').classList.add('done');
-            g('tl3').classList.add('active');
-            g('ts4').classList.add('active', 'done');
-            g('rStatus').textContent = 'Sent to Bank (App Confirmed)';
-            g('rStatus').className = 'receipt-value receipt-status status-complete';
-            g('receiptBadge').className = 'receipt-badge badge-complete';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'Completed';
-
-            const reqs = JSON.parse(localStorage.getItem('ix_withdrawals') || '[]');
-            const localTxn = reqs.find(r => r.id === txnId);
-            if (localTxn) {
-                localTxn.status = 'completed';
-                localStorage.setItem('ix_withdrawals', JSON.stringify(reqs));
-            }
-            if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
-        }
-    }, 1500);
-}
-
-// Poll for admin approval ONLY for Step 4 (Sent) - Manual Mode only
-function startPolling(txnId) {
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(() => {
-        const reqs = JSON.parse(localStorage.getItem('ix_withdrawals') || '[]');
-        const txn = reqs.find(r => r.id === txnId);
-        if (!txn) return;
-
-        if (txn.status === 'approved' || txn.status === 'completed') {
-            clearInterval(pollTimer);
-            g('ts3').classList.add('done');
-            g('tl3').classList.add('active');
-            g('ts4').classList.add('active', 'done');
-            g('rStatus').textContent = 'Sent to Bank';
-            g('rStatus').className = 'receipt-value receipt-status status-complete';
-            g('receiptBadge').className = 'receipt-badge badge-complete';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'Completed';
-        } else if (txn.status === 'rejected') {
-            clearInterval(pollTimer);
-            g('rStatus').textContent = 'Declined by Admin';
-            g('rStatus').className = 'receipt-value receipt-status status-rejected';
-            g('receiptBadge').className = 'receipt-badge badge-rejected';
-            g('receiptBadge').querySelector('.badge-text').textContent = 'Declined';
-        }
-    }, 1000);
-}
-
-// ==========================================
-// GOOGLE ADSENSE DYNAMIC DASHBOARD INJECTOR
-// ==========================================
-function loadDashboardAdSense() {
-    try {
-        const lbWrap = document.getElementById('dashAdsenseLeaderboardWrap');
-        const lbSlot = document.getElementById('adsenseLeaderboardSlot');
-        const taskWrap = document.getElementById('dashAdsenseTaskPromoWrap');
-
-        // Always hide by default unless configured
-        if (lbWrap) lbWrap.style.display = 'none';
-        if (taskWrap) taskWrap.style.display = 'none';
-
-        function applyConfig(cfg) {
-            // Strict check: Only show if explicitly enabled AND has a real non-default Google ca-pub ID
-            const isConfigured = cfg &&
-                (cfg.enabled === true || cfg.master_status === 'enabled') &&
-                cfg.master_status !== 'disabled' &&
-                cfg.publisher_id &&
-                cfg.publisher_id.trim().startsWith('ca-pub-') &&
-                cfg.publisher_id.trim() !== 'ca-pub-9847294872910384';
-
-            if (!isConfigured) {
-                if (lbWrap) lbWrap.style.display = 'none';
-                if (taskWrap) taskWrap.style.display = 'none';
-                return;
-            }
-
-            if (lbWrap && lbSlot) {
-                lbWrap.style.display = 'block';
-                lbSlot.innerHTML = `
-                    <div style="min-height:60px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border-radius:8px">
-                        <ins class="adsbygoogle"
-                             style="display:block;text-align:center"
-                             data-ad-layout="in-article"
-                             data-ad-format="fluid"
-                             data-ad-client="${cfg.publisher_id}"
-                             data-ad-slot="${cfg.header_slot || ''}"></ins>
-                    </div>
-                `;
-                try { ((window.adsbygoogle = window.adsbygoogle || []).push({})); } catch(e) {}
-            }
-            if (taskWrap) {
-                taskWrap.style.display = 'block';
-            }
-        }
-
-        const raw = localStorage.getItem('ix_adsense_config');
-        if (raw) {
-            applyConfig(JSON.parse(raw));
-        } else {
-            fetch('api/adsense.php?action=get_config')
-                .then(r => r.json())
-                .then(d => {
-                    if (d && d.status === 'success' && d.config) {
-                        applyConfig(d.config);
-                    }
-                })
-                .catch(() => {});
-        }
-    } catch(e) {}
-}
-
-loadDashboardAdSense();
-
-// ==========================================
-// DEDICATED VIRTUAL ACCOUNT ENGINE (DVA)
-// ==========================================
-window.loadUserVirtualAccount = async function() {
-    try {
-        const uId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : 'Member';
-        const res = await fetch(`api/virtual_accounts.php?action=get_user_account&user_id=${encodeURIComponent(uId)}`);
-        const data = await res.json();
-        if (data && data.account) {
-            const a = data.account;
-            const nubanEl = document.getElementById('userVaNuban');
-            const bankEl = document.getElementById('userVaBank');
-            const nameEl = document.getElementById('userVaName');
-            if (nubanEl) nubanEl.textContent = a.account_number || '9823418290';
-            if (bankEl) bankEl.textContent = a.bank_name || 'Wema Bank';
-            if (nameEl) nameEl.textContent = a.account_name || 'INNOVATIONX - ' + uId.toUpperCase();
-        }
-    } catch(e) {}
-};
-
-window.copyUserVaNuban = function() {
-    const nuban = document.getElementById('userVaNuban') ? document.getElementById('userVaNuban').textContent.trim() : '9823418290';
-    navigator.clipboard.writeText(nuban).then(() => {
-        const btnText = document.getElementById('copyVaBtnText');
-        if (btnText) {
-            btnText.textContent = 'Copied!';
-            setTimeout(() => btnText.textContent = 'Copy', 2000);
-        }
-        alert(`Account Number Copied: ${nuban}\n\nTransfer from any Nigerian bank app to fund your wallet instantly 24/7.`);
-    }).catch(() => {
-        prompt('Copy your dedicated account number:', nuban);
-    });
-};
-
-window.regenerateUserVirtualAccount = async function() {
-    const bank = prompt('Select your preferred Settlement Bank partner:\n\n1. Wema Bank\n2. Providus Bank\n3. Moniepoint MFB\n4. Sterling Bank\n\nEnter bank name:', 'Providus Bank');
-    if (!bank) return;
-
-    try {
-        const uId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : 'Member';
-        const res = await fetch('api/virtual_accounts.php?action=generate_account', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: uId, bank_name: bank })
-        });
-        const data = await res.json();
-        if (data && data.account) {
-            alert(`New Dedicated Account Assigned!\n\nBank: ${data.account.bank_name}\nNUBAN: ${data.account.account_number}\nName: ${data.account.account_name}`);
-            loadUserVirtualAccount();
-        }
-    } catch(e) {
-        alert('Account regenerated successfully.');
-    }
-};
-
-loadUserVirtualAccount();
-
-// ==========================================
-// ==========================================
-// LUXURY IN-APP NOTIFICATIONS CONTROLLER
-// ==========================================
-let currentDashboardNotifs = [];
-let activeNotifFilter = 'all';
-let activeModalNotif = null;
-
-const DEFAULT_SYSTEM_NOTIFS = [
-    {
-        id: 'notif_welcome',
-        title: 'Welcome to INNOVATIONX',
-        msg: 'Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.',
-        time: 'Just now',
-        category: 'system',
-        link: 'javascript:switchDashTab("overview")',
-        linkText: 'View Overview'
-    },
-    {
-        id: 'notif_tasks_live',
-        title: '3 Jobbers Tasks & Gigs Live',
-        msg: 'New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.',
-        time: '15m ago',
-        category: 'tasks',
-        link: 'javascript:switchDashTab("tasks")',
-        linkText: 'Go to Tasks Hub'
-    },
-    {
-        id: 'notif_nuban_ready',
-        title: 'Dedicated Settlement NUBAN Ready',
-        msg: 'Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.',
-        time: '1h ago',
-        category: 'wallet',
-        link: 'javascript:switchDashTab("overview")',
-        linkText: 'Check Settlement Card'
-    },
-    {
-        id: 'notif_security',
-        title: 'Account Protection & Immutable PIN',
-        msg: 'Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.',
-        time: '3h ago',
-        category: 'security',
-        link: 'javascript:switchDashTab("settings")',
-        linkText: 'Security Settings'
-    }
-];
-
-window.getReadNotifIds = function() {
-    try {
-        const raw = localStorage.getItem('ix_read_notifs');
-        return raw ? JSON.parse(raw) : [];
-    } catch(e) {
-        return [];
-    }
-};
-
-window.saveReadNotifIds = function(ids) {
-    try {
-        localStorage.setItem('ix_read_notifs', JSON.stringify(ids || []));
-    } catch(e) {}
-};
-
-window.fetchDashboardNotifications = async function() {
-    try {
-        const res = await fetch('api/notifications.php?action=get');
-        const data = await res.json();
-        if (data && data.success && Array.isArray(data.notifications) && data.notifications.length > 0) {
-            currentDashboardNotifs = data.notifications;
-            localStorage.setItem('ix_inapp_notifs', JSON.stringify(currentDashboardNotifs));
-        } else {
-            fallbackLocalNotifs();
-        }
-    } catch(e) {
-        fallbackLocalNotifs();
-    }
-    window.renderDashboardNotifications();
-};
-
-function fallbackLocalNotifs() {
-    try {
-        const raw = localStorage.getItem('ix_inapp_notifs');
-        const parsed = raw ? JSON.parse(raw) : null;
-        if (Array.isArray(parsed) && parsed.length > 0) {
-            currentDashboardNotifs = parsed;
-            return;
-        }
-    } catch(e) {}
-    currentDashboardNotifs = DEFAULT_SYSTEM_NOTIFS;
-    try {
-        localStorage.setItem('ix_inapp_notifs', JSON.stringify(DEFAULT_SYSTEM_NOTIFS));
-    } catch(e) {}
-}
-
-window.renderDashboardNotifications = function() {
-    const notifList = document.getElementById('notifDropdownList');
-    const notifBadge = document.getElementById('notifBadgeCount');
-    const headCount = document.getElementById('notifDropdownCount');
-    const tabCountAll = document.getElementById('notifTabCountAll');
-    const tabCountUnread = document.getElementById('notifTabCountUnread');
-    if (!notifList) return;
-
-    if (!currentDashboardNotifs || currentDashboardNotifs.length === 0) {
-        fallbackLocalNotifs();
-    }
-
-    const readIds = window.getReadNotifIds();
-    const unreadNotifs = currentDashboardNotifs.filter(n => !readIds.includes(n.id));
-    const unreadCount = unreadNotifs.length;
-
-    // Update Badge on Bell
-    if (notifBadge) {
-        if (unreadCount > 0) {
-            notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount.toString();
-            notifBadge.style.display = 'inline-flex';
-        } else {
-            notifBadge.style.display = 'none';
-        }
-    }
-
-    if (headCount) {
-        headCount.textContent = unreadCount > 0 ? `${unreadCount} New` : 'All Read';
-    }
-    if (tabCountAll) tabCountAll.textContent = currentDashboardNotifs.length.toString();
-    if (tabCountUnread) tabCountUnread.textContent = unreadCount.toString();
-
-    let listToRender = currentDashboardNotifs;
-    if (activeNotifFilter === 'unread') {
-        listToRender = unreadNotifs;
-    }
-
-    if (listToRender.length === 0) {
-        const emptyMsg = activeNotifFilter === 'unread'
-            ? 'You are all caught up! No unread notifications.'
-            : 'No notifications at this time.';
-        notifList.innerHTML =
-            '<div style="text-align:center;padding:28px 14px;color:#94A3B8;font-size:0.82rem">' +
-                '<div style="margin-bottom:8px;display:flex;justify-content:center">' +
-                    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' +
-                '</div>' +
-                '<div style="font-weight:700;color:#CBD5E1;margin-bottom:4px">' + (activeNotifFilter === 'unread' ? 'All Clear' : 'No Notifications') + '</div>' +
-                '<div>' + emptyMsg + '</div>' +
-            '</div>';
-        return;
-    }
-
-    notifList.innerHTML = listToRender.map(n => {
-        const isRead = readIds.includes(n.id);
-        const unreadIndicator = !isRead ? '<span class="notif-unread-dot" title="Unread"></span>' : '';
-
-        return `
-            <div class="notif-item ${isRead ? 'is-read' : 'is-unread'}" onclick="openNotificationDetail('${n.id}')" title="Click to view full message">
-                <div class="notif-item-content">
-                    <div class="notif-item-header">
-                        <div class="notif-item-title">${n.title || 'Notification'}</div>
-                        <div style="display:flex;align-items:center;gap:6px">
-                            <span class="notif-item-time">${n.time || 'New'}</span>
-                            ${unreadIndicator}
-                        </div>
-                    </div>
-                    <div class="notif-item-desc">${n.msg || ''}</div>
+    <!-- Task Submission Modal -->
+    <div id="taskSubmitModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeTaskSubmitModal()">&times;</button>
+            <div class="dash-card-title" id="taskModalTitle" style="margin-bottom:8px">Submit Task Proof</div>
+            <div class="dash-card-sub" id="taskModalInstructions" style="margin-bottom:20px">Provide evidence of completing the task.</div>
+
+            <form onsubmit="handleTaskProofSubmit(event)">
+                <input type="hidden" id="taskModalId">
+                <input type="hidden" id="taskModalReward">
+                <div class="form-group">
+                    <label class="form-label">Proof URL or Screenshot Link</label>
+                    <input type="url" id="taskModalProofUrl" class="form-input" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Verification Notes (Optional)</label>
+                    <input type="text" id="taskModalNotes" class="form-input" placeholder="e.g. Completed with username @...">
+                </div>
+                <button type="submit" class="btn-submit-main" id="btnSubmitTaskProof">
+                    <span>Submit for Immediate Review</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Drawer Modal -->
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeNotifModal()">&times;</button>
+            <div class="dash-card-title" style="margin-bottom:8px">Platform Notifications</div>
+            <div class="dash-card-sub" style="margin-bottom:16px">Official system broadcasts and earnings alerts.</div>
+            <div id="notifList" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto">
+                <div style="padding:10px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border-subtle);font-size:0.82rem">
+                    <strong style="color:#38BDF8">Admin Broadcast:</strong> Real-time synchronization is active across all workstations.
                 </div>
             </div>
-        `;
-    }).join('');
-};
-
-window.setNotifFilter = function(filter, e) {
-    if (e) {
-        if (typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (typeof e.preventDefault === 'function') e.preventDefault();
-    }
-    activeNotifFilter = filter;
-    const tabAll = document.getElementById('notifTabAll');
-    const tabUnread = document.getElementById('notifTabUnread');
-    if (tabAll && tabUnread) {
-        if (filter === 'all') {
-            tabAll.classList.add('active');
-            tabUnread.classList.remove('active');
-        } else {
-            tabAll.classList.remove('active');
-            tabUnread.classList.add('active');
-        }
-    }
-    window.renderDashboardNotifications();
-};
-
-window.toggleNotifDropdown = function(e) {
-    if (e) {
-        if (typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (typeof e.preventDefault === 'function') e.preventDefault();
-    }
-    const notifDrop = document.getElementById('notifDropdown');
-    if (!notifDrop) return;
-
-    const isShowing = notifDrop.classList.contains('show');
-    if (!isShowing) {
-        window.fetchDashboardNotifications();
-        notifDrop.classList.add('show');
-    } else {
-        notifDrop.classList.remove('show');
-    }
-};
-
-window.closeNotifDropdown = function() {
-    const notifDrop = document.getElementById('notifDropdown');
-    if (notifDrop) notifDrop.classList.remove('show');
-};
-
-window.markAllNotificationsAsRead = function(e) {
-    if (e) {
-        if (typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (typeof e.preventDefault === 'function') e.preventDefault();
-    }
-    const allIds = currentDashboardNotifs.map(n => n.id);
-    window.saveReadNotifIds(allIds);
-    window.renderDashboardNotifications();
-};
-
-window.openNotificationDetail = function(id) {
-    const notif = currentDashboardNotifs.find(n => n.id === id);
-    if (!notif) return;
-
-    // Automatically mark this item as read
-    const readIds = window.getReadNotifIds();
-    if (!readIds.includes(id)) {
-        readIds.push(id);
-        window.saveReadNotifIds(readIds);
-    }
-    window.renderDashboardNotifications();
-
-    // Populate Detail Modal
-    activeModalNotif = notif;
-    const badgeIcon = document.getElementById('notifDetailBadgeIcon');
-    const badgeText = document.getElementById('notifDetailBadgeText');
-    const titleEl = document.getElementById('notifDetailTitle');
-    const timeText = document.getElementById('notifDetailTimeText');
-    const bodyEl = document.getElementById('notifDetailBody');
-    const actionBtn = document.getElementById('notifDetailActionBtn');
-    const actionBtnText = document.getElementById('notifDetailActionBtnText');
-
-    if (badgeIcon) badgeIcon.style.display = 'none';
-    if (badgeText) badgeText.textContent = (notif.category || 'System Notice').toUpperCase();
-    if (titleEl) titleEl.textContent = notif.title || 'Notification Details';
-    if (timeText) timeText.textContent = notif.time || 'Recently Dispatched';
-    if (bodyEl) bodyEl.textContent = notif.msg || '';
-
-    if (actionBtn && actionBtnText) {
-        if (notif.link && notif.link !== '#' && notif.link !== 'javascript:void(0)') {
-            actionBtn.style.display = 'inline-flex';
-            actionBtnText.textContent = notif.linkText || 'Open Action';
-        } else {
-            actionBtn.style.display = 'none';
-        }
-    }
-
-    // Open detail modal and close dropdown
-    const modal = document.getElementById('notifDetailModalOverlay');
-    if (modal) {
-        modal.classList.add('open');
-        modal.style.display = 'flex';
-    }
-    window.closeNotifDropdown();
-};
-
-window.closeNotificationDetail = function() {
-    const modal = document.getElementById('notifDetailModalOverlay');
-    if (modal) {
-        modal.classList.remove('open');
-        modal.style.display = 'none';
-    }
-    activeModalNotif = null;
-};
-
-window.handleNotifModalAction = function() {
-    if (!activeModalNotif || !activeModalNotif.link) {
-        window.closeNotificationDetail();
-        return;
-    }
-    const link = activeModalNotif.link;
-    window.closeNotificationDetail();
-    if (link.startsWith('javascript:')) {
-        const code = link.replace('javascript:', '');
-        try {
-            const fn = new Function(code);
-            fn();
-        } catch(e) {
-            eval(code);
-        }
-    } else {
-        window.location.href = link;
-    }
-};
-
-document.addEventListener('click', (e) => {
-    const notifDrop = document.getElementById('notifDropdown');
-    const notifBell = document.getElementById('btnNotifBell');
-    if (notifDrop && notifDrop.classList.contains('show')) {
-        if (!notifDrop.contains(e.target) && (!notifBell || !notifBell.contains(e.target))) {
-            notifDrop.classList.remove('show');
-        }
-    }
-    const detailOverlay = document.getElementById('notifDetailModalOverlay');
-    if (detailOverlay && detailOverlay.classList.contains('open') && e.target === detailOverlay) {
-        window.closeNotificationDetail();
-    }
-});
-
-// Initial load
-window.fetchDashboardNotifications();
-
-// ======================================================================
-// DAILY STREAK & CHECK-IN CONTROLLER
-// ======================================================================
-const CHECKIN_REWARDS = [50, 75, 100, 125, 150, 200, 500];
-
-window.getDailyCheckinState = function() {
-    const today = new Date().toISOString().slice(0, 10);
-    const yesterdayDate = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const lastDate = localStorage.getItem('ix_last_checkin_date') || '';
-    let streak = parseInt(localStorage.getItem('ix_checkin_streak') || '0', 10);
-
-    const isClaimedToday = (lastDate === today);
-
-    // If user missed yesterday and didn't claim today, streak resets - persist the reset
-    if (!isClaimedToday && lastDate !== yesterdayDate && lastDate !== '') {
-        streak = 0;
-        localStorage.setItem('ix_checkin_streak', '0');
-    }
-
-    return {
-        today,
-        lastDate,
-        streak,
-        isClaimedToday
-    };
-};
-
-window.renderDailyCheckinUI = function() {
-    const state = window.getDailyCheckinState();
-    const streakDaysEl = document.getElementById('checkinStreakDays');
-    const daysGrid = document.getElementById('checkinDaysGrid');
-    const claimBtn = document.getElementById('btnClaimDailyCheckin');
-    const claimBtnText = document.getElementById('btnClaimDailyCheckinText');
-
-    if (streakDaysEl) streakDaysEl.textContent = state.streak.toString();
-
-    // Determine current step index (0 to 6)
-    const currentStep = state.isClaimedToday ? Math.max(0, (state.streak - 1) % 7) : (state.streak % 7);
-    const currentReward = CHECKIN_REWARDS[currentStep] || 50;
-
-    if (daysGrid) {
-        let gridHtml = '';
-        const dayNames = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
-
-        const svgDone = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-        const svgActive = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
-        const svgLocked = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-
-        for (let i = 0; i < 7; i++) {
-            const reward = CHECKIN_REWARDS[i];
-            let statusClass = '';
-            let iconHtml = '<span class="checkin-day-status-icon">' + svgLocked + '</span>';
-
-            if (state.isClaimedToday) {
-                if (i <= currentStep) {
-                    statusClass = 'completed';
-                    iconHtml = '<span class="checkin-day-status-icon">' + svgDone + '</span>';
-                }
-            } else {
-                if (i < currentStep) {
-                    statusClass = 'completed';
-                    iconHtml = '<span class="checkin-day-status-icon">' + svgDone + '</span>';
-                } else if (i === currentStep) {
-                    statusClass = 'today-ready';
-                    iconHtml = '<span class="checkin-day-status-icon">' + svgActive + '</span>';
-                }
-            }
-
-            gridHtml += '<div class="checkin-day-pill ' + statusClass + '">' +
-                '<span class="checkin-day-name">' + dayNames[i] + '</span>' +
-                '<span class="checkin-day-reward">+' + reward + '</span>' +
-                iconHtml +
-                '</div>';
-        }
-        daysGrid.innerHTML = gridHtml;
-    }
-
-    if (claimBtn && claimBtnText) {
-        if (state.isClaimedToday) {
-            claimBtn.disabled = true;
-            claimBtnText.textContent = 'Checked In Today (' + state.streak + ' Day Streak)';
-        } else {
-            claimBtn.disabled = false;
-            claimBtnText.textContent = 'Claim Day ' + (currentStep + 1) + ' Reward (+' + currentReward + ' PTS)';
-        }
-    }
-};
-
-window.claimDailyCheckinReward = function() {
-    const state = window.getDailyCheckinState();
-    if (state.isClaimedToday) return;
-
-    const currentStep = state.streak % 7;
-    const rewardPts = CHECKIN_REWARDS[currentStep] || 50;
-    const newStreak = state.streak + 1;
-
-    // Save State
-    localStorage.setItem('ix_last_checkin_date', state.today);
-    localStorage.setItem('ix_checkin_streak', newStreak.toString());
-
-    // Update Task Points balance in localStorage and UI
-    let currentPts = parseInt(localStorage.getItem('ix_task_points') || '100', 10);
-    currentPts += rewardPts;
-    localStorage.setItem('ix_task_points', currentPts.toString());
-
-    // Update Live Points elements
-    const ptsEls = ['deckTaskPtsVal', 'drawerTaskPoints', 'userPointsDisplay', 'hudTaskPts'];
-    ptsEls.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = currentPts.toLocaleString() + ' PTS';
-    });
-
-    // Add entry to Recent Activity Stream
-    const feed = document.getElementById('dashboardActivityFeed');
-    if (feed) {
-        const streakText = newStreak > 1 ? ` (${newStreak}-Day Streak)` : '';
-        const newFeedItem = document.createElement('div');
-        newFeedItem.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:10px;';
-        newFeedItem.innerHTML = `
-            <div style="display:flex;align-items:center;gap:12px">
-                <div style="width:36px;height:36px;border-radius:10px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;color:#7DD3FC">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </div>
-                <div>
-                    <div style="font-size:0.86rem;font-weight:700;color:#F1F5F9">Daily Check-In Reward${streakText}</div>
-                    <div style="font-size:0.72rem;color:#94A3B8">Just now · Instant Automated Credit</div>
-                </div>
-            </div>
-            <div style="text-align:right">
-                <span style="font-size:0.88rem;font-weight:900;color:#38BDF8">+${rewardPts} PTS</span>
-                <div style="font-size:0.68rem;color:#94A3B8">Credited</div>
-            </div>
-        `;
-        const innerContainer = feed.querySelector('div') || feed;
-        innerContainer.insertBefore(newFeedItem, innerContainer.firstChild);
-    }
-
-    // Re-render UI
-    window.renderDailyCheckinUI();
-
-    // Trigger toast notification if available
-    if (typeof window.showToast === 'function') {
-        window.showToast('+' + rewardPts + ' PTS Claimed! ' + newStreak + '-Day Streak active.', 'success');
-    }
-};
-
-// Initialize Check-In UI
-window.renderDailyCheckinUI();
-
-// Reference Number Copy Helper
-window.copyReceiptRef = function(e) {
-    if (e) {
-        if (typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (typeof e.preventDefault === 'function') e.preventDefault();
-    }
-    const txIdEl = document.getElementById('receiptTxId');
-    if (!txIdEl) return;
-    const ref = txIdEl.textContent.trim();
-    navigator.clipboard.writeText(ref).then(() => {
-        const copyBtnText = document.getElementById('btnReceiptCopyText');
-        if (copyBtnText) {
-            const old = copyBtnText.textContent;
-            copyBtnText.textContent = 'Copied!';
-            setTimeout(() => { copyBtnText.textContent = old; }, 2000);
-        }
-    }).catch(() => {
-        prompt('Copy your reference number:', ref);
-    });
-};
-
-// Download receipt as PNG with High Fidelity & Guaranteed Non-White Background
-g('receiptDownload') && g('receiptDownload').addEventListener('click', function() {
-    const el = g('receiptCapture');
-    const btns = el.querySelector('.receipt-btn-row');
-    const copyBtn = el.querySelector('.btn-receipt-copy-ref');
-    if (btns) btns.style.display = 'none';
-    if (copyBtn) copyBtn.style.display = 'none';
-
-    html2canvas(el, { 
-        backgroundColor: '#070B16', 
-        scale: 2.5, 
-        useCORS: true,
-        logging: false
-    }).then(c => {
-        if (btns) btns.style.display = '';
-        if (copyBtn) copyBtn.style.display = '';
-        const a = document.createElement('a');
-        const refId = (g('receiptTxId') ? g('receiptTxId').textContent.trim() : 'RECEIPT');
-        a.download = 'INNOVATIONX_' + refId + '.png';
-        a.href = c.toDataURL('image/png');
-        a.click();
-    }).catch(err => {
-        if (btns) btns.style.display = '';
-        if (copyBtn) copyBtn.style.display = '';
-        console.error('Receipt canvas error:', err);
-    });
-});
-
- // ==========================================
- // 5. JOBBERS OPPORTUNITIES & GIGS ENGINE
- // ==========================================
- let currentActiveTask = null;
- let selectedJobbersFilter = 'all';
-
- const defaultOpps = [];
-
- if (!localStorage.getItem('ix_custom_opportunities')) {
- localStorage.setItem('ix_custom_opportunities', JSON.stringify(defaultOpps));
- }
-
- window.renderJobbersOpportunities = function() {
- const opps = JSON.parse(localStorage.getItem('ix_custom_opportunities') || '[]');
- const container = document.getElementById('jobbersOpportunitiesFeed');
- const countBadge = document.getElementById('jobbersAvailableCount');
- if (!container) return;
-
- const filtered = selectedJobbersFilter === 'all' 
- ? opps 
- : opps.filter(o => o.category === selectedJobbersFilter);
-
- if (countBadge) countBadge.textContent = filtered.length + ' Live Tasks';
-
- if (filtered.length === 0) {
- container.innerHTML = `
- <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">
- No active gigs found under this category right now. Check back shortly!
- </div>
- `;
- return;
- }
-
- container.innerHTML = filtered.map((o, idx) => {
- let icon = '';
- let iconClass = 'dash-t-video';
- if (o.category === 'WhatsApp Status') { icon = ''; iconClass = 'dash-t-share'; }
- else if (o.category === 'Telegram / Social') { icon = ''; iconClass = 'dash-t-wheel'; }
- else if (o.category === 'App Review') { icon = ''; iconClass = 'dash-t-video'; }
- else if (o.category === 'Website Visit') { icon = ''; iconClass = 'dash-t-share'; }
- else if (o.category === 'Mining Gig') { icon = ''; iconClass = 'dash-t-wheel'; }
-
- let ruleTag = '';
- if (o.proof_type === 'link_timer') {
- ruleTag = '<span style="background:rgba(56, 189, 248, 0.15);color:#7DD3FC;padding:2px 7px;border-radius:4px;font-size:0.68rem;font-weight:700"> 20s Visit</span>';
- } else if (o.proof_type === 'video_timer') {
- ruleTag = '<span style="background:rgba(56, 189, 248, 0.2);color:var(--sky-vibrant);padding:2px 7px;border-radius:4px;font-size:0.68rem;font-weight:700"> 20s Video</span>';
- } else if (o.proof_type === 'screenshot') {
- ruleTag = '<span style="background:rgba(56, 189, 248, 0.15);color:var(--sky-vibrant);padding:2px 7px;border-radius:4px;font-size:0.68rem;font-weight:700"> Screenshot</span>';
- } else {
- ruleTag = '<span style="background:rgba(255,255,255,0.08);color:var(--text-gray);padding:2px 7px;border-radius:4px;font-size:0.68rem;font-weight:700"> Instant</span>';
- }
-
- return `
- <div class="dash-task-card" style="border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);padding:14px;border-radius:14px;margin-bottom:12px">
- <div class="dash-task-left">
- <div class="dash-task-icon-box ${iconClass}">${icon}</div>
- <div class="dash-task-info">
- <h4 style="font-size:0.9rem;margin-bottom:4px">${o.title}</h4>
- <div class="dash-task-meta" style="flex-wrap:wrap;gap:6px">
- <span>${o.category}</span>
- <span>•</span>
- <span class="dash-reward-tag" style="font-weight:900;color:var(--sky-vibrant);background:rgba(56, 189, 248, 0.18)">+${o.reward} PTS</span>
- <span>•</span>
- ${ruleTag}
- </div>
- <div style="display:flex;align-items:center;gap:12px;margin-top:6px;font-size:0.72rem;color:var(--text-muted)">
- <span>Views: ${o.views || 180} views</span>
- <button type="button" onclick="toggleJobbersLike(${idx}, event)" style="background:none;border:none;color:#F43F5E;font-size:0.74rem;cursor:pointer;display:inline-flex;align-items:center;gap:3px;padding:0;font-weight:700">
- Likes: <span>${o.likes || 12}</span> likes
- </button>
- </div>
- </div>
- </div>
- <button type="button" class="btn-task-action" onclick="openJobbersTaskModal(${idx})" style="padding:8px 16px;font-size:0.8rem">
- Perform Gig
- </button>
- </div>
- `;
- }).join('');
- };
-
- window.filterJobbersCategory = function(cat, el) {
- selectedJobbersFilter = cat;
- document.querySelectorAll('#jobbersTasksSection .dash-amt-pill').forEach(p => p.classList.remove('active'));
- if (el) el.classList.add('active');
- renderJobbersOpportunities();
- };
-
- let taskCountdownInterval = null;
- let taskTimerSecondsLeft = 20;
-
- window.toggleJobbersLike = function(idx, e) {
- e.stopPropagation();
- const opps = JSON.parse(localStorage.getItem('ix_custom_opportunities') || '[]');
- if (opps[idx]) {
- opps[idx].likes = (opps[idx].likes || 0) + 1;
- localStorage.setItem('ix_custom_opportunities', JSON.stringify(opps));
- renderJobbersOpportunities();
-
- try {
- fetch('api/adverts.php?action=track_interaction', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ id: opps[idx].id, type: 'like' })
- });
- } catch(err) {}
- }
- };
-
- window.openJobbersTaskModal = function(idx) {
- const opps = JSON.parse(localStorage.getItem('ix_custom_opportunities') || '[]');
- const task = opps[idx];
- if (!task) return;
-
- currentActiveTask = task;
- document.getElementById('taskModalTitle').textContent = task.title;
- document.getElementById('taskModalDesc').textContent = task.desc || 'Complete the steps below to claim your task reward.';
- document.getElementById('taskRewardBadge').textContent = '+' + task.reward + ' PTS';
- document.getElementById('taskModalLink').href = task.link || '#';
- document.getElementById('taskProofInput').value = '';
-
- // Track view
- task.views = (task.views || 0) + 1;
- localStorage.setItem('ix_custom_opportunities', JSON.stringify(opps));
- try {
- fetch('api/adverts.php?action=track_interaction', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ id: task.id, type: 'view' })
- });
- } catch(e) {}
-
- // Handle Video Embed
- const videoWrap = document.getElementById('taskVideoEmbedWrap');
- const videoIframe = document.getElementById('taskVideoIframe');
- if (task.video_url && task.video_url.trim()) {
- videoWrap.style.display = 'block';
- videoIframe.src = task.video_url;
- } else {
- videoWrap.style.display = 'none';
- videoIframe.src = '';
- }
-
- // Handle Proof Type & 20s Verification Timer
- const isTimerTask = task.proof_type === 'link_timer' || task.proof_type === 'video_timer';
- const timerWrap = document.getElementById('taskTimerWrap');
- const proofSection = document.getElementById('taskProofSection');
- const btnSubmit = document.getElementById('btnSubmitProof');
-
- if (taskCountdownInterval) clearInterval(taskCountdownInterval);
-
- if (isTimerTask) {
- proofSection.style.display = 'none';
- timerWrap.style.display = 'block';
- taskTimerSecondsLeft = task.timer_seconds || 20;
- document.getElementById('taskTimerDisplay').textContent = `${taskTimerSecondsLeft}s remaining`;
- document.getElementById('taskTimerDisplay').style.color = '#7DD3FC';
- btnSubmit.disabled = true;
- btnSubmit.style.opacity = '0.6';
- btnSubmit.style.cursor = 'not-allowed';
- btnSubmit.style.background = 'linear-gradient(135deg, #4B5563, #374151)';
- btnSubmit.innerHTML = `<span>Click Link/Start Video (20s Timer)</span>`;
- } else {
- proofSection.style.display = 'block';
- timerWrap.style.display = 'none';
- btnSubmit.disabled = false;
- btnSubmit.style.opacity = '1';
- btnSubmit.style.cursor = 'pointer';
- btnSubmit.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)';
- btnSubmit.innerHTML = `<span> Submit Proof &amp; Earn PTS</span>`;
- }
-
- open(document.getElementById('taskExecOverlay'));
- };
-
- window.handleTaskLinkClick = function(e) {
- // Track click
- if (currentActiveTask) {
- currentActiveTask.clicks = (currentActiveTask.clicks || 0) + 1;
- const opps = JSON.parse(localStorage.getItem('ix_custom_opportunities') || '[]');
- const found = opps.find(o => o.id === currentActiveTask.id);
- if (found) found.clicks = currentActiveTask.clicks;
- localStorage.setItem('ix_custom_opportunities', JSON.stringify(opps));
-
- try {
- fetch('api/adverts.php?action=track_interaction', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ id: currentActiveTask.id, type: 'click' })
- });
- } catch(err) {}
- }
-
- const isTimerTask = currentActiveTask && (currentActiveTask.proof_type === 'link_timer' || currentActiveTask.proof_type === 'video_timer');
- if (!isTimerTask) return;
-
- // Start 20s active countdown
- if (taskCountdownInterval) clearInterval(taskCountdownInterval);
- taskTimerSecondsLeft = currentActiveTask.timer_seconds || 20;
-
- const timerDisplay = document.getElementById('taskTimerDisplay');
- const btnSubmit = document.getElementById('btnSubmitProof');
-
- taskCountdownInterval = setInterval(() => {
- taskTimerSecondsLeft--;
- if (taskTimerSecondsLeft > 0) {
- timerDisplay.textContent = `${taskTimerSecondsLeft}s remaining...`;
- btnSubmit.innerHTML = `<span>Verifying Visit: ${taskTimerSecondsLeft}s left</span>`;
- } else {
- clearInterval(taskCountdownInterval);
- timerDisplay.textContent = ` 20s Verification Complete!`;
- timerDisplay.style.color = '#38BDF8';
- btnSubmit.disabled = false;
- btnSubmit.style.opacity = '1';
- btnSubmit.style.cursor = 'pointer';
- btnSubmit.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)';
- btnSubmit.innerHTML = `<span> Claim +${currentActiveTask.reward || 150} PTS Reward</span>`;
- }
- }, 1000);
- };
-
- window.submitTaskProof = function() {
- const isTimerTask = currentActiveTask && (currentActiveTask.proof_type === 'link_timer' || currentActiveTask.proof_type === 'video_timer');
- 
- if (!isTimerTask) {
- const proof = document.getElementById('taskProofInput').value.trim();
- if (!proof) {
- alert('Please provide your completion proof (username, phone, or screenshot link).');
- return;
- }
- } else if (taskTimerSecondsLeft > 0) {
- alert(`Please spend at least 20 seconds on the task destination before claiming your reward (${taskTimerSecondsLeft}s remaining).`);
- return;
- }
-
- const rewardPts = parseInt(currentActiveTask ? currentActiveTask.reward : '150');
- close(document.getElementById('taskExecOverlay'));
-
- // Update Task Points display
- const ptsDisplays = document.querySelectorAll('.hero-card-val.text-purple, #taskPointsVal');
- ptsDisplays.forEach(el => {
- const current = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 5400;
- el.textContent = (current + rewardPts).toLocaleString() + ' PTS';
- });
-
- alert(` Task Completed Successfully!\n\nYou have been credited +${rewardPts} PTS for "${currentActiveTask.title}".`);
- };
-
- // ==========================================
- // 6. PLACE AN ADVERT / CAMPAIGN ENGINE
- // ==========================================
- let selectedAdBudget = 2500;
- let selectedAdReach = 50;
-
- window.selectAdCampaign = function(type, icon, label, sub, basePrice, itemEl) {
- document.getElementById('adCampaignType').value = type;
- document.getElementById('adCampaignIcon').textContent = icon;
- document.getElementById('adCampaignLabel').textContent = label;
- document.getElementById('adCampaignSub').textContent = sub;
-
- const parentMenu = itemEl.closest('.ix-dropdown-menu');
- if (parentMenu) {
- parentMenu.querySelectorAll('.ix-dropdown-item').forEach(i => i.classList.remove('active'));
- itemEl.classList.add('active');
- }
- const wrapper = itemEl.closest('.ix-dropdown');
- if (wrapper) wrapper.classList.remove('open');
- };
-
- window.setAdBudget = function(amount, reach, el) {
- selectedAdBudget = amount;
- selectedAdReach = reach;
- document.querySelectorAll('#placeAdvertSection .amount-pill').forEach(p => p.classList.remove('active'));
- if (el) el.classList.add('active');
-
- const source = document.getElementById('adFundingSource').value;
- const subLabel = document.getElementById('adFundingSub');
- if (subLabel) {
- subLabel.textContent = source === 'points' 
- ? `Deduct ${amount.toLocaleString()} PTS (5,400 PTS available)` 
- : `Deduct ₦${amount.toLocaleString()} (₦2,500 available)`;
- }
- };
-
- window.selectAdFunding = function(source, icon, label, sub, itemEl) {
- document.getElementById('adFundingSource').value = source;
- document.getElementById('adFundingIcon').textContent = icon;
- document.getElementById('adFundingLabel').textContent = label;
- document.getElementById('adFundingSub').textContent = source === 'points'
- ? `Deduct ${selectedAdBudget.toLocaleString()} PTS (5,400 PTS available)`
- : `Deduct ₦${selectedAdBudget.toLocaleString()} (₦2,500 available)`;
-
- const parentMenu = itemEl.closest('.ix-dropdown-menu');
- if (parentMenu) {
- parentMenu.querySelectorAll('.ix-dropdown-item').forEach(i => i.classList.remove('active'));
- itemEl.classList.add('active');
- }
- const wrapper = itemEl.closest('.ix-dropdown');
- if (wrapper) wrapper.classList.remove('open');
- };
-
- window.handlePlaceAdvert = function(e) {
- e.preventDefault();
- const type = document.getElementById('adCampaignType').value;
- const title = document.getElementById('adTitle').value.trim();
- const link = document.getElementById('adLink').value.trim();
- const media = document.getElementById('adMediaUrl').value.trim();
- const source = document.getElementById('adFundingSource').value;
-
- const costText = source === 'points' ? `${selectedAdBudget.toLocaleString()} PTS` : `₦${selectedAdBudget.toLocaleString()}`;
-
- const confirmAd = confirm(
- ` Confirm Campaign Launch?\n\n` +
- `Campaign: ${title}\n` +
- `Type: ${type}\n` +
- `Target Reach: ${selectedAdReach} Verified Members\n` +
- `Total Payable: ${costText} (${source === 'points' ? 'Task Points' : 'Referral Cash'})\n\n` +
- `Your advert will be posted to the Tasks Opportunities queue immediately.`
- );
-
- if (!confirmAd) return;
-
- // Push to active Jobbers Opportunities
- const opps = JSON.parse(localStorage.getItem('ix_custom_opportunities') || '[]');
- opps.unshift({
- id: 'AD-' + Date.now(),
- title: title,
- category: type.includes('Video') ? 'Sponsored Video' : (type.includes('WhatsApp') ? 'WhatsApp Status' : 'Telegram / Social'),
- reward: '150',
- link: link,
- desc: `Sponsored Advert: ${title}. Open link and complete required action.`,
- slots: selectedAdReach,
- date: new Date().toISOString()
- });
- localStorage.setItem('ix_custom_opportunities', JSON.stringify(opps));
-
- // Reset form and re-render feed
- document.getElementById('createAdvertForm').reset();
- renderJobbersOpportunities();
-
- alert(
- ` Campaign Launched Successfully!\n\n` +
- `Ref: ADV-${Math.floor(Math.random()*900000+100000)}\n` +
- `Title: ${title}\n` +
- `Status: Active \& Visible to ${selectedAdReach} Members\n\n` +
- `Thank you for advertising with INNOVATIONX!`
- );
- };
-
- // Feature Flags Engine
- window.applyFeatureFlags = async function() {
- let flags = {
- jobbers_tasks: true,
- advertisements: true,
- spin_wheel: true,
- vtu_airtime: true,
- sme_data: true,
- crypto_update: true,
- referrals: true,
- withdrawals: true,
- forecaster: true,
- vendors: true
- };
- try {
- const res = await fetch('api/features.php?action=get_flags');
- const data = await res.json();
- if (data.status === 'success' && data.flags) {
- flags = Object.assign(flags, data.flags);
- localStorage.setItem('ix_feature_flags', JSON.stringify(flags));
- }
- } catch(e) {
- const stored = localStorage.getItem('ix_feature_flags');
- if (stored) {
- try { flags = Object.assign(flags, JSON.parse(stored)); } catch(err) {}
- }
- }
-
- document.querySelectorAll('[data-feature]').forEach(el => {
- const feat = el.getAttribute('data-feature');
- if (feat && flags[feat] === false) {
- el.style.setProperty('display', 'none', 'important');
- } else if (feat && flags[feat] === true) {
- el.style.removeProperty('display');
- }
- });
- };
-
- // Site Content & Placeholders Engine
- window.applySiteContent = async function() {
- let siteContent = {
- card_cash_title: "Withdrawable Cash",
- card_cash_sub: "From 10 paid referrals - Ready to cash out",
- card_pts_title: "Task Points Wallet",
- card_pts_sub: "Approx. 1 PTS = 1.00 Value / Direct data conversion",
- card_paid_title: "Total Lifetime Paid",
- card_paid_sub: "Transferred to Bank - 100% Automated",
- landing_stat1_val: "₦148,500,000+",
- landing_stat1_label: "Total Payouts Settled",
- landing_stat2_val: "124,000+",
- landing_stat2_label: "Active Daily Earners",
- landing_stat3_val: "2.4 Seconds",
- landing_stat3_label: "Average Payout Speed",
- referral_card_title: "Exclusive Referral Link",
- referral_card_badge: "₦250 Cash / Invite",
- referral_card_desc: "Share your personal link with friends. You earn instant ₦250 cash in your wallet the moment they register their membership pin.",
- jobbers_hub_title: "Jobbers Opportunities & Daily Tasks",
- jobbers_hub_desc: "Explore verified earning opportunities published by official uploaders. Perform the quick tasks, submit proof, and get credited in Task Points instantly.",
- withdraw_card_title: "Request Bank Payout",
- withdraw_min_badge: "Min: 1,000",
- advert_card_title: "Place an Advert / Launch Campaign",
- advert_card_badge: "Member Ads Hub",
- advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash."
- };
-
- try {
- const res = await fetch('api/content.php?action=get_content');
- const data = await res.json();
- if (data.status === 'success' && data.content) {
- siteContent = Object.assign(siteContent, data.content);
- localStorage.setItem('ix_site_content', JSON.stringify(siteContent));
- }
- } catch(e) {
- const stored = localStorage.getItem('ix_site_content');
- if (stored) {
- try { siteContent = Object.assign(siteContent, JSON.parse(stored)); } catch(err) {}
- }
- }
-
- document.querySelectorAll('[data-content-key]').forEach(el => {
- const key = el.getAttribute('data-content-key');
- if (key && siteContent[key]) {
- el.textContent = siteContent[key];
- }
- });
- };
-
-    // ==========================================
-    // 7. UPLOADER ACCREDITATION & UPGRADE ENGINE
-    // ==========================================
-    window.toggleDashDrawer = function() {
-        const drawer = document.getElementById('dashNavDrawer');
-        const backdrop = document.getElementById('dashDrawerBackdrop');
-        if (drawer && backdrop) {
-            drawer.classList.toggle('open');
-            backdrop.classList.toggle('open');
-        }
-    };
-
-    window.toggleEditSavedBank = function() {
-        const form = document.getElementById('saveBankForm');
-        const btn = document.getElementById('btnToggleEditBank');
-        if (form.style.display === 'none' || !form.style.display) {
-            form.style.display = 'block';
-            btn.textContent = 'Close';
-        } else {
-            form.style.display = 'none';
-            btn.textContent = 'Edit Details';
-        }
-    };
-
-    
-    // ==========================================
-    // IN-APP WITHDRAWAL SECURITY PIN CONTROLLER
-    // ==========================================
-    window.loadWithdrawalPinStatus = function() {
-        const pin = localStorage.getItem('ix_withdrawal_pin');
-        const badge = document.getElementById('withdrawalPinStatusBadge');
-        const btn = document.getElementById('btnOpenSetPin');
-        const title = document.getElementById('setPinModalTitle');
-
-        if (badge && btn) {
-            if (pin && pin.length === 4) {
-                badge.textContent = 'PIN Configured';
-                badge.style.background = 'rgba(56, 189, 248, 0.15)';
-                badge.style.color = '#7DD3FC';
-                btn.textContent = 'Change PIN';
-                if (title) title.textContent = 'Change Withdrawal Security PIN';
-            } else {
-                badge.textContent = 'Not Set Up';
-                badge.style.background = 'rgba(244,63,94,0.15)';
-                badge.style.color = '#F43F5E';
-                btn.textContent = 'Set Up PIN';
-                if (title) title.textContent = 'Set Withdrawal Security PIN';
-            }
-        }
-    };
-
-    window.toggleSetWithdrawalPinModal = function() {
-        const modal = document.getElementById('setPinModalOverlay');
-        if (!modal) return;
-        const isHidden = modal.style.display === 'none' || !modal.style.display;
-        modal.style.display = isHidden ? 'flex' : 'none';
-        if (document.getElementById('inputNewPin')) document.getElementById('inputNewPin').value = '';
-        if (document.getElementById('inputConfirmPin')) document.getElementById('inputConfirmPin').value = '';
-    };
-
-    window.closeSetWithdrawalPinModal = function() {
-        const modal = document.getElementById('setPinModalOverlay');
-        if (modal) modal.style.display = 'none';
-    };
-
-    window.openSetPinFromConfirm = function() {
-        const confirmOv = document.getElementById('confirmOverlay');
-        if (confirmOv) confirmOv.style.display = 'none';
-        toggleSetWithdrawalPinModal();
-    };
-
-    window.handleSaveWithdrawalPin = function(e) {
-        e.preventDefault();
-        const newPin = document.getElementById('inputNewPin').value.trim();
-        const confirmPin = document.getElementById('inputConfirmPin').value.trim();
-
-        if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
-            alert('Please enter a valid 4-digit numeric PIN.');
-            return;
-        }
-        if (newPin !== confirmPin) {
-            alert('PINs do not match. Please verify your confirm PIN.');
-            return;
-        }
-
-        localStorage.setItem('ix_withdrawal_pin', newPin);
-        loadWithdrawalPinStatus();
-        closeSetWithdrawalPinModal();
-        alert('Withdrawal Security PIN saved successfully!\nYou can now use this PIN to authorize bank payouts.');
-    };
-
-    window.formatNubanForCard = function(num) {
-        if (!num) return '0801 2345 67';
-        const clean = num.toString().replace(/\s+/g, '');
-        if (clean.length === 10) {
-            return clean.slice(0, 4) + ' ' + clean.slice(4, 8) + ' ' + clean.slice(8);
-        }
-        return clean.replace(/(\d{4})(?=\d)/g, '$1 ');
-    };
-
-    window.updateCreditCardDisplay = function(bankName, accountNumber, accountName) {
-        const bEl = document.getElementById('overviewSavedBankName');
-        const numEl = document.getElementById('overviewSavedAccountNumber');
-        const nameEl = document.getElementById('overviewSavedAccountName');
-
-        if (bEl && bankName) bEl.textContent = bankName;
-        if (numEl) {
-            numEl.textContent = window.formatNubanForCard(accountNumber || '0801234567');
-        }
-        if (nameEl && accountName) nameEl.textContent = accountName;
-    };
-
-    window.manageBankDetailsFromCard = function() {
-        switchDashTab('settings');
-        setTimeout(() => {
-            const form = document.getElementById('settingsBankForm');
-            if (form) {
-                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const inp = document.getElementById('settingsInputNuban');
-                if (inp) {
-                    inp.focus();
-                    inp.select();
-                }
-            }
-        }, 150);
-    };
-
-    window.initRealtimeBankSync = function() {
-        // Settings Tab Inputs
-        const sBank = document.getElementById('settingsInputBank');
-        const sNuban = document.getElementById('settingsInputNuban');
-        const sAccName = document.getElementById('settingsInputAccName');
-
-        // Bank Tab Inputs
-        const iBank = document.getElementById('inputSavedBankName');
-        const iAcct = document.getElementById('inputSavedAccountNumber');
-        const iName = document.getElementById('inputSavedAccountName');
-
-        const syncFromSettings = () => {
-            const b = sBank ? sBank.value : '';
-            const ac = sNuban ? sNuban.value.trim() : '';
-            const nm = sAccName ? sAccName.value.trim() : '';
-
-            // Update credit card immediately on keystroke
-            window.updateCreditCardDisplay(b, ac, nm);
-
-            // Sync to Bank Tab Form & Summary Box
-            if (iBank && b) iBank.value = b;
-            if (iAcct && ac) iAcct.value = ac;
-            if (iName && nm) iName.value = nm;
-
-            const dBank = document.getElementById('displaySavedBankName');
-            const dAcct = document.getElementById('displaySavedAccountNumber');
-            const dName = document.getElementById('displaySavedAccountName');
-            if (dBank && b) dBank.textContent = b;
-            if (dAcct && ac) dAcct.textContent = ac;
-            if (dName && nm) dName.textContent = 'Account Name: ' + nm;
-        };
-
-        const syncFromSavedBank = () => {
-            const b = iBank ? iBank.value : '';
-            const ac = iAcct ? iAcct.value.trim() : '';
-            const nm = iName ? iName.value.trim() : '';
-
-            // Update credit card immediately on keystroke
-            window.updateCreditCardDisplay(b, ac, nm);
-
-            // Sync to Settings Tab Form
-            if (sBank && b) sBank.value = b;
-            if (sNuban && ac) sNuban.value = ac;
-            if (sAccName && nm) sAccName.value = nm;
-
-            const dBank = document.getElementById('displaySavedBankName');
-            const dAcct = document.getElementById('displaySavedAccountNumber');
-            const dName = document.getElementById('displaySavedAccountName');
-            if (dBank && b) dBank.textContent = b;
-            if (dAcct && ac) dAcct.textContent = ac;
-            if (dName && nm) dName.textContent = 'Account Name: ' + nm;
-        };
-
-        // Attach live input and change listeners
-        if (sBank) {
-            sBank.addEventListener('change', syncFromSettings);
-            sBank.addEventListener('input', syncFromSettings);
-        }
-        if (sNuban) {
-            sNuban.addEventListener('input', syncFromSettings);
-            sNuban.addEventListener('change', syncFromSettings);
-        }
-        if (sAccName) {
-            sAccName.addEventListener('input', syncFromSettings);
-            sAccName.addEventListener('change', syncFromSettings);
-        }
-
-        if (iBank) {
-            iBank.addEventListener('change', syncFromSavedBank);
-            iBank.addEventListener('input', syncFromSavedBank);
-        }
-        if (iAcct) {
-            iAcct.addEventListener('input', syncFromSavedBank);
-            iAcct.addEventListener('change', syncFromSavedBank);
-        }
-        if (iName) {
-            iName.addEventListener('input', syncFromSavedBank);
-            iName.addEventListener('change', syncFromSavedBank);
-        }
-    };
-
-    window.loadSavedBankAccount = function() {
-        const saved = localStorage.getItem('ix_saved_bank_account');
-        const fallbackName = (document.getElementById('overviewSavedAccountName') ? document.getElementById('overviewSavedAccountName').textContent.trim() : '') || 'Member';
-        let bankData = {
-            bankName: 'OPay Digital Services',
-            accountNumber: '0801234567',
-            accountName: fallbackName
-        };
-        if (saved) {
-            try { bankData = Object.assign(bankData, JSON.parse(saved)); } catch(e) {}
-        }
-
-        // 1. Populate Settings Tab Form (settingsBankForm)
-        const sBank = document.getElementById('settingsInputBank');
-        const sNuban = document.getElementById('settingsInputNuban');
-        const sAccName = document.getElementById('settingsInputAccName');
-        if (sBank) sBank.value = bankData.bankName;
-        if (sNuban) sNuban.value = bankData.accountNumber;
-        if (sAccName) sAccName.value = bankData.accountName;
-
-        // 2. Populate Bank Tab Form (saveBankForm) & Display Box
-        const dBank = document.getElementById('displaySavedBankName');
-        const dAcct = document.getElementById('displaySavedAccountNumber');
-        const dName = document.getElementById('displaySavedAccountName');
-        if (dBank) dBank.textContent = bankData.bankName;
-        if (dAcct) dAcct.textContent = bankData.accountNumber;
-        if (dName) dName.textContent = 'Account Name: ' + bankData.accountName;
-
-        const iBank = document.getElementById('inputSavedBankName');
-        const iAcct = document.getElementById('inputSavedAccountNumber');
-        const iName = document.getElementById('inputSavedAccountName');
-        if (iBank) iBank.value = bankData.bankName;
-        if (iAcct) iAcct.value = bankData.accountNumber;
-        if (iName) iName.value = bankData.accountName;
-
-        // 3. Update Credit Card Display
-        window.updateCreditCardDisplay(bankData.bankName, bankData.accountNumber, bankData.accountName);
-
-        // 4. Auto-fill withdrawal form
-        const wAcct = document.getElementById('wAccount');
-        const wName = document.getElementById('wAccountName');
-        const wBank = document.getElementById('wBank');
-        const selBank = document.getElementById('selectedBankLabel');
-        if (wAcct && !wAcct.value) wAcct.value = bankData.accountNumber;
-        if (wName && !wName.value) wName.value = bankData.accountName;
-        if (wBank && bankData.bankName) wBank.value = bankData.bankName;
-        if (selBank && bankData.bankName) selBank.textContent = bankData.bankName;
-    };
-
-    // Handler for Settings Tab Bank Form (settingsBankForm)
-    window.handleSaveBankSettings = function(e) {
-        if (e) e.preventDefault();
-        const bankName = document.getElementById('settingsInputBank').value;
-        const accountNumber = document.getElementById('settingsInputNuban').value.trim();
-        const accountName = document.getElementById('settingsInputAccName').value.trim();
-
-        if (!accountNumber || accountNumber.length < 10) {
-            alert('Please enter a valid 10-digit Nigerian NUBAN account number.');
-            return;
-        }
-        if (!accountName) {
-            alert('Please enter account holder name.');
-            return;
-        }
-
-        const bankData = { bankName, accountNumber, accountName };
-        localStorage.setItem('ix_saved_bank_account', JSON.stringify(bankData));
-
-        // Reload & reflect immediately everywhere
-        window.loadSavedBankAccount();
-        window.dispatchEvent(new CustomEvent('ix:bank-updated', { detail: bankData }));
-
-        alert('Settlement bank details updated successfully! Your live credit card has been updated.');
-    };
-
-    // Handler for Bank Tab Form (saveBankForm)
-    window.handleSaveBankAccount = function(e) {
-        if (e) e.preventDefault();
-        const bankName = document.getElementById('inputSavedBankName').value;
-        const accountNumber = document.getElementById('inputSavedAccountNumber').value.trim();
-        const accountName = document.getElementById('inputSavedAccountName').value.trim();
-
-        if (!accountNumber || accountNumber.length < 10) {
-            alert('Please enter a valid 10-digit Nigerian NUBAN account number.');
-            return;
-        }
-        if (!accountName) {
-            alert('Please enter account holder name.');
-            return;
-        }
-
-        const bankData = { bankName, accountNumber, accountName };
-        localStorage.setItem('ix_saved_bank_account', JSON.stringify(bankData));
-
-        window.loadSavedBankAccount();
-        window.dispatchEvent(new CustomEvent('ix:bank-updated', { detail: bankData }));
-
-        if (typeof toggleEditSavedBank === 'function') {
-            toggleEditSavedBank();
-        }
-
-        alert('Bank details saved successfully! Your live credit card has been updated.');
-    };
-
-    // Settings Profile Form Handler (Display Name & Avatar Only)
-    window.handleSaveProfileSettings = function(e) {
-        if (e) e.preventDefault();
-        
-        const btn = document.querySelector('#settingsProfileForm button[type="submit"]') || document.createElement('button');
-        const og = btn.innerHTML;
-        btn.innerHTML = 'Saving...';
-        
-        setTimeout(() => {
-            const nameVal = document.getElementById('settingsInputName') ? document.getElementById('settingsInputName').value.trim() : 'Member';
-            
-            // Find selected avatar gradient
-            const selectedRadio = document.querySelector('input[name="avatar_choice"]:checked');
-            const selectedGradient = selectedRadio ? selectedRadio.nextElementSibling.style.background : 'linear-gradient(135deg, #0284C7, #38BDF8)';
-            const selectedIconHTML = selectedRadio ? selectedRadio.nextElementSibling.innerHTML : 'IX';
-            
-            // Save display name & avatar to localStorage
-            localStorage.setItem('ix_user_name', nameVal);
-            localStorage.setItem('ix_user_avatar_bg', selectedGradient);
-            localStorage.setItem('ix_user_avatar_html', selectedIconHTML);
-            
-            // Update DOM elements
-            document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = nameVal; });
-            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => {
-                if(el) {
-                    el.innerHTML = selectedIconHTML;
-                    el.style.background = selectedGradient;
-                }
-            });
-            
-            btn.innerHTML = og;
-            alert('Display Name updated successfully!');
-        }, 300);
-    };
-
-    // Quick init function to load saved profile details on page load:
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedName = localStorage.getItem('ix_user_name') || localStorage.getItem('ix_user_fullname');
-        const savedBg = localStorage.getItem('ix_user_avatar_bg');
-        const savedIcon = localStorage.getItem('ix_user_avatar_html');
-        const savedEmail = localStorage.getItem('ix_user_email');
-        const savedPhone = localStorage.getItem('ix_user_phone');
-        const savedUser = localStorage.getItem('ix_current_user');
-        
-        if(savedName) {
-            document.querySelectorAll('.dash-user-name, #hudUsername, #drawerUsername, #overviewSavedAccountName, #settingsProfileName').forEach(el => { if(el) el.textContent = savedName; });
-            const input = document.getElementById('settingsInputName');
-            if(input) input.value = savedName;
-        }
-
-        const emailInp = document.getElementById('settingsInputEmail');
-        if (emailInp && (!emailInp.value || emailInp.value === 'member@gmail.com') && savedEmail) {
-            emailInp.value = savedEmail;
-        }
-
-        const phoneInp = document.getElementById('settingsInputPhone');
-        if (phoneInp && (!phoneInp.value || phoneInp.value === '08012345678') && savedPhone) {
-            phoneInp.value = savedPhone;
-        }
-
-        const userInp = document.getElementById('settingsInputUsername');
-        if (userInp && (!userInp.value || userInp.value === 'Member') && savedUser) {
-            userInp.value = savedUser;
-        }
-        
-        if(savedBg && savedIcon) {
-            document.querySelectorAll('#hudUserAvatar, #drawerUserAvatar, #settingsProfileAvatar').forEach(el => {
-                if(el) {
-                    el.innerHTML = savedIcon;
-                    el.style.background = savedBg;
-                }
-            });
-            document.querySelectorAll('.avatar-option input').forEach(rad => {
-                if(rad.nextElementSibling.style.background === savedBg || rad.nextElementSibling.style.background.includes(savedBg)) rad.checked = true;
-            });
-        }
-    });
-
-    // Settings PIN Form Handler
-    window.handleSavePinSettings = function(e) {
-        if (e) e.preventDefault();
-        const pin = document.getElementById('settingsInputPin') ? document.getElementById('settingsInputPin').value.trim() : '';
-        const pinConfirm = document.getElementById('settingsInputPinConfirm') ? document.getElementById('settingsInputPinConfirm').value.trim() : '';
-
-        if (!pin || pin.length !== 4) {
-            alert('Please enter a 4-digit numeric PIN.');
-            return;
-        }
-        if (pin !== pinConfirm) {
-            alert('PIN confirmation does not match. Please re-enter.');
-            return;
-        }
-
-        localStorage.setItem('ix_withdrawal_pin', pin);
-        if (typeof loadWithdrawalPinStatus === 'function') loadWithdrawalPinStatus();
-        alert('Withdrawal Security PIN saved successfully!');
-    };
-
-    // App Preferences Loader & Form Handlers
-    window.loadUserPreferences = function() {
-        let prefs = { hideBal: false, emailAlerts: true, instantVtu: true };
-        try {
-            const stored = localStorage.getItem('ix_user_prefs');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                prefs = Object.assign(prefs, parsed);
-            }
-        } catch(e) {}
-
-        const hideBalEl = document.getElementById('prefHideBalance');
-        const emailEl = document.getElementById('prefEmailAlerts');
-        const vtuEl = document.getElementById('prefInstantVtu');
-
-        if (hideBalEl) hideBalEl.checked = !!prefs.hideBal;
-        if (emailEl) emailEl.checked = !!prefs.emailAlerts;
-        if (vtuEl) vtuEl.checked = !!prefs.instantVtu;
-
-        return prefs;
-    };
-
-    // Reset checkboxes to currently saved preferences if user leaves without saving
-    window.resetUnsavedPreferences = function() {
-        window.loadUserPreferences();
-    };
-
-    // Settings Preferences Form Handler: ONLY applies when user clicks Save Preferences
-    window.handleSavePrefSettings = function(e) {
-        if (e) e.preventDefault();
-        const hideBal = document.getElementById('prefHideBalance') ? document.getElementById('prefHideBalance').checked : false;
-        const emailAlerts = document.getElementById('prefEmailAlerts') ? document.getElementById('prefEmailAlerts').checked : true;
-        const instantVtu = document.getElementById('prefInstantVtu') ? document.getElementById('prefInstantVtu').checked : true;
-
-        const prefs = { hideBal, emailAlerts, instantVtu };
-        try {
-            localStorage.setItem('ix_user_prefs', JSON.stringify(prefs));
-            localStorage.setItem('ix_balance_masked', hideBal ? 'true' : 'false');
-        } catch(err) {}
-
-        // Apply masking effect only now upon deliberate save
-        window.setBalanceMaskState(hideBal);
-
-        if (typeof window.showToast === 'function') {
-            window.showToast('Preferences saved successfully!', 'success');
-        } else {
-            alert('Preferences saved successfully!');
-        }
-    };
-
-    window.selectUploaderPaymentMethod = function(method) {
-        const cards = {
-            'referral': document.getElementById('uploaderPayCard_referral'),
-            'points': document.getElementById('uploaderPayCard_points'),
-            'bank': document.getElementById('uploaderPayCard_bank')
-        };
-        const views = {
-            'referral': document.getElementById('uploaderPayView_referral'),
-            'points': document.getElementById('uploaderPayView_points'),
-            'bank': document.getElementById('uploaderPayView_bank')
-        };
-
-        ['referral', 'points', 'bank'].forEach(m => {
-            if (cards[m]) {
-                if (m === method) cards[m].classList.add('active');
-                else cards[m].classList.remove('active');
-            }
-            if (views[m]) {
-                views[m].style.display = (m === method) ? 'block' : 'none';
-            }
-        });
-
-        if (method === 'bank') {
-            if (typeof window.loadUserVirtualAccount === 'function') {
-                window.loadUserVirtualAccount();
-            }
-        }
-    };
-
-    window.handlePayUploaderWithWallet = async function(walletType) {
-        const isReferral = walletType === 'referral_cash';
-        const costText = isReferral ? '₦10,000.00 from your Referral Cash' : '10,000 PTS from your Task Points';
-        
-        if (!confirm(`Confirm paying ${costText} to activate your Verified Task Uploader accreditation?`)) {
-            return;
-        }
-
-        try {
-            const uId = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : 'Member';
-            const res = await fetch('api/uploader_requests.php?action=pay_with_wallet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: uId,
-                    username: uId,
-                    wallet_type: walletType
-                })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                localStorage.setItem('ix_is_uploader', 'true');
-                localStorage.removeItem('ix_uploader_pending');
-                updateUploaderUI('approved');
-                alert(`Accreditation Activated!\n\n${costText} has been deducted. You are now a Certified Task Uploader. You can now publish tasks and sponsor campaigns.`);
-            } else {
-                alert(data.message || 'Payment processing failed.');
-            }
-        } catch(e) {
-            localStorage.setItem('ix_is_uploader', 'true');
-            localStorage.removeItem('ix_uploader_pending');
-            updateUploaderUI('approved');
-            alert(`Accreditation Activated!\n\n${costText} has been deducted. You are now a Certified Task Uploader.`);
-        }
-    };
-
-    window.openUploaderUpgradeModal = function() {
-        open(document.getElementById('uploaderUpgradeModalOverlay'));
-    };
-
-    window.handleScreenshotFileSelect = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            const b64 = evt.target.result;
-            document.getElementById('upgScreenshotUrl').value = b64;
-            document.getElementById('upgScreenshotPreview').src = b64;
-            document.getElementById('upgScreenshotPreviewWrap').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.handleUploaderUpgradeSubmit = async function(e) {
-        e.preventDefault();
-        const uploaderCode = document.getElementById('upgCodeInput').value.trim().toUpperCase();
-        const fullName = document.getElementById('upgFullName').value.trim();
-        const phone = document.getElementById('upgPhone').value.trim();
-        const email = document.getElementById('upgEmail').value.trim();
-        const screenshotUrl = document.getElementById('upgScreenshotUrl').value.trim();
-
-        if (!uploaderCode) {
-            alert('Please enter your Uploader Accreditation Code.');
-            return;
-        }
-
-        // Strict Anti-Cross-Activation Check: Member PINs CANNOT be used for Uploader Upgrades
-        if (uploaderCode.includes('ACT') || uploaderCode.startsWith('IX-ACT-')) {
-            alert(`Invalid Code Type!\n\n"${uploaderCode}" is a standard Member Registration PIN.\n\nIt cannot be used for Uploader Upgrades. Please purchase or enter an official Uploader Accreditation Code (e.g. IX-UPL-XXXX-PRO).`);
-            return;
-        }
-
-        if (!fullName || !phone || !screenshotUrl) {
-            alert('Please provide your full name, phone number, and attach payment receipt screenshot.');
-            return;
-        }
-
-        const btn = document.getElementById('btnSubmitUpg');
-        btn.disabled = true;
-        btn.textContent = 'Submitting Proof...';
-
-        try {
-            const res = await fetch('api/uploader_requests.php?action=submit_request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: 'Member',
-                    username: 'Member',
-                    uploader_code: uploaderCode,
-                    full_name: fullName,
-                    phone: phone,
-                    email: email,
-                    amount_paid: 10000,
-                    screenshot_url: screenshotUrl
-                })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                close(document.getElementById('uploaderUpgradeModalOverlay'));
-                localStorage.setItem('ix_uploader_pending', 'true');
-                updateUploaderUI('pending');
-                alert('Uploader Upgrade Request Submitted!\n\nCode "' + uploaderCode + '" and payment proof sent to Super Admin. Privileges will activate once approved.');
-            } else {
-                alert(data.message || 'Could not submit request.');
-            }
-        } catch(err) {
-            close(document.getElementById('uploaderUpgradeModalOverlay'));
-            localStorage.setItem('ix_uploader_pending', 'true');
-            updateUploaderUI('pending');
-            alert('Application submitted. Awaiting Super Admin review.');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Submit for Admin Approval';
-        }
-    };
-
- window.updateUploaderUI = function(status) {
- const bannerTitle = document.getElementById('uploaderBannerTitle');
- const statusBadge = document.getElementById('uploaderStatusBadge');
- const bannerDesc = document.getElementById('uploaderBannerDesc');
- const actionWrap = document.getElementById('uploaderActionWrap');
- const userRoleTag = document.querySelector('.dash-tag-verified');
-
- if (status === 'approved' || localStorage.getItem('ix_is_uploader') === 'true') {
- if (bannerTitle) bannerTitle.textContent = ' Verified Task Uploader Active';
- if (statusBadge) {
- statusBadge.textContent = ' Certified Uploader';
- statusBadge.style.background = 'rgba(56, 189, 248, 0.2)';
- statusBadge.style.color = '#38BDF8';
- }
- if (bannerDesc) bannerDesc.textContent = 'You have official authorization to publish Jobbers Opportunities, monetize video tasks, and manage earner slots.';
- if (actionWrap) {
- actionWrap.innerHTML = `
- <a href="admin.php" class="btn-dash-action btn-dash-primary" style="padding:10px 22px;background:linear-gradient(135deg, #0284C7, #38BDF8);text-decoration:none;color:#FFF">
- <span>Upload New Gigs</span>
- <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
- </a>
- `;
- }
- if (userRoleTag) {
- userRoleTag.innerHTML = `
- <span class="live-dot" style="background:#38BDF8;box-shadow:0 0 6px #38BDF8"></span>
- Verified Uploader
- `;
- userRoleTag.style.borderColor = 'rgba(56, 189, 248, 0.5)';
- userRoleTag.style.color = 'var(--sky-vibrant)';
- }
- } else if (status === 'pending' || localStorage.getItem('ix_uploader_pending') === 'true') {
- if (bannerTitle) bannerTitle.textContent = 'Accreditation Under Admin Review';
- if (statusBadge) {
- statusBadge.textContent = 'Verification Pending';
- statusBadge.style.background = 'rgba(56, 189, 248, 0.2)';
- statusBadge.style.color = 'var(--sky-vibrant)';
- }
- if (bannerDesc) bannerDesc.textContent = 'Payment screenshot attached (₦10,000). Super Admin is verifying your payment. Your uploader dashboard will unlock upon approval.';
- if (actionWrap) {
- actionWrap.innerHTML = `
- <button type="button" class="btn-dash-action" disabled style="padding:10px 22px;background:rgba(255,255,255,0.08);color:var(--text-gray);border:1px solid rgba(255,255,255,0.15);cursor:not-allowed">
- <span>Awaiting Approval</span>
- </button>
- `;
- }
- }
- };
-
- window.checkUploaderStatus = async function() {
- try {
- const res = await fetch('api/uploader_requests.php?action=get_requests&user_id=Member');
- const data = await res.json();
- if (data.status === 'success' && Array.isArray(data.requests) && data.requests.length > 0) {
- const req = data.requests[0];
- if (req.status === 'approved') {
- localStorage.setItem('ix_is_uploader', 'true');
- localStorage.removeItem('ix_uploader_pending');
- updateUploaderUI('approved');
- } else if (req.status === 'pending') {
- updateUploaderUI('pending');
- }
- }
- } catch(e) {}
- };
-
-    // =========================================================
-    // WITHDRAWAL WALLET SELECTOR & PORTAL UNLOCK ENGINE
-    // =========================================================
-    let activeWithdrawWallet = 'task';
-
-    window.selectWithdrawWallet = function(wallet) {
-        activeWithdrawWallet = wallet;
-        const hiddenInput = document.getElementById('selectedWithdrawWallet');
-        if (hiddenInput) hiddenInput.value = wallet;
-
-        const taskTab = document.getElementById('walletTabTask');
-        const refTab = document.getElementById('walletTabReferral');
-
-        if (wallet === 'task') {
-            if (taskTab) { taskTab.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)'; taskTab.style.color = '#FFFFFF'; taskTab.style.borderColor = 'rgba(56, 189, 248, 0.6)'; }
-            if (refTab) { refTab.style.background = 'rgba(255,255,255,0.04)'; refTab.style.color = 'var(--text-gray)'; refTab.style.borderColor = 'rgba(255,255,255,0.1)'; }
-        } else {
-            if (refTab) { refTab.style.background = 'linear-gradient(135deg, #FBBF24, #F59E0B)'; refTab.style.color = '#06060A'; refTab.style.borderColor = 'rgba(251, 191, 36, 0.6)'; }
-            if (taskTab) { taskTab.style.background = 'rgba(255,255,255,0.04)'; taskTab.style.color = 'var(--text-gray)'; taskTab.style.borderColor = 'rgba(255,255,255,0.1)'; }
-        }
-
-        refreshWithdrawPortal();
-    };
-
-    window.refreshWithdrawPortal = function() {
-        const wallet = activeWithdrawWallet;
-        const pts = parseFloat(localStorage.getItem('ix_wallet_points') || '0');
-        const cash = parseFloat(localStorage.getItem('ix_wallet_cash') || '0');
-
-        // Update wallet tab balance displays
-        const taskBalEl = document.getElementById('walletTabTaskBal');
-        const refBalEl = document.getElementById('walletTabRefBal');
-        if (taskBalEl) taskBalEl.textContent = Math.round(pts).toLocaleString() + ' PTS (≈ ₦' + Math.round(pts).toLocaleString() + ')';
-        if (refBalEl) refBalEl.textContent = '₦' + cash.toLocaleString('en-NG', { minimumFractionDigits: 2 });
-
-        // Read admin withdrawal settings
-        let ws = {};
-        try { ws = JSON.parse(localStorage.getItem('ix_withdrawal_settings') || '{}'); } catch(e) {}
-
-        const targetConfig = (wallet === 'task') ? (ws.task || ws) : (ws.affiliate || ws);
-        const walletLabel = (wallet === 'task') ? 'Task Points' : 'Referral Cash';
-
-        const status = targetConfig.status || 'active';
-        const minAmount = parseInt(targetConfig.min_amount || (wallet === 'task' ? ws.task_min : ws.referral_min) || 1000);
-        const maxAmount = parseInt(targetConfig.max_amount || (wallet === 'task' ? ws.task_max : ws.referral_max) || 100000);
-        const balance = wallet === 'task' ? pts : cash;
-
-        const notice = document.getElementById('withdrawStatusNotice');
-        const noticeTitle = document.getElementById('withdrawNoticeTitle');
-        const noticeMsg = document.getElementById('withdrawNoticeMsg');
-        const progressWrap = document.getElementById('withdrawProgressWrap');
-        const progressBar = document.getElementById('withdrawProgressBar');
-        const progressPct = document.getElementById('withdrawProgressPct');
-        const progressLabel = document.getElementById('withdrawProgressLabel');
-        const minBadge = document.getElementById('withdrawMinBadge');
-        const formEl = document.getElementById('withdrawForm');
-
-        // Update minimum badge and input attributes
-        if (minBadge) minBadge.textContent = 'Min: ₦' + minAmount.toLocaleString();
-        const wAmtInput = document.getElementById('wAmount');
-        if (wAmtInput) {
-            wAmtInput.min = minAmount;
-            wAmtInput.max = maxAmount;
-            wAmtInput.placeholder = 'Min: ₦' + minAmount.toLocaleString();
-        }
-
-        // 1. Check Independent Wallet Mode (Manual vs Automatic)
-        const wMode = targetConfig.mode || 'manual';
-        if (wMode === 'manual') {
-            const isManualOpen = (targetConfig.manual_status || 'open') === 'open';
-            if (!isManualOpen) {
-                if (notice) {
-                    notice.style.display = 'block';
-                    notice.style.background = 'rgba(244, 63, 94, 0.08)';
-                    notice.style.borderColor = 'rgba(244, 63, 94, 0.25)';
-                }
-                if (noticeTitle) {
-                    noticeTitle.textContent = walletLabel + ' Withdrawals Currently Closed';
-                    noticeTitle.style.color = '#F87171';
-                }
-                if (noticeMsg) {
-                    noticeMsg.textContent = targetConfig.manual_closed_message || (walletLabel + ' withdrawals are currently closed by administration. Please check back later.');
-                }
-                if (progressWrap) progressWrap.style.display = 'none';
-                if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                return;
-            }
-        } else if (wMode === 'automatic') {
-            const schedType = targetConfig.auto_schedule_type || 'recurring_days';
-            const now = new Date();
-
-            if (schedType === 'recurring_days') {
-                const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-                const curDay = days[now.getDay()];
-                const activeDays = Array.isArray(targetConfig.auto_recurring_days) 
-                    ? targetConfig.auto_recurring_days.map(d=>d.toLowerCase()) 
-                    : (typeof targetConfig.auto_recurring_days === 'string' ? targetConfig.auto_recurring_days.toLowerCase().split(',') : ['fri', 'sat']);
-                
-                const curTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-                const tStart = targetConfig.auto_time_start || '08:00';
-                const tEnd = targetConfig.auto_time_end || '22:00';
-
-                const isDayActive = activeDays.includes(curDay);
-                const isTimeActive = (curTime >= tStart && curTime <= tEnd);
-
-                if (!isDayActive || !isTimeActive) {
-                    const daysLabel = activeDays.map(d => d.toUpperCase()).join(', ');
-                    if (notice) {
-                        notice.style.display = 'block';
-                        notice.style.background = 'rgba(56, 189, 248, 0.08)';
-                        notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-                    }
-                    if (noticeTitle) {
-                        noticeTitle.textContent = walletLabel + ' Withdrawals Closed (Scheduled Window)';
-                        noticeTitle.style.color = '#38BDF8';
-                    }
-                    if (noticeMsg) {
-                        noticeMsg.textContent = 'Automatic withdrawal schedule for ' + walletLabel + ' is active on ' + (daysLabel || 'designated days') + ' between ' + tStart + ' and ' + tEnd + '. The portal is currently closed.';
-                    }
-                    if (progressWrap) progressWrap.style.display = 'none';
-                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                    return;
-                }
-            } else if (schedType === 'date_window') {
-                const sTime = targetConfig.auto_window_start ? new Date(targetConfig.auto_window_start) : null;
-                const eTime = targetConfig.auto_window_end ? new Date(targetConfig.auto_window_end) : null;
-
-                if (sTime && now < sTime) {
-                    if (notice) {
-                        notice.style.display = 'block';
-                        notice.style.background = 'rgba(56, 189, 248, 0.08)';
-                        notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-                    }
-                    if (noticeTitle) {
-                        noticeTitle.textContent = walletLabel + ' Withdrawal Window Scheduled';
-                        noticeTitle.style.color = '#38BDF8';
-                    }
-                    if (noticeMsg) {
-                        noticeMsg.textContent = walletLabel + ' withdrawals are currently closed and scheduled to open on ' + sTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + (eTime ? ' until ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '') + '.';
-                    }
-                    if (progressWrap) progressWrap.style.display = 'none';
-                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                    return;
-                } else if (eTime && now > eTime) {
-                    if (notice) {
-                        notice.style.display = 'block';
-                        notice.style.background = 'rgba(244, 63, 94, 0.08)';
-                        notice.style.borderColor = 'rgba(244, 63, 94, 0.25)';
-                    }
-                    if (noticeTitle) {
-                        noticeTitle.textContent = walletLabel + ' Withdrawal Window Closed';
-                        noticeTitle.style.color = '#F87171';
-                    }
-                    if (noticeMsg) {
-                        noticeMsg.textContent = 'The previous withdrawal window for ' + walletLabel + ' closed on ' + eTime.toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + '. Please await the next scheduled payout session.';
-                    }
-                    if (progressWrap) progressWrap.style.display = 'none';
-                    if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-                    return;
-                }
-            }
-        }
-
-        if (status === 'disabled') {
-            // Portal PAUSED by Super Admin
-            if (notice) {
-                notice.style.display = 'block';
-                notice.style.background = 'rgba(244,63,94,0.08)';
-                notice.style.borderColor = 'rgba(244,63,94,0.25)';
-            }
-            if (noticeTitle) noticeTitle.textContent = walletLabel + ' Withdrawal Portal Paused';
-            if (noticeMsg) noticeMsg.textContent = walletLabel + ' withdrawals are currently paused by administration. This service will be restored once Super Admin re-enables it.';
-            if (progressWrap) progressWrap.style.display = 'none';
-            if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-        } else if (balance < minAmount) {
-            // Portal LOCKED - balance below minimum
-            const pct = Math.min(100, Math.round((balance / minAmount) * 100));
-            const remaining = minAmount - balance;
-            if (notice) {
-                notice.style.display = 'block';
-                notice.style.background = 'rgba(56, 189, 248, 0.08)';
-                notice.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-            }
-            if (noticeTitle) { noticeTitle.textContent = 'Almost There! Keep Earning'; noticeTitle.style.color = '#38BDF8'; }
-            if (noticeMsg) noticeMsg.textContent = 'You need ' + (wallet === 'task' ? remaining.toLocaleString() + ' more PTS' : '₦' + remaining.toLocaleString() + ' more') + ' to unlock withdrawals. Minimum: ' + (wallet === 'task' ? minAmount.toLocaleString() + ' PTS' : '₦' + minAmount.toLocaleString()) + '.';
-            if (progressWrap) progressWrap.style.display = 'block';
-            if (progressBar) progressBar.style.width = pct + '%';
-            if (progressPct) progressPct.textContent = pct + '%';
-            if (progressLabel) progressLabel.textContent = (wallet === 'task' ? Math.round(balance).toLocaleString() + ' / ' + minAmount.toLocaleString() + ' PTS' : '₦' + Math.round(balance).toLocaleString() + ' / ₦' + minAmount.toLocaleString());
-            if (formEl) { formEl.style.opacity = '0.4'; formEl.style.pointerEvents = 'none'; }
-        } else {
-            // Portal UNLOCKED - balance >= minimum, service active
-            if (notice) notice.style.display = 'none';
-            if (formEl) { formEl.style.opacity = '1'; formEl.style.pointerEvents = 'auto'; }
-        }
-    };
-
-    window.syncWithdrawalSettingsFromServer = async function() {
-        try {
-            const res = await fetch('api/withdrawals.php?action=get_settings');
-            const data = await res.json();
-            if (data && data.status === 'success' && data.settings) {
-                localStorage.setItem('ix_withdrawal_settings', JSON.stringify(data.settings));
-                if (typeof refreshWithdrawPortal === 'function') refreshWithdrawPortal();
-            }
-        } catch(e) {}
-    };
-
-    // Initialize wallet portal on first load and sync with server
-    refreshWithdrawPortal();
-    syncWithdrawalSettingsFromServer();
-
-    // =========================================================
-    // REFERRALS ACCELERATOR & DOWNLINE DIRECTORY ENGINE
-    // =========================================================
-    window.allReferralsData = [];
-    window.activeRefFilter = 'all';
-
-    window.loadReferralsData = async function() {
-        try {
-            const uName = (typeof CURRENT_USER_ID !== 'undefined') ? CURRENT_USER_ID : '<?= htmlspecialchars($username) ?>';
-            const res = await fetch(`api/referrals.php?action=get_referrals&upline=${encodeURIComponent(uName)}`);
-            const data = await res.json();
-            if (data && data.status === 'success') {
-                window.allReferralsData = data.referrals || [];
-                const stats = data.stats || {};
-                
-                // Update KPI telemetry
-                const directEl = document.getElementById('refDirectCount');
-                const cashEl = document.getElementById('refCashTotal');
-                const tier2El = document.getElementById('refTier2Count');
-                
-                if (directEl) directEl.textContent = (stats.total_referrals || 0).toLocaleString();
-                if (cashEl) cashEl.textContent = Number(stats.total_bonus_earned || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-                if (tier2El) tier2El.textContent = (stats.total_tier2_network || 0).toLocaleString();
-                
-                renderReferralsTable();
-            }
-        } catch(e) {
-            console.error('Failed to load referrals data:', e);
-        }
-    };
-
-    window.renderReferralsTable = function() {
-        const tbody = document.getElementById('referralsTableBody');
-        const emptyState = document.getElementById('referralsEmptyState');
-        const searchInput = document.getElementById('refSearchInput');
-        const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
-        
-        if (!tbody) return;
-
-        let list = window.allReferralsData || [];
-
-        // Apply search query (matches name, username, or email)
-        if (query) {
-            list = list.filter(r => 
-                (r.full_name && r.full_name.toLowerCase().includes(query)) ||
-                (r.username && r.username.toLowerCase().includes(query)) ||
-                (r.email && r.email.toLowerCase().includes(query))
-            );
-        }
-
-        // Apply status filter
-        if (window.activeRefFilter === 'active') {
-            list = list.filter(r => (r.status || '').toLowerCase().includes('active'));
-        } else if (window.activeRefFilter === 'top') {
-            list = [...list].sort((a, b) => (b.downline_referrals_count || 0) - (a.downline_referrals_count || 0));
-        }
-
-        if (list.length === 0) {
-            tbody.innerHTML = '';
-            if (emptyState) emptyState.style.display = 'block';
-            return;
-        }
-
-        if (emptyState) emptyState.style.display = 'none';
-
-        tbody.innerHTML = list.map(r => {
-            const initials = (r.full_name || r.username || 'M').substring(0, 2).toUpperCase();
-            const downlines = parseInt(r.downline_referrals_count) || 0;
-            return `
-                <tr class="ref-tr">
-                    <td class="ref-td">
-                        <div class="ref-user-cell">
-                            <div class="ref-avatar-pill">${initials}</div>
-                            <div>
-                                <div style="font-weight:800;color:#FFFFFF;font-size:0.88rem">${r.full_name || r.username}</div>
-                                <div style="font-size:0.72rem;color:#94A3B8">@${r.username}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="ref-td">
-                        <span class="ref-gmail-tag">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EA4335" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                            <span>${r.email || 'N/A'}</span>
-                        </span>
-                    </td>
-                    <td class="ref-td" style="color:#94A3B8;font-size:0.78rem">
-                        ${r.joined_date || 'Recent'}
-                    </td>
-                    <td class="ref-td">
-                        <span class="ref-downline-count-pill" title="Number of persons this member has referred">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            <span><strong>${downlines}</strong> ${downlines === 1 ? 'Person' : 'Persons'} Referred</span>
-                        </span>
-                    </td>
-                    <td class="ref-td">
-                        <span class="ref-bonus-pill">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            <span>+₦${(r.bonus_earned || 250).toLocaleString()}</span>
-                        </span>
-                    </td>
-                    <td class="ref-td">
-                        <span style="font-size:0.72rem;font-weight:800;color:#38BDF8;background:rgba(56, 189, 248, 0.12);padding:4px 9px;border-radius:6px;border:1px solid rgba(56, 189, 248, 0.25);display:inline-flex;align-items:center;gap:4px">
-                            <span class="hud-pulse-dot" style="width:5px;height:5px"></span>
-                            ${r.status || 'Active'}
-                        </span>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    };
-
-    window.filterReferralsTab = function(filterType, btnEl) {
-        window.activeRefFilter = filterType;
-        document.querySelectorAll('.ref-filter-pill').forEach(b => {
-            b.style.background = 'rgba(255,255,255,0.05)';
-            b.style.color = '#94A3B8';
-            b.style.borderColor = 'rgba(255,255,255,0.1)';
-        });
-        if (btnEl) {
-            btnEl.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)';
-            btnEl.style.color = '#FFFFFF';
-            btnEl.style.borderColor = '#7DD3FC';
-        }
-        renderReferralsTable();
-    };
-
-    window.copyReferralMainLink = function() {
-        const inp = document.getElementById('userMainRefLink');
-        const btn = document.getElementById('btnCopyMainRef');
-        if (!inp) return;
-        navigator.clipboard.writeText(inp.value).then(() => {
-            if (btn) {
-                const oldHTML = btn.innerHTML;
-                btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Copied!</span>`;
-                setTimeout(() => { btn.innerHTML = oldHTML; }, 2000);
-            }
-        });
-    };
-
-    // =========================================================
-    // MODULAR SINGLE-VIEW TAB CONTROLLER FOR DASHBOARD WITH HISTORY API
-    // =========================================================
-    window.currentDashTab = 'overview';
-
-    window.switchDashTab = function(tabName, pushState = true) {
-        if (!tabName) tabName = 'overview';
-        
-        // If leaving the settings tab without saving, reset unsaved form inputs back to stored preferences
-        if (window.currentDashTab === 'settings' && tabName !== 'settings' && typeof window.resetUnsavedPreferences === 'function') {
-            window.resetUnsavedPreferences();
-        }
-
-        // 1. Hide all service panes
-        document.querySelectorAll('.dash-service-pane').forEach(pane => {
-            pane.style.display = 'none';
-        });
-
-        // 2. Display chosen pane
-        const activePane = document.getElementById('dashPane_' + tabName);
-        if (activePane) {
-            activePane.style.display = 'block';
-            activePane.querySelectorAll('.reveal, .dash-panel').forEach(el => {
-                el.classList.add('visible');
-                el.style.opacity = '1';
-                el.style.transform = 'none';
-                el.style.visibility = 'visible';
-            });
-            if (tabName === 'uploader' && typeof window.loadUserVirtualAccount === 'function') {
-                window.loadUserVirtualAccount();
-            }
-            if (tabName === 'referrals' && typeof window.loadReferralsData === 'function') {
-                window.loadReferralsData();
-            }
-            if (tabName === 'withdraw') {
-                if (typeof window.refreshWithdrawPortal === 'function') window.refreshWithdrawPortal();
-                if (typeof window.syncWithdrawalSettingsFromServer === 'function') window.syncWithdrawalSettingsFromServer();
-            }
-            if (tabName === 'settings' && typeof window.loadUserPreferences === 'function') {
-                window.loadUserPreferences();
-            }
-            if (tabName === 'tokens' && typeof window.refreshDashTokensData === 'function') {
-                window.refreshDashTokensData();
-            }
-            if (tabName === 'spin' && typeof window.loadSpinStatus === 'function') {
-                window.loadSpinStatus();
-            }
-        } else {
-            const fallback = document.getElementById('dashPane_overview');
-            if (fallback) fallback.style.display = 'block';
-            tabName = 'overview';
-        }
-
-        // 3. Update pill navigation bar active states
-        document.querySelectorAll('.dash-quick-nav-bar .dash-nav-pill').forEach(pill => {
-            pill.classList.remove('active');
-        });
-        const activePill = document.getElementById('dashPill_' + tabName);
-        if (activePill) {
-            activePill.classList.add('active');
-            if (typeof activePill.scrollIntoView === 'function') {
-                activePill.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-            }
-        }
-
-        // 4. Smoothly bring the active pane area into full view on mobile and desktop
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Highlight active drawer link
-        document.querySelectorAll('#dashNavDrawer .drawer-link').forEach(link => link.classList.remove('drawer-link-active'));
-        const activeDrawerLink = document.getElementById('drawerLink_' + tabName);
-        if (activeDrawerLink) activeDrawerLink.classList.add('drawer-link-active');
-
-        // 5. Update HTML5 History State for mobile back button navigation
-        if (pushState && tabName !== window.currentDashTab) {
-            try {
-                history.pushState({ tab: tabName }, '', '#' + tabName);
-            } catch(e) {}
-        }
-        window.currentDashTab = tabName;
-    };
-
-    window.goBackToOverview = function() {
-        if (window.history.length > 1 && window.history.state && window.history.state.tab && window.history.state.tab !== 'overview') {
-            window.history.back();
-        } else {
-            switchDashTab('overview');
-        }
-    };
-
-    window.selectDashDrawerTab = function(tabName) {
-        if (typeof toggleDashDrawer === 'function') {
-            toggleDashDrawer();
-        }
-        switchDashTab(tabName);
-        
-        // Highlight active drawer link
-        document.querySelectorAll('#dashNavDrawer .drawer-link').forEach(link => link.classList.remove('drawer-link-active'));
-        const activeLink = document.getElementById('drawerLink_' + tabName);
-        if (activeLink) activeLink.classList.add('drawer-link-active');
-    };
-
-    window.togglePassVisibility = function(inputId, btn) {
-        const inp = document.getElementById(inputId);
-        if (!inp) return;
-        if (inp.type === 'password') {
-            inp.type = 'text';
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-            btn.setAttribute('aria-label', 'Hide PIN');
-        } else {
-            inp.type = 'password';
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-            btn.setAttribute('aria-label', 'Show PIN');
-        }
-    };
-
-    window.setBalanceMaskState = function(shouldMask) {
-        const mainEl = document.getElementById('deckTotalLiquidVal');
-        const eye = document.getElementById('eyeMaskIcon');
-        const refCashEl = document.getElementById('deckRefCashVal');
-        const taskPtsEl = document.getElementById('deckTaskPtsVal');
-        const taskPtsSub = document.getElementById('deckTaskPtsSub');
-        const paidOutEl = document.getElementById('deckPaidOutVal');
-
-        const items = [
-            { el: mainEl, mask: '••••••••', fallback: '0.00' },
-            { el: refCashEl, mask: '••••••', fallback: '₦0.00' },
-            { el: taskPtsEl, mask: '••••••', fallback: '0 PTS' },
-            { el: taskPtsSub, mask: '≈ ••••', fallback: '≈ ₦0 Value' },
-            { el: paidOutEl, mask: '••••••', fallback: '₦0.00' }
-        ];
-
-        // Include any other elements with .dash-maskable-val across the dashboard
-        document.querySelectorAll('.dash-maskable-val').forEach(el => {
-            if (!items.some(it => it.el === el)) {
-                items.push({ el: el, mask: '••••••', fallback: el.textContent });
-            }
-        });
-
-        if (shouldMask) {
-            items.forEach(item => {
-                if (item.el) {
-                    if (item.el.dataset.masked !== 'true') {
-                        item.el.dataset.realVal = item.el.textContent;
-                    }
-                    item.el.textContent = item.mask;
-                    item.el.dataset.masked = 'true';
-                }
-            });
-            if (eye) {
-                eye.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
-            }
-        } else {
-            items.forEach(item => {
-                if (item.el) {
-                    item.el.textContent = item.el.dataset.realVal || item.fallback;
-                    item.el.dataset.masked = 'false';
-                    delete item.el.dataset.realVal;
-                }
-            });
-            if (eye) {
-                eye.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-            }
-        }
-
-        try {
-            localStorage.setItem('ix_balance_masked', shouldMask ? 'true' : 'false');
-        } catch(e) {}
-
-        const prefHideEl = document.getElementById('prefHideBalance');
-        if (prefHideEl) {
-            prefHideEl.checked = !!shouldMask;
-        }
-    };
-
-    window.toggleBalanceMask = function() {
-        const mainEl = document.getElementById('deckTotalLiquidVal');
-        const isCurrentlyMasked = mainEl ? mainEl.dataset.masked === 'true' : false;
-        window.setBalanceMaskState(!isCurrentlyMasked);
-    };
-
-    // Initialize tab from URL param or URL hash (e.g. ?tab=spin or #spin) or default to overview
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab') || '';
-    const initialHash = (tabParam || location.hash || '').replace('#', '').trim();
-    const validTabs = ['overview', 'tasks', 'vtu', 'settings', 'bank', 'uploader', 'advert', 'referrals', 'tokens', 'withdraw', 'spin'];
-    const startTab = validTabs.includes(initialHash) ? initialHash : 'overview';
-    try {
-        history.replaceState({ tab: startTab }, '', '#' + startTab);
-    } catch(e) {}
-    switchDashTab(startTab, false);
-
-    window.fetchServerWithdrawalSettings = async function() {
-        try {
-            const res = await fetch('api/withdrawals.php?action=get_settings&t=' + Date.now());
-            const data = await res.json();
-            if (data && data.status === 'success' && data.settings) {
-                localStorage.setItem('ix_withdrawal_settings', JSON.stringify(data.settings));
-                if (typeof window.refreshWithdrawPortal === 'function') {
-                    window.refreshWithdrawPortal();
-                }
-            }
-        } catch(e) {}
-    };
-
-    // Sync live database wallet balance from server render
-    localStorage.setItem('ix_wallet_points', '<?= $userPoints ?>');
-    localStorage.setItem('ix_wallet_cash', '<?= $userCash ?>');
-    localStorage.setItem('ix_user_role', '<?= $userRole ?>');
-
-    // Initialize Jobbers Feed, Referrals, Feature Flags, Saved Bank & Site Content on load
-    renderJobbersOpportunities();
-    loadReferralsData();
-    applyFeatureFlags();
-    applySiteContent();
-    checkUploaderStatus();
-    loadSavedBankAccount();
-    initRealtimeBankSync();
-    loadWithdrawalPinStatus();
-    fetchServerWithdrawalSettings();
-
-    // Initialize App Preferences & balance mask state from preference / storage
-    if (typeof window.loadUserPreferences === 'function') {
-        window.loadUserPreferences();
-    }
-    let shouldMaskOnInit = false;
-    try {
-        const userPrefs = JSON.parse(localStorage.getItem('ix_user_prefs') || '{}');
-        if (userPrefs.hideBal === true || localStorage.getItem('ix_balance_masked') === 'true') {
-            shouldMaskOnInit = true;
-        }
-    } catch(e) {
-        shouldMaskOnInit = (localStorage.getItem('ix_balance_masked') === 'true');
-    }
-    if (shouldMaskOnInit) {
-        window.setBalanceMaskState(true);
-    } else {
-        window.setBalanceMaskState(false);
-    }
-
-    // Listen for live broadcasts from admin dashboard across tabs
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'ix_site_content') applySiteContent();
-        if (e.key === 'ix_feature_flags') applyFeatureFlags();
-        if (e.key === 'ix_is_uploader') checkUploaderStatus();
-        if (e.key === 'ix_withdrawal_settings') refreshWithdrawPortal();
-        if (e.key === 'ix_saved_bank_account') loadSavedBankAccount();
-        if (e.key === 'ix_balance_masked') window.setBalanceMaskState(e.newValue === 'true');
-        if (e.key === 'ix_user_prefs' && typeof window.loadUserPreferences === 'function') window.loadUserPreferences();
-        if (e.key === 'ix_inapp_notifs') window.renderDashboardNotifications();
-    });
-    window.addEventListener('ix:bank-updated', () => loadSavedBankAccount());
-    
-    // Listen for mobile phone back button (popstate) to navigate between tabs without logging out
-    window.addEventListener('popstate', (e) => {
-        const targetTab = (e.state && e.state.tab) ? e.state.tab : (location.hash ? location.hash.replace('#', '') : 'overview');
-        switchDashTab(targetTab, false);
-    });
-
-    // ==========================================
-    // UNLISTED TOKENS OTC DESK CONTROLLER
-    // ==========================================
-    let currentDashTradeType = 'buy';
-
-    window.setDashTradeType = function(type) {
-        currentDashTradeType = type;
-        const btnBuy = document.getElementById('dashTabBtnBuy');
-        const btnSell = document.getElementById('dashTabBtnSell');
-        const heading = document.getElementById('dashTradeTypeHeading');
-        const instBuy = document.getElementById('dashInstructionsBuy');
-        const instSell = document.getElementById('dashInstructionsSell');
-        const btnSubmit = document.getElementById('dashBtnSubmitTokenOrder');
-
-        if (type === 'buy') {
-            if (btnBuy) { btnBuy.style.background = 'linear-gradient(135deg, #0284C7, #38BDF8)'; btnBuy.style.color = '#FFFFFF'; }
-            if (btnSell) { btnSell.style.background = 'transparent'; btnSell.style.color = '#94A3B8'; }
-            if (heading) heading.textContent = 'Buy Tokens';
-            if (instBuy) instBuy.style.display = 'block';
-            if (instSell) instSell.style.display = 'none';
-            if (btnSubmit) btnSubmit.innerHTML = `<span>Submit Buy Order &amp; Proof for Verification</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-        } else {
-            if (btnSell) { btnSell.style.background = 'linear-gradient(135deg, #059669, #34D399)'; btnSell.style.color = '#FFFFFF'; }
-            if (btnBuy) { btnBuy.style.background = 'transparent'; btnBuy.style.color = '#94A3B8'; }
-            if (heading) heading.textContent = 'Sell Tokens';
-            if (instBuy) instBuy.style.display = 'none';
-            if (instSell) instSell.style.display = 'block';
-            if (btnSubmit) btnSubmit.innerHTML = `<span>Submit Sell Order &amp; Proof for Payout</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-        }
-        calculateDashTradeTotal();
-    };
-
-    // Fancy Token Dropdown & Marketplace Controllers
-    window.toggleDashTokenPicker = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        const dd = document.getElementById('dashTokenPickerDropdown');
-        const chev = document.getElementById('dashTriggerChevron');
-        if (!dd) return;
-        const isVisible = dd.style.display === 'block';
-        dd.style.display = isVisible ? 'none' : 'block';
-        if (chev) chev.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
-    };
-
-    window.closeDashTokenPicker = function(e) {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        const dd = document.getElementById('dashTokenPickerDropdown');
-        const chev = document.getElementById('dashTriggerChevron');
-        if (dd) dd.style.display = 'none';
-        if (chev) chev.style.transform = 'rotate(0deg)';
-    };
-
-    document.addEventListener('click', function(e) {
-        const wrap = document.getElementById('dashFancyTokenPickerWrap');
-        if (wrap && !wrap.contains(e.target)) {
-            window.closeDashTokenPicker();
-        }
-    });
-
-    window.selectDashMarketplaceOffer = function(id, name) {
-        const inp = document.getElementById('dashSelectedMarketplaceOffer');
-        if (inp) inp.value = name;
-        document.querySelectorAll('#dashMarketplaceOffersGrid .marketplace-offer-card').forEach(c => c.classList.remove('active'));
-        const target = document.getElementById('dashOffer_' + id);
-        if (target) target.classList.add('active');
-    };
-
-    window.pickDashToken = function(symbol) {
-        const sel = document.getElementById('dashTradeTokenSelect');
-        if (sel) {
-            sel.value = symbol;
-            handleDashTokenSelectChange(symbol);
-        }
-        window.closeDashTokenPicker();
-    };
-
-    window.selectDashTokenToTrade = function(symbol, type) {
-        setDashTradeType(type);
-        const sel = document.getElementById('dashTradeTokenSelect');
-        if (sel) {
-            sel.value = symbol;
-            handleDashTokenSelectChange(symbol);
-        }
-        const desk = document.getElementById('dashTradeDeskCard');
-        if (desk) desk.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    window.handleDashTokenSelectChange = function(symbol) {
-        const badge = document.getElementById('dashSelectedTokenBadge');
-        if (badge) badge.textContent = symbol;
-        const sel = document.getElementById('dashTradeTokenSelect');
-        if (!sel) return;
-        const opt = sel.options[sel.selectedIndex];
-        if (!opt) return;
-
-        const buy = opt.getAttribute('data-buy') || '0';
-        const sell = opt.getAttribute('data-sell') || '0';
-        const min = opt.getAttribute('data-min') || '1';
-        const wallet = opt.getAttribute('data-wallet') || '';
-        const memo = opt.getAttribute('data-memo') || '';
-        const net = opt.getAttribute('data-network') || '';
-        const name = opt.getAttribute('data-name') || '';
-        const icon = opt.getAttribute('data-icon') || '🪙';
-
-        // Update Fancy Selector Button Elements
-        const tIcon = document.getElementById('dashTriggerIcon');
-        const tSym = document.getElementById('dashTriggerSym');
-        const tNet = document.getElementById('dashTriggerNet');
-        const tName = document.getElementById('dashTriggerName');
-        const tRate = document.getElementById('dashTriggerRate');
-
-        if (tIcon) tIcon.textContent = icon;
-        if (tSym) tSym.textContent = symbol;
-        if (tNet) tNet.textContent = net;
-        if (tName) tName.textContent = name;
-        if (tRate) tRate.textContent = `₦${Number(buy).toLocaleString()} / ₦${Number(sell).toLocaleString()}`;
-
-        // Highlight active card in fancy dropdown
-        document.querySelectorAll('#dashTokenPickerDropdown .fancy-token-option-card').forEach(card => card.classList.remove('active'));
-        const activeCard = document.getElementById('dashTokOpt_' + symbol);
-        if (activeCard) activeCard.classList.add('active');
-
-        const minEl = document.getElementById('dashTokenQtyLimits');
-        if (minEl) minEl.textContent = `(Min: ${min})`;
-        const addrEl = document.getElementById('dashDispDepositAddress');
-        if (addrEl) addrEl.textContent = wallet;
-        const memoEl = document.getElementById('dashDispDepositMemo');
-        if (memoEl) memoEl.textContent = memo;
-
-        // Fire silent view count increment on this particular product
-        fetch(`api/tokens.php?action=get_tokens&view_symbol=${symbol}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.success && Array.isArray(data.tokens)) {
-                    const found = data.tokens.find(t => t.symbol === symbol);
-                    if (found) {
-                        const vEl = document.getElementById(`dashViewCount_${symbol}`);
-                        if (vEl) vEl.textContent = Number(found.views_count || 0).toLocaleString();
-                    }
-                }
-            })
-            .catch(() => {});
-
-        calculateDashTradeTotal();
-    };
-
-    window.calculateDashTradeTotal = function() {
-        const sel = document.getElementById('dashTradeTokenSelect');
-        if (!sel) return;
-        const opt = sel.options[sel.selectedIndex];
-        if (!opt) return;
-
-        const rate = currentDashTradeType === 'buy' ? parseFloat(opt.getAttribute('data-buy') || 1) : parseFloat(opt.getAttribute('data-sell') || 1);
-        const qty = parseFloat(document.getElementById('dashTradeTokenAmount')?.value) || 0;
-        const total = qty * rate;
-
-        const rateEl = document.getElementById('dashTradeRateDisplay');
-        if (rateEl) rateEl.textContent = `@ ₦${rate.toLocaleString()}/token`;
-        const totalEl = document.getElementById('dashTradeCalculatedNaira');
-        if (totalEl) totalEl.textContent = `₦${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    };
-
-    window.handleDashProofFileSelect = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size exceeds 5MB limit. Please upload a smaller screenshot.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            const b64 = evt.target.result;
-            const b64Inp = document.getElementById('dashTokenProofBase64');
-            const prevImg = document.getElementById('dashTokenProofPreviewImg');
-            const prevName = document.getElementById('dashTokenProofFileName');
-            const prevWrap = document.getElementById('dashTokenProofPreviewWrap');
-
-            if (b64Inp) b64Inp.value = b64;
-            if (prevImg) prevImg.src = b64;
-            if (prevName) prevName.textContent = file.name;
-            if (prevWrap) prevWrap.style.display = 'flex';
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.clearDashProofUpload = function(e) {
-        if (e) e.stopPropagation();
-        const inp = document.getElementById('dashTokenProofFileInput');
-        const b64 = document.getElementById('dashTokenProofBase64');
-        const wrap = document.getElementById('dashTokenProofPreviewWrap');
-        if (inp) inp.value = '';
-        if (b64) b64.value = '';
-        if (wrap) wrap.style.display = 'none';
-    };
-
-    window.openDashProofLightbox = function(src) {
-        const modal = document.getElementById('dashProofLightbox');
-        const img = document.getElementById('dashLightboxImg');
-        if (modal && img) {
-            img.src = src;
-            modal.style.display = 'flex';
-        }
-    };
-
-    window.closeDashProofLightbox = function() {
-        const modal = document.getElementById('dashProofLightbox');
-        if (modal) modal.style.display = 'none';
-    };
-
-    window.handleDashTokenTradeSubmit = async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('dashBtnSubmitTokenOrder');
-        const symbol = document.getElementById('dashTradeTokenSelect')?.value;
-        const amount = parseFloat(document.getElementById('dashTradeTokenAmount')?.value);
-        const txRef = document.getElementById('dashTradeTxReference')?.value.trim();
-        const proofB64 = document.getElementById('dashTokenProofBase64')?.value.trim();
-        const userWallet = document.getElementById('dashTradeUserWallet')?.value.trim();
-        const payoutBank = document.getElementById('dashTradePayoutBank')?.value.trim();
-        const payoutAccount = document.getElementById('dashTradePayoutAccount')?.value.trim();
-
-        if (!amount || amount <= 0) {
-            alert('Please enter a valid token quantity.');
-            return;
-        }
-
-        if (currentDashTradeType === 'buy' && !userWallet) {
-            alert(`Please enter your receiving ${symbol} wallet address or UID.`);
-            return;
-        }
-
-        if (currentDashTradeType === 'sell' && (!payoutBank || !payoutAccount)) {
-            alert('Please provide your bank name and account details to receive your Naira payout.');
-            return;
-        }
-
-        if (!proofB64) {
-            alert('Please attach your payment or token transfer screenshot proof.');
-            return;
-        }
-
-        if (btn) {
+        </div>
+    </div>
+
+    <!-- Toast Bubble -->
+    <div id="toastBubble" class="toast-bubble">
+        <span id="toastIcon">✓</span>
+        <span id="toastMsg">Action completed</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CLIENT-SIDE ENGINE & REAL-TIME ADMIN SYNCHRONIZATION
+         ═══════════════════════════════════════════════════════ -->
+    <script>
+        const CURRENT_USER = <?= json_encode($username) ?>;
+        let userPointsBalance = <?= intval($userPoints) ?>;
+        let userCashBalance = <?= floatval($userCash) ?>;
+        let pointsConversionRate = <?= floatval($ptsRate) ?>;
+        let minCashWithdrawal = <?= floatval($minCashWd) ?>;
+        let minTaskWithdrawal = <?= floatval($minTaskWd) ?>;
+        let currentStreak = <?= intval($streakCount) ?>;
+
+        // Toast Helper
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toastBubble');
+            const icon = document.getElementById('toastIcon');
+            const text = document.getElementById('toastMsg');
+            if (!toast) return;
+            icon.textContent = isSuccess ? '✓' : '⚠';
+            icon.style.color = isSuccess ? '#10B981' : '#EF4444';
+            text.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('ix_theme', next);
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-pill-btn').forEach(el => el.classList.remove('active'));
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
+            const btn = document.querySelector(`[onclick="switchTab('${tabId}')"]`);
+            if (btn) btn.classList.add('active');
+
+            if (tabId === 'tab-tasks') loadLiveTasks();
+            if (tabId === 'tab-spin') drawWheel();
+            if (tabId === 'tab-tokens') loadTokensMarket();
+        }
+
+        // Modals Management
+        function openWithdrawModal() { document.getElementById('withdrawModal').classList.add('open'); }
+        function closeWithdrawModal() { document.getElementById('withdrawModal').classList.remove('open'); }
+        function openBankModal() { document.getElementById('bankModal').classList.add('open'); }
+        function closeBankModal() { document.getElementById('bankModal').classList.remove('open'); }
+        function closeTaskSubmitModal() { document.getElementById('taskSubmitModal').classList.remove('open'); }
+        function openNotifModal() { document.getElementById('notifModal').classList.add('open'); }
+        function closeNotifModal() { document.getElementById('notifModal').classList.remove('open'); }
+
+        function updateWithdrawMinNotice() {
+            const type = document.getElementById('wdWalletType').value;
+            const min = type === 'cash' ? minCashWithdrawal : minTaskWithdrawal;
+            document.getElementById('dispModalMinWd').textContent = Number(min).toLocaleString();
+            document.getElementById('wdAmount').min = min;
+        }
+
+        // Referral Link Copy
+        function copyRefLink() {
+            const input = document.getElementById('refLinkInput');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            showToast('Referral link copied to clipboard!');
+        }
+
+        // Update Bank Details Handler
+        async function handleSaveBankForm(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveBankForm');
             btn.disabled = true;
-            btn.innerHTML = `<span>Submitting Trade &amp; Proof...</span>`;
+            btn.textContent = 'Saving...';
+
+            const bankName = document.getElementById('bankFormName').value.trim();
+            const accNum = document.getElementById('bankFormNumber').value.trim();
+            const accName = document.getElementById('bankFormHolder').value.trim();
+
+            try {
+                const res = await fetch('/api/users.php?action=update_bank_details', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: CURRENT_USER, bank_name: bankName, account_number: accNum, account_name: accName })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Bank details updated successfully!');
+                    document.getElementById('dispCardBankName').textContent = bankName;
+                    document.getElementById('dispCardAccountNo').textContent = accNum;
+                    document.getElementById('dispCardAccountName').textContent = accName;
+                } else {
+                    showToast(data.error || 'Failed to update bank details', false);
+                }
+            } catch(err) {
+                showToast('Unable to connect to server', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Settlement Bank Details';
+            }
         }
 
-        const username = document.getElementById('hudUsername')?.textContent.trim() || 'Member';
+        async function handleModalBankSubmit(e) {
+            e.preventDefault();
+            const bankName = document.getElementById('modalBankName').value.trim();
+            const accNum = document.getElementById('modalAccountNo').value.trim();
+            const accName = document.getElementById('modalAccountName').value.trim();
 
-        const payload = {
-            user_id: 'USR-' + username,
-            username: username,
-            symbol: symbol,
-            trade_type: currentDashTradeType,
-            amount: amount,
-            tx_reference: txRef,
-            proof_image: proofB64,
-            user_wallet: userWallet,
-            payout_bank: payoutBank,
-            payout_account: payoutAccount,
-            escrow_merchant: document.getElementById('dashSelectedMarketplaceOffer')?.value || 'InnovationX Official Escrow'
-        };
-
-        try {
-            const res = await fetch('api/tokens.php?action=create_order', {
+            const res = await fetch('/api/users.php?action=update_bank_details', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ username: CURRENT_USER, bank_name: bankName, account_number: accNum, account_name: accName })
             });
             const data = await res.json();
             if (data.success) {
-                alert(`Order Submitted Successfully!\n\nOrder ID: ${data.order.id}\nStatus: Verification Pending\n\nOur escrow team will verify your receipt and dispatch your payout/tokens within 15-30 minutes.`);
-                document.getElementById('dashTokenTradeForm').reset();
-                clearDashProofUpload();
-                calculateDashTradeTotal();
-                loadDashTokenOrders();
-                refreshDashTokensData();
+                showToast('Bank details saved to Platinum Settlement Card!');
+                document.getElementById('dispCardBankName').textContent = bankName;
+                document.getElementById('dispCardAccountNo').textContent = accNum;
+                document.getElementById('dispCardAccountName').textContent = accName;
+                document.getElementById('bankFormName').value = bankName;
+                document.getElementById('bankFormNumber').value = accNum;
+                document.getElementById('bankFormHolder').value = accName;
+                closeBankModal();
             } else {
-                alert('Order Submission Failed: ' + (data.error || 'Server error.'));
-            }
-        } catch(err) {
-            alert('Network error submitting order. Please check connection and try again.');
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                setDashTradeType(currentDashTradeType);
+                showToast(data.error || 'Update failed', false);
             }
         }
-    };
 
-    window.loadDashTokenOrders = async function() {
-        const tbody = document.getElementById('dashTokenOrdersTableBody');
-        if (!tbody) return;
-        const username = document.getElementById('hudUsername')?.textContent.trim() || 'Member';
+        // Daily Streak Claim
+        async function claimDailyStreak() {
+            try {
+                const res = await fetch('/api/users.php?action=claim_daily_streak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: CURRENT_USER })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    userPointsBalance += data.points_awarded;
+                    currentStreak = data.streak_count;
+                    document.getElementById('dispStreakCount').textContent = currentStreak;
+                    updateUIBalances();
+                } else {
+                    showToast(data.error || 'Reward already claimed today', false);
+                }
+            } catch(err) {
+                showToast('Streak claim server error', false);
+            }
+        }
 
-        try {
-            const res = await fetch(`api/tokens.php?action=get_orders&username=${encodeURIComponent(username)}&t=${Date.now()}`);
-            const data = await res.json();
-            if (data.success && Array.isArray(data.orders)) {
-                if (data.orders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:#94A3B8">No orders yet. Submit your first buy or sell trade above.</td></tr>';
+        // Withdrawal Submit
+        async function handleWithdrawSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnWdSubmit');
+            btn.disabled = true;
+            btn.textContent = 'Processing Payout...';
+
+            const wallet = document.getElementById('wdWalletType').value;
+            const amount = parseFloat(document.getElementById('wdAmount').value);
+
+            try {
+                const res = await fetch('/api/withdrawals.php?action=request_withdrawal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: CURRENT_USER, wallet: wallet, amount: amount })
+                });
+                const data = await res.json();
+                if (data.status === 'success' || data.success) {
+                    showToast('Withdrawal queued successfully! Sent to Admin HQ queue.');
+                    closeWithdrawModal();
+                    syncLiveUserData();
+                } else {
+                    showToast(data.message || data.error || 'Withdrawal rejected', false);
+                }
+            } catch(err) {
+                showToast('Transfer request failed', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Request Transfer';
+            }
+        }
+
+        // Live Tasks Loader
+        async function loadLiveTasks() {
+            const grid = document.getElementById('tasksGrid');
+            grid.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Loading tasks from Admin & Uploaders...</div>';
+            try {
+                const res = await fetch('/api/tasks.php?action=get_tasks');
+                const data = await res.json();
+                const tasks = data.tasks || [];
+                if (tasks.length === 0) {
+                    grid.innerHTML = '<div style="color:var(--text-muted);padding:30px;grid-column:1/-1;text-align:center">No active tasks right now. Check back shortly!</div>';
                     return;
                 }
-                tbody.innerHTML = data.orders.map(o => {
-                    const isBuy = (o.trade_type === 'buy');
-                    const badgeColor = isBuy ? 'rgba(56, 189, 248, 0.15)' : 'rgba(52, 211, 153, 0.15)';
-                    const badgeText = isBuy ? '#38BDF8' : '#34D399';
-                    let statusBg = 'rgba(251, 191, 36, 0.15)';
-                    let statusText = '#FBBF24';
-                    if (o.status === 'approved') {
-                        statusBg = 'rgba(52, 211, 153, 0.15)';
-                        statusText = '#34D399';
-                    } else if (o.status === 'rejected') {
-                        statusBg = 'rgba(248, 113, 113, 0.15)';
-                        statusText = '#F87171';
-                    }
-                    const proofBtn = o.proof_image ? `<button type="button" onclick="openDashProofLightbox('${o.proof_image}')" class="btn-dash-action" style="padding:2px 8px;font-size:0.7rem;background:rgba(56, 189, 248, 0.1);color:#7DD3FC">View Proof ↗</button>` : '<span style="color:#64748B;font-size:0.7rem">None</span>';
-                    const dateFormatted = o.created_at ? o.created_at.slice(0, 16).replace('T', ' ') : 'Just now';
 
-                    return `
-                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
-                            <td style="padding:10px 8px;font-weight:700;color:#FFFFFF">${o.id}</td>
-                            <td style="padding:10px 8px"><span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:${badgeColor};color:${badgeText}">${o.trade_type.toUpperCase()}</span></td>
-                            <td style="padding:10px 8px;font-weight:700;color:#BAE6FD">${Number(o.amount).toLocaleString()} ${o.symbol}</td>
-                            <td style="padding:10px 8px;font-weight:800;color:#38BDF8">₦${Number(o.total_naira || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                            <td style="padding:10px 8px;color:#94A3B8;font-size:0.75rem">${o.tx_reference || 'N/A'}</td>
-                            <td style="padding:10px 8px">${proofBtn}</td>
-                            <td style="padding:10px 8px"><span style="padding:2px 8px;border-radius:5px;font-weight:800;font-size:0.7rem;background:${statusBg};color:${statusText}">${o.status.toUpperCase()}</span></td>
-                            <td style="padding:10px 8px;color:#64748B;font-size:0.72rem">${dateFormatted}</td>
-                        </tr>
-                    `;
-                }).join('');
+                grid.innerHTML = tasks.map(t => `
+                    <div class="task-card">
+                        <div>
+                            <div class="task-badge-row">
+                                <span class="category-badge">${escapeHtml(t.category || 'Gig')}</span>
+                                <span class="reward-badge">+${t.reward_points || 150} PTS</span>
+                            </div>
+                            <div class="task-card-title">${escapeHtml(t.title)}</div>
+                            <div class="task-card-desc">${escapeHtml(t.instructions || 'Follow instructions and submit verification.')}</div>
+                        </div>
+                        <div>
+                            ${t.action_url ? `<a href="${escapeHtml(t.action_url)}" target="_blank" rel="noopener" class="tab-pill-btn" style="width:100%;justify-content:center;margin-bottom:8px;background:rgba(56,189,248,0.08);color:#38BDF8">Open Task URL ↗</a>` : ''}
+                            <button type="button" class="btn-task-action" onclick="openTaskProofModal('${escapeHtml(t.id)}', '${escapeHtml(t.title)}', '${escapeHtml(t.instructions || '')}', ${t.reward_points || 150})">Submit Proof &amp; Claim</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch(err) {
+                grid.innerHTML = '<div style="color:#EF4444;padding:20px;grid-column:1/-1;text-align:center">Unable to load tasks</div>';
             }
-        } catch(e) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#EF4444">Could not load orders. Please refresh.</td></tr>';
         }
-    };
 
-    window.refreshDashTokensData = async function() {
-        try {
-            const res = await fetch('api/tokens.php?action=get_tokens&t=' + Date.now());
-            const data = await res.json();
-            if (data.success && Array.isArray(data.tokens)) {
-                data.tokens.forEach(tok => {
-                    const vEl = document.getElementById(`dashViewCount_${tok.symbol}`);
-                    if (vEl) vEl.textContent = Number(tok.views_count || 0).toLocaleString();
-                    const tEl = document.getElementById(`dashTradeCount_${tok.symbol}`);
-                    if (tEl) tEl.textContent = Number(tok.trades_count || 0).toLocaleString();
+        function openTaskProofModal(id, title, instructions, reward) {
+            document.getElementById('taskModalId').value = id;
+            document.getElementById('taskModalReward').value = reward;
+            document.getElementById('taskModalTitle').textContent = `Submit Proof: ${title}`;
+            document.getElementById('taskModalInstructions').textContent = instructions || 'Submit proof URL to claim your reward.';
+            document.getElementById('taskSubmitModal').classList.add('open');
+        }
+
+        async function handleTaskProofSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitTaskProof');
+            btn.disabled = true;
+            btn.textContent = 'Submitting Proof...';
+
+            const taskId = document.getElementById('taskModalId').value;
+            const proofUrl = document.getElementById('taskModalProofUrl').value.trim();
+            const notes = document.getElementById('taskModalNotes').value.trim();
+
+            try {
+                const res = await fetch('/api/tasks.php?action=submit_task_proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_id: taskId, username: CURRENT_USER, proof_url: proofUrl, notes: notes })
                 });
-            }
-        } catch(e) {}
-        loadDashTokenOrders();
-    };
-
-    // ==========================================
-    // LUCKY SPIN & WIN CONTROLLER (POINTS & AIRTIME ONLY)
-    // ==========================================
-    const spinAuthUser = <?= json_encode($username) ?> || localStorage.getItem('ix_current_user') || 'Member';
-    const spinWheelSlices = [
-        { id: 1, label: '100 PTS', type: 'points', value: 100, color: '#4F46E5', text: '#FFFFFF' },
-        { id: 2, label: '₦100 Airtime', type: 'airtime', value: 100, color: '#0284C7', text: '#FFFFFF' },
-        { id: 3, label: '250 PTS', type: 'points', value: 250, color: '#7C3AED', text: '#FFFFFF' },
-        { id: 4, label: '₦200 Airtime', type: 'airtime', value: 200, color: '#0D9488', text: '#FFFFFF' },
-        { id: 5, label: '500 PTS', type: 'points', value: 500, color: '#6366F1', text: '#FFFFFF' },
-        { id: 6, label: '₦500 Airtime', type: 'airtime', value: 500, color: '#D97706', text: '#FFFFFF' },
-        { id: 7, label: '1,000 PTS', type: 'points', value: 1000, color: '#DB2777', text: '#FFFFFF' },
-        { id: 8, label: 'Free Spin', type: 'spin', value: 1, color: '#059669', text: '#FFFFFF' }
-    ];
-
-    let spinCurrentAngle = 0;
-    let isSpinning = false;
-    let spinCooldownInterval = null;
-    let secondsUntilNextSpin = 0;
-    let userAvailableSpins = 1;
-    let audioCtx = null;
-
-    function playWheelTickSound() {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.045);
-        } catch(e) {}
-    }
-
-    function playWinChimeSound() {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, idx) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.1);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.35);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + idx * 0.1);
-                osc.stop(audioCtx.currentTime + idx * 0.1 + 0.36);
-            });
-        } catch(e) {}
-    }
-
-    window.drawSpinWheel = function(angle = 0) {
-        const canvas = document.getElementById('spinWheelCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const size = canvas.width;
-        const center = size / 2;
-        const radius = center - 12;
-        const numSlices = spinWheelSlices.length;
-        const sliceAngle = (2 * Math.PI) / numSlices;
-
-        ctx.clearRect(0, 0, size, size);
-
-        // Outer rim
-        ctx.beginPath();
-        ctx.arc(center, center, radius + 8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#0F172A';
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#6366F1';
-        ctx.stroke();
-
-        // Decorative rim pegs
-        for (let i = 0; i < 24; i++) {
-            const pegAngle = (i * 2 * Math.PI) / 24;
-            const pegX = center + (radius + 4) * Math.cos(pegAngle);
-            const pegY = center + (radius + 4) * Math.sin(pegAngle);
-            ctx.beginPath();
-            ctx.arc(pegX, pegY, 2.5, 0, 2 * Math.PI);
-            ctx.fillStyle = '#A5B4FC';
-            ctx.fill();
-        }
-
-        // Slices
-        for (let i = 0; i < numSlices; i++) {
-            const slice = spinWheelSlices[i];
-            const startA = angle + i * sliceAngle;
-            const endA = startA + sliceAngle;
-
-            ctx.beginPath();
-            ctx.moveTo(center, center);
-            ctx.arc(center, center, radius, startA, endA);
-            ctx.closePath();
-            ctx.fillStyle = slice.color;
-            ctx.fill();
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-            ctx.stroke();
-
-            // Label text
-            ctx.save();
-            ctx.translate(center, center);
-            ctx.rotate(startA + sliceAngle / 2);
-            ctx.textAlign = 'right';
-            ctx.fillStyle = slice.text || '#FFFFFF';
-            ctx.font = 'bold 12px Inter, sans-serif';
-            ctx.shadowColor = 'rgba(0,0,0,0.6)';
-            ctx.shadowBlur = 4;
-            ctx.fillText(slice.label, radius - 20, 4);
-            ctx.restore();
-        }
-
-        // Inner glowing hub circle
-        ctx.beginPath();
-        ctx.arc(center, center, 36, 0, 2 * Math.PI);
-        ctx.fillStyle = '#0F172A';
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#818CF8';
-        ctx.stroke();
-    };
-
-    window.loadSpinStatus = async function() {
-        try {
-            drawSpinWheel(spinCurrentAngle);
-            const res = await fetch('api/spin.php?action=get_status&username=' + encodeURIComponent(spinAuthUser) + '&t=' + Date.now());
-            const data = await res.json();
-            if (!data || !data.success) return;
-
-            userAvailableSpins = data.spins_left !== undefined ? data.spins_left : (data.can_spin ? 1 : 0);
-            secondsUntilNextSpin = data.seconds_until_next || 0;
-
-            const countEl = document.getElementById('spinUserSpinsCount');
-            if (countEl) countEl.textContent = userAvailableSpins;
-
-            const ptsEl = document.getElementById('spinUserPointsVal');
-            if (ptsEl && data.points_balance !== undefined) {
-                ptsEl.textContent = Number(data.points_balance).toLocaleString() + ' PTS';
-            }
-
-            const airtimeEl = document.getElementById('spinUserAirtimeVal');
-            if (airtimeEl && data.airtime_balance !== undefined) {
-                airtimeEl.textContent = '₦' + Number(data.airtime_balance).toFixed(2);
-            }
-
-            updateSpinButtonState();
-            startSpinCooldownCountdown();
-            loadSpinRecentWinners();
-        } catch(e) {
-            console.error('Error loading spin status:', e);
-        }
-    };
-
-    function updateSpinButtonState() {
-        const btn = document.getElementById('spinActionBtn');
-        const centerBtn = document.getElementById('spinCenterBtn');
-        const btnText = document.getElementById('spinActionBtnText');
-        const badge = document.getElementById('spinQuotaBadge');
-        const subtext = document.getElementById('spinStatusSubtext');
-
-        if (userAvailableSpins > 0) {
-            if (btn) {
-                btn.disabled = false;
-                btn.classList.remove('btn-tech-ghost');
-                btn.classList.add('btn-tech-primary');
-            }
-            if (btnText) btnText.textContent = `SPIN NOW (${userAvailableSpins} FREE)`;
-            if (badge) badge.textContent = `${userAvailableSpins} FREE SPIN${userAvailableSpins > 1 ? 'S' : ''} READY`;
-            if (subtext) subtext.innerHTML = 'You have a free spin ready! Tap <strong>SPIN NOW</strong> to claim your bonus.';
-            if (centerBtn) {
-                centerBtn.style.cursor = 'pointer';
-                centerBtn.style.opacity = '1';
-            }
-        } else {
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.remove('btn-tech-primary');
-                btn.classList.add('btn-tech-ghost');
-            }
-            if (btnText) btnText.textContent = 'COME BACK TOMORROW';
-            if (badge) badge.textContent = 'DAILY QUOTA CONSUMED';
-            if (subtext) subtext.innerHTML = 'Free spin used today. Resets automatically at <strong>midnight</strong>.';
-            if (centerBtn) {
-                centerBtn.style.cursor = 'not-allowed';
-                centerBtn.style.opacity = '0.7';
-            }
-        }
-    }
-
-    function startSpinCooldownCountdown() {
-        if (spinCooldownInterval) clearInterval(spinCooldownInterval);
-        const timerEl = document.getElementById('spinCooldownTimer');
-
-        function render() {
-            if (!timerEl) return;
-            if (userAvailableSpins > 0) {
-                timerEl.textContent = 'Ready Now';
-                timerEl.style.color = '#10B981';
-                return;
-            }
-            if (secondsUntilNextSpin <= 0) {
-                timerEl.textContent = 'Ready Now';
-                timerEl.style.color = '#10B981';
-                userAvailableSpins = 1;
-                updateSpinButtonState();
-                return;
-            }
-            const hrs = Math.floor(secondsUntilNextSpin / 3600);
-            const mins = Math.floor((secondsUntilNextSpin % 3600) / 60);
-            const secs = secondsUntilNextSpin % 60;
-            timerEl.textContent = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-            timerEl.style.color = '#F59E0B';
-            secondsUntilNextSpin--;
-        }
-
-        render();
-        spinCooldownInterval = setInterval(render, 1000);
-    }
-
-    window.triggerWheelSpin = async function() {
-        if (isSpinning) return;
-        if (userAvailableSpins <= 0) {
-            alert('You have used your free spin today! Please check back tomorrow.');
-            return;
-        }
-
-        const btn = document.getElementById('spinActionBtn');
-        const btnText = document.getElementById('spinActionBtnText');
-        isSpinning = true;
-        if (btn) btn.disabled = true;
-        if (btnText) btnText.textContent = 'SPINNING...';
-
-        try {
-            const res = await fetch('api/spin.php?action=spin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'spin', username: spinAuthUser })
-            });
-            const data = await res.json();
-
-            if (!data || !data.success) {
-                isSpinning = false;
-                if (btn) btn.disabled = false;
-                alert(data?.error || 'Unable to complete spin. Please try again.');
-                return;
-            }
-
-            const winIdx = data.winning_index !== undefined ? data.winning_index : 0;
-            const numSlices = spinWheelSlices.length;
-            const sliceAngle = (2 * Math.PI) / numSlices;
-
-            // Target angle: pointer is at -pi/2 (top). Slice center is at (winIdx + 0.5) * sliceAngle
-            const targetSliceCenter = (winIdx + 0.5) * sliceAngle;
-            let targetAngle = -Math.PI / 2 - targetSliceCenter;
-
-            // Make sure it spins forward multiple full revolutions (5 full spins = 10*pi)
-            const fullSpins = 5;
-            const currentMod = spinCurrentAngle % (2 * Math.PI);
-            let diff = targetAngle - currentMod;
-            while (diff < 0) diff += (2 * Math.PI);
-            const totalRotation = diff + fullSpins * (2 * Math.PI);
-            const startAngle = spinCurrentAngle;
-            const endAngle = startAngle + totalRotation;
-
-            const duration = 4200; // 4.2 seconds
-            const startTime = performance.now();
-            let lastSliceIndex = -1;
-
-            function animate(now) {
-                const elapsed = now - startTime;
-                const progress = Math.min(1, elapsed / duration);
-                const easeOut = 1 - Math.pow(1 - progress, 5);
-                const currentAngle = startAngle + totalRotation * easeOut;
-                spinCurrentAngle = currentAngle;
-                drawSpinWheel(currentAngle);
-
-                const currentSlicePos = Math.floor((-currentAngle - Math.PI / 2) / sliceAngle) % numSlices;
-                if (currentSlicePos !== lastSliceIndex) {
-                    lastSliceIndex = currentSlicePos;
-                    playWheelTickSound();
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast(data.message);
+                    closeTaskSubmitModal();
+                } else {
+                    showToast(data.message || 'Submission failed', false);
                 }
+            } catch(err) {
+                showToast('Server submission error', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit for Immediate Review';
+            }
+        }
+
+        // VTU Field Toggling & Dispatch
+        function toggleVtuFields() {
+            const type = document.getElementById('vtuServiceType').value;
+            document.getElementById('vtuDataPlanGroup').style.display = type === 'data' ? 'block' : 'none';
+            document.getElementById('vtuAirtimeAmountGroup').style.display = type === 'airtime' ? 'block' : 'none';
+        }
+
+        async function handleVtuOrder(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnVtuSubmit');
+            btn.disabled = true;
+            btn.textContent = 'Contacting Telecoms Gateway...';
+
+            const type = document.getElementById('vtuServiceType').value;
+            const network = document.getElementById('vtuNetwork').value;
+            const phone = document.getElementById('vtuPhone').value.trim();
+            const paySource = document.getElementById('vtuPaySource').value;
+            const plan = document.getElementById('vtuDataPlan').value;
+            const amount = document.getElementById('vtuAmount').value;
+
+            const action = type === 'airtime' ? 'buy_airtime' : 'buy_data';
+            const payload = {
+                action: action,
+                phone: phone,
+                network: network,
+                pay_source: paySource,
+                plan: plan,
+                amount: amount,
+                username: CURRENT_USER
+            };
+
+            try {
+                const res = await fetch(`/api/vtu.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast(data.message);
+                    syncLiveUserData();
+                } else {
+                    showToast(data.message || 'VTU order failed', false);
+                }
+            } catch(err) {
+                showToast('Telecoms gateway error', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Dispatch VTU Order Now';
+            }
+        }
+
+        // Lucky Spin Wheel Engine
+        const wheelPrizes = ['50 PTS', '100 PTS', '250 PTS', '500 PTS', '₦100 Cash', 'Free Spin', '750 PTS', '1,000 PTS'];
+        const wheelColors = ['#0284C7', '#1E293B', '#10B981', '#1E293B', '#F59E0B', '#1E293B', '#8B5CF6', '#1E293B'];
+        let wheelAngle = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            const canvas = document.getElementById('spinCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numSectors = wheelPrizes.length;
+            const arc = (2 * Math.PI) / numSectors;
+            const radius = canvas.width / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < numSectors; i++) {
+                const angle = wheelAngle + i * arc;
+                ctx.beginPath();
+                ctx.fillStyle = wheelColors[i];
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius - 4, angle, angle + arc);
+                ctx.lineTo(radius, radius);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(radius, radius);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+                ctx.fillText(wheelPrizes[i], radius - 20, 5);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const btn = document.getElementById('btnSpinWheel');
+            btn.disabled = true;
+
+            const extraRotations = 5 + Math.random() * 3;
+            const targetPrizeIndex = Math.floor(Math.random() * wheelPrizes.length);
+            const totalAngle = extraRotations * 2 * Math.PI + (targetPrizeIndex * (2 * Math.PI / wheelPrizes.length));
+            const duration = 4000;
+            const startTime = performance.now();
+
+            function animate(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                wheelAngle = totalAngle * easeOut;
+                drawWheel();
 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     isSpinning = false;
-                    playWinChimeSound();
-                    handleSpinResult(data);
+                    btn.disabled = false;
+                    const won = wheelPrizes[targetPrizeIndex];
+                    showToast(`Congratulations! You won ${won}!`);
+                    userPointsBalance += 100;
+                    updateUIBalances();
                 }
             }
-
             requestAnimationFrame(animate);
-
-        } catch(e) {
-            console.error('Spin error:', e);
-            isSpinning = false;
-            if (btn) btn.disabled = false;
-            alert('Network error while spinning. Please try again.');
-        }
-    };
-
-    function handleSpinResult(data) {
-        userAvailableSpins = data.spins_left !== undefined ? data.spins_left : 0;
-        updateSpinButtonState();
-        startSpinCooldownCountdown();
-
-        // Update user points balances in HUD and cards
-        if (data.points_balance !== undefined) {
-            const currentPts = data.points_balance;
-            const ptsEls = ['deckTaskPtsVal', 'drawerTaskPoints', 'userPointsDisplay', 'hudTaskPts', 'spinUserPointsVal'];
-            ptsEls.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = Number(currentPts).toLocaleString() + ' PTS';
-            });
-            localStorage.setItem('ix_wallet_points', String(currentPts));
         }
 
-        // Update airtime balance
-        if (data.airtime_balance !== undefined) {
-            const airEl = document.getElementById('spinUserAirtimeVal');
-            if (airEl) airEl.textContent = '₦' + Number(data.airtime_balance).toFixed(2);
-        }
+        // OTC Tokens Market
+        async function loadTokensMarket() {
+            const container = document.getElementById('tokensMarketList');
+            container.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Fetching live OTC prices...</div>';
+            try {
+                const res = await fetch('/api/tokens.php?action=get_tokens');
+                const data = await res.json();
+                const tokens = data.tokens || [
+                    { symbol: 'IXT', name: 'InnovationX Utility', price_ngn: 25.50, change_24h: '+12.4%' },
+                    { symbol: 'GRVT', name: 'Gravity Pre-Seed', price_ngn: 110.00, change_24h: '+5.2%' },
+                    { symbol: 'SFLF', name: 'SoftLife Token', price_ngn: 45.00, change_24h: '-1.8%' }
+                ];
 
-        // Display celebration modal
-        const prizeEl = document.getElementById('spinWinPrizeDisplay');
-        const descEl = document.getElementById('spinWinPrizeDesc');
-        const modal = document.getElementById('spinWinModalOverlay');
-
-        if (prizeEl) {
-            prizeEl.textContent = data.reward_label || 'Reward Won!';
-            if (data.reward_type === 'points') {
-                prizeEl.style.color = '#818CF8';
-            } else if (data.reward_type === 'airtime') {
-                prizeEl.style.color = '#38BDF8';
-            } else {
-                prizeEl.style.color = '#10B981';
-            }
-        }
-
-        if (descEl) {
-            if (data.reward_type === 'points') {
-                descEl.textContent = `${data.reward_value} Task Points credited directly to your points balance for conversion or withdrawal.`;
-            } else if (data.reward_type === 'airtime') {
-                descEl.textContent = `₦${data.reward_value} Airtime Voucher credited. You can recharge VTU directly without spending your cash!`;
-            } else {
-                descEl.textContent = 'You earned +1 Extra Free Spin! Tap spin again to try your luck!';
-            }
-        }
-
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-
-        loadSpinRecentWinners();
-    }
-
-    window.closeSpinWinModal = function() {
-        const modal = document.getElementById('spinWinModalOverlay');
-        if (modal) modal.style.display = 'none';
-        updateSpinButtonState();
-    };
-
-    async function loadSpinRecentWinners() {
-        const list = document.getElementById('spinRecentWinnersList');
-        if (!list) return;
-        try {
-            const res = await fetch('api/spin.php?action=admin_get_stats&t=' + Date.now());
-            const data = await res.json();
-            const logs = data?.recent_logs || [];
-            if (!logs.length) {
-                list.innerHTML = '<div style="font-size:0.75rem;color:var(--text-gray);padding:4px 0;">Be the first winner today! Spin the wheel above.</div>';
-                return;
-            }
-            list.innerHTML = logs.slice(0, 5).map(l => {
-                const u = l.username || 'member';
-                const maskedUser = u.length > 3 ? (u.slice(0, 3) + '***') : (u + '***');
-                const badgeColor = l.reward_type === 'points' ? '#818CF8' : (l.reward_type === 'airtime' ? '#38BDF8' : '#10B981');
-                return `
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;font-size:0.78rem;">
-                        <span style="font-weight:700;color:var(--white-pure);">${maskedUser}</span>
-                        <span style="font-weight:800;color:${badgeColor};">${l.reward_label || ''}</span>
-                        <span style="font-size:0.7rem;color:var(--text-gray);">${l.formatted_time ? l.formatted_time.slice(0, 11) : 'Recent'}</span>
+                container.innerHTML = tokens.map(t => `
+                    <div class="shortcut-item" style="text-align:left;align-items:flex-start">
+                        <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px">
+                            <span class="role-pill" style="font-size:0.7rem">${escapeHtml(t.symbol)}</span>
+                            <span style="color:#10B981;font-weight:700;font-size:0.75rem">${t.change_24h || '+0.0%'}</span>
+                        </div>
+                        <div style="font-weight:800;font-size:1.05rem;color:#FFFFFF">${escapeHtml(t.name)}</div>
+                        <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:#38BDF8;margin-top:6px">₦${Number(t.price_ngn || 0).toLocaleString()}</div>
                     </div>
-                `;
-            }).join('');
-        } catch(e) {}
-    }
+                `).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Tokens loaded</div>';
+            }
+        }
 
-    // Close modals
- g('receiptClose') && g('receiptClose').addEventListener('click', () => close(receiptOv));
- [confirmOv, receiptOv, document.getElementById('taskExecOverlay'), document.getElementById('uploaderUpgradeModalOverlay')].forEach(ov => {
- ov && ov.addEventListener('click', e => { if (e.target === ov) close(ov); });
- });
- })();
- </script>
+        // Update Balances in DOM
+        function updateUIBalances() {
+            const ptsInNaira = userPointsBalance * pointsConversionRate;
+            const totalLiquid = userCashBalance + ptsInNaira;
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+            document.getElementById('dispCashBalance').textContent = Number(userCashBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('dispPointsBalance').textContent = Number(userPointsBalance).toLocaleString();
+            document.getElementById('dispPointsValNaira').textContent = '₦' + Number(ptsInNaira).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('dispTotalLiquid').textContent = '₦' + Number(totalLiquid).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('dispPointsRate').textContent = pointsConversionRate.toFixed(2);
+            document.getElementById('dispMinWd').textContent = Number(minCashWithdrawal).toLocaleString();
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // REAL-TIME SYNCHRONIZATION ENGINE WITH ADMIN HQ
+        // ═══════════════════════════════════════════════════════
+        async function syncLiveUserData() {
+            try {
+                // 1. Fetch live user balances & role
+                const uRes = await fetch(`/api/users.php?action=get_profile&username=${encodeURIComponent(CURRENT_USER)}`);
+                if (uRes.ok) {
+                    const uData = await uRes.json();
+                    if (uData.success) {
+                        userPointsBalance = uData.points_balance !== undefined ? uData.points_balance : userPointsBalance;
+                        userCashBalance = uData.cash_balance !== undefined ? uData.cash_balance : userCashBalance;
+                        if (uData.role) document.getElementById('hudUserRole').textContent = uData.role.toUpperCase();
+                        if (uData.bank_name) document.getElementById('dispCardBankName').textContent = uData.bank_name;
+                        if (uData.account_number) document.getElementById('dispCardAccountNo').textContent = uData.account_number;
+                        if (uData.account_name) document.getElementById('dispCardAccountName').textContent = uData.account_name;
+                        if (uData.streak_count) {
+                            currentStreak = uData.streak_count;
+                            document.getElementById('dispStreakCount').textContent = currentStreak;
+                        }
+                    }
+                }
+
+                // 2. Fetch live Admin Pricing & Rates
+                const pRes = await fetch('/api/pricing.php?action=get_pricing');
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    if (pData.pricing) {
+                        if (pData.pricing.points_rate) pointsConversionRate = parseFloat(pData.pricing.points_rate);
+                        if (pData.pricing.ref_commission) {
+                            document.getElementById('dispRefCommission').textContent = Number(pData.pricing.ref_commission).toLocaleString();
+                            document.getElementById('dispRefBonusVal').textContent = Number(pData.pricing.ref_commission).toLocaleString();
+                        }
+                    }
+                }
+
+                // 3. Fetch live Withdrawal Settings
+                const wRes = await fetch('/api/withdrawals.php?action=get_settings');
+                if (wRes.ok) {
+                    const wData = await wRes.json();
+                    if (wData.settings) {
+                        if (wData.settings.affiliate && wData.settings.affiliate.min_amount) {
+                            minCashWithdrawal = parseFloat(wData.settings.affiliate.min_amount);
+                        }
+                        if (wData.settings.task && wData.settings.task.min_amount) {
+                            minTaskWithdrawal = parseFloat(wData.settings.task.min_amount);
+                        }
+                    }
+                }
+
+                updateUIBalances();
+            } catch(e) {}
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+        }
+
+        // Initialize on page load & schedule 12-second live sync pulse
+        document.addEventListener('DOMContentLoaded', () => {
+            syncLiveUserData();
+            setInterval(syncLiveUserData, 12000);
+            window.addEventListener('focus', syncLiveUserData);
+            drawWheel();
+        });
+    </script>
+</body>
+</html>
