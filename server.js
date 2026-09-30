@@ -1415,7 +1415,7 @@ const server = http.createServer((req, res) => {
                     }
                 }
 
-                if (action === 'get_settings' || req.method === 'GET') {
+                if (action === 'get_settings' || (!action && req.method === 'GET')) {
                     const taskEval = evaluateWalletSchedule(s.task, 'Task Points');
                     const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash');
                     res.end(JSON.stringify({
@@ -1494,12 +1494,156 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                if (action === 'get_requests') {
+                if (action === 'get_requests' || action === 'get_user_withdrawals') {
                     let reqs = [];
                     if (fs.existsSync(reqsFile)) {
                         try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
                     }
+                    if (!Array.isArray(reqs)) reqs = [];
+                    const filterUser = urlObj.searchParams.get('username') || (parsed && parsed.username) || '';
+                    if (filterUser) {
+                        reqs = reqs.filter(r => (r.username || '').toLowerCase() === filterUser.toLowerCase());
+                    }
                     res.end(JSON.stringify({ status: 'success', requests: reqs }));
+                    return;
+                }
+
+                if (action === 'request_withdrawal' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const wallet = (parsed.wallet || 'cash').toLowerCase();
+                    const amount = parseFloat(parsed.amount) || 0;
+
+                    if (!username || amount <= 0) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Valid username and withdrawal amount are required.' }));
+                        return;
+                    }
+
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    let usersData = { users: [] };
+                    if (fs.existsSync(usersFile)) {
+                        try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(usersData.users)) usersData.users = [];
+
+                    const uIdx = usersData.users.findIndex(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (uIdx === -1) {
+                        res.end(JSON.stringify({ status: 'error', message: 'User account not found.' }));
+                        return;
+                    }
+                    const user = usersData.users[uIdx];
+
+                    const targetWallet = (wallet === 'cash' || wallet === 'affiliate') ? 'affiliate' : 'task';
+                    const walletSched = s[targetWallet] || {};
+                    const evalResult = evaluateWalletSchedule(walletSched, targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
+                    if (!evalResult.is_open) {
+                        res.end(JSON.stringify({ status: 'error', message: evalResult.status_text || 'Withdrawals are currently closed for this wallet source.' }));
+                        return;
+                    }
+
+                    const minAmount = parseFloat(walletSched.min_amount) || 1000;
+                    if (amount < minAmount) {
+                        res.end(JSON.stringify({ status: 'error', message: `Minimum withdrawal amount for this wallet is ₦${minAmount.toLocaleString()}.` }));
+                        return;
+                    }
+
+                    let pointsRate = 1.0;
+                    const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                    if (fs.existsSync(pricingFile)) {
+                        try {
+                            const pr = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
+                            if (pr.points_rate) pointsRate = parseFloat(pr.points_rate);
+                        } catch(e){}
+                    }
+
+                    let curCash = parseFloat(user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0));
+                    let curPoints = parseInt(user.remaining_pts !== undefined ? user.remaining_pts : (user.pointsBalance || 0));
+
+                    if (targetWallet === 'affiliate') {
+                        if (curCash < amount) {
+                            res.end(JSON.stringify({ status: 'error', message: `Insufficient cash balance. Available: ₦${curCash.toLocaleString('en-US', {minimumFractionDigits: 2})}` }));
+                            return;
+                        }
+                        curCash -= amount;
+                        user.remaining_cash = curCash;
+                        user.cashBalance = curCash;
+                    } else {
+                        const ptsNeeded = Math.ceil(amount / pointsRate);
+                        if (curPoints < ptsNeeded) {
+                            res.end(JSON.stringify({ status: 'error', message: `Insufficient points balance. Needed: ${ptsNeeded.toLocaleString()} PTS, Available: ${curPoints.toLocaleString()} PTS` }));
+                            return;
+                        }
+                        curPoints -= ptsNeeded;
+                        user.remaining_pts = curPoints;
+                        user.pointsBalance = curPoints;
+                    }
+
+                    const now = new Date();
+                    const txnNum = Math.floor(Math.random() * 899999 + 100000);
+                    const txnId = 'IX-WD-' + txnNum;
+                    const receiptNo = 'REC-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(txnNum).slice(-4);
+                    
+                    const bankName = user.bank_name || 'OPay Digital Services';
+                    const accountNumber = user.account_number || '0801234567';
+                    const accountName = user.account_name || user.full_name || user.username;
+                    
+                    const dateFormatted = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ' WAT';
+                    const secHash = crypto.createHash('sha256').update(txnId + username + amount + now.toISOString()).digest('hex').substring(0, 24).toUpperCase();
+
+                    const receipt = {
+                        id: txnId,
+                        txn_id: txnId,
+                        receipt_no: receiptNo,
+                        username: user.username,
+                        full_name: accountName,
+                        beneficiary_name: accountName,
+                        bank: bankName,
+                        bank_name: bankName,
+                        account: accountNumber,
+                        account_number: accountNumber,
+                        account_name: accountName,
+                        amount: amount,
+                        amount_formatted: '₦' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                        fee: 0,
+                        fee_formatted: '₦0.00 (Zero Fee / Subsidized)',
+                        net_amount: amount,
+                        net_amount_formatted: '₦' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                        wallet_type: targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
+                        service_type: targetWallet,
+                        status: 'Pending',
+                        status_label: 'QUEUED FOR INSTANT SETTLEMENT',
+                        created_at: now.toISOString(),
+                        date_formatted: dateFormatted,
+                        security_hash: secHash,
+                        settlement_channel: 'NIBSS Instant Payment (NIP) / Priority Settlement',
+                        issuer: 'INNOVATIONX FINANCIAL CLEARING'
+                    };
+
+                    let reqs = [];
+                    if (fs.existsSync(reqsFile)) {
+                        try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(reqs)) reqs = [];
+                    reqs.unshift(receipt);
+                    const dataDir = path.dirname(reqsFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+
+                    if (!Array.isArray(user.activity_ledger)) user.activity_ledger = [];
+                    user.activity_ledger.unshift({
+                        time: now.toLocaleDateString('en-GB') + ', ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
+                        type: 'Withdrawal',
+                        desc: `Withdrew ₦${Number(amount).toLocaleString()} to ${bankName} (${accountNumber})`,
+                        receipt: receipt
+                    });
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Withdrawal queued successfully! Sent to Admin HQ queue.',
+                        receipt: receipt,
+                        cash_balance: curCash,
+                        points_balance: curPoints
+                    }));
                     return;
                 }
 

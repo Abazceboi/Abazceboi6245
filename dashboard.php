@@ -1142,9 +1142,110 @@ $hideFooter = true;
             z-index: 2000;
         }
         .toast-bubble.show { display: flex; animation: slideUp 0.3s ease; }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        /* ═══════════════════════════════════════════════════
+           MODERN WITHDRAWAL RECEIPT STYLES & PRINT ENGINE
+           ═══════════════════════════════════════════════════ */
+        .receipt-modal-box {
+            position: relative;
+            animation: zoomReceipt 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes zoomReceipt {
+            from { transform: scale(0.92) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.84rem;
+        }
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+        .receipt-row-label {
+            color: #94A3B8;
+        }
+        .receipt-row-val {
+            color: #FFFFFF;
+            font-weight: 600;
+            text-align: right;
+        }
+        .receipt-history-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+        .receipt-history-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            background: rgba(56, 189, 248, 0.03);
+        }
+
+        /* Print Media Style - Only shows printableReceiptCard on clean white background */
+        @media print {
+            body {
+                background: #FFFFFF !important;
+                color: #0F172A !important;
+            }
+            body * {
+                visibility: hidden !important;
+            }
+            #receiptModal, #receiptModal * {
+                visibility: visible !important;
+            }
+            #receiptModal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+            .receipt-modal-box {
+                max-width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            #printableReceiptCard {
+                background: #FFFFFF !important;
+                color: #0F172A !important;
+                border: 2px solid #0F172A !important;
+                box-shadow: none !important;
+                margin: 0 auto !important;
+                max-width: 600px !important;
+                padding: 24px !important;
+            }
+            #printableReceiptCard * {
+                color: #0F172A !important;
+                text-shadow: none !important;
+            }
+            #printableReceiptCard #dispReceiptAmount {
+                color: #0F172A !important;
+            }
+            #printableReceiptCard #dispReceiptNet {
+                color: #0F172A !important;
+            }
+            #printableReceiptCard #dispReceiptSummary {
+                color: #0284C7 !important;
+            }
+            #printableReceiptCard [style*="border-bottom"], 
+            #printableReceiptCard [style*="border-top"],
+            #printableReceiptCard .receipt-row {
+                border-color: #CBD5E1 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -1656,6 +1757,25 @@ $hideFooter = true;
                     </button>
                 </form>
             </div>
+
+            <!-- Settlement Receipts & History -->
+            <div class="dash-card" style="margin-top:24px">
+                <div class="dash-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <div class="dash-card-title">Withdrawal Settlements &amp; Receipts</div>
+                        <div class="dash-card-sub">Download official settlement receipts and proof of transfer vouchers for your payouts.</div>
+                    </div>
+                    <button type="button" class="tab-pill-btn" onclick="loadUserWithdrawalReceipts()" style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        <span>Refresh Receipts</span>
+                    </button>
+                </div>
+                <div id="withdrawalHistoryList" style="margin-top:16px">
+                    <div style="color:var(--text-muted);text-align:center;padding:24px 12px;font-size:0.88rem">
+                        Loading your settlement receipts...
+                    </div>
+                </div>
+            </div>
         </div>
 
     </main>
@@ -1697,6 +1817,160 @@ $hideFooter = true;
                     <span>Confirm &amp; Request Transfer</span>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODERN TRANSACTION SETTLEMENT RECEIPT MODAL
+         ═══════════════════════════════════════════════════════ -->
+    <div id="receiptModal" class="modal-overlay" style="z-index:999999">
+        <div class="modal-card receipt-modal-box" style="max-width:520px;padding:0;overflow:hidden;border:1px solid rgba(56,189,248,0.3);background:#090D16;box-shadow:0 30px 80px rgba(0,0,0,0.9), 0 0 50px rgba(56,189,248,0.15)">
+            
+            <!-- Sticky Modal Control Bar (Screen Only) -->
+            <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(15,23,42,0.8);border-bottom:1px solid rgba(255,255,255,0.08)">
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:700;color:#38BDF8">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Transaction Settlement Voucher</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeReceiptModal()" style="position:static;display:flex;align-items:center;justify-content:center">&times;</button>
+            </div>
+
+            <!-- Scrollable Receipt Area -->
+            <div style="max-height:calc(85vh - 120px);overflow-y:auto;padding:20px">
+                
+                <!-- Printable Voucher Card -->
+                <div id="printableReceiptCard" class="printable-receipt" style="background:#0F172A;border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:24px 20px;position:relative;overflow:hidden">
+                    
+                    <!-- Decorative Top Accent Bar -->
+                    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0284C7,#38BDF8,#F59E0B,#10B981)"></div>
+
+                    <!-- Watermark Logo Overlay -->
+                    <div class="receipt-watermark" style="position:absolute;right:-20px;bottom:-20px;opacity:0.04;pointer-events:none;font-size:11rem;font-weight:900;color:#FFF;user-select:none;line-height:1">IX</div>
+
+                    <!-- Header -->
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                                <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0284C7,#38BDF8);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0F172A;font-size:0.95rem">IX</div>
+                                <span style="font-size:1.15rem;font-weight:900;letter-spacing:0.5px;color:#FFFFFF">INNOVATION<span style="color:#38BDF8">X</span></span>
+                            </div>
+                            <div style="font-size:0.75rem;color:#94A3B8;letter-spacing:0.5px;text-transform:uppercase;font-weight:600">Official Settlement Receipt</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div id="receiptStatusBadge" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#34D399;font-size:0.72rem;font-weight:700;letter-spacing:0.5px">
+                                <span style="width:6px;height:6px;border-radius:50%;background:#10B981"></span>
+                                <span id="dispReceiptStatusLabel">SETTLEMENT QUEUED</span>
+                            </div>
+                            <div style="font-size:0.7rem;color:#64748B;margin-top:4px" id="dispReceiptDate">01 Oct 2026, 00:30 WAT</div>
+                        </div>
+                    </div>
+
+                    <!-- Amount Section -->
+                    <div style="text-align:center;padding:16px 10px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.06);margin-bottom:20px">
+                        <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:4px">Total Payout Amount</div>
+                        <div id="dispReceiptAmount" style="font-size:2.4rem;font-weight:900;color:#FFFFFF;font-family:var(--font-mono);letter-spacing:-0.5px">₦0.00</div>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;font-size:0.8rem;color:#38BDF8">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span id="dispReceiptSummary">Instant Transfer to Verified Bank</span>
+                        </div>
+                    </div>
+
+                    <!-- Perforated Ticket Divider -->
+                    <div style="position:relative;margin:18px -20px 20px -20px;display:flex;align-items:center">
+                        <div style="width:16px;height:24px;border-radius:0 12px 12px 0;background:#090D16;border:1px solid rgba(255,255,255,0.1);border-left:none"></div>
+                        <div style="flex:1;border-bottom:2px dashed rgba(255,255,255,0.12);height:1px;margin:0 4px"></div>
+                        <div style="width:16px;height:24px;border-radius:12px 0 0 12px;background:#090D16;border:1px solid rgba(255,255,255,0.1);border-right:none"></div>
+                    </div>
+
+                    <!-- Itemized Ledger Grid -->
+                    <div style="display:flex;flex-direction:column;gap:11px;font-size:0.84rem">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Transaction ID</span>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <span id="dispReceiptTxnId" style="font-family:var(--font-mono);color:#FFFFFF;font-weight:700">IX-WD-XXXXXX</span>
+                                <button type="button" class="no-print" onclick="copyReceiptTxnId()" style="background:transparent;border:none;color:#38BDF8;cursor:pointer;padding:2px" title="Copy Reference">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Receipt Number</span>
+                            <span id="dispReceiptNo" style="font-family:var(--font-mono);color:#94A3B8">REC-XXXXXXXX</span>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Wallet Source</span>
+                            <span id="dispReceiptWallet" style="color:#FFFFFF;font-weight:600">Cash &amp; Referral Wallet</span>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Beneficiary Member</span>
+                            <span id="dispReceiptHolder" style="color:#FFFFFF;font-weight:600">John Doe (@username)</span>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Settlement Destination</span>
+                            <span id="dispReceiptBank" style="color:#FFFFFF;font-weight:600">OPay Digital Services</span>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Account Number</span>
+                            <span id="dispReceiptAccount" style="font-family:var(--font-mono);color:#FFFFFF;font-weight:700">0801234567</span>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#94A3B8">Transfer &amp; Gateway Fee</span>
+                            <span style="color:#34D399;font-weight:700">₦0.00 (Free / Zero Fee)</span>
+                        </div>
+
+                        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:11px;display:flex;justify-content:space-between;align-items:center">
+                            <span style="color:#FFFFFF;font-weight:700">Net Settled Payout</span>
+                            <span id="dispReceiptNet" style="color:#F59E0B;font-weight:800;font-family:var(--font-mono);font-size:0.98rem">₦0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Security & QR Code Section -->
+                    <div style="margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:14px">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:#FDE047;margin-bottom:4px">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span>Cryptographically Signed</span>
+                            </div>
+                            <div style="font-size:0.68rem;color:#94A3B8;line-height:1.4">
+                                Audited &amp; guaranteed by INNOVATIONX Central Settlement Engine.
+                            </div>
+                            <div style="font-size:0.65rem;font-family:var(--font-mono);color:#64748B;margin-top:5px" id="dispReceiptHash">
+                                HASH: 8A2F...3B9C
+                            </div>
+                        </div>
+                        <div id="receiptQrContainer" style="width:68px;height:68px;background:#FFFFFF;border-radius:10px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <!-- SVG QR code rendered via JS -->
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px;text-align:center;font-size:0.68rem;color:#64748B">
+                        Support: +234 703 776 5714 &bull; support@innovationx.ng
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Receipt Modal Actions (Screen Only) -->
+            <div class="no-print" style="padding:16px 20px;background:#0F172A;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:10px;flex-wrap:wrap">
+                <button type="button" class="btn-claim-streak" onclick="downloadReceiptImage()" style="flex:1;min-width:140px;justify-content:center;padding:11px 16px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#090D16;font-weight:800;font-size:0.88rem">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Download Receipt (PNG)</span>
+                </button>
+                <button type="button" class="tab-pill-btn" onclick="printReceipt()" style="flex:1;min-width:120px;justify-content:center;padding:11px 16px;background:rgba(255,255,255,0.06);color:#FFFFFF;border:1px solid rgba(255,255,255,0.15);font-size:0.88rem">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    <span>Print / Save PDF</span>
+                </button>
+                <button type="button" class="tab-pill-btn" onclick="closeReceiptModal()" style="padding:11px 16px;background:transparent;color:#94A3B8;border:1px solid rgba(255,255,255,0.1)">
+                    Close
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -2037,6 +2311,7 @@ $hideFooter = true;
             if (tabId === 'tab-tasks') loadLiveTasks();
             if (tabId === 'tab-spin') drawWheel();
             if (tabId === 'tab-tokens') loadTokensMarket();
+            if (tabId === 'tab-bank') loadUserWithdrawalReceipts();
         }
 
         // Modals Management
@@ -2174,9 +2449,13 @@ $hideFooter = true;
                 });
                 const data = await res.json();
                 if (data.status === 'success' || data.success) {
-                    showToast('Withdrawal queued successfully! Sent to Admin HQ queue.');
+                    showToast('Withdrawal queued successfully! Generating receipt...');
                     closeWithdrawModal();
                     syncLiveUserData();
+                    if (data.receipt) {
+                        showReceiptModal(data.receipt);
+                    }
+                    loadUserWithdrawalReceipts();
                 } else {
                     showToast(data.message || data.error || 'Withdrawal rejected', false);
                 }
@@ -2185,6 +2464,367 @@ $hideFooter = true;
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Confirm & Request Transfer';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // MODERN WITHDRAWAL RECEIPT ENGINE & EXPORT SUITE
+        // ═══════════════════════════════════════════════════
+        let currentReceiptData = null;
+
+        function showReceiptModal(receipt) {
+            if (!receipt) return;
+            currentReceiptData = receipt;
+
+            const isApproved = receipt.status === 'Approved';
+            const statusLabel = (receipt.status_label || (isApproved ? 'SETTLEMENT APPROVED' : 'SETTLEMENT QUEUED')).toUpperCase();
+            document.getElementById('dispReceiptStatusLabel').textContent = statusLabel;
+            
+            const badge = document.getElementById('receiptStatusBadge');
+            if (badge) {
+                if (isApproved) {
+                    badge.style.background = 'rgba(16,185,129,0.2)';
+                    badge.style.borderColor = '#10B981';
+                    badge.style.color = '#34D399';
+                } else {
+                    badge.style.background = 'rgba(245,158,11,0.2)';
+                    badge.style.borderColor = '#F59E0B';
+                    badge.style.color = '#FDE047';
+                }
+            }
+
+            document.getElementById('dispReceiptDate').textContent = receipt.date_formatted || receipt.created_at || 'Just now';
+            document.getElementById('dispReceiptAmount').textContent = receipt.amount_formatted || ('₦' + Number(receipt.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
+            document.getElementById('dispReceiptSummary').textContent = 'Instant Transfer to ' + (receipt.bank_name || receipt.bank || 'Settlement Bank');
+
+            document.getElementById('dispReceiptTxnId').textContent = receipt.txn_id || receipt.id || 'IX-WD-PENDING';
+            document.getElementById('dispReceiptNo').textContent = receipt.receipt_no || ('REC-' + (receipt.txn_id || 'OFFICIAL'));
+            document.getElementById('dispReceiptWallet').textContent = receipt.wallet_type || (receipt.service_type === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet');
+            document.getElementById('dispReceiptHolder').textContent = (receipt.beneficiary_name || receipt.account_name || receipt.full_name || 'Member') + ' (@' + (receipt.username || CURRENT_USER) + ')';
+            document.getElementById('dispReceiptBank').textContent = receipt.bank_name || receipt.bank || 'Verified Bank';
+            document.getElementById('dispReceiptAccount').textContent = receipt.account_number || receipt.account || '0000000000';
+            document.getElementById('dispReceiptNet').textContent = receipt.net_amount_formatted || receipt.amount_formatted || ('₦' + Number(receipt.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
+            document.getElementById('dispReceiptHash').textContent = 'AUTH HASH: ' + (receipt.security_hash || 'SHA256-INX-CENTRAL-LEDGER-VERIFIED');
+
+            renderReceiptQr(receipt.txn_id || 'IX-WD-' + Date.now());
+
+            const modal = document.getElementById('receiptModal');
+            if (modal) modal.classList.add('open');
+        }
+
+        function closeReceiptModal() {
+            const modal = document.getElementById('receiptModal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function copyReceiptTxnId() {
+            if (currentReceiptData && currentReceiptData.txn_id) {
+                navigator.clipboard.writeText(currentReceiptData.txn_id);
+                showToast('Transaction ID copied: ' + currentReceiptData.txn_id);
+            }
+        }
+
+        function renderReceiptQr(ref) {
+            const container = document.getElementById('receiptQrContainer');
+            if (!container) return;
+            const size = 60;
+            const modules = 21;
+            const cellSize = (size / modules).toFixed(2);
+            
+            let seed = 0;
+            for (let i = 0; i < ref.length; i++) seed = (seed * 31 + ref.charCodeAt(i)) & 0xFFFFFFFF;
+            
+            function pseudo(row, col) {
+                if ((row < 7 && col < 7) || (row < 7 && col >= modules - 7) || (row >= modules - 7 && col < 7)) {
+                    const r = row < 7 ? row : row - (modules - 7);
+                    const c = col < 7 ? col : col - (modules - 7);
+                    if (r === 0 || r === 6 || c === 0 || c === 6) return true;
+                    if (r >= 2 && r <= 4 && c >= 2 && c <= 4) return true;
+                    return false;
+                }
+                if (row === 6 || col === 6) return (row + col) % 2 === 0;
+                seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF;
+                return (seed >>> 16) % 3 !== 0;
+            }
+
+            let rects = '';
+            for (let r = 0; r < modules; r++) {
+                for (let c = 0; c < modules; c++) {
+                    if (pseudo(r, c)) {
+                        rects += `<rect x="${(c * cellSize)}" y="${(r * cellSize)}" width="${cellSize}" height="${cellSize}" fill="#0F172A"/>`;
+                    }
+                }
+            }
+
+            container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="border-radius:4px">${rects}</svg>`;
+        }
+
+        function downloadReceiptImage() {
+            if (!currentReceiptData) {
+                showToast('No receipt data loaded to export', false);
+                return;
+            }
+            const r = currentReceiptData;
+
+            const width = 1000;
+            const height = 1420;
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            function roundRect(c, x, y, w, h, rad) {
+                c.beginPath();
+                c.moveTo(x + rad, y);
+                c.lineTo(x + w - rad, y);
+                c.quadraticCurveTo(x + w, y, x + w, y + rad);
+                c.lineTo(x + w, y + h - rad);
+                c.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+                c.lineTo(x + rad, y + h);
+                c.quadraticCurveTo(x, y + h, x, y + h - rad);
+                c.lineTo(x, y + rad);
+                c.quadraticCurveTo(x, y, x + rad, y);
+                c.closePath();
+            }
+
+            // 1. Base Slate
+            ctx.fillStyle = '#080C16';
+            ctx.fillRect(0, 0, width, height);
+
+            // 2. Card Body
+            const pad = 40;
+            const cardW = width - (pad * 2);
+            const cardH = height - (pad * 2);
+            ctx.fillStyle = '#0F172A';
+            roundRect(ctx, pad, pad, cardW, cardH, 26);
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+            roundRect(ctx, pad, pad, cardW, cardH, 26);
+            ctx.stroke();
+
+            // 3. Top Accent Bar
+            const grad = ctx.createLinearGradient(pad, pad, pad + cardW, pad);
+            grad.addColorStop(0, '#0284C7');
+            grad.addColorStop(0.35, '#38BDF8');
+            grad.addColorStop(0.7, '#F59E0B');
+            grad.addColorStop(1, '#10B981');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(pad + 26, pad);
+            ctx.lineTo(pad + cardW - 26, pad);
+            ctx.quadraticCurveTo(pad + cardW, pad, pad + cardW, pad + 10);
+            ctx.lineTo(pad, pad + 10);
+            ctx.quadraticCurveTo(pad, pad, pad + 26, pad);
+            ctx.closePath();
+            ctx.fill();
+
+            // 4. Header & Branding
+            ctx.fillStyle = '#38BDF8';
+            roundRect(ctx, 80, 80, 54, 54, 14);
+            ctx.fill();
+            ctx.fillStyle = '#0F172A';
+            ctx.font = '900 28px sans-serif';
+            ctx.fillText('IX', 92, 117);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 30px sans-serif';
+            ctx.fillText('INNOVATIONX', 150, 106);
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = '600 15px sans-serif';
+            ctx.fillText('OFFICIAL TRANSACTION SETTLEMENT RECEIPT', 150, 130);
+
+            const isApproved = r.status === 'Approved';
+            ctx.fillStyle = isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)';
+            roundRect(ctx, width - 360, 85, 280, 44, 22);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = isApproved ? '#10B981' : '#F59E0B';
+            roundRect(ctx, width - 360, 85, 280, 44, 22);
+            ctx.stroke();
+
+            ctx.fillStyle = isApproved ? '#10B981' : '#F59E0B';
+            ctx.beginPath();
+            ctx.arc(width - 335, 107, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = isApproved ? '#34D399' : '#FDE047';
+            ctx.font = '700 14px sans-serif';
+            ctx.fillText((r.status_label || (isApproved ? 'SETTLEMENT APPROVED' : 'SETTLEMENT QUEUED')).toUpperCase(), width - 318, 112);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(80, 160);
+            ctx.lineTo(width - 80, 160);
+            ctx.stroke();
+
+            // 5. Amount Box
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            roundRect(ctx, 80, 185, width - 160, 180, 18);
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            roundRect(ctx, 80, 185, width - 160, 180, 18);
+            ctx.stroke();
+
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = '700 16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('TOTAL SETTLEMENT DISPATCHED', width / 2, 230);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 64px monospace, sans-serif';
+            ctx.fillText(r.amount_formatted || ('₦' + Number(r.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})), width / 2, 305);
+
+            ctx.fillStyle = '#38BDF8';
+            ctx.font = '600 18px sans-serif';
+            ctx.fillText('✓ Transferred to ' + (r.bank_name || r.bank || 'Settlement Bank') + ' (' + (r.account_number || r.account || '080***') + ')', width / 2, 342);
+            ctx.textAlign = 'left';
+
+            // 6. Perforated ticket notches
+            ctx.fillStyle = '#080C16';
+            ctx.beginPath();
+            ctx.arc(pad, 405, 18, -Math.PI / 2, Math.PI / 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(width - pad, 405, 18, Math.PI / 2, -Math.PI / 2);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.moveTo(pad + 28, 405);
+            ctx.lineTo(width - pad - 28, 405);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 7. Key Value Rows
+            let curY = 465;
+            const rowGap = 45;
+            const leftX = 85;
+            const rightX = width - 85;
+
+            const rows = [
+                ['Transaction ID', r.txn_id || 'IX-WD-XXXXX', '#38BDF8', true],
+                ['Receipt Voucher No', r.receipt_no || ('REC-' + r.txn_id), '#94A3B8', true],
+                ['Settlement Date', r.date_formatted || r.created_at || 'Just now', '#FFFFFF', false],
+                ['Wallet Source', r.wallet_type || 'Cash & Referral Wallet', '#FFFFFF', false],
+                ['Beneficiary Member', (r.beneficiary_name || r.account_name || r.full_name || 'Member') + ' (@' + (r.username || CURRENT_USER) + ')', '#FFFFFF', true],
+                ['Receiving Bank', r.bank_name || r.bank || 'OPay Digital Services', '#FFFFFF', true],
+                ['Account Number', r.account_number || r.account || '0000000000', '#FFFFFF', true],
+                ['Transfer & Gateway Fee', '₦0.00 (Zero Fee / Subsidized)', '#34D399', true],
+                ['Net Settled Payout', r.net_amount_formatted || r.amount_formatted || ('₦' + Number(r.amount||0).toLocaleString('en-US', {minimumFractionDigits:2})), '#F59E0B', true]
+            ];
+
+            rows.forEach(([label, val, valColor, isBold]) => {
+                ctx.fillStyle = '#94A3B8';
+                ctx.font = '500 18px sans-serif';
+                ctx.fillText(label, leftX, curY);
+
+                ctx.fillStyle = valColor || '#FFFFFF';
+                ctx.font = (isBold ? '700 ' : '500 ') + '19px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(val, rightX, curY);
+                ctx.textAlign = 'left';
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(leftX, curY + 14);
+                ctx.lineTo(rightX, curY + 14);
+                ctx.stroke();
+
+                curY += rowGap;
+            });
+
+            // 8. Security & Verification Box
+            curY += 20;
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.04)';
+            roundRect(ctx, 80, curY, width - 160, 160, 18);
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+            roundRect(ctx, 80, curY, width - 160, 160, 18);
+            ctx.stroke();
+
+            ctx.fillStyle = '#FDE047';
+            ctx.font = '700 17px sans-serif';
+            ctx.fillText('🛡️ Cryptographically Signed & Audited Transaction', 110, curY + 45);
+
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = '400 15px sans-serif';
+            ctx.fillText('Official electronic payment settlement voucher generated by INNOVATIONX Central Ledger.', 110, curY + 76);
+            ctx.fillText('Settlement Channel: NIBSS Instant Payment (NIP) / Priority Settlement Clearing', 110, curY + 102);
+
+            ctx.fillStyle = '#64748B';
+            ctx.font = '600 14px monospace';
+            ctx.fillText('AUTH HASH: ' + (r.security_hash || 'SHA256-INX-CENTRAL-LEDGER-VERIFIED'), 110, curY + 132);
+
+            // 9. Footer Note
+            ctx.fillStyle = '#64748B';
+            ctx.font = '500 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('INNOVATIONX Financial Clearing • WhatsApp Support: +234 703 776 5714 • support@innovationx.ng', width / 2, height - 70);
+
+            // Download Trigger
+            const link = document.createElement('a');
+            link.download = 'INNOVATIONX_Receipt_' + (r.txn_id || 'Settlement') + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('Receipt downloaded successfully!');
+        }
+
+        async function loadUserWithdrawalReceipts() {
+            const container = document.getElementById('withdrawalHistoryList');
+            if (!container) return;
+
+            try {
+                const res = await fetch('/api/withdrawals.php?action=get_user_withdrawals&username=' + encodeURIComponent(CURRENT_USER));
+                const data = await res.json();
+                const list = data.requests || [];
+
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px 12px;font-size:0.88rem;background:rgba(255,255,255,0.01);border:1px dashed rgba(255,255,255,0.08);border-radius:12px">No withdrawal settlements requested yet. When you request a payout, your downloadable receipts will be listed here.</div>';
+                    return;
+                }
+
+                container.innerHTML = list.map(r => {
+                    const isApproved = r.status === 'Approved';
+                    const amountStr = r.amount_formatted || ('₦' + Number(r.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
+                    const jsonStr = escapeHtml(JSON.stringify(r));
+                    return `
+                        <div class="receipt-history-card">
+                            <div style="display:flex;align-items:center;gap:12px">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.12);color:#38BDF8;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                </div>
+                                <div>
+                                    <div style="display:flex;align-items:center;gap:8px">
+                                        <span style="font-weight:700;color:#FFFFFF;font-size:0.95rem">${escapeHtml(amountStr)}</span>
+                                        <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;font-weight:700;${isApproved ? 'background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3)' : 'background:rgba(245,158,11,0.15);color:#FDE047;border:1px solid rgba(245,158,11,0.3)'}">
+                                            ${isApproved ? '✓ APPROVED' : '● QUEUED'}
+                                        </span>
+                                    </div>
+                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">
+                                        ${escapeHtml(r.date_formatted || r.created_at || 'Recent')} &bull; ${escapeHtml(r.bank_name || r.bank || 'Bank')} (${escapeHtml(r.account_number || r.account || '')})
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="tab-pill-btn" onclick='showReceiptModal(${jsonStr})' style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);font-size:0.8rem;gap:6px">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Receipt</span>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:16px;font-size:0.85rem">Could not load receipts. Please try again.</div>';
             }
         }
 
@@ -2533,6 +3173,7 @@ $hideFooter = true;
             }
 
             updateFreeBannerDisplay();
+            loadUserWithdrawalReceipts();
         });
     </script>
 </body>

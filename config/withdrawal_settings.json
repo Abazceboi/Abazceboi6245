@@ -1,7 +1,7 @@
 {
   "task": {
     "mode": "manual",
-    "manual_status": "closed",
+    "manual_status": "open",
     "manual_closed_message": "Task Points withdrawals are currently closed by administration. Please check back later.",
     "auto_schedule_type": "recurring_days",
     "auto_recurring_days": [
@@ -17,7 +17,7 @@
   },
   "affiliate": {
     "mode": "manual",
-    "manual_status": "closed",
+    "manual_status": "open",
     "manual_closed_message": "Affiliate Cash withdrawals are currently closed by administration. Please check back later.",
     "auto_schedule_type": "recurring_days",
     "auto_recurring_days": [

@@ -251,13 +251,170 @@ if ($action === 'toggle_manual' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Request management
-if ($action === 'get_requests') {
+if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
     $reqs = [];
     if (file_exists($requestsFile)) {
         $raw = @file_get_contents($requestsFile);
         $reqs = json_decode($raw, true) ?: [];
     }
+    $filterUser = $_GET['username'] ?? '';
+    if (!empty($filterUser)) {
+        $reqs = array_values(array_filter($reqs, function($r) use ($filterUser) {
+            return strtolower($r['username'] ?? '') === strtolower($filterUser);
+        }));
+    }
     echo json_encode(['status' => 'success', 'requests' => $reqs]);
+    exit;
+}
+
+if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $username = trim($input['username'] ?? '');
+    $wallet = strtolower($input['wallet'] ?? 'cash');
+    $amount = floatval($input['amount'] ?? 0);
+
+    if (empty($username) || $amount <= 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Valid username and withdrawal amount are required.']);
+        exit;
+    }
+
+    $usersFile = __DIR__ . '/../data/users.json';
+    $usersData = ['users' => []];
+    if (file_exists($usersFile)) {
+        $raw = @file_get_contents($usersFile);
+        $usersData = json_decode($raw, true) ?: ['users' => []];
+    }
+    if (!isset($usersData['users']) || !is_array($usersData['users'])) {
+        $usersData['users'] = [];
+    }
+
+    $uIdx = -1;
+    foreach ($usersData['users'] as $idx => $u) {
+        if (strtolower($u['username'] ?? '') === strtolower($username)) {
+            $uIdx = $idx;
+            break;
+        }
+    }
+
+    if ($uIdx === -1) {
+        echo json_encode(['status' => 'error', 'message' => 'User account not found.']);
+        exit;
+    }
+    $user = &$usersData['users'][$uIdx];
+
+    $targetWallet = ($wallet === 'cash' || $wallet === 'affiliate') ? 'affiliate' : 'task';
+    $walletSched = $settings[$targetWallet] ?? [];
+    $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
+    if (!$evalResult['is_open']) {
+        echo json_encode(['status' => 'error', 'message' => $evalResult['status_text'] ?? 'Withdrawals are currently closed for this wallet source.']);
+        exit;
+    }
+
+    $minAmount = floatval($walletSched['min_amount'] ?? 1000);
+    if ($amount < $minAmount) {
+        echo json_encode(['status' => 'error', 'message' => 'Minimum withdrawal amount for this wallet is ₦' . number_format($minAmount) . '.']);
+        exit;
+    }
+
+    $pointsRate = 1.0;
+    $pricingFile = __DIR__ . '/../config/app_pricing.json';
+    if (file_exists($pricingFile)) {
+        $pr = @json_decode(@file_get_contents($pricingFile), true);
+        if (!empty($pr['points_rate'])) $pointsRate = floatval($pr['points_rate']);
+    }
+
+    $curCash = floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0);
+    $curPoints = intval($user['remaining_pts'] ?? $user['pointsBalance'] ?? 0);
+
+    if ($targetWallet === 'affiliate') {
+        if ($curCash < $amount) {
+            echo json_encode(['status' => 'error', 'message' => 'Insufficient cash balance. Available: ₦' . number_format($curCash, 2)]);
+            exit;
+        }
+        $curCash -= $amount;
+        $user['remaining_cash'] = $curCash;
+        $user['cashBalance'] = $curCash;
+    } else {
+        $ptsNeeded = intval(ceil($amount / $pointsRate));
+        if ($curPoints < $ptsNeeded) {
+            echo json_encode(['status' => 'error', 'message' => 'Insufficient points balance. Needed: ' . number_format($ptsNeeded) . ' PTS, Available: ' . number_format($curPoints) . ' PTS']);
+            exit;
+        }
+        $curPoints -= $ptsNeeded;
+        $user['remaining_pts'] = $curPoints;
+        $user['pointsBalance'] = $curPoints;
+    }
+
+    $now = time();
+    $txnNum = rand(100000, 999999);
+    $txnId = 'IX-WD-' . $txnNum;
+    $receiptNo = 'REC-' . date('Ymd', $now) . '-' . substr($txnNum, -4);
+
+    $bankName = $user['bank_name'] ?? 'OPay Digital Services';
+    $accountNumber = $user['account_number'] ?? '0801234567';
+    $accountName = $user['account_name'] ?? $user['full_name'] ?? $user['username'];
+
+    $dateFormatted = date('d M Y, H:i', $now) . ' WAT';
+    $secHash = strtoupper(substr(hash('sha256', $txnId . $username . $amount . date('c', $now)), 0, 24));
+
+    $receipt = [
+        'id' => $txnId,
+        'txn_id' => $txnId,
+        'receipt_no' => $receiptNo,
+        'username' => $user['username'],
+        'full_name' => $accountName,
+        'beneficiary_name' => $accountName,
+        'bank' => $bankName,
+        'bank_name' => $bankName,
+        'account' => $accountNumber,
+        'account_number' => $accountNumber,
+        'account_name' => $accountName,
+        'amount' => $amount,
+        'amount_formatted' => '₦' . number_format($amount, 2),
+        'fee' => 0,
+        'fee_formatted' => '₦0.00 (Zero Fee / Subsidized)',
+        'net_amount' => $amount,
+        'net_amount_formatted' => '₦' . number_format($amount, 2),
+        'wallet_type' => $targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
+        'service_type' => $targetWallet,
+        'status' => 'Pending',
+        'status_label' => 'QUEUED FOR INSTANT SETTLEMENT',
+        'created_at' => date('Y-m-d H:i:s', $now),
+        'date_formatted' => $dateFormatted,
+        'security_hash' => $secHash,
+        'settlement_channel' => 'NIBSS Instant Payment (NIP) / Priority Settlement',
+        'issuer' => 'INNOVATIONX FINANCIAL CLEARING'
+    ];
+
+    $reqs = [];
+    if (file_exists($requestsFile)) {
+        $raw = @file_get_contents($requestsFile);
+        $reqs = json_decode($raw, true) ?: [];
+    }
+    if (!is_array($reqs)) $reqs = [];
+    array_unshift($reqs, $receipt);
+    if (!is_dir(dirname($requestsFile))) @mkdir(dirname($requestsFile), 0777, true);
+    @file_put_contents($requestsFile, json_encode($reqs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    if (!isset($user['activity_ledger']) || !is_array($user['activity_ledger'])) {
+        $user['activity_ledger'] = [];
+    }
+    array_unshift($user['activity_ledger'], [
+        'time' => date('d/m/Y, H:i', $now),
+        'type' => 'Withdrawal',
+        'desc' => 'Withdrew ₦' . number_format($amount) . ' to ' . $bankName . ' (' . $accountNumber . ')',
+        'receipt' => $receipt
+    ]);
+    unset($user);
+    @file_put_contents($usersFile, json_encode($usersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Withdrawal queued successfully! Sent to Admin HQ queue.',
+        'receipt' => $receipt,
+        'cash_balance' => $curCash,
+        'points_balance' => $curPoints
+    ]);
     exit;
 }
 
