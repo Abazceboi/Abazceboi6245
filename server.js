@@ -395,11 +395,13 @@ const server = http.createServer((req, res) => {
                     }
 
                     const lower = username.toLowerCase();
-                    const adminUsernames = ['admin', 'abas6245', 'abazceboi'];
+                    const adminEnvUser = (process.env.ADMIN_USERNAME || 'admin').toLowerCase();
+                    const adminUsernames = Array.from(new Set(['admin', 'abas6245', 'abazceboi', adminEnvUser]));
                     const isPotentialAdmin = adminUsernames.includes(lower);
                     const adminMasterPass = process.env.ADMIN_PASSWORD || '';
-                    const fallbackAdminPasswords = ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
-                    if (adminMasterPass) fallbackAdminPasswords.push(adminMasterPass);
+                    const fallbackAdminPasswords = adminMasterPass
+                        ? [adminMasterPass]
+                        : ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
 
                     let matched = (usersData.users || []).find(u => 
                         (u.username || '').toLowerCase() === lower || 
@@ -415,15 +417,19 @@ const server = http.createServer((req, res) => {
                         const stored = matched.password || '';
 
                         if (isAdmin) {
-                            if (fallbackAdminPasswords.includes(password) || stored === password) {
-                                authSuccess = true;
+                            if (adminMasterPass) {
+                                authSuccess = (password === adminMasterPass);
+                            } else {
+                                if (fallbackAdminPasswords.includes(password) || stored === password) {
+                                    authSuccess = true;
+                                }
                             }
                         } else {
                             if (stored === password || password === '123456' || password === 'password' || (stored && password.length >= 4) || (!stored && password.length >= 4)) {
                                 authSuccess = true;
                             }
                         }
-                    } else if (isPotentialAdmin && fallbackAdminPasswords.includes(password)) {
+                    } else if (isPotentialAdmin && (adminMasterPass ? password === adminMasterPass : fallbackAdminPasswords.includes(password))) {
                         authSuccess = true;
                         isAdmin = true;
                         const canon = (lower === 'admin') ? 'admin' : (lower === 'abas6245' ? 'Abas6245' : 'Abazceboi');

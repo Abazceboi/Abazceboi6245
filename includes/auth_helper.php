@@ -171,13 +171,17 @@ function authenticateUserCredentials(string $username, string $password): array 
     }
 
     $lowerUser = strtolower($username);
-    $adminUsernames = ['admin', 'abas6245', 'abazceboi'];
+    $adminEnvUser = strtolower(getenv('ADMIN_USERNAME') ?: ($_ENV['ADMIN_USERNAME'] ?? ($_SERVER['ADMIN_USERNAME'] ?? 'admin')));
+    $adminUsernames = array_unique(['admin', 'abas6245', 'abazceboi', $adminEnvUser]);
     $isPotentialAdmin = in_array($lowerUser, $adminUsernames);
-    $adminMasterPass = getenv('ADMIN_PASSWORD') ?: '';
-    $fallbackAdminPasswords = ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
-    if (!empty($adminMasterPass)) {
-        $fallbackAdminPasswords[] = $adminMasterPass;
-    }
+
+    // Retrieve Admin Password from Vercel / Server Environment
+    $adminMasterPass = getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? ($_SERVER['ADMIN_PASSWORD'] ?? ''));
+
+    // If ADMIN_PASSWORD is set on Vercel, ONLY that password is valid (no hardcoded passwords)
+    $fallbackAdminPasswords = !empty($adminMasterPass)
+        ? [$adminMasterPass]
+        : ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
 
     $matchedUser = null;
     $authSuccess = false;
@@ -207,8 +211,12 @@ function authenticateUserCredentials(string $username, string $password): array 
                     }
                 }
 
-                if ($isAdminUser && (in_array($password, $fallbackAdminPasswords) || $passMatches)) {
-                    $authSuccess = true;
+                if ($isAdminUser) {
+                    if (!empty($adminMasterPass)) {
+                        $authSuccess = ($password === $adminMasterPass);
+                    } else {
+                        $authSuccess = (in_array($password, $fallbackAdminPasswords) || $passMatches);
+                    }
                 } elseif ($passMatches || $password === '123456') {
                     $authSuccess = true;
                 }
@@ -380,7 +388,7 @@ function authenticateUserCredentials(string $username, string $password): array 
  * 2-Step Verification Master PIN Validator
  */
 function verifyAdminMasterPin(string $enteredPin): array {
-    $masterPin = getenv('ADMIN_PIN') ?: '9999';
+    $masterPin = getenv('ADMIN_PIN') ?: ($_ENV['ADMIN_PIN'] ?? ($_SERVER['ADMIN_PIN'] ?? '9999'));
     if ($enteredPin !== $masterPin) {
         return ['success' => false, 'status' => 'error', 'message' => 'Invalid security PIN. Access denied.'];
     }
