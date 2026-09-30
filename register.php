@@ -320,14 +320,6 @@ $refFromQuery = $_GET['ref'] ?? '';
                     </div>
 
                     <div class="form-group full">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                            <label for="regPin" style="margin-bottom:0">Activation / Vendor PIN</label>
-                            <a href="vendors.php" style="font-size:0.75rem;color:#7DD3FC;text-decoration:none;font-weight:700">Buy PIN from Vendor &rarr;</a>
-                        </div>
-                        <input type="text" id="regPin" name="pin" class="form-input" value="<?= htmlspecialchars($pinFromQuery) ?>" placeholder="Enter activation coupon PIN" required>
-                    </div>
-
-                    <div class="form-group full">
                         <label for="referralCode">Referral Username (Optional)</label>
                         <input type="text" id="referralCode" name="ref" class="form-input" value="<?= htmlspecialchars($refFromQuery) ?>" placeholder="Referrer username if any">
                     </div>
@@ -341,7 +333,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                 </div>
 
                 <button type="submit" class="btn-register-submit" id="btnSubmitRegister">
-                    <span>Sign Up</span>
+                    <span>Create Free Account</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
             </form>
@@ -375,7 +367,6 @@ $refFromQuery = $_GET['ref'] ?? '';
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
-        const pin = document.getElementById('regPin').value.trim().toUpperCase();
         
         if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
             alert('Username must be 3-20 characters long and contain only letters and numbers.');
@@ -396,24 +387,14 @@ $refFromQuery = $_GET['ref'] ?? '';
             alert('Passwords do not match. Please verify your confirm password.');
             return;
         }
-
-        if (!pin) {
-            alert('Please enter an Activation / Vendor PIN to proceed with registration.');
-            return;
-        }
-
-        if (pin.includes('UPL') || pin.startsWith('IX-UPL-') || pin.startsWith('INX-UPL-')) {
-            alert(`Invalid Code Type!\n\n"${pin}" is an Uploader Accreditation Code. It cannot be used for Member Registration.\n\nPlease purchase or input a Member Activation PIN (e.g. INX-AFF-XXXX-XXXX).`);
-            return;
-        }
         
         btn.disabled = true;
-        btn.innerHTML = `<span>Activating Account & Verifying PIN...</span>`;
+        btn.innerHTML = `<span>Creating your account...</span>`;
 
         const fullName = document.getElementById('fullName').value.trim();
         const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
 
-        // Register via real backend API with PIN verification
+        // Register without requiring coupon PIN
         fetch('api/auth.php?action=register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -423,7 +404,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                 email: email,
                 phone: phone,
                 password: password,
-                pin: pin,
+                pin: '',
                 ref: refCode
             })
         })
@@ -438,8 +419,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                     sessionStorage.setItem('ix_user', data.username);
                 } catch(e) {}
                 
-                alert(`Account Activated!\n\nWelcome @${data.username}. Your membership has been activated successfully.\nYour referral link is ready, and you can withdraw earnings directly to your bank.`);
-                window.location.replace('dashboard.php');
+                window.location.replace('dashboard.php?new_reg=1');
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;

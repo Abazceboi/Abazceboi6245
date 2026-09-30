@@ -44,6 +44,8 @@ $accountNumber = '0801234567';
 $accountName = $userFullName;
 $streakCount = 1;
 $referralCode = 'REF-' . strtoupper(substr(md5($username), 0, 6));
+$isActivated = in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor']);
+$welcomeShown = false;
 
 // Fast read from data/users.json
 $usersJsonFile = __DIR__ . '/data/users.json';
@@ -63,6 +65,8 @@ if (file_exists($usersJsonFile)) {
             if (!empty($ju['account_name'])) $accountName = $ju['account_name'];
             if (!empty($ju['referral_code'])) $referralCode = $ju['referral_code'];
             if (!empty($ju['streak_count'])) $streakCount = intval($ju['streak_count']);
+            if (!empty($ju['is_activated']) || !empty($ju['coupon_activated'])) $isActivated = true;
+            if (!empty($ju['welcome_shown'])) $welcomeShown = true;
             break;
         }
     }
@@ -1209,6 +1213,19 @@ $hideFooter = true;
             </div>
         </div>
 
+        <!-- Free Mode Restriction Alert Banner -->
+        <div id="freeModeBanner" style="display:none;background:linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(2, 132, 199, 0.15));border:1px solid rgba(245, 158, 11, 0.35);padding:12px 18px;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:1.35rem">⚡</span>
+                <span id="freeModeBannerText" style="font-size:0.86rem;color:#FDE047">
+                    <strong>Free Mode Active:</strong> Only Airtime &amp; Data is unlocked. Enter your coupon code to unlock earning tasks, lucky wheel, and bank withdrawals.
+                </span>
+            </div>
+            <button type="button" onclick="promptActivationModal('Enter your coupon PIN to unlock all platform features.')" style="background:linear-gradient(135deg, #D97706, #F59E0B);color:#FFFFFF;font-weight:700;font-size:0.8rem;padding:7px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 12px rgba(245,158,11,0.3)">
+                Enter Coupon Code 🔑
+            </button>
+        </div>
+
         <!-- ═══════════════════════════════════════════════════════
              HERO DECK: LIVE WALLETS & RETAINED PLATINUM BANK CARD
              ═══════════════════════════════════════════════════════ -->
@@ -1743,6 +1760,68 @@ $hideFooter = true;
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         POPUP 1: ONE-TIME ONBOARDING WELCOME MODAL
+         ═══════════════════════════════════════════════════════ -->
+    <div id="welcomeModal" class="modal-overlay" style="z-index:99998">
+        <div class="modal-card" style="max-width:460px;text-align:center;position:relative;border:1px solid rgba(56,189,248,0.3);box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(56,189,248,0.15)">
+            <div style="width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFF;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 16px;box-shadow:0 8px 24px rgba(56,189,248,0.35)">🚀</div>
+            <div class="dash-card-title" style="font-size:1.4rem;margin-bottom:6px;color:#FFFFFF">Welcome to INNOVATIONX!</div>
+            <div class="dash-card-sub" style="margin-bottom:18px;font-size:0.92rem;color:#7DD3FC;font-weight:600">Your Member Account Is Live, @<?= htmlspecialchars($username) ?></div>
+            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:24px">
+                Welcome to the high-yield daily earnings and digital services platform. Explore your personal dashboard, track your cash and points wallets, and access instant VTU telecoms recharges.
+            </p>
+            <button type="button" class="btn-claim-streak" style="width:100%;justify-content:center;padding:14px;font-size:0.95rem" onclick="proceedFromWelcomeToActivation()">
+                <span>Continue &rarr;</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         POPUP 2: COUPON ACTIVATION MODAL (STRICT OR DISMISSIBLE)
+         ═══════════════════════════════════════════════════════ -->
+    <div id="couponActivationModal" class="modal-overlay" style="z-index:99999">
+        <div class="modal-card" style="max-width:480px;position:relative;border:1px solid rgba(245,158,11,0.35);box-shadow:0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(245,158,11,0.2)">
+            
+            <!-- Checkmark / Dismiss Button (Active or Void depending on Admin Strict Setting) -->
+            <button type="button" id="modalDismissCheckBtn" class="modal-close-btn" onclick="dismissActivationModal()" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);color:#94A3B8;font-size:1.1rem;border:1px solid rgba(255,255,255,0.12);cursor:pointer;transition:all 0.2s" title="Continue in Free Mode">
+                ✓
+            </button>
+
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,0.15);color:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🔑</div>
+                <div>
+                    <div class="dash-card-title" style="font-size:1.25rem;color:#FFFFFF" id="actModalTitle">Activate Full Membership</div>
+                    <div class="dash-card-sub" id="actModalSub">Unlock tasks, spin wheel, OTC tokens &amp; cash withdrawals</div>
+                </div>
+            </div>
+
+            <div id="actModalNotice" style="padding:10px 14px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:#FDE047;font-size:0.82rem;line-height:1.5;margin-bottom:18px">
+                Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.
+            </div>
+
+            <form onsubmit="submitCouponActivation(event)" style="display:flex;flex-direction:column;gap:14px">
+                <div class="form-group" style="margin:0">
+                    <label class="form-label" style="display:block;margin-bottom:6px;font-size:0.8rem;font-weight:700;color:#94A3B8">Activation Coupon Code / PIN</label>
+                    <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" required style="font-family:var(--font-mono);font-size:1.05rem;letter-spacing:1px;text-transform:uppercase;text-align:center">
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem">
+                    <span style="color:var(--text-muted)">Need an activation code?</span>
+                    <a href="vendors.php" target="_blank" style="color:#7DD3FC;text-decoration:none;font-weight:700">Buy PIN from Verified Vendor &rarr;</a>
+                </div>
+
+                <button type="submit" id="btnSubmitActivation" class="btn-claim-streak" style="width:100%;justify-content:center;padding:12px 18px;font-size:0.92rem;background:linear-gradient(135deg,#D97706,#F59E0B);color:#FFF">
+                    <span>Activate Account Now</span>
+                </button>
+
+                <button type="button" id="btnFreeModeAction" onclick="dismissActivationModal()" style="background:transparent;border:1px solid var(--border-subtle);color:var(--text-muted);padding:10px;border-radius:8px;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+                    <span>✓ Continue in Free Airtime &amp; Data Mode</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Bubble -->
     <div id="toastBubble" class="toast-bubble">
         <span id="toastIcon">✓</span>
@@ -1754,12 +1833,144 @@ $hideFooter = true;
          ═══════════════════════════════════════════════════════ -->
     <script>
         const CURRENT_USER = <?= json_encode($username) ?>;
+        let isUserActivated = <?= json_encode($isActivated) ?>;
+        let welcomeAlreadyShown = <?= json_encode($welcomeShown) ?>;
         let userPointsBalance = <?= intval($userPoints) ?>;
         let userCashBalance = <?= floatval($userCash) ?>;
         let pointsConversionRate = <?= floatval($ptsRate) ?>;
         let minCashWithdrawal = <?= floatval($minCashWd) ?>;
         let minTaskWithdrawal = <?= floatval($minTaskWd) ?>;
         let currentStreak = <?= intval($streakCount) ?>;
+
+        let couponGatingRules = {
+            strict_modal_lock: false,
+            allow_modal_dismiss: true,
+            features: {
+                vtu_telecoms: false,
+                tasks_gigs: true,
+                spin_wheel: true,
+                otc_tokens: true,
+                refer_earn: true,
+                withdrawals: true,
+                streak_bonus: true
+            }
+        };
+
+        function checkFeatureAccess(featureKey) {
+            if (isUserActivated) return true;
+            if (!couponGatingRules || !couponGatingRules.features) return true;
+            return couponGatingRules.features[featureKey] !== true;
+        }
+
+        function promptActivationModal(msg = '', title = 'Activate Full Membership') {
+            const modal = document.getElementById('couponActivationModal');
+            if (!modal) return;
+            if (msg) document.getElementById('actModalNotice').innerHTML = msg;
+            if (title) document.getElementById('actModalTitle').textContent = title;
+            applyStrictModalLockUI();
+            modal.classList.add('open');
+        }
+
+        function applyStrictModalLockUI() {
+            const isStrict = Boolean(couponGatingRules.strict_modal_lock);
+            const checkBtn = document.getElementById('modalDismissCheckBtn');
+            const freeBtn = document.getElementById('btnFreeModeAction');
+            if (isStrict) {
+                if (checkBtn) {
+                    checkBtn.style.opacity = '0.25';
+                    checkBtn.style.cursor = 'not-allowed';
+                    checkBtn.title = 'Activation code strictly required by Admin';
+                    checkBtn.onclick = () => alert('Activation code is strictly required to access the platform. Please enter your coupon PIN.');
+                }
+                if (freeBtn) freeBtn.style.display = 'none';
+            } else {
+                if (checkBtn) {
+                    checkBtn.style.opacity = '1';
+                    checkBtn.style.cursor = 'pointer';
+                    checkBtn.title = 'Continue in Free Mode';
+                    checkBtn.onclick = dismissActivationModal;
+                }
+                if (freeBtn) freeBtn.style.display = 'flex';
+            }
+        }
+
+        function dismissActivationModal() {
+            if (couponGatingRules.strict_modal_lock) {
+                alert('Activation code is strictly required by Admin. Please input your code to proceed.');
+                return;
+            }
+            document.getElementById('couponActivationModal').classList.remove('open');
+            if (checkFeatureAccess('vtu_telecoms')) {
+                switchTab('tab-vtu');
+            }
+            updateFreeBannerDisplay();
+        }
+
+        function proceedFromWelcomeToActivation() {
+            document.getElementById('welcomeModal').classList.remove('open');
+            localStorage.setItem('ix_welcome_seen_' + CURRENT_USER, '1');
+            welcomeAlreadyShown = true;
+            if (!isUserActivated) {
+                setTimeout(() => {
+                    promptActivationModal();
+                }, 200);
+            }
+        }
+
+        function updateFreeBannerDisplay() {
+            const banner = document.getElementById('freeModeBanner');
+            if (!banner) return;
+            if (isUserActivated) {
+                banner.style.display = 'none';
+            } else {
+                banner.style.display = 'flex';
+                const vtuFree = checkFeatureAccess('vtu_telecoms');
+                const bannerText = document.getElementById('freeModeBannerText');
+                if (bannerText) {
+                    if (vtuFree) {
+                        bannerText.innerHTML = '<strong>Free Mode Active:</strong> Only Airtime &amp; Data is unlocked. Enter your coupon code to unlock earning tasks, lucky wheel, and bank withdrawals.';
+                    } else {
+                        bannerText.innerHTML = '<strong>Activation Required:</strong> All features including Airtime &amp; Data are locked. Please enter your activation coupon code.';
+                    }
+                }
+            }
+        }
+
+        async function submitCouponActivation(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitActivation');
+            const pin = document.getElementById('activationPinInput').value.trim().toUpperCase();
+            if (!pin) {
+                alert('Please enter an activation coupon PIN.');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span>Verifying Code...</span>';
+
+            try {
+                const res = await fetch('/api/auth.php?action=activate_coupon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin, username: CURRENT_USER })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    isUserActivated = true;
+                    document.getElementById('couponActivationModal').classList.remove('open');
+                    showToast('Account Activated! All features are now unlocked. Welcome!');
+                    updateFreeBannerDisplay();
+                    syncLiveUserData();
+                } else {
+                    alert(data.message || 'Invalid activation code.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Activate Account Now</span>';
+                }
+            } catch(err) {
+                alert('Network error. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Activate Account Now</span>';
+            }
+        }
 
         // Toast Helper
         function showToast(msg, isSuccess = true) {
@@ -1782,8 +1993,24 @@ $hideFooter = true;
             localStorage.setItem('ix_theme', next);
         }
 
-        // Tab Switching
+        // Tab Switching with Gating Interception
         function switchTab(tabId) {
+            const tabFeatureMap = {
+                'tab-vtu': 'vtu_telecoms',
+                'tab-tasks': 'tasks_gigs',
+                'tab-spin': 'spin_wheel',
+                'tab-tokens': 'otc_tokens',
+                'tab-referrals': 'refer_earn',
+                'tab-bank': 'withdrawals'
+            };
+
+            const featKey = tabFeatureMap[tabId];
+            if (featKey && !checkFeatureAccess(featKey)) {
+                const tabTitle = document.querySelector(`[onclick="switchTab('${tabId}')"] span`)?.textContent || 'This feature';
+                promptActivationModal(`<strong>${escapeHtml(tabTitle)}</strong> requires full membership activation. Enter your coupon code below to unlock all features immediately.`);
+                return;
+            }
+
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-pill-btn').forEach(el => el.classList.remove('active'));
             const targetPane = document.getElementById(tabId);
@@ -1797,7 +2024,13 @@ $hideFooter = true;
         }
 
         // Modals Management
-        function openWithdrawModal() { document.getElementById('withdrawModal').classList.add('open'); }
+        function openWithdrawModal() {
+            if (!checkFeatureAccess('withdrawals')) {
+                promptActivationModal('Bank payouts require full membership activation. Enter your coupon code below to unlock instant withdrawals.');
+                return;
+            }
+            document.getElementById('withdrawModal').classList.add('open');
+        }
         function closeWithdrawModal() { document.getElementById('withdrawModal').classList.remove('open'); }
         function openBankModal() { document.getElementById('bankModal').classList.add('open'); }
         function closeBankModal() { document.getElementById('bankModal').classList.remove('open'); }
@@ -1882,6 +2115,10 @@ $hideFooter = true;
 
         // Daily Streak Claim
         async function claimDailyStreak() {
+            if (!checkFeatureAccess('streak_bonus')) {
+                promptActivationModal('Daily streak rewards require full membership activation. Enter your coupon code to unlock your streak bonus.');
+                return;
+            }
             try {
                 const res = await fetch('/api/users.php?action=claim_daily_streak', {
                     method: 'POST',
@@ -2191,6 +2428,10 @@ $hideFooter = true;
                             currentStreak = uData.streak_count;
                             document.getElementById('dispStreakCount').textContent = currentStreak;
                         }
+                        if (uData.user && uData.user.is_activated !== undefined) {
+                            isUserActivated = Boolean(uData.user.is_activated || uData.user.coupon_activated || ['admin', 'super_admin', 'uploader', 'vendor'].includes(uData.role));
+                            updateFreeBannerDisplay();
+                        }
                     }
                 }
 
@@ -2221,6 +2462,19 @@ $hideFooter = true;
                     }
                 }
 
+                // 4. Fetch live Coupon Gating Rules from Admin
+                try {
+                    const cRes = await fetch('/api/features.php?action=get_coupon_rules');
+                    if (cRes.ok) {
+                        const cData = await cRes.json();
+                        if (cData.rules) {
+                            couponGatingRules = cData.rules;
+                            applyStrictModalLockUI();
+                            updateFreeBannerDisplay();
+                        }
+                    }
+                } catch(e) {}
+
                 updateUIBalances();
             } catch(e) {}
         }
@@ -2230,12 +2484,28 @@ $hideFooter = true;
             return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
         }
 
-        // Initialize on page load & schedule 12-second live sync pulse
+        // Initialize on page load & schedule 10-second live sync pulse
         document.addEventListener('DOMContentLoaded', () => {
             syncLiveUserData();
-            setInterval(syncLiveUserData, 12000);
+            setInterval(syncLiveUserData, 10000);
             window.addEventListener('focus', syncLiveUserData);
             drawWheel();
+
+            // Onboarding Sequenced Popups
+            const urlParams = new URLSearchParams(window.location.search);
+            const isNewReg = urlParams.get('new_reg') === '1';
+            const welcomeStored = localStorage.getItem('ix_welcome_seen_' + CURRENT_USER);
+
+            if (!welcomeAlreadyShown && (!welcomeStored || isNewReg)) {
+                // Show Welcome Modal First
+                const wModal = document.getElementById('welcomeModal');
+                if (wModal) wModal.classList.add('open');
+            } else if (!isUserActivated) {
+                // Welcome was already seen, prompt activation
+                promptActivationModal();
+            }
+
+            updateFreeBannerDisplay();
         });
     </script>
 </body>

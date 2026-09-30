@@ -1,0 +1,35 @@
+[
+  {
+    "tx_ref": "IX-DAT-890223",
+    "provider_ref": "PB-DAT-401779",
+    "username": "user_muopvtor",
+    "type": "data",
+    "network": "AIRTEL",
+    "phone": "08098765432",
+    "plan": "1GB",
+    "amount_charged_naira": 260,
+    "amount_charged_points": 260,
+    "points_exchange_rate": 1,
+    "pay_source": "cash",
+    "provider": "omageneraldata",
+    "delivery_status": "Delivered",
+    "created_at": "2026-09-30T23:09:03.718Z"
+  },
+  {
+    "tx_ref": "IX-AIR-863297",
+    "provider_ref": "PB-377153",
+    "username": "user_muopvtor",
+    "type": "airtime",
+    "network": "MTN",
+    "phone": "08098765432",
+    "face_amount": 200,
+    "selling_rate_percent": 97,
+    "amount_charged_naira": 194,
+    "amount_charged_points": 194,
+    "points_exchange_rate": 1,
+    "pay_source": "cash",
+    "provider": "omageneraldata",
+    "delivery_status": "Delivered",
+    "created_at": "2026-09-30T23:09:03.706Z"
+  }
+]

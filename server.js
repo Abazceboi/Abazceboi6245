@@ -110,6 +110,8 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, Number(context.ptsRate || 1.0).toFixed(2));
     content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, Number(context.minCashWd || 5000).toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$streakCount\s*\?>/g, String(context.streakCount || 1));
+    content = content.replace(/<\?=\s*json_encode\(\$isActivated\)\s*\?>/g, JSON.stringify(Boolean(context.isActivated)));
+    content = content.replace(/<\?=\s*json_encode\(\$welcomeShown\)\s*\?>/g, JSON.stringify(Boolean(context.welcomeShown)));
     content = content.replace(/<\?=\s*htmlspecialchars\(\$loginError\s*\?\?\s*''\)\s*\?>/g, context.loginError || '');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pinFromQuery\)\s*\?>/g, '');
 
@@ -538,12 +540,13 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
-                    // Coupon check
+                    // Optional Coupon check
                     let coupons = [];
                     if (fs.existsSync(couponsFile)) {
                         try { coupons = JSON.parse(fs.readFileSync(couponsFile, 'utf8')); } catch(e){}
                     }
-                    if (Array.isArray(coupons)) {
+                    let isActivated = false;
+                    if (pin && Array.isArray(coupons)) {
                         const targetPin = coupons.find(c => (c.code || '').toUpperCase() === pin);
                         if (!targetPin) {
                             res.end(JSON.stringify({ status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a valid PIN from our verified vendors.` }));
@@ -559,6 +562,7 @@ const server = http.createServer((req, res) => {
                         targetPin.usedBy = username;
                         targetPin.used_at = new Date().toISOString();
                         fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+                        isActivated = true;
                     }
 
                     const newUserId = 'USR-' + Date.now().toString(36).toUpperCase();
@@ -570,13 +574,15 @@ const server = http.createServer((req, res) => {
                         phone: phone,
                         password: password,
                         role: 'member',
-                        role_label: 'Active Member',
+                        role_label: isActivated ? 'Active Member' : 'Free Member',
+                        is_activated: isActivated,
+                        welcome_shown: false,
                         remaining_cash: 0.00,
-                        remaining_pts: 100,
+                        remaining_pts: isActivated ? 100 : 0,
                         total_earned: 0.00,
                         referral_code: 'REF-' + Math.floor(Math.random() * 900000 + 100000),
                         referred_by: ref,
-                        coupon_pin_used: pin,
+                        coupon_pin_used: isActivated ? pin : '',
                         status: 'active',
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
@@ -588,14 +594,65 @@ const server = http.createServer((req, res) => {
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
 
                     const cookieVal = createSessionCookie(newUserId, username, false, email, phone, fullName, 'member');
-                    res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; HttpOnly; SameSite=Lax`);
+                    res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`);
                     res.end(JSON.stringify({
                         status: 'success',
                         username: username,
                         email: email,
                         phone: phone,
                         fullName: fullName,
-                        message: 'Account successfully registered and coupon code redeemed.'
+                        is_activated: isActivated,
+                        message: isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to INNOVATIONX.'
+                    }));
+                    return;
+                }
+
+                if (action === 'activate_coupon' && req.method === 'POST') {
+                    const pin = (parsed.pin || '').trim().toUpperCase();
+                    const user = parseSessionCookie(req);
+                    const username = (parsed.username || (user ? user.username : '')).trim();
+
+                    if (!pin) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Please enter an activation coupon PIN.' }));
+                        return;
+                    }
+
+                    let coupons = [];
+                    if (fs.existsSync(couponsFile)) {
+                        try { coupons = JSON.parse(fs.readFileSync(couponsFile, 'utf8')); } catch(e){}
+                    }
+                    const targetPin = coupons.find(c => (c.code || '').toUpperCase() === pin);
+                    if (!targetPin) {
+                        res.end(JSON.stringify({ status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a valid PIN from our verified vendors.` }));
+                        return;
+                    }
+                    if (targetPin.is_used || targetPin.isUsed) {
+                        res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again.` }));
+                        return;
+                    }
+
+                    targetPin.is_used = true;
+                    targetPin.isUsed = true;
+                    targetPin.used_by = username;
+                    targetPin.usedBy = username;
+                    targetPin.used_at = new Date().toISOString();
+                    fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    const userRecord = (usersData.users || []).find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (userRecord) {
+                        userRecord.is_activated = true;
+                        userRecord.coupon_activated = true;
+                        userRecord.coupon_pin_used = pin;
+                        userRecord.role_label = 'Active Member';
+                        userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
+                        userRecord.pointsBalance = userRecord.remaining_pts;
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    }
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Account successfully activated! All features are now unlocked.',
+                        is_activated: true
                     }));
                     return;
                 }
@@ -738,8 +795,9 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            if (cleanUrl.includes('features.php') || action === 'get_flags' || action === 'save_flags') {
+            if (cleanUrl.includes('features.php') || action === 'get_flags' || action === 'save_flags' || action === 'get_coupon_rules' || action === 'save_coupon_rules') {
                 const flagsFile = path.join(PUBLIC_DIR, 'config', 'feature_flags.json');
+                const accessRulesFile = path.join(PUBLIC_DIR, 'config', 'feature_access.json');
                 let flags = {
                     jobbers_tasks: true,
                     advertisements: true,
@@ -756,6 +814,47 @@ const server = http.createServer((req, res) => {
                     try { flags = Object.assign(flags, JSON.parse(fs.readFileSync(flagsFile, 'utf8'))); } catch(e){}
                 }
 
+                let accessRules = {
+                    strict_modal_lock: false,
+                    allow_modal_dismiss: true,
+                    features: {
+                        vtu_telecoms: false,
+                        tasks_gigs: true,
+                        spin_wheel: true,
+                        otc_tokens: true,
+                        refer_earn: true,
+                        withdrawals: true,
+                        streak_bonus: true
+                    }
+                };
+                if (fs.existsSync(accessRulesFile)) {
+                    try { accessRules = Object.assign(accessRules, JSON.parse(fs.readFileSync(accessRulesFile, 'utf8'))); } catch(e){}
+                }
+
+                if (action === 'get_coupon_rules') {
+                    res.end(JSON.stringify({ status: 'success', rules: accessRules }));
+                    return;
+                }
+
+                if (action === 'save_coupon_rules' && req.method === 'POST') {
+                    if (parsed.strict_modal_lock !== undefined) {
+                        accessRules.strict_modal_lock = Boolean(parsed.strict_modal_lock);
+                        accessRules.allow_modal_dismiss = !accessRules.strict_modal_lock;
+                    }
+                    if (parsed.allow_modal_dismiss !== undefined) {
+                        accessRules.allow_modal_dismiss = Boolean(parsed.allow_modal_dismiss);
+                        accessRules.strict_modal_lock = !accessRules.allow_modal_dismiss;
+                    }
+                    if (parsed.features && typeof parsed.features === 'object') {
+                        accessRules.features = Object.assign(accessRules.features || {}, parsed.features);
+                    }
+                    const configDir = path.dirname(accessRulesFile);
+                    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+                    fs.writeFileSync(accessRulesFile, JSON.stringify(accessRules, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Coupon gating access rules saved successfully.', rules: accessRules }));
+                    return;
+                }
+
                 if (req.method === 'POST' || action === 'save_flags') {
                     flags = Object.assign(flags, parsed);
                     const configDir = path.dirname(flagsFile);
@@ -765,7 +864,7 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                res.end(JSON.stringify({ status: 'success', flags: flags }));
+                res.end(JSON.stringify({ status: 'success', flags: flags, coupon_rules: accessRules }));
                 return;
             }
 
@@ -2456,23 +2555,71 @@ const server = http.createServer((req, res) => {
 
                 const txRef = 'IX-AIR-' + Math.floor(Math.random() * 900000 + 100000);
 
+                const user = parseSessionCookie(req);
+                const username = parsed.username || (user ? user.username : '');
+                const txData = {
+                    tx_ref: txRef,
+                    provider_ref: 'PB-' + Math.floor(Math.random() * 900000 + 100000),
+                    username: username || 'Guest',
+                    type: 'airtime',
+                    network: network.toUpperCase(),
+                    phone: phone,
+                    face_amount: faceAmount,
+                    selling_rate_percent: sellingRate,
+                    amount_charged_naira: amountChargedNaira,
+                    amount_charged_points: amountChargedPoints,
+                    points_exchange_rate: pointsRate,
+                    pay_source: parsed.pay_source || 'points',
+                    provider: (vtuConfig.provider_name || 'PrimeBiller'),
+                    delivery_status: 'Delivered',
+                    created_at: new Date().toISOString()
+                };
+
+                // Deduct balance and record in user ledger
+                if (username) {
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    if (fs.existsSync(usersFile)) {
+                        try {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const uList = uData.users || (Array.isArray(uData) ? uData : []);
+                            const uMatch = uList.find(x => (x.username || '').toLowerCase() === username.toLowerCase());
+                            if (uMatch) {
+                                if (parsed.pay_source === 'cash') {
+                                    uMatch.remaining_cash = Math.max(0, (uMatch.remaining_cash || 0) - amountChargedNaira);
+                                    uMatch.cashBalance = uMatch.remaining_cash;
+                                } else {
+                                    uMatch.remaining_pts = Math.max(0, (uMatch.remaining_pts || 0) - amountChargedPoints);
+                                    uMatch.pointsBalance = uMatch.remaining_pts;
+                                }
+                                if (!uMatch.activity_ledger) uMatch.activity_ledger = [];
+                                uMatch.activity_ledger.unshift({
+                                    time: new Date().toLocaleString(),
+                                    type: 'VTU Recharge',
+                                    desc: `Recharged ₦${faceAmount} ${network.toUpperCase()} Airtime to ${phone}`
+                                });
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e) {}
+                    }
+                }
+
+                // Log to data/vtu_transactions.json
+                try {
+                    const txFile = path.join(PUBLIC_DIR, 'data', 'vtu_transactions.json');
+                    let allTx = [];
+                    if (fs.existsSync(txFile)) {
+                        try { allTx = JSON.parse(fs.readFileSync(txFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(allTx)) allTx = [];
+                    allTx.unshift(txData);
+                    if (allTx.length > 500) allTx = allTx.slice(0, 500);
+                    fs.writeFileSync(txFile, JSON.stringify(allTx, null, 2));
+                } catch(e) {}
+
                 res.end(JSON.stringify({
                     status: 'success',
                     message: `Airtime recharge of ₦${faceAmount.toLocaleString()} to ${phone} was successful!`,
-                    transaction: {
-                        tx_ref: txRef,
-                        provider_ref: 'PB-' + Math.floor(Math.random() * 900000 + 100000),
-                        network: network.toUpperCase(),
-                        phone: phone,
-                        face_amount: faceAmount,
-                        selling_rate_percent: sellingRate,
-                        amount_charged_naira: amountChargedNaira,
-                        amount_charged_points: amountChargedPoints,
-                        points_exchange_rate: pointsRate,
-                        pay_source: parsed.pay_source || 'points',
-                        delivery_status: 'Delivered',
-                        created_at: new Date().toISOString()
-                    }
+                    transaction: txData
                 }));
                 return;
             }
@@ -2494,22 +2641,70 @@ const server = http.createServer((req, res) => {
                 const amountPoints = Math.round(amountNaira * pointsRate);
                 const txRef = 'IX-DAT-' + Math.floor(Math.random() * 900000 + 100000);
 
+                const user = parseSessionCookie(req);
+                const username = parsed.username || (user ? user.username : '');
+                const txData = {
+                    tx_ref: txRef,
+                    provider_ref: 'PB-DAT-' + Math.floor(Math.random() * 900000 + 100000),
+                    username: username || 'Guest',
+                    type: 'data',
+                    network: network.toUpperCase(),
+                    phone: phone,
+                    plan: plan,
+                    amount_charged_naira: amountNaira,
+                    amount_charged_points: amountPoints,
+                    points_exchange_rate: pointsRate,
+                    pay_source: parsed.pay_source || 'points',
+                    provider: (vtuConfig.provider_name || 'PrimeBiller'),
+                    delivery_status: 'Delivered',
+                    created_at: new Date().toISOString()
+                };
+
+                // Deduct balance and record in user ledger
+                if (username) {
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    if (fs.existsSync(usersFile)) {
+                        try {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const uList = uData.users || (Array.isArray(uData) ? uData : []);
+                            const uMatch = uList.find(x => (x.username || '').toLowerCase() === username.toLowerCase());
+                            if (uMatch) {
+                                if (parsed.pay_source === 'cash') {
+                                    uMatch.remaining_cash = Math.max(0, (uMatch.remaining_cash || 0) - amountNaira);
+                                    uMatch.cashBalance = uMatch.remaining_cash;
+                                } else {
+                                    uMatch.remaining_pts = Math.max(0, (uMatch.remaining_pts || 0) - amountPoints);
+                                    uMatch.pointsBalance = uMatch.remaining_pts;
+                                }
+                                if (!uMatch.activity_ledger) uMatch.activity_ledger = [];
+                                uMatch.activity_ledger.unshift({
+                                    time: new Date().toLocaleString(),
+                                    type: 'VTU Recharge',
+                                    desc: `Recharged ${network.toUpperCase()} ${plan} Data to ${phone}`
+                                });
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e) {}
+                    }
+                }
+
+                // Log to data/vtu_transactions.json
+                try {
+                    const txFile = path.join(PUBLIC_DIR, 'data', 'vtu_transactions.json');
+                    let allTx = [];
+                    if (fs.existsSync(txFile)) {
+                        try { allTx = JSON.parse(fs.readFileSync(txFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(allTx)) allTx = [];
+                    allTx.unshift(txData);
+                    if (allTx.length > 500) allTx = allTx.slice(0, 500);
+                    fs.writeFileSync(txFile, JSON.stringify(allTx, null, 2));
+                } catch(e) {}
+
                 res.end(JSON.stringify({
                     status: 'success',
                     message: `${network.toUpperCase()} ${plan} SME Data successfully dispatched via API to ${phone}!`,
-                    transaction: {
-                        tx_ref: txRef,
-                        provider_ref: 'PB-DAT-' + Math.floor(Math.random() * 900000 + 100000),
-                        network: network.toUpperCase(),
-                        phone: phone,
-                        plan: plan,
-                        amount_charged_naira: amountNaira,
-                        amount_charged_points: amountPoints,
-                        points_exchange_rate: pointsRate,
-                        pay_source: parsed.pay_source || 'points',
-                        delivery_status: 'Delivered',
-                        created_at: new Date().toISOString()
-                    }
+                    transaction: txData
                 }));
                 return;
             }
@@ -2600,6 +2795,8 @@ const server = http.createServer((req, res) => {
                                 context.userCash = parseFloat(userRecord.remaining_cash !== undefined ? userRecord.remaining_cash : (userRecord.cashBalance || 0));
                                 context.userPoints = parseInt(userRecord.remaining_pts !== undefined ? userRecord.remaining_pts : (userRecord.pointsBalance || 100));
                                 context.streakCount = parseInt(userRecord.streak_count || 1);
+                                context.isActivated = Boolean(userRecord.is_activated || userRecord.coupon_activated || ['admin', 'super_admin', 'uploader', 'vendor'].includes(userRecord.role));
+                                context.welcomeShown = Boolean(userRecord.welcome_shown);
                             }
                         }
                         const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');

@@ -3441,6 +3441,92 @@ select.has-custom-dropdown {
             </div>
         </div>
     </div>
+
+    <!-- Coupon Activation & Gating Access Control Card -->
+    <div class="data-card" style="margin-top: 24px;">
+        <div class="data-card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <h3 class="data-card-title">Coupon Activation &amp; Gating Access Control</h3>
+            <span class="badge badge-info" style="font-size:0.75rem;padding:4px 10px;border-radius:6px;background:rgba(56,189,248,0.15);color:#38BDF8;font-weight:700">Free vs Coupon-Locked Features</span>
+        </div>
+        <div class="data-card-body" style="display: flex; flex-direction: column; gap: 15px;">
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 6px;">
+                Choose which features require an activation coupon code, or allow them free for all registered users. You can also enforce a strict screen lock on the activation popup.
+            </p>
+
+            <!-- Master Strict Lock -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding: 14px; background: rgba(239, 68, 68, 0.08); border-radius: 8px; border: 1px solid rgba(239,68,68,0.25)">
+                <div>
+                    <strong style="color: #F87171; display:flex; align-items:center; gap:6px">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Strict Screen Lock (Unclosable Activation Modal)
+                    </strong>
+                    <div style="color: var(--text-secondary); font-size: 0.85em; margin-top:2px">When ON, the activation popup is strictly locked to the screen — the cancel checkmark is void/disabled and users cannot close it until a valid code is entered.</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateStrictModalLock"><span class="toggle-slider"></span></label>
+            </div>
+
+            <!-- Individual Feature Gating Toggles -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>VTU Telecoms (Airtime &amp; Data)</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to buy Airtime &amp; Data (When OFF, Airtime &amp; Data is free to use)</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateVtu"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>Tasks &amp; Micro-Gigs Hub</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to view, perform, and earn from sponsored tasks</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateTasks"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>Lucky Spin &amp; Win Wheel</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to spin for daily prizes</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateSpin"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>OTC Unlisted Tokens Trading</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to trade and forecast pre-market tokens</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateTokens"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>Refer &amp; Earn Affiliate System</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to unlock referral link and earn referral bonuses</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateReferrals"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <div>
+                    <strong>Bank Cash &amp; Points Withdrawals</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to submit withdrawal requests to bank</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateWithdrawals"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>Daily Earning Streak Bonus</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em;">Require activation code to claim daily streak rewards (+50 PTS)</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="gateStreak"><span class="toggle-slider"></span></label>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn-primary" onclick="saveCouponAccessRules()">Save Coupon Gating Rules</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- tab-content -->
@@ -5353,8 +5439,48 @@ select.has-custom-dropdown {
                 const toggle = el(ids[key]);
                 if (toggle) toggle.checked = flags[key] !== false;
             });
+
+            // Also load coupon gating rules
+            await loadCouponAccessRules();
         } catch(e) { console.error('Features load error:', e); }
     }
+
+    async function loadCouponAccessRules() {
+        try {
+            const res = await apiCall('api/features.php?action=get_coupon_rules');
+            const r = res.rules || res;
+            if (el('gateStrictModalLock')) el('gateStrictModalLock').checked = Boolean(r.strict_modal_lock);
+            const feats = r.features || {};
+            if (el('gateVtu')) el('gateVtu').checked = Boolean(feats.vtu_telecoms);
+            if (el('gateTasks')) el('gateTasks').checked = Boolean(feats.tasks_gigs !== false);
+            if (el('gateSpin')) el('gateSpin').checked = Boolean(feats.spin_wheel !== false);
+            if (el('gateTokens')) el('gateTokens').checked = Boolean(feats.otc_tokens !== false);
+            if (el('gateReferrals')) el('gateReferrals').checked = Boolean(feats.refer_earn !== false);
+            if (el('gateWithdrawals')) el('gateWithdrawals').checked = Boolean(feats.withdrawals !== false);
+            if (el('gateStreak')) el('gateStreak').checked = Boolean(feats.streak_bonus !== false);
+        } catch(e) { console.error('Coupon rules load error:', e); }
+    }
+
+    window.saveCouponAccessRules = async function() {
+        const strictLock = Boolean(el('gateStrictModalLock')?.checked);
+        const data = {
+            strict_modal_lock: strictLock,
+            allow_modal_dismiss: !strictLock,
+            features: {
+                vtu_telecoms: Boolean(el('gateVtu')?.checked),
+                tasks_gigs: Boolean(el('gateTasks')?.checked),
+                spin_wheel: Boolean(el('gateSpin')?.checked),
+                otc_tokens: Boolean(el('gateTokens')?.checked),
+                refer_earn: Boolean(el('gateReferrals')?.checked),
+                withdrawals: Boolean(el('gateWithdrawals')?.checked),
+                streak_bonus: Boolean(el('gateStreak')?.checked)
+            }
+        };
+        try {
+            await apiCall('api/features.php?action=save_coupon_rules', 'POST', data);
+            showAlert('Coupon gating rules & strict lock settings saved successfully!', 'success');
+        } catch(e) { showAlert('Failed to save coupon gating rules', 'error'); }
+    };
 
     window.saveFeatureFlags = async function() {
         const data = {

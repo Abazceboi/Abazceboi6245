@@ -1,0 +1,13 @@
+{
+  "strict_modal_lock": false,
+  "allow_modal_dismiss": true,
+  "features": {
+    "vtu_telecoms": false,
+    "tasks_gigs": true,
+    "spin_wheel": true,
+    "otc_tokens": true,
+    "refer_earn": true,
+    "withdrawals": true,
+    "streak_bonus": true
+  }
+}

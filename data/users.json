@@ -165,6 +165,63 @@
       "status": "active",
       "created_at": "2026-09-29T00:58:44.225Z",
       "updated_at": "2026-09-29T00:58:44.225Z"
+    },
+    {
+      "id": "USR-MUOPV1RQ",
+      "username": "user_muopv1px",
+      "full_name": "Test Frictionless Member",
+      "email": "user_muopv1px@gmail.com",
+      "phone": "08098765432",
+      "password": "password123",
+      "role": "member",
+      "role_label": "Free Member",
+      "is_activated": false,
+      "welcome_shown": false,
+      "remaining_cash": 0,
+      "remaining_pts": 0,
+      "total_earned": 0,
+      "referral_code": "REF-633747",
+      "referred_by": "admin",
+      "coupon_pin_used": "",
+      "status": "active",
+      "created_at": "2026-09-30T23:08:27.446Z",
+      "updated_at": "2026-09-30T23:08:27.448Z"
+    },
+    {
+      "id": "USR-MUOPVTPL",
+      "username": "user_muopvtor",
+      "full_name": "Test Frictionless Member",
+      "email": "user_muopvtor@gmail.com",
+      "phone": "08098765432",
+      "password": "password123",
+      "role": "member",
+      "role_label": "Active Member",
+      "is_activated": true,
+      "welcome_shown": false,
+      "remaining_cash": 0,
+      "remaining_pts": 100,
+      "total_earned": 0,
+      "referral_code": "REF-515197",
+      "referred_by": "admin",
+      "coupon_pin_used": "INX-AFF-TEST-002",
+      "status": "active",
+      "created_at": "2026-09-30T23:09:03.657Z",
+      "updated_at": "2026-09-30T23:09:03.657Z",
+      "cashBalance": 0,
+      "activity_ledger": [
+        {
+          "time": "01/10/2026, 00:09:03",
+          "type": "VTU Recharge",
+          "desc": "Recharged AIRTEL 1GB Data to 08098765432"
+        },
+        {
+          "time": "01/10/2026, 00:09:03",
+          "type": "VTU Recharge",
+          "desc": "Recharged ₦200 MTN Airtime to 08098765432"
+        }
+      ],
+      "coupon_activated": true,
+      "pointsBalance": 100
     }
   ]
 }

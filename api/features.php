@@ -38,10 +38,73 @@ if (file_exists($configFile)) {
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-if ($action === 'get_flags' || $_SERVER['REQUEST_METHOD'] === 'GET') {
+$accessRulesFile = __DIR__ . '/../config/feature_access.json';
+$defaultAccessRules = [
+    'strict_modal_lock' => false,
+    'allow_modal_dismiss' => true,
+    'features' => [
+        'vtu_telecoms' => false,
+        'tasks_gigs' => true,
+        'spin_wheel' => true,
+        'otc_tokens' => true,
+        'refer_earn' => true,
+        'withdrawals' => true,
+        'streak_bonus' => true
+    ]
+];
+
+$accessRules = $defaultAccessRules;
+if (file_exists($accessRulesFile)) {
+    $savedRules = @json_decode(@file_get_contents($accessRulesFile), true);
+    if (is_array($savedRules)) {
+        $accessRules = array_merge($defaultAccessRules, $savedRules);
+    }
+}
+
+if ($action === 'get_coupon_rules') {
     echo json_encode([
         'status' => 'success',
-        'flags' => $flags
+        'rules' => $accessRules
+    ]);
+    exit;
+}
+
+if ($action === 'save_coupon_rules' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    if (isset($input['strict_modal_lock'])) {
+        $accessRules['strict_modal_lock'] = (bool)$input['strict_modal_lock'];
+        $accessRules['allow_modal_dismiss'] = !$accessRules['strict_modal_lock'];
+    }
+    if (isset($input['allow_modal_dismiss'])) {
+        $accessRules['allow_modal_dismiss'] = (bool)$input['allow_modal_dismiss'];
+        $accessRules['strict_modal_lock'] = !$accessRules['allow_modal_dismiss'];
+    }
+    if (isset($input['features']) && is_array($input['features'])) {
+        foreach ($accessRules['features'] as $fk => $fv) {
+            if (isset($input['features'][$fk])) {
+                $accessRules['features'][$fk] = (bool)$input['features'][$fk];
+            }
+        }
+    }
+
+    if (!is_dir(dirname($accessRulesFile))) {
+        @mkdir(dirname($accessRulesFile), 0777, true);
+    }
+    @file_put_contents($accessRulesFile, json_encode($accessRules, JSON_PRETTY_PRINT));
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Coupon gating access rules saved successfully.',
+        'rules' => $accessRules
+    ]);
+    exit;
+}
+
+if ($action === 'get_flags' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($action))) {
+    echo json_encode([
+        'status' => 'success',
+        'flags' => $flags,
+        'coupon_rules' => $accessRules
     ]);
     exit;
 }
@@ -71,5 +134,6 @@ if ($action === 'save_flags' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 echo json_encode([
     'status' => 'active',
     'service' => 'INNOVATIONX Feature Flags Engine',
-    'flags' => $flags
+    'flags' => $flags,
+    'coupon_rules' => $accessRules
 ]);

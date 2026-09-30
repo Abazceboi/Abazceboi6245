@@ -42,14 +42,18 @@ if ($action === 'register') {
         exit;
     }
 
-    // STRICT COUPON PIN VALIDATION: Enforce single-use rule (works with or without PDO)
-    $pinValidation = validateCouponForRegistration($pin, $pdo);
-    if (!$pinValidation['valid']) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => $pinValidation['message']
-        ]);
-        exit;
+    $isActivated = false;
+    if (!empty($pin)) {
+        // STRICT COUPON PIN VALIDATION if provided: Enforce single-use rule
+        $pinValidation = validateCouponForRegistration($pin, $pdo);
+        if (!$pinValidation['valid']) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => $pinValidation['message']
+            ]);
+            exit;
+        }
+        $isActivated = true;
     }
     
     // Check if user exists in JSON users
@@ -83,7 +87,7 @@ if ($action === 'register') {
         try {
             try {
                 $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy, couponPinUsed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy, $pin]);
+                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy, $isActivated ? $pin : '']);
             } catch (Exception $colEx) {
                 $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy]);
@@ -102,13 +106,15 @@ if ($action === 'register') {
         'phone' => $phone,
         'password' => $passwordHash,
         'role' => 'member',
-        'role_label' => 'Active Member',
+        'role_label' => $isActivated ? 'Active Member' : 'Free Member',
+        'is_activated' => $isActivated,
+        'welcome_shown' => false,
         'remaining_cash' => 0.00,
-        'remaining_pts' => 100,
+        'remaining_pts' => $isActivated ? 100 : 0,
         'total_earned' => 0.00,
         'referral_code' => $referralCode,
         'referred_by' => $referredBy,
-        'coupon_pin_used' => $pin,
+        'coupon_pin_used' => $isActivated ? $pin : '',
         'status' => 'active',
         'created_at' => date('c'),
         'updated_at' => date('c')
@@ -116,8 +122,9 @@ if ($action === 'register') {
     $jsonUsers[] = $newUserRecord;
     saveJsonUsers($jsonUsers);
 
-    // BURN & CONSUME COUPON: Mark as permanently used so it can NEVER be reused
-    consumeCouponForRegistration($pin, $username, $pdo);
+    if ($isActivated && !empty($pin)) {
+        consumeCouponForRegistration($pin, $username, $pdo);
+    }
     
     $_SESSION['user_id'] = $userId;
     $_SESSION['username'] = $username;
@@ -126,6 +133,7 @@ if ($action === 'register') {
     $_SESSION['fullName'] = $fullName;
     $_SESSION['role'] = 'member';
     $_SESSION['is_admin'] = false;
+    $_SESSION['is_activated'] = $isActivated;
     
     // Set browser session cookie so refreshing on Vercel never logs the user out
     if (function_exists('setAuthCookie')) {
@@ -138,7 +146,52 @@ if ($action === 'register') {
         'email' => $email,
         'phone' => $phone,
         'fullName' => $fullName,
-        'message' => 'Account successfully registered and coupon code redeemed.'
+        'is_activated' => $isActivated,
+        'message' => $isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to INNOVATIONX.'
+    ]);
+    exit;
+}
+
+if ($action === 'activate_coupon') {
+    $data = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $pin = strtoupper(trim($data['pin'] ?? ''));
+    $username = trim($data['username'] ?? $_SESSION['username'] ?? '');
+
+    if (empty($pin)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please enter an activation coupon PIN.']);
+        exit;
+    }
+
+    $pinValidation = validateCouponForRegistration($pin, $pdo);
+    if (!$pinValidation['valid']) {
+        echo json_encode(['status' => 'error', 'message' => $pinValidation['message']]);
+        exit;
+    }
+
+    consumeCouponForRegistration($pin, $username, $pdo);
+
+    $jsonUsers = loadJsonUsers();
+    $found = false;
+    foreach ($jsonUsers as &$u) {
+        if (strtolower($u['username'] ?? '') === strtolower($username)) {
+            $u['is_activated'] = true;
+            $u['coupon_activated'] = true;
+            $u['coupon_pin_used'] = $pin;
+            $u['role_label'] = 'Active Member';
+            $u['remaining_pts'] = intval($u['remaining_pts'] ?? 0) + 100;
+            $found = true;
+            break;
+        }
+    }
+    if ($found) {
+        saveJsonUsers($jsonUsers);
+    }
+    $_SESSION['is_activated'] = true;
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Account successfully activated! All features are now unlocked.',
+        'is_activated' => true
     ]);
     exit;
 }
