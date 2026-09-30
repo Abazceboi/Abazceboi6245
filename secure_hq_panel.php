@@ -3522,6 +3522,27 @@ select.has-custom-dropdown {
                 <label class="toggle-switch"><input type="checkbox" id="gateStreak"><span class="toggle-slider"></span></label>
             </div>
 
+            <!-- Customizable Activation Popup Messages -->
+            <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 5px;">
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #38BDF8; display:flex; align-items:center; gap:6px">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Activation Pop-up Message Customization
+                </h4>
+                <p style="color: var(--text-secondary); font-size: 0.85em; margin-bottom: 12px;">Edit the title, subtitle, and notice text shown to members on the coupon activation popup.</p>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; display: block;">Modal Title</label>
+                    <input type="text" id="actModalTitleInput" class="form-input" placeholder="e.g. Activate Full Membership">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; display: block;">Modal Subtitle</label>
+                    <input type="text" id="actModalSubInput" class="form-input" placeholder="e.g. Unlock tasks, spin wheel, OTC tokens & cash withdrawals">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; display: block;">Modal Body Notice Message</label>
+                    <textarea id="actModalNoticeInput" class="form-input" rows="3" placeholder="Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data."></textarea>
+                </div>
+            </div>
+
             <div style="margin-top: 15px;">
                 <button class="btn-primary" onclick="saveCouponAccessRules()">Save Coupon Gating Rules</button>
             </div>
@@ -5458,6 +5479,11 @@ select.has-custom-dropdown {
             if (el('gateReferrals')) el('gateReferrals').checked = Boolean(feats.refer_earn !== false);
             if (el('gateWithdrawals')) el('gateWithdrawals').checked = Boolean(feats.withdrawals !== false);
             if (el('gateStreak')) el('gateStreak').checked = Boolean(feats.streak_bonus !== false);
+
+            const mc = r.modal_content || {};
+            if (el('actModalTitleInput')) el('actModalTitleInput').value = mc.title || 'Activate Full Membership';
+            if (el('actModalSubInput')) el('actModalSubInput').value = mc.subtitle || 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals';
+            if (el('actModalNoticeInput')) el('actModalNoticeInput').value = mc.notice || 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.';
         } catch(e) { console.error('Coupon rules load error:', e); }
     }
 
@@ -5466,6 +5492,11 @@ select.has-custom-dropdown {
         const data = {
             strict_modal_lock: strictLock,
             allow_modal_dismiss: !strictLock,
+            modal_content: {
+                title: el('actModalTitleInput')?.value?.trim() || 'Activate Full Membership',
+                subtitle: el('actModalSubInput')?.value?.trim() || 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
+                notice: el('actModalNoticeInput')?.value?.trim() || 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.'
+            },
             features: {
                 vtu_telecoms: Boolean(el('gateVtu')?.checked),
                 tasks_gigs: Boolean(el('gateTasks')?.checked),
@@ -5478,7 +5509,7 @@ select.has-custom-dropdown {
         };
         try {
             await apiCall('api/features.php?action=save_coupon_rules', 'POST', data);
-            showAlert('Coupon gating rules & strict lock settings saved successfully!', 'success');
+            showAlert('Coupon gating rules & activation message saved successfully!', 'success');
         } catch(e) { showAlert('Failed to save coupon gating rules', 'error'); }
     };
 

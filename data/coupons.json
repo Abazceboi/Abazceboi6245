@@ -43,9 +43,11 @@
     "vendorName": "INNOVATIONX Official Vendor",
     "wholesalePrice": 1000,
     "amount": 1000,
-    "is_used": false,
-    "isUsed": false,
-    "used_by": null,
-    "created_at": "2026-09-29T00:00:00Z"
+    "is_used": true,
+    "isUsed": true,
+    "used_by": "user_muoqjwxp",
+    "created_at": "2026-09-29T00:00:00Z",
+    "usedBy": "user_muoqjwxp",
+    "used_at": "2026-09-30T23:27:47.700Z"
   }
 ]

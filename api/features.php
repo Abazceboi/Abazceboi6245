@@ -42,6 +42,11 @@ $accessRulesFile = __DIR__ . '/../config/feature_access.json';
 $defaultAccessRules = [
     'strict_modal_lock' => false,
     'allow_modal_dismiss' => true,
+    'modal_content' => [
+        'title' => 'Activate Full Membership',
+        'subtitle' => 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
+        'notice' => 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.'
+    ],
     'features' => [
         'vtu_telecoms' => false,
         'tasks_gigs' => true,
@@ -58,6 +63,9 @@ if (file_exists($accessRulesFile)) {
     $savedRules = @json_decode(@file_get_contents($accessRulesFile), true);
     if (is_array($savedRules)) {
         $accessRules = array_merge($defaultAccessRules, $savedRules);
+        if (isset($savedRules['modal_content'])) {
+            $accessRules['modal_content'] = array_merge($defaultAccessRules['modal_content'], $savedRules['modal_content']);
+        }
     }
 }
 
@@ -78,6 +86,12 @@ if ($action === 'save_coupon_rules' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($input['allow_modal_dismiss'])) {
         $accessRules['allow_modal_dismiss'] = (bool)$input['allow_modal_dismiss'];
         $accessRules['strict_modal_lock'] = !$accessRules['allow_modal_dismiss'];
+    }
+    if (isset($input['modal_content']) && is_array($input['modal_content'])) {
+        if (!isset($accessRules['modal_content'])) $accessRules['modal_content'] = [];
+        if (isset($input['modal_content']['title'])) $accessRules['modal_content']['title'] = trim($input['modal_content']['title']);
+        if (isset($input['modal_content']['subtitle'])) $accessRules['modal_content']['subtitle'] = trim($input['modal_content']['subtitle']);
+        if (isset($input['modal_content']['notice'])) $accessRules['modal_content']['notice'] = trim($input['modal_content']['notice']);
     }
     if (isset($input['features']) && is_array($input['features'])) {
         foreach ($accessRules['features'] as $fk => $fv) {

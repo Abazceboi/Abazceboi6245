@@ -106,6 +106,12 @@ $minTaskWd = floatval($wdSettings['task']['min_amount'] ?? 1000);
 $ptsInNaira = $userPoints * $ptsRate;
 $totalLiquidNaira = $userCash + $ptsInNaira;
 
+$featAccessFile = __DIR__ . '/config/feature_access.json';
+$featAccessData = file_exists($featAccessFile) ? @json_decode(@file_get_contents($featAccessFile), true) : [];
+$modalTitle = !empty($featAccessData['modal_content']['title']) ? $featAccessData['modal_content']['title'] : 'Activate Full Membership';
+$modalSubtitle = !empty($featAccessData['modal_content']['subtitle']) ? $featAccessData['modal_content']['subtitle'] : 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals';
+$modalNotice = !empty($featAccessData['modal_content']['notice']) ? $featAccessData['modal_content']['notice'] : 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.';
+
 $isAdmin = in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']) || in_array($userRole, ['admin', 'super_admin']);
 $isUploader = $isAdmin || ($userRole === 'uploader');
 $isVendor = $isAdmin || ($userRole === 'vendor');
@@ -1791,13 +1797,13 @@ $hideFooter = true;
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
                 <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,0.15);color:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🔑</div>
                 <div>
-                    <div class="dash-card-title" style="font-size:1.25rem;color:#FFFFFF" id="actModalTitle">Activate Full Membership</div>
-                    <div class="dash-card-sub" id="actModalSub">Unlock tasks, spin wheel, OTC tokens &amp; cash withdrawals</div>
+                    <div class="dash-card-title" style="font-size:1.25rem;color:#FFFFFF" id="actModalTitle"><?= htmlspecialchars($modalTitle) ?></div>
+                    <div class="dash-card-sub" id="actModalSub"><?= htmlspecialchars($modalSubtitle) ?></div>
                 </div>
             </div>
 
             <div id="actModalNotice" style="padding:10px 14px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:#FDE047;font-size:0.82rem;line-height:1.5;margin-bottom:18px">
-                Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.
+                <?= $modalNotice ?>
             </div>
 
             <form onsubmit="submitCouponActivation(event)" style="display:flex;flex-direction:column;gap:14px">
@@ -1842,19 +1848,24 @@ $hideFooter = true;
         let minTaskWithdrawal = <?= floatval($minTaskWd) ?>;
         let currentStreak = <?= intval($streakCount) ?>;
 
-        let couponGatingRules = {
-            strict_modal_lock: false,
-            allow_modal_dismiss: true,
-            features: {
-                vtu_telecoms: false,
-                tasks_gigs: true,
-                spin_wheel: true,
-                otc_tokens: true,
-                refer_earn: true,
-                withdrawals: true,
-                streak_bonus: true
-            }
-        };
+        let couponGatingRules = <?= json_encode($featAccessData ?: [
+            'strict_modal_lock' => false,
+            'allow_modal_dismiss' => true,
+            'modal_content' => [
+                'title' => 'Activate Full Membership',
+                'subtitle' => 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
+                'notice' => 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.'
+            ],
+            'features' => [
+                'vtu_telecoms' => false,
+                'tasks_gigs' => true,
+                'spin_wheel' => true,
+                'otc_tokens' => true,
+                'refer_earn' => true,
+                'withdrawals' => true,
+                'streak_bonus' => true
+            ]
+        ]) ?>;
 
         function checkFeatureAccess(featureKey) {
             if (isUserActivated) return true;
@@ -1862,11 +1873,16 @@ $hideFooter = true;
             return couponGatingRules.features[featureKey] !== true;
         }
 
-        function promptActivationModal(msg = '', title = 'Activate Full Membership') {
+        function promptActivationModal(msg = '', title = '') {
             const modal = document.getElementById('couponActivationModal');
             if (!modal) return;
-            if (msg) document.getElementById('actModalNotice').innerHTML = msg;
-            if (title) document.getElementById('actModalTitle').textContent = title;
+            const defTitle = couponGatingRules?.modal_content?.title || 'Activate Full Membership';
+            const defNotice = couponGatingRules?.modal_content?.notice || 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.';
+            document.getElementById('actModalNotice').innerHTML = msg || defNotice;
+            document.getElementById('actModalTitle').textContent = title || defTitle;
+            if (couponGatingRules?.modal_content?.subtitle && document.getElementById('actModalSub')) {
+                document.getElementById('actModalSub').textContent = couponGatingRules.modal_content.subtitle;
+            }
             applyStrictModalLockUI();
             modal.classList.add('open');
         }
@@ -2469,6 +2485,17 @@ $hideFooter = true;
                         const cData = await cRes.json();
                         if (cData.rules) {
                             couponGatingRules = cData.rules;
+                            if (couponGatingRules.modal_content) {
+                                if (couponGatingRules.modal_content.title && document.getElementById('actModalTitle')) {
+                                    document.getElementById('actModalTitle').textContent = couponGatingRules.modal_content.title;
+                                }
+                                if (couponGatingRules.modal_content.subtitle && document.getElementById('actModalSub')) {
+                                    document.getElementById('actModalSub').textContent = couponGatingRules.modal_content.subtitle;
+                                }
+                                if (couponGatingRules.modal_content.notice && document.getElementById('actModalNotice')) {
+                                    document.getElementById('actModalNotice').innerHTML = couponGatingRules.modal_content.notice;
+                                }
+                            }
                             applyStrictModalLockUI();
                             updateFreeBannerDisplay();
                         }

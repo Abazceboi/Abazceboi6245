@@ -817,6 +817,11 @@ const server = http.createServer((req, res) => {
                 let accessRules = {
                     strict_modal_lock: false,
                     allow_modal_dismiss: true,
+                    modal_content: {
+                        title: 'Activate Full Membership',
+                        subtitle: 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
+                        notice: 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.'
+                    },
                     features: {
                         vtu_telecoms: false,
                         tasks_gigs: true,
@@ -828,7 +833,13 @@ const server = http.createServer((req, res) => {
                     }
                 };
                 if (fs.existsSync(accessRulesFile)) {
-                    try { accessRules = Object.assign(accessRules, JSON.parse(fs.readFileSync(accessRulesFile, 'utf8'))); } catch(e){}
+                    try {
+                        const saved = JSON.parse(fs.readFileSync(accessRulesFile, 'utf8'));
+                        accessRules = Object.assign(accessRules, saved);
+                        if (saved.modal_content) {
+                            accessRules.modal_content = Object.assign(accessRules.modal_content, saved.modal_content);
+                        }
+                    } catch(e){}
                 }
 
                 if (action === 'get_coupon_rules') {
@@ -844,6 +855,9 @@ const server = http.createServer((req, res) => {
                     if (parsed.allow_modal_dismiss !== undefined) {
                         accessRules.allow_modal_dismiss = Boolean(parsed.allow_modal_dismiss);
                         accessRules.strict_modal_lock = !accessRules.allow_modal_dismiss;
+                    }
+                    if (parsed.modal_content && typeof parsed.modal_content === 'object') {
+                        accessRules.modal_content = Object.assign(accessRules.modal_content || {}, parsed.modal_content);
                     }
                     if (parsed.features && typeof parsed.features === 'object') {
                         accessRules.features = Object.assign(accessRules.features || {}, parsed.features);
