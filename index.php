@@ -312,58 +312,41 @@ require_once __DIR__ . '/includes/header.php';
                 <p class="section-subtitle">Clear answers to help you start earning with total peace of mind.</p>
             </div>
 
+            <div class="faq-list">
 <?php
-// Load FAQ data and group by category
-$faqData = json_decode(file_get_contents(__DIR__.'/faq.json'), true);
-$categories = [];
-foreach ($faqData as $item) {
-    $categories[$item['category']][] = $item;
+$faqPath = __DIR__ . '/faq.json';
+$faqData = file_exists($faqPath) ? json_decode(file_get_contents($faqPath), true) : [];
+if (empty($faqData) || !is_array($faqData)) {
+    $faqData = [
+        [
+            'question' => 'How much does it cost to join INNOVATIONX?',
+            'answer' => 'Joining INNOVATIONX requires a one-time lifetime membership activation fee of only ₦500. There are zero hidden monthly maintenance fees, and you receive an immediate 100 PTS welcome bonus upon activation.'
+        ],
+        [
+            'question' => 'How do I withdraw my earnings to my bank account?',
+            'answer' => 'Withdrawals can be requested directly from your dashboard to any commercial or microfinance bank in Nigeria (e.g. GTBank, Kuda, OPay, Palmpay, Access, Zenith). Once you meet the minimum threshold, payouts are processed swiftly via our automated payout system.'
+        ],
+        [
+            'question' => 'Can I earn without referring anyone?',
+            'answer' => 'Yes, absolutely! Referrals are 100% optional. You can earn and withdraw consistently purely by completing your daily sponsored tasks and claiming daily login bonuses.'
+        ],
+        [
+            'question' => 'What services does INNOVATIONX offer?',
+            'answer' => 'INNOVATIONX provides a range of services including escrow transactions, P2P express transfers, bulk OTC liquidity pools, token trading, and a marketplace for buying and selling digital assets. More detailed service FAQs will be added over time.'
+        ]
+    ];
 }
-foreach ($categories as $cat => $items): ?>
-    <h3 class="faq-category-title"><?php echo htmlspecialchars($cat); ?></h3>
-    <div class="faq-list">
-        <?php foreach ($items as $item): ?>
-        <div class="faq-item">
-            <div class="faq-q">
-                <span><?php echo htmlspecialchars($item['question']); ?></span>
-                <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-            <div class="faq-a">
-                <p><?php echo $item['answer']; ?></p>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
+foreach ($faqData as $item): ?>
+                <div class="faq-item">
+                    <div class="faq-q">
+                        <span><?php echo htmlspecialchars($item['question'] ?? ''); ?></span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="faq-a">
+                        <p><?php echo $item['answer'] ?? ''; ?></p>
+                    </div>
+                </div>
 <?php endforeach; ?>
-                <div class="faq-item">
-                    <div class="faq-q">
-                        <span>How much does it cost to join INNOVATIONX?</span>
-                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="faq-a">
-                        <p>Joining INNOVATIONX requires a one-time lifetime membership activation fee of only ₦500. There are zero hidden monthly maintenance fees, and you receive an immediate 100 PTS welcome bonus upon activation.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-q">
-                        <span>How do I withdraw my earnings to my bank account?</span>
-                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="faq-a">
-                        <p>Withdrawals can be requested directly from your dashboard to any commercial or microfinance bank in Nigeria (e.g. GTBank, Kuda, OPay, Palmpay, Access, Zenith). Once you meet the minimum threshold, payouts are processed swiftly via our automated payout system.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-q">
-                        <span>Can I earn without referring anyone?</span>
-                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    </div>
-                    <div class="faq-a">
-                        <p>Yes, absolutely! Referrals are 100% optional. You can earn and withdraw consistently purely by completing your daily sponsored tasks and claiming daily login bonuses.</p>
-                    </div>
-                </div>
             </div>
         </div>
     </section>

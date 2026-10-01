@@ -123,7 +123,30 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*json_encode\(\$(?:tokensList|allUsers|coupons|tasks|vendors|records|items|data|list|dashTokensList)[^)]*\)\s*\?>/gi, '[]');
     content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
     content = content.replace(/<\?=\s*json_encode\([^)]*\)\s*\?>/g, '{}');
-    content = content.replace(/<\?php\s*echo\s*json_encode\([^)]*\);\s*\?>/g, '{}');
+    if (content.includes('faq-list')) {
+        try {
+            const faqFile = path.join(PUBLIC_DIR, 'faq.json');
+            let fData = [];
+            if (fs.existsSync(faqFile)) {
+                fData = JSON.parse(fs.readFileSync(faqFile, 'utf8'));
+            }
+            if (Array.isArray(fData) && fData.length > 0) {
+                const itemsHtml = fData.map(item => `
+                <div class="faq-item">
+                    <div class="faq-q">
+                        <span>${item.question || ''}</span>
+                        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="faq-a">
+                        <p>${item.answer || ''}</p>
+                    </div>
+                </div>`).join('\n');
+                content = content.replace(/<div class="faq-list">[\s\S]*?<\/div>\s*<\/div>\s*<\/section>/,
+                    `<div class="faq-list">\n${itemsHtml}\n            </div>\n        </div>\n    </section>`);
+            }
+        } catch(e) {}
+    }
+
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
     content = content.replace(/<\?=[\s\S]*?\?>/g, '');
     content = content.replace(/<\?php[\s\S]*$/g, '');
