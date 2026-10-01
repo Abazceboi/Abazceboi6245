@@ -8,11 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-$dataFile = __DIR__ . '/../data/adsense_settings.json';
-$dataDir = dirname($dataFile);
-if (!is_dir($dataDir)) {
-    @mkdir($dataDir, 0777, true);
-}
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultConfig = [
     'enabled' => false,
@@ -54,13 +50,11 @@ $defaultConfig = [
 $action = $_GET['action'] ?? 'get_config';
 
 if ($action === 'get_config') {
-    if (file_exists($dataFile)) {
-        $saved = json_decode(file_get_contents($dataFile), true);
-        if (is_array($saved)) {
-            $config = array_merge($defaultConfig, $saved);
-            echo json_encode(['status' => 'success', 'config' => $config]);
-            exit;
-        }
+    $saved = readStorageJson('data/adsense_settings.json', $defaultConfig);
+    if (is_array($saved)) {
+        $config = array_merge($defaultConfig, $saved);
+        echo json_encode(['status' => 'success', 'config' => $config]);
+        exit;
     }
     echo json_encode(['status' => 'success', 'config' => $defaultConfig]);
     exit;
@@ -74,7 +68,7 @@ if ($action === 'save_config' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $input['updated_at'] = date('Y-m-d H:i:s');
-    file_put_contents($dataFile, json_encode($input, JSON_PRETTY_PRINT));
+    writeStorageJson('data/adsense_settings.json', $input);
 
     echo json_encode(['status' => 'success', 'message' => 'AdSense configuration saved successfully', 'config' => $input]);
     exit;

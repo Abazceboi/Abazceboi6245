@@ -62,13 +62,13 @@ $defaultConfig = [
     ]
 ];
 
-// Load settings if file exists
+require_once __DIR__ . '/../includes/storage_helper.php';
+
+// Load settings if exists
 $config = $defaultConfig;
-if (file_exists($configFile)) {
-    $saved = json_decode(file_get_contents($configFile), true);
-    if (is_array($saved)) {
-        $config = array_replace_recursive($defaultConfig, $saved);
-    }
+$saved = readStorageJson('config/vtu_settings.json', []);
+if (is_array($saved) && !empty($saved)) {
+    $config = array_replace_recursive($defaultConfig, $saved);
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -245,10 +245,7 @@ if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $config['data_prices'] = array_replace_recursive($config['data_prices'], $input['data_prices']);
     }
 
-    if (!is_dir(dirname($configFile))) {
-        mkdir(dirname($configFile), 0777, true);
-    }
-    file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT));
+    writeStorageJson('config/vtu_settings.json', $config);
 
     echo json_encode([
         'status' => 'success',

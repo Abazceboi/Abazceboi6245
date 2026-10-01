@@ -36,15 +36,12 @@ function getDbConnection(): ?PDO {
                 PDO::ATTR_TIMEOUT => 2,
             ]);
         } else {
-            // Local fallback (SQLite / MySQL)
-            $dbPath = __DIR__ . '/../database.sqlite';
-            if (file_exists($dbPath) || !getenv('VERCEL')) {
-                $pdo = new PDO("sqlite:" . $dbPath);
-                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $pdo->setAttribute(PDO::ATTR_TIMEOUT, 2);
-            } else {
-                $pdo = null;
-            }
+            // SQLite Database: use writable storage directory so it works on both local and Vercel!
+            require_once __DIR__ . '/../includes/storage_helper.php';
+            $dbPath = getStorageFilePath('database.sqlite');
+            $pdo = new PDO("sqlite:" . $dbPath);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_TIMEOUT, 2);
         }
         return $pdo;
     } catch (Throwable $e) {

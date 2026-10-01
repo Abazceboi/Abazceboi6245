@@ -9,21 +9,16 @@ header('Content-Type: application/json');
 $action = $_GET['action'] ?? '';
 $pdo = getDbConnection();
 
+require_once __DIR__ . '/../includes/storage_helper.php';
+
 // Robust JSON User Storage Helpers
 function loadJsonUsers(): array {
-    $file = __DIR__ . '/../data/users.json';
-    if (!file_exists($file)) return [];
-    $raw = @file_get_contents($file);
-    if (!$raw) return [];
-    $data = json_decode($raw, true);
+    $data = readStorageJson('data/users.json', ['users' => []]);
     return $data['users'] ?? (is_array($data) ? $data : []);
 }
 
 function saveJsonUsers(array $usersList): bool {
-    $file = __DIR__ . '/../data/users.json';
-    $dir = dirname($file);
-    if (!is_dir($dir)) @mkdir($dir, 0755, true);
-    return (bool)@file_put_contents($file, json_encode(['users' => $usersList], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    return writeStorageJson('data/users.json', ['users' => $usersList]);
 }
 
 if ($action === 'register') {

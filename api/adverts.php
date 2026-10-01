@@ -13,19 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$dataFile = __DIR__ . '/../config/advertisements.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 function getAdverts() {
-    global $dataFile;
-    if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
-    return is_array($data) ? $data : [];
+    return readStorageJson('config/advertisements.json', []);
 }
 
 function saveAdverts($adverts) {
-    global $dataFile;
-    if (!is_dir(dirname($dataFile))) mkdir(dirname($dataFile), 0777, true);
-    file_put_contents($dataFile, json_encode(array_values($adverts), JSON_PRETTY_PRINT));
+    return writeStorageJson('config/advertisements.json', array_values($adverts));
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';

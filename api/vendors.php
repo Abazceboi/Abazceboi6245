@@ -66,23 +66,15 @@ $defaultTelegram = [
     'show_on_homepage' => false
 ];
 
+require_once __DIR__ . '/../includes/storage_helper.php';
+
 // Load vendors
-$vendors = $defaultVendors;
-if (file_exists($vendorsFile)) {
-    $decoded = json_decode(file_get_contents($vendorsFile), true);
-    if (is_array($decoded) && !empty($decoded)) {
-        $vendors = $decoded;
-    }
-}
+$savedVendors = readStorageJson('config/vendors.json', []);
+$vendors = (is_array($savedVendors) && !empty($savedVendors)) ? $savedVendors : $defaultVendors;
 
 // Load telegram settings
-$telegram = $defaultTelegram;
-if (file_exists($telegramFile)) {
-    $decodedTel = json_decode(file_get_contents($telegramFile), true);
-    if (is_array($decodedTel)) {
-        $telegram = array_merge($defaultTelegram, $decodedTel);
-    }
-}
+$savedTelegram = readStorageJson('config/telegram_settings.json', []);
+$telegram = (is_array($savedTelegram) && !empty($savedTelegram)) ? array_merge($defaultTelegram, $savedTelegram) : $defaultTelegram;
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
@@ -124,10 +116,7 @@ if ($action === 'save_telegram_settings' && $_SERVER['REQUEST_METHOD'] === 'POST
     if (isset($input['show_on_dashboard'])) $telegram['show_on_dashboard'] = filter_var($input['show_on_dashboard'], FILTER_VALIDATE_BOOLEAN);
     if (isset($input['show_on_homepage'])) $telegram['show_on_homepage'] = filter_var($input['show_on_homepage'], FILTER_VALIDATE_BOOLEAN);
 
-    if (!is_dir(dirname($telegramFile))) {
-        mkdir(dirname($telegramFile), 0777, true);
-    }
-    file_put_contents($telegramFile, json_encode($telegram, JSON_PRETTY_PRINT));
+    writeStorageJson('config/telegram_settings.json', $telegram);
 
     echo json_encode([
         'success' => true,
@@ -180,11 +169,7 @@ if ($action === 'add_vendor' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     $vendors[] = $newVendor;
-
-    if (!is_dir(dirname($vendorsFile))) {
-        mkdir(dirname($vendorsFile), 0777, true);
-    }
-    file_put_contents($vendorsFile, json_encode($vendors, JSON_PRETTY_PRINT));
+    writeStorageJson('config/vendors.json', $vendors);
 
     echo json_encode([
         'success' => true,
@@ -211,7 +196,7 @@ if ($action === 'delete_vendor' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }));
 
     $vendors = $filtered;
-    file_put_contents($vendorsFile, json_encode($vendors, JSON_PRETTY_PRINT));
+    writeStorageJson('config/vendors.json', $vendors);
 
     echo json_encode([
         'success' => true,
@@ -229,7 +214,7 @@ if ($action === 'save_vendors' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (is_array($list)) {
         $vendors = $list;
-        file_put_contents($vendorsFile, json_encode($vendors, JSON_PRETTY_PRINT));
+        writeStorageJson('config/vendors.json', $vendors);
         echo json_encode([
             'success' => true,
             'status' => 'success',

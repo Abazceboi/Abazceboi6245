@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$dataFile = __DIR__ . '/../config/broadcasts.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaults = [
     'banner' => [
@@ -33,19 +33,15 @@ $defaults = [
     ]
 ];
 
-function getBroadcastData($path, $defaults) {
-    if (file_exists($path)) {
-        $raw = @file_get_contents($path);
-        $data = json_decode($raw, true);
-        if (is_array($data)) return array_merge($defaults, $data);
-    }
-    return $defaults;
+function getBroadcastData($defaults) {
+    $data = readStorageJson('config/broadcasts.json', $defaults);
+    return is_array($data) ? array_merge($defaults, $data) : $defaults;
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' || $action === 'get') {
-    $data = getBroadcastData($dataFile, $defaults);
+    $data = getBroadcastData($defaults);
     echo json_encode(['status' => 'success', 'data' => $data]);
     exit;
 }
@@ -53,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' || $action === 'get') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $raw = file_get_contents('php://input');
     $input = json_decode($raw, true) ?: $_POST;
-    $data = getBroadcastData($dataFile, $defaults);
+    $data = getBroadcastData($defaults);
 
     if ($action === 'save_banner' || isset($input['banner'])) {
         $b = $input['banner'] ?? $input;
@@ -78,9 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
 
-    $dir = dirname($dataFile);
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
-    file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('config/broadcasts.json', $data);
 
     echo json_encode(['status' => 'success', 'message' => 'Broadcast settings saved successfully!', 'data' => $data]);
     exit;

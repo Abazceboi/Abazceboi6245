@@ -15,10 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/db.php';
-
-$configFile = __DIR__ . '/../config/spin_settings.json';
-$logsFile = __DIR__ . '/../data/spin_logs.json';
-$usersFile = __DIR__ . '/../data/users.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 // Default config
 $defaultConfig = [
@@ -36,40 +33,23 @@ $defaultConfig = [
     ]
 ];
 
-$config = $defaultConfig;
-if (file_exists($configFile)) {
-    $c = json_decode(file_get_contents($configFile), true);
-    if (is_array($c)) $config = array_merge($defaultConfig, $c);
-}
+$savedConfig = readStorageJson('config/spin_settings.json', []);
+$config = is_array($savedConfig) ? array_merge($defaultConfig, $savedConfig) : $defaultConfig;
 
 function getSpinLogs() {
-    global $logsFile;
-    if (file_exists($logsFile)) {
-        return json_decode(file_get_contents($logsFile), true) ?: [];
-    }
-    return [];
+    return readStorageJson('data/spin_logs.json', []);
 }
 
 function saveSpinLogs($logs) {
-    global $logsFile;
-    $dir = dirname($logsFile);
-    if (!is_dir($dir)) @mkdir($dir, 0777, true);
-    @file_put_contents($logsFile, json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    return writeStorageJson('data/spin_logs.json', $logs);
 }
 
 function loadUsersData() {
-    global $usersFile;
-    if (file_exists($usersFile)) {
-        return json_decode(file_get_contents($usersFile), true) ?: ['users' => []];
-    }
-    return ['users' => []];
+    return readStorageJson('data/users.json', ['users' => []]);
 }
 
 function saveUsersData($data) {
-    global $usersFile;
-    $dir = dirname($usersFile);
-    if (!is_dir($dir)) @mkdir($dir, 0777, true);
-    @file_put_contents($usersFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    return writeStorageJson('data/users.json', $data);
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_status';
@@ -307,7 +287,7 @@ switch ($action) {
         $config['daily_free_spins'] = $dailyFree;
         $config['updated_at'] = date('c');
 
-        @file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        writeStorageJson('config/spin_settings.json', $config);
 
         echo json_encode([
             'success' => true,

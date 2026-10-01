@@ -48,23 +48,18 @@ $ROLE_COLORS = [
     'super_admin' => ['bg' => 'rgba(244, 63, 94, 0.12)',  'border' => 'rgba(244, 63, 94, 0.3)',  'text' => '#FB7185']
 ];
 
+require_once __DIR__ . '/../includes/storage_helper.php';
+
 function loadUsers() {
-    global $DATA_FILE;
-    if (!file_exists($DATA_FILE)) {
-        return ['users' => []];
+    $data = readStorageJson('data/users.json', ['users' => []]);
+    if (!isset($data['users']) || !is_array($data['users'])) {
+        $data = ['users' => []];
     }
-    $content = file_get_contents($DATA_FILE);
-    $data = json_decode($content, true);
-    return is_array($data) ? $data : ['users' => []];
+    return $data;
 }
 
 function saveUsers($data) {
-    global $DATA_FILE;
-    $dir = dirname($DATA_FILE);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-    file_put_contents($DATA_FILE, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    return writeStorageJson('data/users.json', $data);
 }
 
 $action = $_GET['action'] ?? '';

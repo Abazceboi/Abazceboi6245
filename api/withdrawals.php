@@ -15,8 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../config/withdrawal_settings.json';
-$requestsFile = __DIR__ . '/../data/withdrawals.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultSettings = [
     'task' => [
@@ -51,25 +50,19 @@ $defaultSettings = [
 ];
 
 $settings = $defaultSettings;
-if (file_exists($configFile)) {
-    $raw = @file_get_contents($configFile);
-    if ($raw) {
-        $data = json_decode($raw, true);
-        if (is_array($data)) {
-            // Support migration from flat to separate structure if needed
-            if (!isset($data['task']) && !isset($data['affiliate'])) {
-                $settings['task']['min_amount'] = $data['task_min'] ?? 1000;
-                $settings['task']['max_amount'] = $data['task_max'] ?? 100000;
-                $settings['task']['mode'] = $data['mode'] ?? 'manual';
-                $settings['task']['manual_status'] = $data['manual_status'] ?? 'open';
-                $settings['affiliate']['min_amount'] = $data['referral_min'] ?? 1000;
-                $settings['affiliate']['max_amount'] = $data['referral_max'] ?? 100000;
-                $settings['affiliate']['mode'] = $data['mode'] ?? 'automatic';
-            } else {
-                if (isset($data['task'])) $settings['task'] = array_merge($settings['task'], $data['task']);
-                if (isset($data['affiliate'])) $settings['affiliate'] = array_merge($settings['affiliate'], $data['affiliate']);
-            }
-        }
+$savedSettings = readStorageJson('config/withdrawal_settings.json', []);
+if (is_array($savedSettings) && !empty($savedSettings)) {
+    if (!isset($savedSettings['task']) && !isset($savedSettings['affiliate'])) {
+        $settings['task']['min_amount'] = $savedSettings['task_min'] ?? 1000;
+        $settings['task']['max_amount'] = $savedSettings['task_max'] ?? 100000;
+        $settings['task']['mode'] = $savedSettings['mode'] ?? 'manual';
+        $settings['task']['manual_status'] = $savedSettings['manual_status'] ?? 'open';
+        $settings['affiliate']['min_amount'] = $savedSettings['referral_min'] ?? 1000;
+        $settings['affiliate']['max_amount'] = $savedSettings['referral_max'] ?? 100000;
+        $settings['affiliate']['mode'] = $savedSettings['mode'] ?? 'automatic';
+    } else {
+        if (isset($savedSettings['task'])) $settings['task'] = array_merge($settings['task'], $savedSettings['task']);
+        if (isset($savedSettings['affiliate'])) $settings['affiliate'] = array_merge($settings['affiliate'], $savedSettings['affiliate']);
     }
 }
 
@@ -201,10 +194,7 @@ if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings['referral_min'] = $settings['affiliate']['min_amount'];
     $settings['referral_max'] = $settings['affiliate']['max_amount'];
 
-    if (!is_dir(dirname($configFile))) {
-        @mkdir(dirname($configFile), 0777, true);
-    }
-    @file_put_contents($configFile, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    writeStorageJson('config/withdrawal_settings.json', $settings);
 
     $taskEval = evaluateWalletSchedule($settings['task'], 'Task Points');
     $affEval = evaluateWalletSchedule($settings['affiliate'], 'Affiliate Cash');
@@ -230,10 +220,7 @@ if ($action === 'toggle_manual' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings[$targetWallet]['manual_status'] = ($curStatus === 'open') ? 'closed' : 'open';
     $settings['updated_at'] = date('Y-m-d H:i:s');
 
-    if (!is_dir(dirname($configFile))) {
-        @mkdir(dirname($configFile), 0777, true);
-    }
-    @file_put_contents($configFile, json_encode($settings, JSON_PRETTY_PRINT));
+    writeStorageJson('config/withdrawal_settings.json', $settings);
 
     $taskEval = evaluateWalletSchedule($settings['task'], 'Task Points');
     $affEval = evaluateWalletSchedule($settings['affiliate'], 'Affiliate Cash');
@@ -386,15 +373,10 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'issuer' => 'INNOVATIONX FINANCIAL CLEARING'
     ];
 
-    $reqs = [];
-    if (file_exists($requestsFile)) {
-        $raw = @file_get_contents($requestsFile);
-        $reqs = json_decode($raw, true) ?: [];
-    }
+    $reqs = readStorageJson('data/withdrawals.json', []);
     if (!is_array($reqs)) $reqs = [];
     array_unshift($reqs, $receipt);
-    if (!is_dir(dirname($requestsFile))) @mkdir(dirname($requestsFile), 0777, true);
-    @file_put_contents($requestsFile, json_encode($reqs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    writeStorageJson('data/withdrawals.json', $reqs);
 
     if (!isset($user['activity_ledger']) || !is_array($user['activity_ledger'])) {
         $user['activity_ledger'] = [];
@@ -406,7 +388,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'receipt' => $receipt
     ]);
     unset($user);
-    @file_put_contents($usersFile, json_encode($usersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    writeStorageJson('data/users.json', $usersData);
 
     echo json_encode([
         'status' => 'success',
@@ -421,10 +403,8 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($action === 'approve_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $id = $input['id'] ?? '';
-    $reqs = [];
-    if (file_exists($requestsFile)) {
-        $reqs = json_decode(file_get_contents($requestsFile), true) ?: [];
-    }
+    $reqs = readStorageJson('data/withdrawals.json', []);
+    if (!is_array($reqs)) $reqs = [];
     foreach ($reqs as &$r) {
         if (($r['id'] ?? '') === $id || ($r['txn_id'] ?? '') === $id) {
             $r['status'] = 'Approved';
@@ -433,7 +413,7 @@ if ($action === 'approve_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     unset($r);
-    @file_put_contents($requestsFile, json_encode($reqs, JSON_PRETTY_PRINT));
+    writeStorageJson('data/withdrawals.json', $reqs);
     echo json_encode(['status' => 'success', 'message' => 'Withdrawal request approved!']);
     exit;
 }
@@ -442,10 +422,8 @@ if ($action === 'reject_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $id = $input['id'] ?? '';
     $reason = $input['reason'] ?? 'Declined by administration';
-    $reqs = [];
-    if (file_exists($requestsFile)) {
-        $reqs = json_decode(file_get_contents($requestsFile), true) ?: [];
-    }
+    $reqs = readStorageJson('data/withdrawals.json', []);
+    if (!is_array($reqs)) $reqs = [];
     foreach ($reqs as &$r) {
         if (($r['id'] ?? '') === $id || ($r['txn_id'] ?? '') === $id) {
             $r['status'] = 'Rejected';
@@ -455,7 +433,7 @@ if ($action === 'reject_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     unset($r);
-    @file_put_contents($requestsFile, json_encode($reqs, JSON_PRETTY_PRINT));
+    writeStorageJson('data/withdrawals.json', $reqs);
     echo json_encode(['status' => 'success', 'message' => 'Withdrawal request rejected.']);
     exit;
 }

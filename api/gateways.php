@@ -80,18 +80,14 @@ $defaultConfig = [
     'updated_at' => date('Y-m-d H:i:s')
 ];
 
+require_once __DIR__ . '/../includes/storage_helper.php';
+
 $action = $_GET['action'] ?? 'get_config';
 
 if ($action === 'get_config') {
-    if (file_exists($dataFile)) {
-        $saved = json_decode(file_get_contents($dataFile), true);
-        if (is_array($saved)) {
-            $config = array_merge($defaultConfig, $saved);
-            echo json_encode(['status' => 'success', 'config' => $config]);
-            exit;
-        }
-    }
-    echo json_encode(['status' => 'success', 'config' => $defaultConfig]);
+    $saved = readStorageJson('config/payment_gateways.json', []);
+    $config = is_array($saved) && !empty($saved) ? array_merge($defaultConfig, $saved) : $defaultConfig;
+    echo json_encode(['status' => 'success', 'config' => $config]);
     exit;
 }
 
@@ -103,7 +99,7 @@ if ($action === 'save_config' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $input['updated_at'] = date('Y-m-d H:i:s');
-    file_put_contents($dataFile, json_encode($input, JSON_PRETTY_PRINT));
+    writeStorageJson('config/payment_gateways.json', $input);
 
     echo json_encode(['status' => 'success', 'message' => 'Payment Gateway settings updated', 'config' => $input]);
     exit;

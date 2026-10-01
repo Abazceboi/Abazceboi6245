@@ -13,43 +13,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../config/tokens_config.json';
-$ordersFile = __DIR__ . '/../config/token_orders.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 function getTokenConfig(): array {
-    global $configFile;
-    if (!file_exists($configFile)) {
-        return [
-            'platform_bank' => [
-                'bank_name' => 'OPay Digital Services',
-                'account_number' => '8102345678',
-                'account_name' => 'INNOVATIONX OTC TRADING',
-                'instructions' => 'Transfer exact amount to the account above and upload receipt proof.'
-            ],
-            'tokens' => []
-        ];
-    }
-    $data = json_decode(file_get_contents($configFile), true);
-    return is_array($data) ? $data : ['platform_bank' => [], 'tokens' => []];
+    $default = [
+        'platform_bank' => [
+            'bank_name' => 'OPay Digital Services',
+            'account_number' => '8102345678',
+            'account_name' => 'INNOVATIONX OTC TRADING',
+            'instructions' => 'Transfer exact amount to the account above and upload receipt proof.'
+        ],
+        'tokens' => []
+    ];
+    $data = readStorageJson('config/tokens_config.json', $default);
+    return is_array($data) ? $data : $default;
 }
 
 function saveTokenConfig(array $data): void {
-    global $configFile;
-    if (!is_dir(dirname($configFile))) mkdir(dirname($configFile), 0777, true);
-    file_put_contents($configFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('config/tokens_config.json', $data);
 }
 
 function getTokenOrders(): array {
-    global $ordersFile;
-    if (!file_exists($ordersFile)) return [];
-    $data = json_decode(file_get_contents($ordersFile), true);
+    $data = readStorageJson('config/token_orders.json', []);
     return is_array($data) ? $data : [];
 }
 
 function saveTokenOrders(array $orders): void {
-    global $ordersFile;
-    if (!is_dir(dirname($ordersFile))) mkdir(dirname($ordersFile), 0777, true);
-    file_put_contents($ordersFile, json_encode(array_values($orders), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('config/token_orders.json', array_values($orders));
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';

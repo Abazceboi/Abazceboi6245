@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../config/site_content.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultContent = [
     'card_cash_title' => 'Withdrawable Cash',
@@ -49,13 +49,8 @@ $defaultContent = [
     'hero_wallet_btn_text' => 'Claim 100 PTS Welcome Bonus'
 ];
 
-$content = $defaultContent;
-if (file_exists($configFile)) {
-    $saved = json_decode(file_get_contents($configFile), true);
-    if (is_array($saved)) {
-        $content = array_merge($defaultContent, $saved);
-    }
-}
+$saved = readStorageJson('config/site_content.json', []);
+$content = is_array($saved) ? array_merge($defaultContent, $saved) : $defaultContent;
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
@@ -76,10 +71,7 @@ if ($action === 'save_content' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (!is_dir(dirname($configFile))) {
-        mkdir(dirname($configFile), 0777, true);
-    }
-    file_put_contents($configFile, json_encode($content, JSON_PRETTY_PRINT));
+    writeStorageJson('config/site_content.json', $content);
 
     echo json_encode([
         'status' => 'success',

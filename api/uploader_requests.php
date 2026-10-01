@@ -13,19 +13,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$dataFile = __DIR__ . '/../config/uploader_requests.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
+require_once __DIR__ . '/../includes/coupons_helper.php';
 
 function getRequests() {
-    global $dataFile;
-    if (!file_exists($dataFile)) return [];
-    $data = json_decode(file_get_contents($dataFile), true);
+    $data = readStorageJson('config/uploader_requests.json', []);
     return is_array($data) ? $data : [];
 }
 
 function saveRequests($requests) {
-    global $dataFile;
-    if (!is_dir(dirname($dataFile))) mkdir(dirname($dataFile), 0777, true);
-    file_put_contents($dataFile, json_encode(array_values($requests), JSON_PRETTY_PRINT));
+    writeStorageJson('config/uploader_requests.json', array_values($requests));
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -152,11 +149,52 @@ if ($action === 'approve_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     saveRequests($requests);
 
+    // Promote user in users.json
+    if (!empty($promotedUser)) {
+        $usersData = readStorageJson('data/users.json', ['users' => []]);
+        if (isset($usersData['users']) && is_array($usersData['users'])) {
+            foreach ($usersData['users'] as &$u) {
+                if (strtolower($u['username'] ?? '') === strtolower($promotedUser)) {
+                    $u['role'] = 'uploader';
+                    $u['role_label'] = 'Verified Uploader';
+                    $u['is_activated'] = true;
+                    $u['updated_at'] = date('c');
+                    break;
+                }
+            }
+            unset($u);
+            writeStorageJson('data/users.json', $usersData);
+        }
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => "User @{$promotedUser} has been promoted to Verified Task Uploader!",
         'requests' => $requests,
         'promoted_user' => $promotedUser
+    ]);
+    exit;
+}
+
+// 4. REDEEM UPLOADER PIN
+if ($action === 'redeem_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $code = trim($input['code'] ?? $input['pin'] ?? '');
+    $username = trim($input['username'] ?? '');
+
+    $pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+    $val = validateCouponForUploader($code, $pdo);
+    if (!$val['valid']) {
+        echo json_encode(['status' => 'error', 'message' => $val['message']]);
+        exit;
+    }
+
+    consumeCouponForUploader($code, $username, $pdo);
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => "Uploader Accreditation unlocked successfully with PIN {$code}! You are now a Verified Uploader.",
+        'role' => 'uploader'
     ]);
     exit;
 }

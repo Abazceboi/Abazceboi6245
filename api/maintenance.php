@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * INNOVATIONX - Site Maintenance Mode Controller API
  * Allows Super Admin to toggle maintenance mode on/off and broadcast status.
@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../config/maintenance.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultMaintenance = [
     'enabled' => false,
@@ -23,16 +23,8 @@ $defaultMaintenance = [
     'updated_at' => date('Y-m-d H:i:s')
 ];
 
-$maintenance = $defaultMaintenance;
-if (file_exists($configFile)) {
-    $raw = @file_get_contents($configFile);
-    if ($raw) {
-        $data = json_decode($raw, true);
-        if (is_array($data)) {
-            $maintenance = array_merge($defaultMaintenance, $data);
-        }
-    }
-}
+$saved = readStorageJson('config/maintenance.json', []);
+$maintenance = is_array($saved) ? array_merge($defaultMaintenance, $saved) : $defaultMaintenance;
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_status';
 
@@ -61,10 +53,7 @@ if ($action === 'toggle' || $action === 'save' || $_SERVER['REQUEST_METHOD'] ===
     }
     $maintenance['updated_at'] = date('Y-m-d H:i:s');
 
-    if (!is_dir(dirname($configFile))) {
-        @mkdir(dirname($configFile), 0777, true);
-    }
-    @file_put_contents($configFile, json_encode($maintenance, JSON_PRETTY_PRINT));
+    writeStorageJson('config/maintenance.json', $maintenance);
 
     echo json_encode([
         'status' => 'success',

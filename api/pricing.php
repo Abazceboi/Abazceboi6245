@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$pricingFile = __DIR__ . '/../config/app_pricing.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultPricing = [
     'reg_fee' => 1000,
@@ -26,19 +26,15 @@ $defaultPricing = [
     'updated_at' => date('Y-m-d H:i:s')
 ];
 
-function getPricingData($path, $defaults) {
-    if (file_exists($path)) {
-        $raw = @file_get_contents($path);
-        $data = json_decode($raw, true);
-        if (is_array($data)) return array_merge($defaults, $data);
-    }
-    return $defaults;
+function getPricingData($defaults) {
+    $data = readStorageJson('config/app_pricing.json', $defaults);
+    return is_array($data) ? array_merge($defaults, $data) : $defaults;
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_pricing';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' || $action === 'get_pricing') {
-    $pricing = getPricingData($pricingFile, $defaultPricing);
+    $pricing = getPricingData($defaultPricing);
     echo json_encode(['status' => 'success', 'pricing' => $pricing]);
     exit;
 }
@@ -46,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' || $action === 'get_pricing') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $raw = file_get_contents('php://input');
     $input = json_decode($raw, true) ?: $_POST;
-    $pricing = getPricingData($pricingFile, $defaultPricing);
+    $pricing = getPricingData($defaultPricing);
 
     if (isset($input['reg_fee'])) $pricing['reg_fee'] = floatval($input['reg_fee']);
     if (isset($input['ref_commission'])) $pricing['ref_commission'] = floatval($input['ref_commission']);
@@ -55,9 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($input['min_withdrawal'])) $pricing['min_withdrawal'] = floatval($input['min_withdrawal']);
     $pricing['updated_at'] = date('Y-m-d H:i:s');
 
-    $dir = dirname($pricingFile);
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
-    file_put_contents($pricingFile, json_encode($pricing, JSON_PRETTY_PRINT));
+    writeStorageJson('config/app_pricing.json', $pricing);
 
     echo json_encode(['status' => 'success', 'message' => 'Platform financial pricing saved successfully!', 'pricing' => $pricing]);
     exit;

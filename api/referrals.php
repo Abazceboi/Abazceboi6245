@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -8,15 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-$dataFile = __DIR__ . '/../data/referrals.json';
-$referrals = [];
-
-if (file_exists($dataFile)) {
-    $raw = @file_get_contents($dataFile);
-    if ($raw) {
-        $referrals = json_decode($raw, true) ?: [];
-    }
-}
+require_once __DIR__ . '/../includes/storage_helper.php';
+$referrals = readStorageJson('data/referrals.json', []);
 
 $action = $_GET['action'] ?? '';
 $upline = $_GET['upline'] ?? $_GET['username'] ?? 'Member';
@@ -68,7 +61,7 @@ if ($action === 'add_referral' || $_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     
     array_unshift($referrals, $newRef);
-    @file_put_contents($dataFile, json_encode($referrals, JSON_PRETTY_PRINT));
+    writeStorageJson('data/referrals.json', $referrals);
     
     echo json_encode([
         'status' => 'success',

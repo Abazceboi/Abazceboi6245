@@ -3926,10 +3926,22 @@ select.has-custom-dropdown {
     // ════════════════════════════════════════════════════
     // UTILITY FUNCTIONS
     // ════════════════════════════════════════════════════
-    function apiCall(url, method, body) {
+    async function apiCall(url, method, body) {
         const opts = { method: method || 'GET', headers: { 'Content-Type': 'application/json' } };
         if (body) opts.body = JSON.stringify(body);
-        return fetch(url, opts).then(r => r.json());
+        const res = await fetch(url, opts);
+        const text = await res.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch(e) {
+            console.error('API Non-JSON response:', text);
+            throw new Error((text && text.trim().substring(0, 150)) || 'Invalid response from server');
+        }
+        if (!res.ok && data && (data.error || data.message)) {
+            throw new Error(data.error || data.message);
+        }
+        return data;
     }
     function fmt(n) { return Number(n||0).toLocaleString('en-NG'); }
     function fmtNaira(n) { return '₦' + fmt(n); }
@@ -4125,21 +4137,16 @@ select.has-custom-dropdown {
             showAlert('Cannot delete primary super admin account!', 'error');
             return;
         }
-        const prompt1 = confirm(`DELETE WARNING:\n\nAre you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and account credentials permanently.`);
-        if (!prompt1) return;
-        const prompt2 = prompt(`To confirm permanent deletion, type "${userId}" below:`);
-        if (prompt2 !== userId) {
-            showAlert('Deletion cancelled. Username confirmation mismatch.', 'info');
-            return;
-        }
+        const ok = confirm(`Are you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and credentials immediately.`);
+        if (!ok) return;
 
         try {
             const res = await apiCall('api/users.php?action=delete_user', 'POST', { target_username: userId });
             if (res && res.success) {
-                showAlert(res.message, 'success');
+                showAlert(res.message || `User @${userId} deleted successfully`, 'success');
                 loadUsersData();
             } else {
-                showAlert((res && res.error) || 'Failed to delete user', 'error');
+                showAlert((res && (res.error || res.message)) || 'Failed to delete user', 'error');
             }
         } catch(e) {
             showAlert('Deletion failed: ' + (e.message || 'Server error'), 'error');
@@ -4358,17 +4365,38 @@ select.has-custom-dropdown {
         const qty = parseInt(el('couponGenQty')?.value) || 10;
         const vendor = el('couponGenVendor')?.value || '';
         try {
+            const isUploader = (type === 'UPL' || type === 'VIP_UPL');
+            const channel = isUploader ? 'UPLOADER' : 'AFFILIATE';
+            let amount = 1000;
+            let typeLabel = 'Member Registration PIN';
+            if (type === 'AFF') { amount = 1000; typeLabel = 'Affiliate Registration PIN (₦1,000)'; }
+            else if (type === 'UPL') { amount = 2000; typeLabel = 'Uploader Accreditation PIN (₦2,000)'; }
+            else if (type === 'VIP_AFF') { amount = 2500; typeLabel = 'VIP Affiliate PIN (₦2,500)'; }
+            else if (type === 'VIP_UPL') { amount = 5000; typeLabel = 'VIP Uploader PIN (₦5,000)'; }
+            else if (type === 'JOB') { amount = 1500; typeLabel = 'Task Quota PIN'; }
+
             const pins = [];
             for (let i = 0; i < qty; i++) {
                 const r = () => Math.random().toString(36).substring(2,6).toUpperCase();
-                pins.push({ code: `INX-${type}-${r()}-${r()}`, type: type, vendor_id: vendor, is_used: false, created_at: new Date().toISOString() });
+                pins.push({
+                    code: `INX-${type}-${r()}-${r()}`,
+                    type: type,
+                    channel: channel,
+                    type_label: typeLabel,
+                    amount: amount,
+                    vendor_id: vendor,
+                    is_used: false,
+                    created_at: new Date().toISOString()
+                });
             }
-            const existing = allCoupons || [];
-            const merged = [...existing, ...pins];
-            await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: merged });
-            showAlert(`${qty} PINs generated successfully!`, 'success');
-            loadCouponsData();
-        } catch(e) { showAlert('Failed to generate PINs', 'error'); }
+            const res = await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: pins, coupons: pins });
+            if (res && res.success !== false) {
+                showAlert(`${qty} ${channel} PINs generated successfully!`, 'success');
+                loadCouponsData();
+            } else {
+                showAlert((res && (res.message || res.error)) || 'Failed to generate PINs', 'error');
+            }
+        } catch(e) { showAlert('Failed to generate PINs: ' + (e.message || 'Server error'), 'error'); }
     };
 
     window.deleteCoupon = async function(code) {

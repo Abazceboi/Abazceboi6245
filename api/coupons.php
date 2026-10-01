@@ -35,7 +35,10 @@ if ($action === 'get_pins' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($ac
 // 2. SAVE GENERATED BATCH OF COUPONS
 if ($action === 'save_pins' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-    $newCoupons = $input['coupons'] ?? [];
+    $newCoupons = $input['coupons'] ?? $input['pins'] ?? [];
+    if (!empty($input['code']) && empty($newCoupons)) {
+        $newCoupons = [$input];
+    }
 
     if (!is_array($newCoupons) || empty($newCoupons)) {
         http_response_code(400);
@@ -92,6 +95,32 @@ if ($action === 'verify_pin') {
         'success' => $validation['valid'],
         'status' => $validation['valid'] ? 'success' : 'error'
     ], $validation));
+    exit;
+}
+
+// 5. REDEEM UPLOADER ACCREDITATION PIN
+if ($action === 'redeem_uploader_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $code = trim($input['code'] ?? $input['pin'] ?? '');
+    $username = trim($input['username'] ?? '');
+
+    $val = validateCouponForUploader($code, $pdo);
+    if (!$val['valid']) {
+        echo json_encode([
+            'success' => false,
+            'status' => 'error',
+            'message' => $val['message']
+        ]);
+        exit;
+    }
+
+    consumeCouponForUploader($code, $username, $pdo);
+    echo json_encode([
+        'success' => true,
+        'status' => 'success',
+        'message' => "Congratulations @{$username}! Your Uploader Accreditation PIN has been verified. You are now a Verified Uploader!",
+        'code' => $code
+    ]);
     exit;
 }
 

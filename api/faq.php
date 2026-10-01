@@ -13,17 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$faqFile = __DIR__ . '/../faq.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // GET FAQ items
 if ($action === 'get' || $action === 'get_faq' || $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $items = [];
-    if (file_exists($faqFile)) {
-        $raw = file_get_contents($faqFile);
-        $items = json_decode($raw, true) ?: [];
-    }
+    $items = readStorageJson('faq.json', []);
     echo json_encode([
         'status' => 'success',
         'faqs' => $items
@@ -36,7 +32,7 @@ if (($action === 'save' || $action === 'save_faq') && $_SERVER['REQUEST_METHOD']
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $items = $input['faqs'] ?? $input;
     if (is_array($items)) {
-        file_put_contents($faqFile, json_encode($items, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        writeStorageJson('faq.json', $items);
         echo json_encode([
             'status' => 'success',
             'message' => 'FAQ entries updated successfully.',

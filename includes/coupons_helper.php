@@ -55,24 +55,15 @@ function ensureCouponsTable(?PDO $pdo): void {
     }
 }
 
+require_once __DIR__ . '/storage_helper.php';
+
 function loadCouponsFromJson(): array {
-    $file = getCouponsFilePath();
-    if (!file_exists($file)) {
-        return [];
-    }
-    $raw = @file_get_contents($file);
-    if (!$raw) return [];
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : [];
+    $coupons = readStorageJson('data/coupons.json', []);
+    return is_array($coupons) ? $coupons : [];
 }
 
 function saveCouponsToJson(array $coupons): bool {
-    $file = getCouponsFilePath();
-    $dir = dirname($file);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0755, true);
-    }
-    return (bool)@file_put_contents($file, json_encode($coupons, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    return writeStorageJson('data/coupons.json', $coupons);
 }
 
 function loadAllCoupons(?PDO $pdo = null): array {
@@ -371,6 +362,98 @@ function consumeCouponForRegistration(string $code, string $username, ?PDO $pdo 
     }
 
     saveCouponsToJson($jsonCoupons);
+    return true;
+}
+
+/**
+ * Validates whether a coupon PIN can be used for UPLOADER accreditation.
+ * Enforces function check: must be an Uploader PIN (cannot be Member/Affiliate PIN),
+ * and strictly single-use only.
+ */
+function validateCouponForUploader(string $code, ?PDO $pdo = null): array {
+    $code = strtoupper(trim($code));
+
+    if (empty($code)) {
+        return [
+            'valid' => false,
+            'message' => 'Uploader Accreditation coupon PIN is required.'
+        ];
+    }
+
+    $coupon = findCouponByCode($code, $pdo);
+    if (!$coupon) {
+        return [
+            'valid' => false,
+            'message' => "Invalid or unrecognized coupon code: \"{$code}\". Please purchase an official Uploader PIN from an authorized vendor."
+        ];
+    }
+
+    // Function Enforcement: Affiliate registration PINs CANNOT be used for Uploader accreditation
+    $isUploaderType = ($coupon['channel'] === 'UPLOADER' || $coupon['type'] === 'UPL' || $coupon['type'] === 'VIP_UPL' || strpos($code, 'UPL') !== false);
+    if (!$isUploaderType) {
+        return [
+            'valid' => false,
+            'message' => "Invalid Code Type: \"{$code}\" is a Member Registration PIN. It cannot be used for Uploader Accreditation. Please input a genuine Uploader Accreditation PIN (e.g. INX-UPL-XXXX-XXXX)."
+        ];
+    }
+
+    // Single-Use Enforcement
+    if (!empty($coupon['is_used']) || !empty($coupon['used_by'])) {
+        $usedByInfo = !empty($coupon['used_by']) ? " by user @{$coupon['used_by']}" : "";
+        $usedAtInfo = !empty($coupon['used_at']) ? " on " . date('M j, Y, g:i a', strtotime($coupon['used_at'])) : "";
+        return [
+            'valid' => false,
+            'message' => "This Uploader Accreditation PIN (\"{$code}\") has already been redeemed{$usedByInfo}{$usedAtInfo}. Each coupon PIN can only be used once."
+        ];
+    }
+
+    return [
+        'valid' => true,
+        'message' => "Valid and unused Uploader Accreditation PIN.",
+        'coupon' => $coupon
+    ];
+}
+
+/**
+ * Consumes/burns an Uploader PIN and promotes user to 'uploader' role.
+ */
+function consumeCouponForUploader(string $code, string $username, ?PDO $pdo = null): bool {
+    $code = strtoupper(trim($code));
+    $username = trim($username);
+    if (empty($code) || empty($username)) return false;
+
+    if (!$pdo) {
+        $pdo = getDbConnection();
+    }
+
+    // 1. Burn the coupon code
+    consumeCouponForRegistration($code, $username, $pdo);
+
+    // 2. Promote user to uploader in DB
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare("UPDATE users SET role = 'uploader' WHERE LOWER(username) = LOWER(?)");
+            $stmt->execute([$username]);
+        } catch (Exception $e) {}
+    }
+
+    // 3. Promote user in JSON users
+    require_once __DIR__ . '/storage_helper.php';
+    $usersData = readStorageJson('data/users.json', ['users' => []]);
+    if (isset($usersData['users']) && is_array($usersData['users'])) {
+        foreach ($usersData['users'] as &$u) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
+                $u['role'] = 'uploader';
+                $u['role_label'] = 'Verified Uploader';
+                $u['is_activated'] = true;
+                $u['updated_at'] = date('c');
+                break;
+            }
+        }
+        unset($u);
+        writeStorageJson('data/users.json', $usersData);
+    }
+
     return true;
 }
 

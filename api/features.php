@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../config/feature_flags.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultFlags = [
     'jobbers_tasks' => true,
@@ -28,13 +28,8 @@ $defaultFlags = [
     'vendors' => true
 ];
 
-$flags = $defaultFlags;
-if (file_exists($configFile)) {
-    $saved = json_decode(file_get_contents($configFile), true);
-    if (is_array($saved)) {
-        $flags = array_merge($defaultFlags, $saved);
-    }
-}
+$saved = readStorageJson('config/feature_flags.json', []);
+$flags = is_array($saved) ? array_merge($defaultFlags, $saved) : $defaultFlags;
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
@@ -101,10 +96,7 @@ if ($action === 'save_coupon_rules' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (!is_dir(dirname($accessRulesFile))) {
-        @mkdir(dirname($accessRulesFile), 0777, true);
-    }
-    @file_put_contents($accessRulesFile, json_encode($accessRules, JSON_PRETTY_PRINT));
+    writeStorageJson('config/feature_access.json', $accessRules);
 
     echo json_encode([
         'status' => 'success',
@@ -132,10 +124,7 @@ if ($action === 'save_flags' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (!is_dir(dirname($configFile))) {
-        mkdir(dirname($configFile), 0777, true);
-    }
-    file_put_contents($configFile, json_encode($flags, JSON_PRETTY_PRINT));
+    writeStorageJson('config/feature_flags.json', $flags);
 
     echo json_encode([
         'status' => 'success',

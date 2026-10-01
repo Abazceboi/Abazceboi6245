@@ -558,8 +558,12 @@ const server = http.createServer((req, res) => {
                             res.end(JSON.stringify({ status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a valid PIN from our verified vendors.` }));
                             return;
                         }
-                        if (targetPin.is_used || targetPin.isUsed) {
-                            res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used by another member and cannot be redeemed again.` }));
+                        if (pin.includes('UPL') || (targetPin.type && targetPin.type.includes('UPL')) || targetPin.channel === 'UPLOADER') {
+                            res.end(JSON.stringify({ status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration. Please input a Member Registration PIN.` }));
+                            return;
+                        }
+                        if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                            res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                             return;
                         }
                         targetPin.is_used = true;
@@ -632,8 +636,12 @@ const server = http.createServer((req, res) => {
                         res.end(JSON.stringify({ status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a valid PIN from our verified vendors.` }));
                         return;
                     }
-                    if (targetPin.is_used || targetPin.isUsed) {
-                        res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again.` }));
+                    if (pin.includes('UPL') || (targetPin.type && targetPin.type.includes('UPL')) || targetPin.channel === 'UPLOADER') {
+                        res.end(JSON.stringify({ status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration.` }));
+                        return;
+                    }
+                    if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                        res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                         return;
                     }
 
@@ -751,6 +759,74 @@ const server = http.createServer((req, res) => {
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
                     res.end(JSON.stringify({ success: true, status: 'success', message: `PIN '${code}' deleted.`, count: coupons.length, coupons: coupons }));
+                    return;
+                }
+
+                if (action === 'verify_pin') {
+                    const code = ((parsed.code || urlObj.searchParams.get('code') || '')).trim().toUpperCase();
+                    const target = coupons.find(c => (c.code || '').toUpperCase() === code);
+                    if (!target) {
+                        res.end(JSON.stringify({ success: false, valid: false, message: `Coupon '${code}' not found.` }));
+                        return;
+                    }
+                    if (target.is_used || target.isUsed || target.used_by || target.usedBy) {
+                        res.end(JSON.stringify({ success: false, valid: false, message: `Coupon '${code}' has already been used.` }));
+                        return;
+                    }
+                    res.end(JSON.stringify({ success: true, valid: true, coupon: target, message: 'Valid unused coupon PIN.' }));
+                    return;
+                }
+
+                if (action === 'redeem_uploader_pin' && req.method === 'POST') {
+                    const code = (parsed.code || parsed.pin || '').trim().toUpperCase();
+                    const username = (parsed.username || '').trim();
+                    if (!code || !username) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: 'Coupon code and username are required.' }));
+                        return;
+                    }
+                    const target = coupons.find(c => (c.code || '').toUpperCase() === code);
+                    if (!target) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `Invalid or unrecognized coupon code: "${code}".` }));
+                        return;
+                    }
+                    const isUpl = code.includes('UPL') || (target.type && target.type.includes('UPL')) || target.channel === 'UPLOADER';
+                    if (!isUpl) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `Invalid Code Type: "${code}" is a Member Registration PIN. It cannot be used for Uploader Accreditation.` }));
+                        return;
+                    }
+                    if (target.is_used || target.isUsed || target.used_by || target.usedBy) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `This Uploader Accreditation PIN ("${code}") has already been redeemed. Each PIN is strictly single-use only.` }));
+                        return;
+                    }
+
+                    target.is_used = true;
+                    target.isUsed = true;
+                    target.used_by = username;
+                    target.usedBy = username;
+                    target.used_at = new Date().toISOString();
+                    fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    // Promote user to uploader
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    if (fs.existsSync(usersFile)) {
+                        try {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const uRec = (uData.users || []).find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                            if (uRec) {
+                                uRec.role = 'uploader';
+                                uRec.role_label = 'Verified Uploader';
+                                uRec.is_activated = true;
+                                uRec.updated_at = new Date().toISOString();
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e) {}
+                    }
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        message: `Congratulations @${username}! Your Uploader Accreditation PIN has been verified. You are now a Verified Uploader!`
+                    }));
                     return;
                 }
 

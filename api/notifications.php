@@ -1,23 +1,14 @@
 <?php
 header('Content-Type: application/json');
 
-$notifFile = __DIR__ . '/../data/notifications.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 function getNotifications($filePath) {
-    if (!file_exists($filePath)) {
-        return [];
-    }
-    $content = file_get_contents($filePath);
-    $data = json_decode($content, true);
-    return is_array($data) ? $data : [];
+    return readStorageJson('data/notifications.json', []);
 }
 
 function saveNotifications($filePath, $data) {
-    $dir = dirname($filePath);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-    file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    return writeStorageJson('data/notifications.json', $data);
 }
 
 $action = $_GET['action'] ?? 'get';

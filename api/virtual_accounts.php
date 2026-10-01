@@ -15,12 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$configFile = __DIR__ . '/../data/virtual_accounts_config.json';
-$accountsFile = __DIR__ . '/../data/user_virtual_accounts.json';
-$dataDir = dirname($configFile);
-if (!is_dir($dataDir)) {
-    @mkdir($dataDir, 0755, true);
-}
+require_once __DIR__ . '/../includes/storage_helper.php';
 
 // Default Configuration
 $defaultConfig = [
@@ -37,21 +32,13 @@ $defaultConfig = [
     'account_name_prefix' => 'INNOVATIONX'
 ];
 
-$config = $defaultConfig;
-if (file_exists($configFile)) {
-    $loaded = json_decode(file_get_contents($configFile), true);
-    if (is_array($loaded)) {
-        $config = array_merge($config, $loaded);
-    }
-}
+$savedConfig = readStorageJson('data/virtual_accounts_config.json', []);
+$config = is_array($savedConfig) && !empty($savedConfig) ? array_merge($defaultConfig, $savedConfig) : $defaultConfig;
 
 // Load Accounts Database
-$accounts = [];
-if (file_exists($accountsFile)) {
-    $loadedAccounts = json_decode(file_get_contents($accountsFile), true);
-    if (is_array($loadedAccounts)) {
-        $accounts = $loadedAccounts;
-    }
+$accounts = readStorageJson('data/user_virtual_accounts.json', []);
+if (!is_array($accounts)) {
+    $accounts = [];
 }
 
 $action = $_GET['action'] ?? '';
@@ -64,7 +51,7 @@ if ($action === 'get_config') {
 
 if ($action === 'save_config' || ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($input['save_config']))) {
     $config = array_merge($config, $input);
-    file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('data/virtual_accounts_config.json', $config);
     echo json_encode(['status' => 'success', 'message' => 'Virtual account generator settings saved.', 'config' => $config]);
     exit;
 }
@@ -114,7 +101,7 @@ if ($action === 'get_user_account') {
             'status' => 'active'
         ];
         $accounts[] = $found;
-        file_put_contents($accountsFile, json_encode($accounts, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        writeStorageJson('data/user_virtual_accounts.json', $accounts);
     }
 
     echo json_encode(['status' => 'success', 'account' => $found]);
@@ -145,7 +132,7 @@ if ($action === 'generate_account' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'status' => 'active'
     ];
     $accounts[] = $newAcc;
-    file_put_contents($accountsFile, json_encode(array_values($accounts), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('data/user_virtual_accounts.json', array_values($accounts));
 
     echo json_encode(['status' => 'success', 'message' => 'Unique payment account number generated successfully.', 'account' => $newAcc]);
     exit;
@@ -171,7 +158,7 @@ if ($action === 'webhook') {
             break;
         }
     }
-    file_put_contents($accountsFile, json_encode($accounts, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('data/user_virtual_accounts.json', $accounts);
 
     echo json_encode([
         'status' => 'success',

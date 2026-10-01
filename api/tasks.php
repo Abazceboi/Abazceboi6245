@@ -13,52 +13,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$dataFile = __DIR__ . '/../data/tasks.json';
+require_once __DIR__ . '/../includes/storage_helper.php';
 
-function getTasksList($path) {
-    if (!file_exists($path)) {
-        return [
-            [
-                'id' => 'TASK-001',
-                'title' => 'Watch 30s Sponsored Video & Like Channel',
-                'category' => 'Sponsored Video',
-                'reward_points' => 150,
-                'total_slots' => 500,
-                'remaining_slots' => 420,
-                'completions' => 80,
-                'action_url' => 'https://youtube.com',
-                'proof_type' => 'video_timer',
-                'instructions' => 'Watch the video for at least 30 seconds and click like.',
-                'status' => 'active',
-                'created_at' => date('Y-m-d H:i:s')
-            ],
-            [
-                'id' => 'TASK-002',
-                'title' => 'Join Official Telegram Community Channel',
-                'category' => 'Telegram Follow',
-                'reward_points' => 200,
-                'total_slots' => 1000,
-                'remaining_slots' => 750,
-                'completions' => 250,
-                'action_url' => 'https://t.me/innovationx_hq',
-                'proof_type' => 'username',
-                'instructions' => 'Join the channel and submit your Telegram username for verification.',
-                'status' => 'active',
-                'created_at' => date('Y-m-d H:i:s')
-            ]
-        ];
-    }
-    $raw = @file_get_contents($path);
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : [];
+$defaultTasks = [
+    [
+        'id' => 'TASK-001',
+        'title' => 'Watch 30s Sponsored Video & Like Channel',
+        'category' => 'Sponsored Video',
+        'reward_points' => 150,
+        'total_slots' => 500,
+        'remaining_slots' => 420,
+        'completions' => 80,
+        'action_url' => 'https://youtube.com',
+        'proof_type' => 'video_timer',
+        'instructions' => 'Watch the video for at least 30 seconds and click like.',
+        'status' => 'active',
+        'created_at' => date('Y-m-d H:i:s')
+    ],
+    [
+        'id' => 'TASK-002',
+        'title' => 'Join Official Telegram Community Channel',
+        'category' => 'Telegram Follow',
+        'reward_points' => 200,
+        'total_slots' => 1000,
+        'remaining_slots' => 750,
+        'completions' => 250,
+        'action_url' => 'https://t.me/innovationx_hq',
+        'proof_type' => 'username',
+        'instructions' => 'Join the channel and submit your Telegram username for verification.',
+        'status' => 'active',
+        'created_at' => date('Y-m-d H:i:s')
+    ]
+];
+
+function getTasksList($path = null) {
+    global $defaultTasks;
+    $data = readStorageJson('data/tasks.json', $defaultTasks);
+    return is_array($data) ? $data : $defaultTasks;
 }
 
 function saveTasksList($path, $tasks) {
-    $dir = dirname($path);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-    file_put_contents($path, json_encode($tasks, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    writeStorageJson('data/tasks.json', $tasks);
 }
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_tasks';
@@ -127,17 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $submissionsFile = __DIR__ . '/../data/task_submissions.json';
-    $getSubmissions = function() use ($submissionsFile) {
-        if (!file_exists($submissionsFile)) return [];
-        $raw = @file_get_contents($submissionsFile);
-        $d = json_decode($raw, true);
-        return is_array($d) ? $d : [];
+    $getSubmissions = function() {
+        return readStorageJson('data/task_submissions.json', []);
     };
-    $saveSubmissions = function($subs) use ($submissionsFile) {
-        $dir = dirname($submissionsFile);
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        file_put_contents($submissionsFile, json_encode(array_values($subs), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    $saveSubmissions = function($subs) {
+        writeStorageJson('data/task_submissions.json', array_values($subs));
     };
 
     if ($action === 'submit_task_proof') {
@@ -214,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         break;
                     }
                 }
-                file_put_contents($usersFile, json_encode($uData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                writeStorageJson('data/users.json', $uData);
             }
         }
 
