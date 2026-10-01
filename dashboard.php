@@ -2011,14 +2011,38 @@ $hideFooter = true;
             <form onsubmit="handleTaskProofSubmit(event)">
                 <input type="hidden" id="taskModalId">
                 <input type="hidden" id="taskModalReward">
-                <div class="form-group">
-                    <label class="form-label">Proof URL or Screenshot Link</label>
-                    <input type="url" id="taskModalProofUrl" class="form-input" placeholder="https://..." required>
+                
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label" style="font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Upload Screenshot Proof</span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">JPG, PNG, WEBP (Max 5MB)</span>
+                    </label>
+                    <div id="taskProofDropzone" style="border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: rgba(56, 189, 248, 0.05); transition: all 0.2s ease;" onclick="document.getElementById('taskModalProofFile').click()">
+                        <div id="taskUploadPrompt">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #38bdf8; margin: 0 auto 6px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: #38bdf8;">Choose Screenshot or Drag & Drop</span>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Attach your task completion proof directly</div>
+                        </div>
+                        <input type="file" id="taskModalProofFile" accept="image/*" style="display:none;" onchange="handleTaskProofFileChange(event)">
+                    </div>
+                    <div id="taskProofPreviewWrap" style="display: none; margin-top: 10px; text-align: center;">
+                        <img id="taskProofPreviewImg" src="" alt="Proof Preview" style="max-height: 140px; max-width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle); object-fit: contain;">
+                        <div style="margin-top: 6px;">
+                            <button type="button" onclick="clearTaskProofFile()" style="background: none; border: none; color: #ef4444; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-decoration: underline;">✕ Remove Image</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Additional Verification Notes (Optional)</label>
-                    <input type="text" id="taskModalNotes" class="form-input" placeholder="e.g. Completed with username @...">
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label" style="font-weight: 600;">Or Proof Link / Handle (Optional if image uploaded)</label>
+                    <input type="text" id="taskModalProofUrl" class="form-input" placeholder="e.g. https://... or @username">
                 </div>
+
+                <div class="form-group" style="margin-bottom: 18px;">
+                    <label class="form-label" style="font-weight: 600;">Verification Notes (Optional)</label>
+                    <input type="text" id="taskModalNotes" class="form-input" placeholder="e.g. Followed from handle @myusername">
+                </div>
+
                 <button type="submit" class="btn-submit-main" id="btnSubmitTaskProof">
                     <span>Submit for Immediate Review</span>
                 </button>
@@ -2381,7 +2405,15 @@ $hideFooter = true;
         function closeWithdrawModal() { document.getElementById('withdrawModal').classList.remove('open'); }
         function openBankModal() { document.getElementById('bankModal').classList.add('open'); }
         function closeBankModal() { document.getElementById('bankModal').classList.remove('open'); }
-        function closeTaskSubmitModal() { document.getElementById('taskSubmitModal').classList.remove('open'); }
+        function closeTaskSubmitModal() { 
+            const m = document.getElementById('taskSubmitModal');
+            if (m) m.classList.remove('open'); 
+            if (typeof clearTaskProofFile === 'function') clearTaskProofFile();
+            const uInput = document.getElementById('taskModalProofUrl');
+            if (uInput) uInput.value = '';
+            const nInput = document.getElementById('taskModalNotes');
+            if (nInput) nInput.value = '';
+        }
         function openNotifModal() { document.getElementById('notifModal').classList.add('open'); }
         function closeNotifModal() { document.getElementById('notifModal').classList.remove('open'); }
 
@@ -2918,33 +2950,87 @@ $hideFooter = true;
             }
         }
 
+        let taskUploadedBase64 = '';
+
+        function handleTaskProofFileChange(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image file too large (max 5MB)', false);
+                e.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                taskUploadedBase64 = evt.target.result;
+                const prevImg = document.getElementById('taskProofPreviewImg');
+                const prevWrap = document.getElementById('taskProofPreviewWrap');
+                const promptBox = document.getElementById('taskUploadPrompt');
+                if (prevImg) prevImg.src = taskUploadedBase64;
+                if (prevWrap) prevWrap.style.display = 'block';
+                if (promptBox) promptBox.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearTaskProofFile() {
+            taskUploadedBase64 = '';
+            const fileInput = document.getElementById('taskModalProofFile');
+            if (fileInput) fileInput.value = '';
+            const prevWrap = document.getElementById('taskProofPreviewWrap');
+            const promptBox = document.getElementById('taskUploadPrompt');
+            if (prevWrap) prevWrap.style.display = 'none';
+            if (promptBox) promptBox.style.display = 'block';
+        }
+
         function openTaskProofModal(id, title, instructions, reward) {
+            clearTaskProofFile();
+            const uInput = document.getElementById('taskModalProofUrl');
+            if (uInput) uInput.value = '';
+            const nInput = document.getElementById('taskModalNotes');
+            if (nInput) nInput.value = '';
+
             document.getElementById('taskModalId').value = id;
             document.getElementById('taskModalReward').value = reward;
             document.getElementById('taskModalTitle').textContent = `Submit Proof: ${title}`;
-            document.getElementById('taskModalInstructions').textContent = instructions || 'Submit proof URL to claim your reward.';
+            document.getElementById('taskModalInstructions').textContent = instructions || 'Submit screenshot proof or URL to claim your reward.';
             document.getElementById('taskSubmitModal').classList.add('open');
         }
 
         async function handleTaskProofSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitTaskProof');
-            btn.disabled = true;
-            btn.textContent = 'Submitting Proof...';
-
             const taskId = document.getElementById('taskModalId').value;
             const proofUrl = document.getElementById('taskModalProofUrl').value.trim();
             const notes = document.getElementById('taskModalNotes').value.trim();
+            const taskTitle = document.getElementById('taskModalTitle').textContent.replace('Submit Proof: ', '').trim();
+            const rewardPoints = parseInt(document.getElementById('taskModalReward').value) || 150;
+
+            const finalProof = taskUploadedBase64 || proofUrl;
+            if (!finalProof) {
+                showToast('Please upload a screenshot or enter a proof URL', false);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting Proof...';
 
             try {
                 const res = await fetch('/api/tasks.php?action=submit_task_proof', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_id: taskId, username: CURRENT_USER, proof_url: proofUrl, notes: notes })
+                    body: JSON.stringify({ 
+                        task_id: taskId, 
+                        task_title: taskTitle,
+                        username: CURRENT_USER, 
+                        proof_url: finalProof, 
+                        notes: notes,
+                        reward_points: rewardPoints
+                    })
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    showToast(data.message);
+                    showToast(data.message || 'Task proof submitted! Our review team will verify shortly.');
                     closeTaskSubmitModal();
                 } else {
                     showToast(data.message || 'Submission failed', false);

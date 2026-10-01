@@ -52,10 +52,28 @@ $ROLE_COLORS = [
 
 require_once __DIR__ . '/../includes/storage_helper.php';
 
+function getDeletedUsersList(): array {
+    $list = readStorageJson('data/deleted_users.json', []);
+    if (!is_array($list)) return [];
+    $clean = [];
+    foreach ($list as $item) {
+        $u = strtolower(trim(is_string($item) ? $item : ($item['username'] ?? '')));
+        if (!empty($u)) $clean[$u] = true;
+    }
+    return $clean;
+}
+
 function loadUsers() {
     $data = readStorageJson('data/users.json', ['users' => []]);
     if (!isset($data['users']) || !is_array($data['users'])) {
         $data = ['users' => []];
+    }
+    $delMap = getDeletedUsersList();
+    if (!empty($delMap)) {
+        $data['users'] = array_values(array_filter($data['users'], function($u) use ($delMap) {
+            $un = strtolower(trim($u['username'] ?? ''));
+            return !empty($un) && !isset($delMap[$un]);
+        }));
     }
     return $data;
 }
@@ -92,15 +110,21 @@ function syncVendorProfileIfVendor(string $username, string $fullName = '', stri
     }
 }
 
-$action = $_GET['action'] ?? '';
+$rawInput = file_get_contents('php://input');
+$inputData = (!empty($rawInput) ? json_decode($rawInput, true) : null) ?? $_POST ?? [];
+$action = $_GET['action'] ?? $inputData['action'] ?? '';
 
 switch ($action) {
 
     case 'get_users':
         $data = loadUsers();
+        $delMap = getDeletedUsersList();
         $usersMap = [];
         foreach (($data['users'] ?? []) as $u) {
-            $usersMap[strtolower($u['username'])] = $u;
+            $unLower = strtolower($u['username']);
+            if (!isset($delMap[$unLower])) {
+                $usersMap[$unLower] = $u;
+            }
         }
 
         // Fetch registered users from PostgreSQL database if available
@@ -110,6 +134,7 @@ switch ($action) {
                 $dbRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 foreach ($dbRows as $r) {
                     $unLower = strtolower($r['username']);
+                    if (isset($delMap[$unLower])) continue;
                     $role = !empty($r['role']) ? $r['role'] : ($usersMap[$unLower]['role'] ?? 'member');
                     $dbEntry = [
                         'id' => $r['id'],
@@ -629,10 +654,20 @@ switch ($action) {
 
         saveUsers($data);
 
+        // Record in tombstone list so deleted account never resurfaces
+        $delList = readStorageJson('data/deleted_users.json', []);
+        if (!is_array($delList)) $delList = [];
+        $tLower = strtolower($targetUsername);
+        if (!in_array($tLower, $delList, true)) {
+            $delList[] = $tLower;
+            writeStorageJson('data/deleted_users.json', $delList);
+        }
+
         echo json_encode([
             'success' => true,
             'message' => "User @{$targetUsername} has been permanently deleted from the system.",
-            'username' => $targetUsername
+            'username' => $targetUsername,
+            'users' => $data['users']
         ]);
         break;
 

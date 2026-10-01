@@ -1955,10 +1955,18 @@ const server = http.createServer((req, res) => {
             // User Role Management API
             if (cleanUrl.includes('users.php')) {
                 const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                const deletedUsersFile = path.join(PUBLIC_DIR, 'data', 'deleted_users.json');
                 let usersData = { users: [] };
+                let deletedUsersList = [];
                 if (fs.existsSync(usersFile)) {
                     try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
                 }
+                if (fs.existsSync(deletedUsersFile)) {
+                    try { deletedUsersList = JSON.parse(fs.readFileSync(deletedUsersFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(deletedUsersList)) deletedUsersList = [];
+                const delUserSet = new Set(deletedUsersList.map(u => (typeof u === 'string' ? u : (u.username || '')).toLowerCase().trim()));
+                usersData.users = (usersData.users || []).filter(u => !delUserSet.has((u.username || '').toLowerCase().trim()));
 
                 const validRoles = ['member', 'uploader', 'moderator', 'vendor', 'sub_admin', 'super_admin'];
                 const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', vendor: 'Verified Vendor', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
@@ -2212,6 +2220,23 @@ const server = http.createServer((req, res) => {
                     }
                     usersData.users = usersData.users.filter(u => (u.username || '').toLowerCase() !== targetUsername.toLowerCase());
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    try {
+                        const delFile = path.join(PUBLIC_DIR, 'data', 'deleted_users.json');
+                        let delList = [];
+                        if (fs.existsSync(delFile)) {
+                            delList = JSON.parse(fs.readFileSync(delFile, 'utf8') || '[]');
+                        }
+                        if (!Array.isArray(delList)) delList = [];
+                        const lowTarget = targetUsername.toLowerCase();
+                        if (!delList.includes(lowTarget)) {
+                            delList.push(lowTarget);
+                            const delDir = path.dirname(delFile);
+                            if (!fs.existsSync(delDir)) fs.mkdirSync(delDir, { recursive: true });
+                            fs.writeFileSync(delFile, JSON.stringify(delList, null, 2));
+                        }
+                    } catch(e) {}
+
                     res.end(JSON.stringify({ success: true, message: `User @${targetUsername} has been permanently deleted from the system.` }));
                     return;
                 }

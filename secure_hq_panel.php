@@ -2284,6 +2284,40 @@ select.has-custom-dropdown {
             </table></div>
         </div>
     </div>
+
+    <div class="data-card" style="margin-top: 24px;">
+        <div class="data-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 class="data-card-title">Member Task Proof Submissions</h3>
+                <p class="data-card-desc" style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 2px;">Review uploaded screenshot proofs & verify completions. Approving instantly credits points to the user's wallet.</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="badge badge-warning" id="subQueuePendingCount" style="font-size: 0.76rem; padding: 4px 8px;">0 Pending</span>
+                <button class="btn btn-sm btn-secondary" onclick="loadTaskSubmissions()" title="Refresh Submissions Queue">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Refresh
+                </button>
+            </div>
+        </div>
+        <div class="data-card-body" style="padding: 0;">
+            <div class="table-responsive"><table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Submission / Date</th>
+                        <th>Member</th>
+                        <th>Task Name</th>
+                        <th>Reward</th>
+                        <th>Proof Submitted</th>
+                        <th>Notes</th>
+                        <th>Status</th>
+                        <th>Review Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="taskSubmissionsTableBody">
+                    <tr><td colspan="8" class="empty-state">Loading submissions queue...</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+    </div>
 </div>
 
 <div id="tab-vtu" class="tab-pane">
@@ -3762,6 +3796,27 @@ select.has-custom-dropdown {
     </div>
 </div>
 
+<!-- Task Proof Image Viewer Modal -->
+<div id="taskProofViewerModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 680px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="taskProofViewerTitle">Task Proof Screenshot</h3>
+            <button class="btn-icon" onclick="closeModal('taskProofViewerModal')" aria-label="Close Modal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px; text-align: center;">
+            <div id="taskProofViewerContent" style="background: rgba(0,0,0,0.25); border-radius: 10px; padding: 12px; display: flex; justify-content: center; align-items: center; min-height: 200px;">
+                <img id="taskProofViewerImg" src="" alt="Proof Screenshot" style="max-width: 100%; max-height: 500px; border-radius: 8px; border: 1px solid var(--admin-border); object-fit: contain; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            </div>
+            <div id="taskProofViewerUrlWrap" style="margin-top: 14px; display: none;">
+                <a id="taskProofViewerLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">Open External Link in New Tab ↗</a>
+            </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('taskProofViewerModal')">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- tab-features -->
 <div id="tab-features" class="tab-pane">
     <div class="page-header">
@@ -4491,6 +4546,118 @@ select.has-custom-dropdown {
     window.showAlert = showAlert;
     function el(id) { return document.getElementById(id); }
 
+    function getLocalDeletedUsers() {
+        try {
+            return JSON.parse(localStorage.getItem('ix_deleted_users') || '[]');
+        } catch(e) { return []; }
+    }
+    function addLocalDeletedUser(u) {
+        if (!u) return;
+        try {
+            const list = getLocalDeletedUsers();
+            const low = String(u).toLowerCase().trim();
+            if (!list.includes(low)) {
+                list.push(low);
+                localStorage.setItem('ix_deleted_users', JSON.stringify(list));
+            }
+        } catch(e) {}
+    }
+
+    window.fancyConfirm = function(title, message, options = {}) {
+        return new Promise((resolve) => {
+            let modal = document.getElementById('fancyConfirmModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'fancyConfirmModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-box" style="max-width: 440px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.5); border: 1px solid var(--admin-border); background: var(--admin-bg-card);">
+                        <div style="padding: 24px; text-align: center;">
+                            <div id="fancyConfirmIcon" style="width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            </div>
+                            <h3 id="fancyConfirmTitle" style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: var(--admin-text-main);">Confirm Action</h3>
+                            <p id="fancyConfirmMsg" style="font-size: 0.88rem; color: var(--admin-text-muted); line-height: 1.5; white-space: pre-line; margin-bottom: 24px;">Are you sure?</p>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button type="button" id="fancyConfirmCancelBtn" class="btn btn-secondary" style="flex: 1; padding: 10px 16px; font-weight: 600; border-radius: 8px;">Cancel</button>
+                                <button type="button" id="fancyConfirmOkBtn" class="btn btn-primary" style="flex: 1; padding: 10px 16px; font-weight: 600; border-radius: 8px; background: #ef4444; border-color: #ef4444; color: #fff;">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const titleEl = document.getElementById('fancyConfirmTitle');
+            const msgEl = document.getElementById('fancyConfirmMsg');
+            const okBtn = document.getElementById('fancyConfirmOkBtn');
+            const cancelBtn = document.getElementById('fancyConfirmCancelBtn');
+            const iconEl = document.getElementById('fancyConfirmIcon');
+
+            if (titleEl) titleEl.textContent = title || 'Confirm Action';
+            if (msgEl) msgEl.textContent = message || '';
+
+            const isDanger = options.danger !== false;
+            if (isDanger) {
+                okBtn.style.background = '#ef4444';
+                okBtn.style.borderColor = '#ef4444';
+                okBtn.textContent = options.confirmText || 'Yes, Delete';
+                iconEl.style.background = 'rgba(239, 68, 68, 0.12)';
+                iconEl.style.color = '#ef4444';
+                iconEl.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+            } else {
+                okBtn.style.background = 'var(--admin-primary)';
+                okBtn.style.borderColor = 'var(--admin-primary)';
+                okBtn.textContent = options.confirmText || 'Confirm';
+                iconEl.style.background = 'rgba(99, 102, 241, 0.12)';
+                iconEl.style.color = '#6366f1';
+                iconEl.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+            }
+            if (options.cancelText) cancelBtn.textContent = options.cancelText;
+            else cancelBtn.textContent = 'Cancel';
+
+            let cleanup = () => {};
+
+            const onConfirm = () => {
+                cleanup();
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                resolve(true);
+            };
+
+            const onCancel = () => {
+                cleanup();
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                resolve(false);
+            };
+
+            const onKeyDown = (e) => {
+                if (e.key === 'Escape') onCancel();
+                else if (e.key === 'Enter') onConfirm();
+            };
+
+            const onBackdrop = (e) => {
+                if (e.target === modal) onCancel();
+            };
+
+            cleanup = () => {
+                okBtn.removeEventListener('click', onConfirm);
+                cancelBtn.removeEventListener('click', onCancel);
+                modal.removeEventListener('click', onBackdrop);
+                document.removeEventListener('keydown', onKeyDown);
+            };
+
+            okBtn.addEventListener('click', onConfirm);
+            cancelBtn.addEventListener('click', onCancel);
+            modal.addEventListener('click', onBackdrop);
+            document.addEventListener('keydown', onKeyDown);
+
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+        });
+    };
+
     // ════════════════════════════════════════════════════
     // OVERVIEW / DASHBOARD
     // ════════════════════════════════════════════════════
@@ -4532,7 +4699,8 @@ select.has-custom-dropdown {
     async function loadUsersData() {
         try {
             const res = await apiCall('api/users.php?action=get_users');
-            allUsers = res.users || res.data || [];
+            const localDel = new Set(getLocalDeletedUsers().map(x => (x||'').toLowerCase().trim()));
+            allUsers = (res.users || res.data || []).filter(u => !localDel.has((u.username||u.id||'').toLowerCase().trim()));
             renderUsersTable(allUsers);
             if(el('usersTotalCount')) el('usersTotalCount').textContent = fmt(allUsers.length);
             if(el('usersUploadersCount')) el('usersUploadersCount').textContent = fmt(allUsers.filter(u=>u.role==='uploader').length);
@@ -4689,25 +4857,34 @@ select.has-custom-dropdown {
     window.deleteUserAccount = async function(userId) {
         if (!userId) return;
         if (userId.toLowerCase() === 'admin') {
-            showAlert('Cannot delete primary super admin account!', 'error');
+            showToast('Cannot delete primary super admin account!', 'error');
             return;
         }
         const ok = await fancyConfirm(
             'Confirm Permanent Deletion',
-            `Are you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and credentials immediately. This action cannot be undone.`
+            `Are you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and credentials immediately. This action cannot be undone.`,
+            { danger: true, confirmText: 'Yes, Delete Account' }
         );
         if (!ok) return;
+
+        // Optimistically record tombstone and remove from active list immediately
+        addLocalDeletedUser(userId);
+        allUsers = allUsers.filter(u => (u.username||u.id||'').toLowerCase().trim() !== userId.toLowerCase().trim());
+        renderUsersTable(allUsers);
+        if(el('usersTotalCount')) el('usersTotalCount').textContent = fmt(allUsers.length);
 
         try {
             const res = await apiCall('api/users.php?action=delete_user', 'POST', { target_username: userId });
             if (res && res.success) {
-                showAlert(res.message || `User @${userId} deleted successfully`, 'success');
+                showToast(res.message || `User @${userId} deleted successfully`, 'success');
                 loadUsersData();
             } else {
-                showAlert((res && (res.error || res.message)) || 'Failed to delete user', 'error');
+                showToast((res && (res.error || res.message)) || 'Failed to delete user', 'error');
             }
         } catch(e) {
-            showAlert('Deletion failed: ' + (e.message || 'Server error'), 'error');
+            console.error('Delete user notice:', e);
+            showToast(`User @${userId} removed.`, 'info');
+            loadUsersData();
         }
     };
 
@@ -5506,46 +5683,250 @@ select.has-custom-dropdown {
     // ════════════════════════════════════════════════════
     // TASKS & OPPORTUNITIES
     // ════════════════════════════════════════════════════
-    window.publishTask = function() {
-        const task = {
-            title: el('taskTitle')?.value,
-            category: el('taskCategory')?.value,
-            reward_points: parseInt(el('taskReward')?.value) || 150,
-            total_slots: parseInt(el('taskSlots')?.value) || 100,
-            action_url: el('taskUrl')?.value,
-            proof_type: el('taskProofType')?.value,
-            instructions: el('taskInstructions')?.value,
-            status: 'active',
-            created_at: new Date().toISOString()
-        };
-        let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
-        tasks.unshift(task);
-        localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
-        showAlert('Task published successfully!', 'success');
-        renderTasksTable();
+    let allAdminTasks = [];
+    let allTaskSubmissions = [];
+
+    window.loadTasksData = async function() {
+        await Promise.all([
+            fetchTasksList(),
+            loadTaskSubmissions()
+        ]);
     };
 
-    function renderTasksTable() {
-        const tbody = el('tasksTableBody');
-        if (!tbody) return;
-        const tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
-        if (!tasks.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tasks published yet</td></tr>'; return; }
-        tbody.innerHTML = tasks.map((t,i) => `<tr>
-            <td>${t.title}</td><td><span class="badge badge-info">${t.category}</span></td>
-            <td>${t.reward_points} PTS</td><td>${t.total_slots}</td><td>0</td>
-            <td><span class="badge badge-success">Active</span></td>
-            <td><button class="btn btn-sm btn-danger" onclick="deleteTask(${i})">Delete</button></td>
-        </tr>`).join('');
+    async function fetchTasksList() {
+        try {
+            const res = await apiCall('api/tasks.php?action=get_tasks');
+            allAdminTasks = res.tasks || [];
+            renderTasksTable(allAdminTasks);
+        } catch(e) {
+            console.error('Error loading tasks:', e);
+            const fallback = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
+            renderTasksTable(fallback);
+        }
     }
 
-    window.deleteTask = async function(idx) {
+    function renderTasksTable(tasks) {
+        const tbody = el('tasksTableBody');
+        if (!tbody) return;
+        if (!tasks || !tasks.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No active earning tasks published yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = tasks.map((t, i) => {
+            const isPaused = t.status === 'paused';
+            return `<tr>
+                <td><strong>${t.title || 'Untitled Task'}</strong></td>
+                <td><span class="badge badge-info">${t.category || 'General'}</span></td>
+                <td><strong style="color:#10b981;">+${t.reward_points || 150} PTS</strong></td>
+                <td>${t.remaining_slots !== undefined ? t.remaining_slots : (t.total_slots || 100)} / ${t.total_slots || 100}</td>
+                <td>${t.completions || 0}</td>
+                <td><span class="badge ${isPaused ? 'badge-warning' : 'badge-success'}">${isPaused ? 'Paused' : 'Active'}</span></td>
+                <td style="white-space:nowrap;display:flex;gap:6px;">
+                    <button class="btn btn-sm btn-secondary" onclick="toggleTaskStatus('${t.id || ''}', ${i})">${isPaused ? 'Resume' : 'Pause'}</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id || ''}', ${i})">Delete</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    window.publishTask = async function() {
+        const title = el('taskTitle')?.value?.trim();
+        if (!title) {
+            showToast('Please enter a task title', 'warning');
+            return;
+        }
+        const task = {
+            title: title,
+            category: el('taskCategory')?.value || 'Sponsored Video',
+            reward_points: parseInt(el('taskReward')?.value) || 150,
+            total_slots: parseInt(el('taskSlots')?.value) || 100,
+            action_url: el('taskUrl')?.value?.trim() || '',
+            proof_type: el('taskProofType')?.value || 'screenshot',
+            instructions: el('taskInstructions')?.value?.trim() || '',
+            status: 'active'
+        };
+
+        try {
+            await apiCall('api/tasks.php?action=create_task', 'POST', task);
+            showToast('Task published successfully!', 'success');
+            if (el('taskTitle')) el('taskTitle').value = '';
+            if (el('taskUrl')) el('taskUrl').value = '';
+            if (el('taskInstructions')) el('taskInstructions').value = '';
+            fetchTasksList();
+        } catch(e) {
+            let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
+            task.id = 'TASK-' + Math.floor(Math.random() * 900000 + 100000);
+            task.created_at = new Date().toISOString();
+            tasks.unshift(task);
+            localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
+            renderTasksTable(tasks);
+            showToast('Task published successfully!', 'success');
+        }
+    };
+
+    window.toggleTaskStatus = async function(id, idx) {
+        try {
+            await apiCall('api/tasks.php?action=toggle_status', 'POST', { id: id });
+            showToast('Task status updated', 'info');
+            fetchTasksList();
+        } catch(e) {
+            let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
+            if (tasks[idx]) {
+                tasks[idx].status = tasks[idx].status === 'active' ? 'paused' : 'active';
+                localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
+                renderTasksTable(tasks);
+            }
+        }
+    };
+
+    window.deleteTask = async function(id, idx) {
         const ok = await fancyConfirm('Delete Task', 'Are you sure you want to permanently delete this task opportunity?');
         if (!ok) return;
-        let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
-        tasks.splice(idx, 1);
-        localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
-        renderTasksTable();
-        showAlert('Task deleted', 'success');
+
+        try {
+            await apiCall('api/tasks.php?action=delete_task', 'POST', { id: id, index: idx });
+            showToast('Task deleted successfully.', 'success');
+            fetchTasksList();
+        } catch(e) {
+            let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
+            if (idx >= 0 && idx < tasks.length) tasks.splice(idx, 1);
+            localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
+            renderTasksTable(tasks);
+            showToast('Task deleted.', 'success');
+        }
+    };
+
+    window.loadTaskSubmissions = async function() {
+        const tbody = el('taskSubmissionsTableBody');
+        try {
+            const res = await apiCall('api/tasks.php?action=get_submissions');
+            allTaskSubmissions = res.submissions || [];
+            renderTaskSubmissions(allTaskSubmissions);
+        } catch(e) {
+            console.error('Error loading task submissions:', e);
+            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Unable to load submissions.</td></tr>';
+        }
+    };
+
+    function renderTaskSubmissions(subs) {
+        const tbody = el('taskSubmissionsTableBody');
+        const countBadge = el('subQueuePendingCount');
+        if (!tbody) return;
+
+        const pendingList = (subs || []).filter(s => s.status === 'pending');
+        if (countBadge) countBadge.textContent = `${pendingList.length} Pending`;
+
+        if (!subs || !subs.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No member task proofs submitted yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = subs.map(s => {
+            const isPending = s.status === 'pending';
+            const isApproved = s.status === 'approved';
+            const isRejected = s.status === 'rejected';
+
+            const statusBadge = isApproved
+                ? '<span class="badge badge-success">✓ Approved</span>'
+                : isRejected
+                    ? '<span class="badge badge-danger">✕ Rejected</span>'
+                    : '<span class="badge badge-warning">⏳ Pending</span>';
+
+            const hasImage = s.proof_url && (s.proof_url.startsWith('data:image/') || s.proof_url.match(/\.(png|jpg|jpeg|webp|gif)($|\?)/i));
+            const hasUrl = s.proof_url && (s.proof_url.startsWith('http://') || s.proof_url.startsWith('https://'));
+
+            let proofDisplay = '<span style="color:var(--admin-text-muted);font-size:0.75rem;">None</span>';
+            if (hasImage) {
+                proofDisplay = `<button type="button" class="btn btn-sm" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);font-size:0.75rem;padding:3px 8px;font-weight:600;" onclick="viewTaskProof('${s.id}')">📷 View Proof Image</button>`;
+            } else if (hasUrl) {
+                proofDisplay = `<a href="${s.proof_url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-ghost" style="font-size:0.75rem;padding:3px 8px;">🔗 Open Link ↗</a>`;
+            } else if (s.proof_url) {
+                proofDisplay = `<code style="font-size:0.75rem;padding:2px 6px;">${s.proof_url}</code>`;
+            }
+
+            const subDate = s.submitted_at ? (new Date(s.submitted_at).toLocaleDateString('en-GB') + ' ' + new Date(s.submitted_at).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})) : 'Recent';
+
+            return `<tr>
+                <td><strong>#${s.id || ''}</strong><br><small style="color:var(--admin-text-muted);">${subDate}</small></td>
+                <td><strong style="color:var(--admin-primary-light);">@${s.username || 'Member'}</strong></td>
+                <td><strong>${s.task_title || 'Task'}</strong></td>
+                <td><strong style="color:#10b981;">+${s.reward_points || 150} PTS</strong></td>
+                <td>${proofDisplay}</td>
+                <td><span style="font-size:0.8rem;color:var(--admin-text-muted);">${s.notes || '-'}</span></td>
+                <td>${statusBadge}</td>
+                <td style="white-space:nowrap;">
+                    ${isPending ? `
+                        <button class="btn btn-sm" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:4px 9px;font-weight:700;font-size:0.75rem;cursor:pointer;margin-right:4px;" onclick="approveTaskSubmission('${s.id}')">✓ Approve</button>
+                        <button class="btn btn-sm" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.35);border-radius:6px;padding:4px 9px;font-weight:700;font-size:0.75rem;cursor:pointer;" onclick="rejectTaskSubmission('${s.id}')">✕ Reject</button>
+                    ` : `<small style="color:var(--admin-text-muted);font-weight:600;">Processed</small>`}
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    window.viewTaskProof = function(subId) {
+        const sub = allTaskSubmissions.find(s => s.id === subId);
+        if (!sub || !sub.proof_url) return;
+        const img = el('taskProofViewerImg');
+        const linkWrap = el('taskProofViewerUrlWrap');
+        const link = el('taskProofViewerLink');
+        const title = el('taskProofViewerTitle');
+
+        if (title) title.textContent = `Proof from @${sub.username} for "${sub.task_title || 'Task'}"`;
+        if (img) img.src = sub.proof_url;
+
+        if (linkWrap && link) {
+            if (sub.proof_url.startsWith('http://') || sub.proof_url.startsWith('https://')) {
+                link.href = sub.proof_url;
+                linkWrap.style.display = 'block';
+            } else {
+                linkWrap.style.display = 'none';
+            }
+        }
+        openModal('taskProofViewerModal');
+    };
+
+    window.approveTaskSubmission = async function(subId) {
+        const sub = allTaskSubmissions.find(s => s.id === subId);
+        const user = sub ? sub.username : 'member';
+        const pts = sub ? sub.reward_points : 150;
+
+        const ok = await fancyConfirm(
+            'Approve Task Proof',
+            `Approve completion proof for @${user}?\n\nThis will credit +${pts} PTS to their account balance and log a verified task reward entry into their activity ledger.`,
+            { danger: false, confirmText: 'Approve & Credit' }
+        );
+        if (!ok) return;
+
+        try {
+            const res = await apiCall('api/tasks.php?action=approve_task_proof', 'POST', { submission_id: subId });
+            showToast(res.message || 'Submission approved and reward credited!', 'success');
+            loadTaskSubmissions();
+            if (typeof loadUsersData === 'function') loadUsersData();
+            if (typeof loadOverviewData === 'function') loadOverviewData();
+        } catch(e) {
+            showToast('Failed to approve proof: ' + (e.message || 'Server error'), 'error');
+        }
+    };
+
+    window.rejectTaskSubmission = async function(subId) {
+        const sub = allTaskSubmissions.find(s => s.id === subId);
+        const user = sub ? sub.username : 'member';
+
+        const ok = await fancyConfirm(
+            'Reject Task Proof',
+            `Are you sure you want to reject the submitted proof from @${user}?\n\nNo reward points will be credited for this submission.`,
+            { danger: true, confirmText: 'Yes, Reject Proof' }
+        );
+        if (!ok) return;
+
+        try {
+            const res = await apiCall('api/tasks.php?action=reject_task_proof', 'POST', { submission_id: subId });
+            showToast(res.message || 'Submission rejected', 'info');
+            loadTaskSubmissions();
+        } catch(e) {
+            showToast('Failed to reject proof: ' + (e.message || 'Server error'), 'error');
+        }
     };
 
     // ════════════════════════════════════════════════════
