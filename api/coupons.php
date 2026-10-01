@@ -27,6 +27,7 @@ if ($action === 'get_pins' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($ac
         'success' => true,
         'status' => 'success',
         'count' => count($coupons),
+        'pins' => $coupons,
         'coupons' => $coupons
     ]);
     exit;
@@ -50,11 +51,15 @@ if ($action === 'save_pins' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $inserted = saveCouponsBatch($newCoupons, $pdo);
+    $allUpdated = loadAllCoupons($pdo);
     echo json_encode([
         'success' => true,
         'status' => 'success',
         'message' => "Successfully synchronized {$inserted} new coupon PINs to platform database.",
-        'inserted_count' => $inserted
+        'inserted_count' => $inserted,
+        'new_pins' => $newCoupons,
+        'pins' => $allUpdated,
+        'coupons' => $allUpdated
     ]);
     exit;
 }
@@ -62,7 +67,7 @@ if ($action === 'save_pins' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // 3. DELETE / INVALIDATE A COUPON PIN
 if ($action === 'delete_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-    $code = trim($input['code'] ?? '');
+    $code = trim($input['code'] ?? $input['pin'] ?? $input['id'] ?? '');
 
     if (empty($code)) {
         http_response_code(400);
@@ -77,7 +82,8 @@ if ($action === 'delete_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode([
         'success' => true,
         'status' => 'success',
-        'message' => "Coupon PIN {$code} removed successfully."
+        'message' => "Coupon PIN {$code} removed successfully.",
+        'code' => $code
     ]);
     exit;
 }

@@ -11,11 +11,12 @@ function saveNotifications($filePath, $data) {
     return writeStorageJson('data/notifications.json', $data);
 }
 
+$notifFile = 'data/notifications.json';
 $action = $_GET['action'] ?? 'get';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'get') {
     $notifs = getNotifications($notifFile);
-    echo json_encode(['success' => true, 'notifications' => $notifs]);
+    echo json_encode(['success' => true, 'notifications' => $notifs, 'data' => $notifs]);
     exit;
 }
 
@@ -59,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = trim($input['id'] ?? '');
         $notifs = getNotifications($notifFile);
         $filtered = array_values(array_filter($notifs, function($n) use ($id) {
-            return ($n['id'] ?? '') !== $id;
+            return (string)($n['id'] ?? '') !== (string)$id;
         }));
         saveNotifications($notifFile, $filtered);
         echo json_encode(['success' => true]);

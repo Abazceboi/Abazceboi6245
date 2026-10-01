@@ -1638,15 +1638,16 @@ select.has-custom-dropdown {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Quantity</label>
-                    <select class="form-select" id="couponGenQty">
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="250">250</option>
-                    </select>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Quantity (Any number, e.g. 1)</span>
+                        <span style="display: flex; gap: 4px;">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setGenQty(1)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">1</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setGenQty(5)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">5</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setGenQty(10)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">10</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setGenQty(50)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">50</button>
+                        </span>
+                    </label>
+                    <input type="number" class="form-input" id="couponGenQty" min="1" max="10000" value="1" placeholder="Enter quantity (e.g. 1, 2, 10...)">
                 </div>
                 <div class="form-group">
                     <label>Vendor Assignment</label>
@@ -1691,6 +1692,35 @@ select.has-custom-dropdown {
                         <tr><td colspan="6" class="empty-state">No PINs available.</td></tr>
                     </tbody>
                 </table></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Freshly Generated Codes Result Modal -->
+    <div id="newlyGeneratedCodesModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 600px;">
+            <div class="modal-header" style="position: relative;">
+                <h3 style="color: var(--admin-success, #10b981); display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span id="genResultTitle">Generated PIN Codes</span>
+                </h3>
+                <button class="btn-icon" onclick="closeModal('newlyGeneratedCodesModal')" aria-label="Close" style="position: absolute; right: 16px; top: 16px;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="genResultBadges"></div>
+                <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin: 0;">
+                    Your new PIN codes have been generated and added to inventory. You can copy them right now:
+                </p>
+                <div style="position: relative;">
+                    <textarea id="genResultTextArea" class="form-textarea" rows="8" readonly style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: var(--admin-primary-light, #818cf8); background: var(--admin-card-bg, #0f172a); border: 2px dashed var(--admin-primary, #6366f1); line-height: 1.6; padding: 12px; border-radius: 8px; user-select: all; width: 100%; box-sizing: border-box;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="closeModal('newlyGeneratedCodesModal')">Done</button>
+                    <button class="btn btn-primary" onclick="copyNewlyGeneratedCodes()" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copy All Generated Codes
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -3162,15 +3192,16 @@ select.has-custom-dropdown {
                 </div>
 
                 <div class="form-group">
-                    <label style="font-weight: 600; font-size: 0.85rem;">Quantity of PINs to Generate</label>
-                    <select id="vGenQuantity" class="form-select">
-                        <option value="5">5 PINs</option>
-                        <option value="10" selected>10 PINs</option>
-                        <option value="25">25 PINs</option>
-                        <option value="50">50 PINs</option>
-                        <option value="100">100 PINs</option>
-                        <option value="250">250 PINs</option>
-                    </select>
+                    <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.85rem;">
+                        <span>Quantity of PINs (Any number, e.g. 1)</span>
+                        <span style="display: flex; gap: 4px;">
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setVendorGenQty(1)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">1</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setVendorGenQty(5)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">5</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setVendorGenQty(10)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">10</button>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="setVendorGenQty(50)" style="padding: 1px 7px; font-size: 0.72rem; border-radius: 4px;">50</button>
+                        </span>
+                    </label>
+                    <input type="number" id="vGenQuantity" class="form-input" min="1" max="10000" value="1" placeholder="Enter quantity (e.g. 1, 5, 20...)">
                 </div>
 
                 <div style="font-size: 0.82rem; color: var(--admin-text-muted);">
@@ -4589,10 +4620,51 @@ select.has-custom-dropdown {
     // ════════════════════════════════════════════════════
     let allCoupons = [];
     let couponFilter = 'ALL';
+    let latestGeneratedPins = [];
+
+    window.setGenQty = function(val) {
+        if (el('couponGenQty')) el('couponGenQty').value = val;
+    };
+
+    window.setVendorGenQty = function(val) {
+        if (el('vGenQuantity')) el('vGenQuantity').value = val;
+    };
+
+    window.showGeneratedPinsModal = function(pins, typeLabel, channel, vendorName) {
+        latestGeneratedPins = pins || [];
+        const codes = latestGeneratedPins.map(p => p.code).join('\n');
+        if (el('genResultTitle')) el('genResultTitle').textContent = `${pins.length} PIN Code${pins.length > 1 ? 's' : ''} Generated Successfully!`;
+        if (el('genResultTextArea')) {
+            el('genResultTextArea').value = codes;
+            setTimeout(() => {
+                const ta = el('genResultTextArea');
+                if (ta) { ta.focus(); ta.select(); }
+            }, 80);
+        }
+        if (el('genResultBadges')) {
+            el('genResultBadges').innerHTML = `
+                <span class="badge badge-info" style="font-size:0.8rem;padding:4px 10px;">Qty: ${pins.length}</span>
+                <span class="badge badge-success" style="font-size:0.8rem;padding:4px 10px;">Type: ${typeLabel || channel}</span>
+                ${vendorName ? `<span class="badge badge-primary" style="font-size:0.8rem;padding:4px 10px;">Vendor: ${vendorName}</span>` : '<span class="badge badge-secondary" style="font-size:0.8rem;padding:4px 10px;">Unassigned Pool</span>'}
+            `;
+        }
+        openModal('newlyGeneratedCodesModal');
+    };
+
+    window.copyNewlyGeneratedCodes = function() {
+        const txt = el('genResultTextArea')?.value || '';
+        if (!txt) {
+            showAlert('No codes to copy', 'error');
+            return;
+        }
+        navigator.clipboard.writeText(txt);
+        showAlert(`Copied ${latestGeneratedPins.length || 1} generated PINs to clipboard!`, 'success');
+    };
+
     async function loadCouponsData() {
         try {
             const res = await apiCall('api/coupons.php?action=get_pins');
-            allCoupons = res.pins || res.data || [];
+            allCoupons = res.pins || res.coupons || res.data || [];
             renderCouponsTable();
             const avail = allCoupons.filter(p => !p.is_used && !p.used_by);
             if(el('couponsAvailable')) el('couponsAvailable').textContent = fmt(avail.length);
@@ -4615,25 +4687,26 @@ select.has-custom-dropdown {
     function renderCouponsTable() {
         const tbody = el('couponsTableBody');
         if (!tbody) return;
-        const q = (el('couponSearchInput')?.value || '').toLowerCase();
+        const q = (el('couponSearchInput')?.value || '').toLowerCase().trim();
         let filtered = allCoupons;
         if (couponFilter === 'AFFILIATE') filtered = filtered.filter(c => (c.type||c.tier||'').toUpperCase().includes('AFF'));
         if (couponFilter === 'UPLOADER') filtered = filtered.filter(c => (c.type||c.tier||'').toUpperCase().includes('UPL'));
-        if (couponFilter === 'VENDOR') filtered = filtered.filter(c => c.vendor_id || c.vendorId);
+        if (couponFilter === 'VENDOR') filtered = filtered.filter(c => c.vendor_id || c.vendorId || (c.vendor_name && c.vendor_name !== 'General Pool'));
         if (q) filtered = filtered.filter(c => (c.code||c.pin_code||'').toLowerCase().includes(q));
 
         if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No PINs found</td></tr>'; return; }
         tbody.innerHTML = filtered.map(c => {
             const code = c.code || c.pin_code || '';
             const used = c.is_used || c.used_by;
+            const vendorDisp = c.vendor_name || c.vendor_id || c.vendorId || '—';
             return `<tr>
-                <td><code>${code}</code></td>
-                <td>${(c.type||c.tier||'AFF').toUpperCase()}</td>
+                <td><code style="font-size:0.95rem;font-weight:700;letter-spacing:0.5px;color:var(--admin-primary-light,#818cf8);">${code}</code></td>
+                <td><span class="badge ${(c.type||c.tier||'').includes('UPL')?'badge-warning':'badge-info'}">${(c.type||c.tier||'AFF').toUpperCase()}</span></td>
                 <td><span class="badge ${used?'badge-danger':'badge-success'}">${used?'Redeemed':'Available'}</span></td>
-                <td>${c.vendor_id||c.vendorId||'—'}</td>
-                <td>${c.created_at||c.created||'—'}</td>
+                <td><strong>${vendorDisp}</strong></td>
+                <td>${c.created_at ? c.created_at.substring(0,10) : '—'}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${code}');showAlert('Copied!','success')">Copy</button>
+                    <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${code}');showAlert('Copied: ${code}','success')">Copy</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${code}')">Delete</button>
                 </td>
             </tr>`;
@@ -4641,7 +4714,7 @@ select.has-custom-dropdown {
     }
 
     window.filterCoupons = function(btn) {
-        document.querySelectorAll('#tab-coupons .filter-pill').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('#tab-coupons .badge').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         couponFilter = btn.dataset.filter || 'ALL';
         renderCouponsTable();
@@ -4649,7 +4722,7 @@ select.has-custom-dropdown {
 
     window.generateCoupons = async function() {
         const type = el('couponGenType')?.value || 'AFF';
-        const qty = parseInt(el('couponGenQty')?.value) || 10;
+        const qty = Math.max(1, parseInt(el('couponGenQty')?.value, 10) || 1);
         const vendor = el('couponGenVendor')?.value || '';
         try {
             const isUploader = (type === 'UPL' || type === 'VIP_UPL');
@@ -4663,6 +4736,7 @@ select.has-custom-dropdown {
             else if (type === 'JOB') { amount = 1500; typeLabel = 'Task Quota PIN'; }
 
             const pins = [];
+            const now = new Date().toISOString();
             for (let i = 0; i < qty; i++) {
                 const r = () => Math.random().toString(36).substring(2,6).toUpperCase();
                 pins.push({
@@ -4672,14 +4746,25 @@ select.has-custom-dropdown {
                     type_label: typeLabel,
                     amount: amount,
                     vendor_id: vendor,
+                    vendor_name: vendor || 'General Pool',
                     is_used: false,
-                    created_at: new Date().toISOString()
+                    created_at: now
                 });
             }
+
+            // Immediately prepend to memory table so the user sees them at the top
+            allCoupons = pins.concat(allCoupons);
+            renderCouponsTable();
+            const avail = allCoupons.filter(p => !p.is_used && !p.used_by);
+            if(el('couponsAvailable')) el('couponsAvailable').textContent = fmt(avail.length);
+            if(el('couponsTotal')) el('couponsTotal').textContent = fmt(allCoupons.length);
+
             const res = await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: pins, coupons: pins });
             if (res && res.success !== false) {
                 showAlert(`${qty} ${channel} PINs generated successfully!`, 'success');
+                showGeneratedPinsModal(pins, typeLabel, channel, vendor);
                 loadCouponsData();
+                if (typeof loadVendorsData === 'function') loadVendorsData();
             } else {
                 showAlert((res && (res.message || res.error)) || 'Failed to generate PINs', 'error');
             }
@@ -4687,12 +4772,20 @@ select.has-custom-dropdown {
     };
 
     window.deleteCoupon = async function(code) {
-        if (!confirm('Delete PIN ' + code + '?')) return;
+        if (!confirm('Are you sure you want to delete PIN code: ' + code + '?')) return;
+        // Optimistic instant delete from table
+        allCoupons = allCoupons.filter(c => (c.code || '').trim().toUpperCase() !== code.trim().toUpperCase());
+        renderCouponsTable();
+        const avail = allCoupons.filter(p => !p.is_used && !p.used_by);
+        if(el('couponsAvailable')) el('couponsAvailable').textContent = fmt(avail.length);
+        if(el('couponsTotal')) el('couponsTotal').textContent = fmt(allCoupons.length);
+
         try {
-            await apiCall('api/coupons.php?action=delete_pin', 'POST', { code });
-            showAlert('PIN deleted', 'success');
+            const res = await apiCall('api/coupons.php?action=delete_pin', 'POST', { code });
+            showAlert(`PIN ${code} deleted`, 'success');
             loadCouponsData();
-        } catch(e) { showAlert('Failed to delete PIN', 'error'); }
+            if (typeof loadVendorsData === 'function') loadVendorsData();
+        } catch(e) { showAlert('Failed to delete PIN', 'error'); loadCouponsData(); }
     };
 
     window.copyFilteredPins = function() {
@@ -5700,7 +5793,7 @@ select.has-custom-dropdown {
         const vendorId = el('vGenVendorId')?.value || '';
         const vendorName = el('vGenVendorName')?.value || vendorId;
         const type = el('vGenPinType')?.value || 'AFF';
-        const qty = parseInt(el('vGenQuantity')?.value) || 10;
+        const qty = Math.max(1, parseInt(el('vGenQuantity')?.value, 10) || 1);
         const btn = el('btnSubmitVendorPins');
 
         if (!vendorId && !vendorName) {
@@ -5722,6 +5815,7 @@ select.has-custom-dropdown {
             else if (type === 'JOB') { amount = 1500; typeLabel = 'Task Quota PIN'; }
 
             const pins = [];
+            const now = new Date().toISOString();
             for (let i = 0; i < qty; i++) {
                 const r = () => Math.random().toString(36).substring(2,6).toUpperCase();
                 pins.push({
@@ -5733,14 +5827,18 @@ select.has-custom-dropdown {
                     vendor_id: vendorId,
                     vendor_name: vendorName,
                     is_used: false,
-                    created_at: new Date().toISOString()
+                    created_at: now
                 });
             }
 
+            allCoupons = pins.concat(allCoupons);
+            renderCouponsTable();
+
             const res = await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: pins, coupons: pins });
             if (res && res.success !== false) {
-                showAlert(`${qty} ${channel} PINs generated directly for ${vendorName}!`, 'success');
                 closeModal('vendorPinGenModal');
+                showAlert(`${qty} ${channel} PINs generated directly for ${vendorName}!`, 'success');
+                showGeneratedPinsModal(pins, typeLabel, channel, vendorName);
                 await loadCouponsData();
                 await loadVendorsData();
             } else {

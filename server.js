@@ -728,7 +728,7 @@ const server = http.createServer((req, res) => {
                 if (!Array.isArray(coupons)) coupons = [];
 
                 if (action === 'get_pins' || (req.method === 'GET' && !action)) {
-                    res.end(JSON.stringify({ success: true, status: 'success', count: coupons.length, coupons: coupons }));
+                    res.end(JSON.stringify({ success: true, status: 'success', count: coupons.length, pins: coupons, coupons: coupons }));
                     return;
                 }
 
@@ -747,18 +747,26 @@ const server = http.createServer((req, res) => {
                         const dataDir = path.dirname(couponsFile);
                         if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                         fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
-                        res.end(JSON.stringify({ success: true, status: 'success', message: `Successfully synchronized ${incoming.length} coupon PINs.`, count: coupons.length, coupons: coupons }));
+                        res.end(JSON.stringify({
+                            success: true,
+                            status: 'success',
+                            message: `Successfully synchronized ${incoming.length} coupon PINs.`,
+                            count: coupons.length,
+                            new_pins: incoming,
+                            pins: coupons,
+                            coupons: coupons
+                        }));
                         return;
                     }
                 }
 
                 if (action === 'delete_pin' && req.method === 'POST') {
-                    const code = (parsed.code || '').toUpperCase();
-                    coupons = coupons.filter(c => (c.code || '').toUpperCase() !== code);
+                    const code = (parsed.code || parsed.pin || parsed.id || '').trim().toUpperCase();
+                    coupons = coupons.filter(c => (c.code || '').trim().toUpperCase() !== code);
                     const dataDir = path.dirname(couponsFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
-                    res.end(JSON.stringify({ success: true, status: 'success', message: `PIN '${code}' deleted.`, count: coupons.length, coupons: coupons }));
+                    res.end(JSON.stringify({ success: true, status: 'success', message: `PIN '${code}' deleted.`, count: coupons.length, code: code, pins: coupons, coupons: coupons }));
                     return;
                 }
 
@@ -1166,6 +1174,143 @@ const server = http.createServer((req, res) => {
                 }
 
                 res.end(JSON.stringify({ status: 'success', data: bcastData }));
+                return;
+            }
+
+            // In-App Notifications API
+            if (cleanUrl.includes('notifications.php')) {
+                const notifsFile = path.join(PUBLIC_DIR, 'data', 'notifications.json');
+                let notifs = [];
+                if (fs.existsSync(notifsFile)) {
+                    try { notifs = JSON.parse(fs.readFileSync(notifsFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(notifs)) notifs = [];
+
+                if (action === 'get' || (req.method === 'GET' && !action)) {
+                    res.end(JSON.stringify({ success: true, notifications: notifs, data: notifs }));
+                    return;
+                }
+
+                if (action === 'broadcast' && req.method === 'POST') {
+                    const newNotif = {
+                        id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2,7),
+                        title: parsed.title || 'System Notification',
+                        message: parsed.message || parsed.msg || '',
+                        msg: parsed.message || parsed.msg || '',
+                        icon: parsed.icon || 'alert',
+                        target: parsed.target || 'all',
+                        username: parsed.username || '',
+                        action_url: parsed.action_url || parsed.link || 'dashboard.php',
+                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        created_at: new Date().toISOString()
+                    };
+                    notifs.unshift(newNotif);
+                    const nDir = path.dirname(notifsFile);
+                    if (!fs.existsSync(nDir)) fs.mkdirSync(nDir, { recursive: true });
+                    fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                    res.end(JSON.stringify({ success: true, notification: newNotif, notifications: notifs }));
+                    return;
+                }
+
+                if (action === 'delete' && req.method === 'POST') {
+                    const delId = String(parsed.id || '').trim();
+                    notifs = notifs.filter(n => String(n.id) !== delId);
+                    fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                    res.end(JSON.stringify({ success: true, message: 'Notification deleted', notifications: notifs }));
+                    return;
+                }
+
+                if (action === 'clear_all' && req.method === 'POST') {
+                    notifs = [];
+                    fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                    res.end(JSON.stringify({ success: true, message: 'All notifications cleared', notifications: [] }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ success: true, notifications: notifs }));
+                return;
+            }
+
+            // Tokens OTC & Market API
+            if (cleanUrl.includes('tokens.php')) {
+                const tokenConfigFile = path.join(PUBLIC_DIR, 'config', 'tokens_config.json');
+                const tokenOrdersFile = path.join(PUBLIC_DIR, 'config', 'token_orders.json');
+                let tokenConfig = { platform_bank: { bank_name: 'OPay Digital Services', account_number: '8102345678', account_name: 'INNOVATIONX OTC TRADING' }, tokens: [] };
+                let tokenOrders = [];
+                if (fs.existsSync(tokenConfigFile)) {
+                    try { tokenConfig = JSON.parse(fs.readFileSync(tokenConfigFile, 'utf8')); } catch(e){}
+                }
+                if (fs.existsSync(tokenOrdersFile)) {
+                    try { tokenOrders = JSON.parse(fs.readFileSync(tokenOrdersFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(tokenConfig.tokens)) tokenConfig.tokens = [];
+                if (!Array.isArray(tokenOrders)) tokenOrders = [];
+
+                if (action === 'get_tokens' || (req.method === 'GET' && !action)) {
+                    res.end(JSON.stringify({ success: true, tokens: tokenConfig.tokens, data: tokenConfig }));
+                    return;
+                }
+
+                if (action === 'get_orders') {
+                    res.end(JSON.stringify({ success: true, orders: tokenOrders }));
+                    return;
+                }
+
+                if (action === 'admin_add_token' && req.method === 'POST') {
+                    const symbol = (parsed.symbol || '').trim().toUpperCase();
+                    if (!symbol) {
+                        res.end(JSON.stringify({ success: false, error: 'Token symbol required' }));
+                        return;
+                    }
+                    const idx = tokenConfig.tokens.findIndex(t => (t.symbol || '').toUpperCase() === symbol);
+                    const tokObj = {
+                        symbol: symbol,
+                        name: parsed.name || symbol,
+                        network: parsed.network || 'BNB Smart Chain (BEP20)',
+                        icon: parsed.icon || '🪙',
+                        buy_rate: parseFloat(parsed.buy_rate) || 100,
+                        sell_rate: parseFloat(parsed.sell_rate) || 90,
+                        min_trade: parseFloat(parsed.min_trade) || 10,
+                        max_trade: parseFloat(parsed.max_trade) || 10000,
+                        deposit_address: parsed.deposit_address || '',
+                        deposit_memo: parsed.deposit_memo || '',
+                        views_count: parsed.views_count || 0,
+                        trades_count: parsed.trades_count || 0,
+                        status: 'active',
+                        updated_at: new Date().toISOString()
+                    };
+                    if (idx >= 0) {
+                        tokenConfig.tokens[idx] = Object.assign(tokenConfig.tokens[idx], tokObj);
+                    } else {
+                        tokenConfig.tokens.push(tokObj);
+                    }
+                    fs.writeFileSync(tokenConfigFile, JSON.stringify(tokenConfig, null, 2));
+                    res.end(JSON.stringify({ success: true, message: `Token ${symbol} saved successfully`, tokens: tokenConfig.tokens }));
+                    return;
+                }
+
+                if (action === 'admin_delete_token' && req.method === 'POST') {
+                    const symbol = (parsed.symbol || '').trim().toUpperCase();
+                    tokenConfig.tokens = tokenConfig.tokens.filter(t => (t.symbol || '').toUpperCase() !== symbol);
+                    fs.writeFileSync(tokenConfigFile, JSON.stringify(tokenConfig, null, 2));
+                    res.end(JSON.stringify({ success: true, message: `Token ${symbol} deleted`, tokens: tokenConfig.tokens }));
+                    return;
+                }
+
+                if (action === 'update_order_status' && req.method === 'POST') {
+                    const orderId = parsed.order_id || parsed.id;
+                    const newStatus = parsed.status || 'approved';
+                    const ord = tokenOrders.find(o => o.id === orderId);
+                    if (ord) {
+                        ord.status = newStatus;
+                        ord.updated_at = new Date().toISOString();
+                        fs.writeFileSync(tokenOrdersFile, JSON.stringify(tokenOrders, null, 2));
+                    }
+                    res.end(JSON.stringify({ success: true, message: `Order updated to ${newStatus}`, orders: tokenOrders }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ success: true, tokens: tokenConfig.tokens }));
                 return;
             }
 
