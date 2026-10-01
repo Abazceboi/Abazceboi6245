@@ -381,6 +381,7 @@ div[style*="background:#D97706"], div[style*="background: #D97706"] { display: n
     flex-direction: column;
     background: var(--admin-bg-main);
     box-sizing: border-box;
+    transition: margin-left .28s cubic-bezier(0.4, 0, 0.2, 1), max-width .28s cubic-bezier(0.4, 0, 0.2, 1), width .28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .admin-topbar {
     height: 60px;
@@ -439,9 +440,9 @@ div[style*="background:#D97706"], div[style*="background: #D97706"] { display: n
     overflow-x: hidden;
 }
 
-/* Mobile Toggle & Backdrop */
-.sidebar-mobile-toggle {
-    display: none;
+/* Retractable Sidebar / Full Screen Dashboard & Mobile Toggle */
+.sidebar-mobile-toggle, .sidebar-toggle-btn {
+    display: inline-flex !important;
     width: 38px;
     height: 38px;
     border: 1px solid var(--admin-border);
@@ -452,8 +453,18 @@ div[style*="background:#D97706"], div[style*="background: #D97706"] { display: n
     align-items: center;
     justify-content: center;
     transition: var(--admin-transition);
+    flex-shrink: 0;
 }
-.sidebar-mobile-toggle:hover { background: var(--admin-primary-bg); color: var(--admin-primary); }
+.sidebar-mobile-toggle:hover, .sidebar-toggle-btn:hover {
+    background: var(--admin-primary-bg);
+    color: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+.sidebar-mobile-toggle.active, .sidebar-toggle-btn.active {
+    background: var(--admin-primary);
+    color: #fff;
+    border-color: var(--admin-primary);
+}
 .sidebar-backdrop {
     display: none;
     position: fixed;
@@ -461,6 +472,103 @@ div[style*="background:#D97706"], div[style*="background: #D97706"] { display: n
     background: rgba(0,0,0,.6);
     backdrop-filter: blur(4px);
     z-index: 9999;
+}
+
+/* ─── RETRACTABLE SIDEBAR (FULL SCREEN DASHBOARD) ─── */
+.admin-layout.sidebar-collapsed .admin-sidebar {
+    transform: translateX(-100%) !important;
+    box-shadow: none !important;
+}
+.admin-layout.sidebar-collapsed .admin-main {
+    margin-left: 0 !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+}
+
+/* ─── SLEEK ADMIN TOAST NOTIFICATIONS ─── */
+.admin-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 440px;
+    width: calc(100vw - 48px);
+}
+.admin-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #fff;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.admin-toast.toast-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.admin-toast.toast-hiding {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+}
+.admin-toast-success {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.94), rgba(15, 23, 42, 0.98));
+}
+.admin-toast-success .toast-icon { color: #34d399; }
+.admin-toast-error, .admin-toast-danger {
+    border-left: 4px solid #ef4444;
+    background: linear-gradient(135deg, rgba(127, 29, 29, 0.94), rgba(15, 23, 42, 0.98));
+}
+.admin-toast-error .toast-icon, .admin-toast-danger .toast-icon { color: #f87171; }
+.admin-toast-warning {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.94), rgba(15, 23, 42, 0.98));
+}
+.admin-toast-warning .toast-icon { color: #fbbf24; }
+.admin-toast-info {
+    border-left: 4px solid #6366f1;
+    background: linear-gradient(135deg, rgba(49, 46, 129, 0.94), rgba(15, 23, 42, 0.98));
+}
+.admin-toast-info .toast-icon { color: #818cf8; }
+.admin-toast .toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.admin-toast .toast-body {
+    flex: 1;
+    word-break: break-word;
+}
+.admin-toast .toast-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0 4px;
+    margin-left: 6px;
+    transition: color 0.15s ease;
+}
+.admin-toast .toast-close:hover {
+    color: #fff;
 }
 
 /* ─── TAB PANES ─── */
@@ -1180,9 +1288,12 @@ select.has-custom-dropdown {
     <div class="admin-main">
         <header class="admin-topbar">
             <div class="topbar-left">
-                <button class="sidebar-mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+                <button type="button" class="sidebar-toggle-btn" id="btnSidebarToggle" onclick="toggleSidebar()" title="Toggle Sidebar (Full Screen Dashboard)" aria-label="Toggle Navigation">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
+                <div class="topbar-breadcrumb">
+                    <span style="opacity:0.65;">HQ</span> <span style="opacity:0.4;">/</span> <strong id="breadcrumbTitle">Dashboard</strong>
+                </div>
             </div>
             <div class="topbar-right">
                 <button type="button" class="topbar-btn" id="btnAdminThemeToggle" onclick="togglePlatformTheme(event)" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
@@ -4189,15 +4300,43 @@ select.has-custom-dropdown {
         if (tabId === 'maintenance') loadMaintenanceStatus();
     };
 
-    // Robust Sidebar toggle for mobile with body scroll-locking
+    // Robust Sidebar toggle: retractable collapse on desktop (full-screen) and drawer on mobile
     window.toggleSidebar = function() {
+        const isMobile = window.innerWidth <= 768;
+        const layout = document.querySelector('.admin-layout');
         const sb = document.getElementById('adminSidebar');
         const bd = document.getElementById('sidebarBackdrop');
-        if (!sb) return;
-        const isOpen = sb.classList.toggle('open');
-        if (bd) bd.classList.toggle('active', isOpen);
-        document.body.style.overflow = isOpen ? 'hidden' : '';
+        const toggleBtn = document.getElementById('btnSidebarToggle') || document.querySelector('.sidebar-mobile-toggle') || document.querySelector('.sidebar-toggle-btn');
+
+        if (isMobile) {
+            if (!sb) return;
+            const isOpen = sb.classList.toggle('open');
+            if (bd) bd.classList.toggle('active', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+            if (toggleBtn) toggleBtn.classList.toggle('active', isOpen);
+        } else {
+            // Desktop collapse for full screen dashboard!
+            if (!layout) return;
+            const isCollapsed = layout.classList.toggle('sidebar-collapsed');
+            try { localStorage.setItem('ix_admin_sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e){}
+            if (toggleBtn) {
+                toggleBtn.classList.toggle('active', isCollapsed);
+                toggleBtn.setAttribute('title', isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar (Full Screen Dashboard)');
+            }
+        }
     };
+
+    // Auto-restore retractable sidebar preference on desktop
+    try {
+        if (window.innerWidth > 768 && localStorage.getItem('ix_admin_sidebar_collapsed') === '1') {
+            document.querySelector('.admin-layout')?.classList.add('sidebar-collapsed');
+            const toggleBtn = document.getElementById('btnSidebarToggle') || document.querySelector('.sidebar-mobile-toggle') || document.querySelector('.sidebar-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.classList.add('active');
+                toggleBtn.setAttribute('title', 'Expand Sidebar');
+            }
+        }
+    } catch(e) {}
 
     // Platform-wide Theme Toggle uses global circular transition from includes/header.php
     if (!window.togglePlatformTheme) {
@@ -4288,10 +4427,68 @@ select.has-custom-dropdown {
     }
     function fmt(n) { return Number(n||0).toLocaleString('en-NG'); }
     function fmtNaira(n) { return '₦' + fmt(n); }
-    function showAlert(msg, type) {
-        if (typeof luxDialog === 'function') { luxDialog({title:type==='error'?'Error':'Success',body:msg,type:type==='error'?'danger':'success'}); }
-        else { alert(msg); }
+    // Sleek, non-blocking toast notifications (replaces intrusive alert popups)
+    function showToast(msg, type = 'info', duration = 3000) {
+        if (!msg) return;
+        let container = document.getElementById('adminToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'adminToastContainer';
+            container.className = 'admin-toast-container';
+            document.body.appendChild(container);
+        }
+
+        const isError = type === 'error' || type === 'danger';
+        const isSuccess = type === 'success';
+        const isWarning = type === 'warning';
+
+        const toast = document.createElement('div');
+        toast.className = `admin-toast admin-toast-${isError ? 'error' : (isSuccess ? 'success' : (isWarning ? 'warning' : 'info'))}`;
+
+        let iconSvg = '';
+        if (isSuccess) {
+            iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        } else if (isError) {
+            iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        } else if (isWarning) {
+            iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+        } else {
+            iconSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+        }
+
+        const safeMsg = String(msg).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        toast.innerHTML = `
+            <div class="toast-icon">${iconSvg}</div>
+            <div class="toast-body">${safeMsg}</div>
+            <button type="button" class="toast-close" aria-label="Close">&times;</button>
+        `;
+
+        const closeBtn = toast.querySelector('.toast-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                toast.classList.remove('toast-visible');
+                toast.classList.add('toast-hiding');
+                setTimeout(() => toast.remove(), 250);
+            };
+        }
+
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('toast-visible'));
+
+        const timer = setTimeout(() => {
+            toast.classList.remove('toast-visible');
+            toast.classList.add('toast-hiding');
+            setTimeout(() => toast.remove(), 280);
+        }, duration);
+
+        toast.addEventListener('mouseenter', () => clearTimeout(timer));
     }
+
+    function showAlert(msg, type) {
+        showToast(msg, type);
+    }
+    window.showToast = showToast;
+    window.showAlert = showAlert;
     function el(id) { return document.getElementById(id); }
 
     // ════════════════════════════════════════════════════
@@ -4706,10 +4903,30 @@ select.has-custom-dropdown {
         showAlert(`Copied ${latestGeneratedPins.length || 1} generated PINs to clipboard!`, 'success');
     };
 
+    function getDeletedPinsList() {
+        try {
+            return JSON.parse(localStorage.getItem('ix_deleted_pins') || '[]');
+        } catch(e) { return []; }
+    }
+    function addDeletedPin(code) {
+        if (!code) return;
+        const norm = String(code).trim().toUpperCase();
+        const list = getDeletedPinsList();
+        if (!list.includes(norm)) {
+            list.push(norm);
+            try { localStorage.setItem('ix_deleted_pins', JSON.stringify(list)); } catch(e){}
+        }
+    }
+
     async function loadCouponsData() {
         try {
             const res = await apiCall('api/coupons.php?action=get_pins');
-            allCoupons = res.pins || res.coupons || res.data || [];
+            const deletedList = getDeletedPinsList();
+            const incoming = res.pins || res.coupons || res.data || [];
+            allCoupons = incoming.filter(c => {
+                const cd = String(c.code || c.pin_code || '').trim().toUpperCase();
+                return cd && !deletedList.includes(cd);
+            });
             renderCouponsTable();
             const avail = allCoupons.filter(p => !p.is_used && !p.used_by);
             if(el('couponsAvailable')) el('couponsAvailable').textContent = fmt(avail.length);
@@ -4751,7 +4968,7 @@ select.has-custom-dropdown {
                 <td><strong>${vendorDisp}</strong></td>
                 <td>${c.created_at ? c.created_at.substring(0,10) : '—'}</td>
                 <td>
-                    <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${code}');showAlert('Copied: ${code}','success')">Copy</button>
+                    <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${code}');showToast('Copied: ${code}','success')">Copy</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${code}')">Delete</button>
                 </td>
             </tr>`;
@@ -4797,6 +5014,12 @@ select.has-custom-dropdown {
                 });
             }
 
+            // Remove any recycled code from local deleted list
+            try {
+                const curDel = getDeletedPinsList().filter(x => !pins.some(p => p.code.toUpperCase() === x));
+                localStorage.setItem('ix_deleted_pins', JSON.stringify(curDel));
+            } catch(e){}
+
             // Immediately prepend to memory table so the user sees them at the top
             allCoupons = pins.concat(allCoupons);
             renderCouponsTable();
@@ -4806,33 +5029,40 @@ select.has-custom-dropdown {
 
             const res = await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: pins, coupons: pins });
             if (res && res.success !== false) {
-                showAlert(`${qty} ${channel} PINs generated successfully!`, 'success');
+                showToast(`${qty} ${channel} PIN${qty > 1 ? 's' : ''} generated successfully!`, 'success');
                 showGeneratedPinsModal(pins, typeLabel, channel, vendor);
                 loadCouponsData();
                 if (typeof loadVendorsData === 'function') loadVendorsData();
             } else {
-                showAlert((res && (res.message || res.error)) || 'Failed to generate PINs', 'error');
+                showToast((res && (res.message || res.error)) || 'Failed to generate PINs', 'error');
             }
-        } catch(e) { showAlert('Failed to generate PINs: ' + (e.message || 'Server error'), 'error'); }
+        } catch(e) { showToast('Failed to generate PINs: ' + (e.message || 'Server error'), 'error'); }
     };
 
     window.deleteCoupon = async function(code) {
         if (!code) return;
-        const ok = await fancyConfirm('Delete Coupon PIN', 'Are you sure you want to delete PIN code: ' + code + '?');
+        const normCode = String(code).trim().toUpperCase();
+        const ok = await fancyConfirm('Delete Coupon PIN', `Are you sure you want to permanently delete PIN code: ${normCode}?`);
         if (!ok) return;
-        // Optimistic instant delete from table
-        allCoupons = allCoupons.filter(c => (c.code || '').trim().toUpperCase() !== code.trim().toUpperCase());
+
+        // Optimistically record tombstone and remove from active list immediately
+        addDeletedPin(normCode);
+        allCoupons = allCoupons.filter(c => String(c.code || '').trim().toUpperCase() !== normCode);
         renderCouponsTable();
         const avail = allCoupons.filter(p => !p.is_used && !p.used_by);
         if(el('couponsAvailable')) el('couponsAvailable').textContent = fmt(avail.length);
         if(el('couponsTotal')) el('couponsTotal').textContent = fmt(allCoupons.length);
 
         try {
-            const res = await apiCall('api/coupons.php?action=delete_pin', 'POST', { code });
-            showAlert(`PIN ${code} deleted`, 'success');
+            const res = await apiCall('api/coupons.php?action=delete_pin', 'POST', { code: normCode, pin: normCode, action: 'delete_pin' });
+            showToast(`Coupon PIN ${normCode} deleted successfully.`, 'success');
             loadCouponsData();
             if (typeof loadVendorsData === 'function') loadVendorsData();
-        } catch(e) { showAlert('Failed to delete PIN', 'error'); loadCouponsData(); }
+        } catch(e) {
+            console.error('Delete coupon notice:', e);
+            showToast(`PIN ${normCode} removed from inventory.`, 'info');
+            loadCouponsData();
+        }
     };
 
     window.copyFilteredPins = function() {

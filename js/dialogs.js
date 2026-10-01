@@ -256,10 +256,10 @@
 
         // Automatic Type Detection
         const fullLower = str.toLowerCase();
-        if (fullLower.includes('delete') || fullLower.includes('remove') || fullLower.includes('permanent') || fullLower.includes('invalid') || fullLower.includes('error') || fullLower.includes('already taken') || fullLower.includes('denied') || fullLower.includes('failed')) {
-            type = 'error';
-        } else if (fullLower.includes('success') || fullLower.includes('activated') || fullLower.includes('verified') || fullLower.includes('credited') || fullLower.includes('copied') || fullLower.includes('welcome')) {
+        if (fullLower.includes('success') || fullLower.includes('successfully') || fullLower.includes('activated') || fullLower.includes('verified') || fullLower.includes('credited') || fullLower.includes('copied') || fullLower.includes('welcome') || fullLower.includes('saved')) {
             type = 'success';
+        } else if (fullLower.includes('delete') || fullLower.includes('remove') || fullLower.includes('permanent') || fullLower.includes('invalid') || fullLower.includes('error') || fullLower.includes('already taken') || fullLower.includes('denied') || fullLower.includes('failed')) {
+            type = 'error';
         } else if (fullLower.includes('notice') || fullLower.includes('warning') || fullLower.includes('must') || fullLower.includes('format') || fullLower.includes('required') || fullLower.includes('security') || fullLower.includes('please')) {
             type = 'warning';
         }
@@ -289,8 +289,8 @@
             const inputEl = document.getElementById('ixFancyDialogInput');
             const btnRow = document.getElementById('ixFancyDialogBtnRow');
 
-            const isDestructive = (type === 'error' || /delete|remove|permanent/i.test(title + ' ' + message));
-            const activeType = isDestructive ? 'error' : type;
+            const isDestructive = mode === 'confirm' && (type === 'error' || type === 'danger' || /delete|remove|permanent/i.test(title + ' ' + message));
+            const activeType = (type === 'success') ? 'success' : (isDestructive ? 'error' : (type === 'danger' ? 'error' : type));
 
             iconWrap.className = `ix-dialog-icon-wrap ix-dialog-icon-${activeType}`;
             iconWrap.innerHTML = icons[activeType] || icons.info;

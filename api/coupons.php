@@ -18,7 +18,9 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/coupons_helper.php';
 
 $pdo = getDbConnection();
-$action = $_GET['action'] ?? '';
+$rawInput = file_get_contents('php://input');
+$input = (!empty($rawInput) ? json_decode($rawInput, true) : null) ?? $_POST ?? [];
+$action = $_GET['action'] ?? $input['action'] ?? '';
 
 // 1. GET ALL COUPONS
 if ($action === 'get_pins' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($action))) {
@@ -34,8 +36,7 @@ if ($action === 'get_pins' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($ac
 }
 
 // 2. SAVE GENERATED BATCH OF COUPONS
-if ($action === 'save_pins' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+if ($action === 'save_pins' && ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($input))) {
     $newCoupons = $input['coupons'] ?? $input['pins'] ?? [];
     if (!empty($input['code']) && empty($newCoupons)) {
         $newCoupons = [$input];
@@ -65,9 +66,8 @@ if ($action === 'save_pins' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // 3. DELETE / INVALIDATE A COUPON PIN
-if ($action === 'delete_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-    $code = trim($input['code'] ?? $input['pin'] ?? $input['id'] ?? '');
+if ($action === 'delete_pin') {
+    $code = strtoupper(trim($_GET['code'] ?? $input['code'] ?? $input['pin'] ?? $input['id'] ?? ''));
 
     if (empty($code)) {
         http_response_code(400);
@@ -79,11 +79,14 @@ if ($action === 'delete_pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     deleteCouponByCode($code, $pdo);
+    $allUpdated = loadAllCoupons($pdo);
     echo json_encode([
         'success' => true,
         'status' => 'success',
         'message' => "Coupon PIN {$code} removed successfully.",
-        'code' => $code
+        'code' => $code,
+        'pins' => $allUpdated,
+        'coupons' => $allUpdated
     ]);
     exit;
 }

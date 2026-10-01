@@ -71,13 +71,22 @@ function loadAllCoupons(?PDO $pdo = null): array {
         $pdo = getDbConnection();
     }
 
+    $deletedCoupons = readStorageJson('data/deleted_coupons.json', []);
+    $deletedMap = [];
+    if (is_array($deletedCoupons)) {
+        foreach ($deletedCoupons as $d) {
+            $codeStr = strtoupper(trim(is_string($d) ? $d : ($d['code'] ?? '')));
+            if (!empty($codeStr)) $deletedMap[$codeStr] = true;
+        }
+    }
+
     $jsonCoupons = loadCouponsFromJson();
     $couponsByCode = [];
 
     // Index JSON coupons first
     foreach ($jsonCoupons as $c) {
         $code = strtoupper(trim($c['code'] ?? ''));
-        if (!empty($code)) {
+        if (!empty($code) && !isset($deletedMap[$code])) {
             $couponsByCode[$code] = [
                 'code' => $code,
                 'channel' => $c['channel'] ?? 'AFFILIATE',
@@ -104,7 +113,7 @@ function loadAllCoupons(?PDO $pdo = null): array {
 
             foreach ($rows as $r) {
                 $code = strtoupper(trim($r['code'] ?? ''));
-                if (empty($code)) continue;
+                if (empty($code) || isset($deletedMap[$code])) continue;
 
                 $isUsed = false;
                 if (isset($r['is_used'])) {
@@ -559,7 +568,7 @@ function deleteCouponByCode(string $code, ?PDO $pdo = null): bool {
     if ($pdo) {
         ensureCouponsTable($pdo);
         try {
-            $stmt = $pdo->prepare("DELETE FROM coupon_pins WHERE UPPER(code) = ?");
+            $stmt = $pdo->prepare("DELETE FROM coupon_pins WHERE UPPER(TRIM(code)) = ?");
             $stmt->execute([$code]);
         } catch (Exception $e) {}
     }
@@ -570,5 +579,14 @@ function deleteCouponByCode(string $code, ?PDO $pdo = null): bool {
     }));
 
     saveCouponsToJson($filtered);
+
+    // Persist to tombstone list so deleted PIN never resurfaces
+    $deletedCoupons = readStorageJson('data/deleted_coupons.json', []);
+    if (!is_array($deletedCoupons)) $deletedCoupons = [];
+    if (!in_array($code, $deletedCoupons, true)) {
+        $deletedCoupons[] = $code;
+        writeStorageJson('data/deleted_coupons.json', $deletedCoupons);
+    }
+
     return true;
 }

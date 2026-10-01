@@ -744,18 +744,28 @@ const server = http.createServer((req, res) => {
             // Coupon PINs Inventory API
             if (cleanUrl.includes('coupons.php')) {
                 const couponsFile = path.join(PUBLIC_DIR, 'data', 'coupons.json');
+                const deletedFile = path.join(PUBLIC_DIR, 'data', 'deleted_coupons.json');
                 let coupons = [];
+                let deletedCoupons = [];
                 if (fs.existsSync(couponsFile)) {
                     try { coupons = JSON.parse(fs.readFileSync(couponsFile, 'utf8')); } catch(e){}
                 }
+                if (fs.existsSync(deletedFile)) {
+                    try { deletedCoupons = JSON.parse(fs.readFileSync(deletedFile, 'utf8')); } catch(e){}
+                }
                 if (!Array.isArray(coupons)) coupons = [];
+                if (!Array.isArray(deletedCoupons)) deletedCoupons = [];
+                const delSet = new Set(deletedCoupons.map(d => (typeof d === 'string' ? d : (d.code || '')).trim().toUpperCase()));
+                coupons = coupons.filter(c => !delSet.has((c.code || '').trim().toUpperCase()));
 
-                if (action === 'get_pins' || (req.method === 'GET' && !action)) {
+                const effAction = action || parsed.action || '';
+
+                if (effAction === 'get_pins' || (req.method === 'GET' && !effAction)) {
                     res.end(JSON.stringify({ success: true, status: 'success', count: coupons.length, pins: coupons, coupons: coupons }));
                     return;
                 }
 
-                if (action === 'save_pins' && req.method === 'POST') {
+                if (effAction === 'save_pins' && (req.method === 'POST' || Object.keys(parsed).length > 0)) {
                     const incoming = parsed.pins || parsed.coupons || [];
                     if (Array.isArray(incoming)) {
                         const existingMap = new Map();
@@ -783,12 +793,18 @@ const server = http.createServer((req, res) => {
                     }
                 }
 
-                if (action === 'delete_pin' && req.method === 'POST') {
-                    const code = (parsed.code || parsed.pin || parsed.id || '').trim().toUpperCase();
+                if (effAction === 'delete_pin') {
+                    const code = (parsed.code || parsed.pin || parsed.id || urlObj.searchParams.get('code') || '').trim().toUpperCase();
                     coupons = coupons.filter(c => (c.code || '').trim().toUpperCase() !== code);
                     const dataDir = path.dirname(couponsFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    if (!delSet.has(code)) {
+                        deletedCoupons.push(code);
+                        fs.writeFileSync(deletedFile, JSON.stringify(deletedCoupons, null, 2));
+                    }
+
                     res.end(JSON.stringify({ success: true, status: 'success', message: `PIN '${code}' deleted.`, count: coupons.length, code: code, pins: coupons, coupons: coupons }));
                     return;
                 }
