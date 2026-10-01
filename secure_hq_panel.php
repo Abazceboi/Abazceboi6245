@@ -4203,13 +4203,52 @@ select.has-custom-dropdown {
     if (!window.togglePlatformTheme) {
         window.togglePlatformTheme = function(e) {
             if (e && e.preventDefault) e.preventDefault();
+            const evt = e || window.event;
+            const toggleBtn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('button') : null;
+            if (toggleBtn) {
+                toggleBtn.classList.add('theme-toggling');
+                setTimeout(() => toggleBtn.classList.remove('theme-toggling'), 500);
+            }
+
+            let x = window.innerWidth - 45;
+            let y = 35;
+            if (evt && evt.clientX && evt.clientX > 0) {
+                x = Math.round(evt.clientX);
+                y = Math.round(evt.clientY);
+            } else if (toggleBtn && typeof toggleBtn.getBoundingClientRect === 'function') {
+                const rect = toggleBtn.getBoundingClientRect();
+                x = Math.round(rect.left + rect.width / 2);
+                y = Math.round(rect.top + rect.height / 2);
+            }
+
+            const endRadius = Math.ceil(Math.hypot(
+                Math.max(x, window.innerWidth - x),
+                Math.max(y, window.innerHeight - y)
+            ));
+
+            document.documentElement.style.setProperty('--ix-toggle-x', x + 'px');
+            document.documentElement.style.setProperty('--ix-toggle-y', y + 'px');
+            document.documentElement.style.setProperty('--ix-toggle-radius', endRadius + 'px');
+
             const html = document.documentElement;
             const current = html.getAttribute('data-theme') || 'dark';
             const next = (current === 'light') ? 'dark' : 'light';
-            html.setAttribute('data-theme', next);
-            if (document.body) document.body.setAttribute('data-theme', next);
-            try { localStorage.setItem('ix_theme', next); localStorage.setItem('theme', next); } catch(err) {}
-            syncThemeIcons(next);
+
+            const updateThemeDOM = () => {
+                html.setAttribute('data-theme', next);
+                if (document.body) document.body.setAttribute('data-theme', next);
+                try { localStorage.setItem('ix_theme', next); localStorage.setItem('theme', next); } catch(err) {}
+                syncThemeIcons(next);
+            };
+
+            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.startViewTransition(updateThemeDOM);
+                return;
+            }
+
+            document.documentElement.classList.add('theme-transitioning');
+            updateThemeDOM();
+            setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 450);
         };
     }
 

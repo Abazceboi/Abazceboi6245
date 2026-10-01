@@ -1294,7 +1294,7 @@ $hideFooter = true;
             </button>
 
             <!-- Theme Toggle -->
-            <button type="button" class="btn-icon-nav" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Dark/Light">
+            <button type="button" class="btn-icon-nav" id="btnDashThemeToggle" onclick="toggleTheme(event)" aria-label="Toggle Theme" title="Toggle Dark/Light">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </button>
 
@@ -2275,13 +2275,69 @@ $hideFooter = true;
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        // Theme Toggle
-        function toggleTheme() {
+        // Theme Toggle with Silky Smooth Transitions
+        function syncDashThemeUI(theme) {
+            const btn = document.getElementById('btnDashThemeToggle');
+            if (!btn) return;
+            const moonSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            const sunSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            btn.innerHTML = (theme === 'light') ? moonSvg : sunSvg;
+            btn.setAttribute('title', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+        }
+
+        function toggleTheme(e) {
+            const evt = e || window.event;
+            const toggleBtn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('button') : null;
+            if (toggleBtn) {
+                toggleBtn.classList.add('theme-toggling');
+                setTimeout(() => toggleBtn.classList.remove('theme-toggling'), 500);
+            }
+
+            let x = window.innerWidth - 45;
+            let y = 35;
+            if (evt && evt.clientX && evt.clientX > 0) {
+                x = Math.round(evt.clientX);
+                y = Math.round(evt.clientY);
+            } else if (toggleBtn && typeof toggleBtn.getBoundingClientRect === 'function') {
+                const rect = toggleBtn.getBoundingClientRect();
+                x = Math.round(rect.left + rect.width / 2);
+                y = Math.round(rect.top + rect.height / 2);
+            }
+
+            const endRadius = Math.ceil(Math.hypot(
+                Math.max(x, window.innerWidth - x),
+                Math.max(y, window.innerHeight - y)
+            ));
+
+            document.documentElement.style.setProperty('--ix-toggle-x', x + 'px');
+            document.documentElement.style.setProperty('--ix-toggle-y', y + 'px');
+            document.documentElement.style.setProperty('--ix-toggle-radius', endRadius + 'px');
+
             const current = document.documentElement.getAttribute('data-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('ix_theme', next);
+
+            const updateThemeDOM = () => {
+                document.documentElement.setAttribute('data-theme', next);
+                if (document.body) document.body.setAttribute('data-theme', next);
+                localStorage.setItem('ix_theme', next);
+                localStorage.setItem('theme', next);
+                syncDashThemeUI(next);
+            };
+
+            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.startViewTransition(updateThemeDOM);
+                return;
+            }
+
+            document.documentElement.classList.add('theme-transitioning');
+            updateThemeDOM();
+            setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 450);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            syncDashThemeUI(theme);
+        });
 
         // Tab Switching with Gating Interception
         function switchTab(tabId) {

@@ -706,6 +706,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 a {
@@ -11406,49 +11407,107 @@ html, body {
 /* ---------------------------------------------------------------------- */
 /* LUXURY CIRCULAR THEME TOGGLE VIEW TRANSITION ANIMATIONS                 */
 /* ---------------------------------------------------------------------- */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
+@keyframes ix-theme-reveal {
+  0% {
+    clip-path: circle(0px at var(--ix-toggle-x, 90vw) var(--ix-toggle-y, 35px));
+  }
+  100% {
+    clip-path: circle(var(--ix-toggle-radius, 150vmax) at var(--ix-toggle-x, 90vw) var(--ix-toggle-y, 35px));
+  }
 }
 
 ::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
   z-index: 1;
 }
 
 ::view-transition-new(root) {
+  animation: ix-theme-reveal 0.48s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  mix-blend-mode: normal;
   z-index: 999999;
 }
 
-/* Smooth transition for theme colors across whole document */
+/* Smooth transition for theme colors across whole document during fallback/transitions */
 html.theme-transitioning,
-html.theme-transitioning body,
-html.theme-transitioning .navbar,
-html.theme-transitioning .admin-sidebar,
-html.theme-transitioning .admin-main,
-html.theme-transitioning .admin-topbar,
-html.theme-transitioning .bento-card,
-html.theme-transitioning .data-card,
-html.theme-transitioning .dash-panel,
-html.theme-transitioning .module-card,
-html.theme-transitioning .stat-card,
-html.theme-transitioning .dash-hud-deck {
-  transition: background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important;
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              fill 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              stroke 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  transition-delay: 0s !important;
 }
 
-/* Icon rotation and morph bounce */
-.theme-icon,
-.theme-icon-sun,
-.theme-icon-moon {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+/* Button & Icon morph animations */
+.btn-theme-toggle {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--sky-vibrant);
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease !important;
 }
 
-.theme-toggling .theme-icon,
-.theme-toggling .theme-icon-sun,
-.theme-toggling .theme-icon-moon {
-  transform: rotate(360deg) scale(1.18);
+.btn-theme-toggle:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--sky-primary);
+  box-shadow: 0 0 15px var(--sky-glow);
+  transform: scale(1.06);
+}
+
+.btn-theme-toggle.theme-toggling {
+  transform: rotate(360deg) scale(1.14);
+}
+
+.btn-theme-toggle .theme-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+#themeIconSun {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
+}
+
+#themeIconMoon {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg) scale(0.5);
+}
+
+[data-theme="light"] .btn-theme-toggle {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0284C7;
+}
+
+[data-theme="light"] .btn-theme-toggle:hover {
+  background: #E2E8F0;
+  border-color: #0284C7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+[data-theme="light"] #themeIconSun {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-90deg) scale(0.5);
+}
+
+[data-theme="light"] #themeIconMoon {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {

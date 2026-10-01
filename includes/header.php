@@ -55,10 +55,10 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                     if (document.body) {
                         document.body.setAttribute('data-theme', theme);
                     }
-                    var moonSvg = '<svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-                    var sunSvg = '<svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+                    var moonSvg = '<svg class="theme-icon theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+                    var sunSvg = '<svg class="theme-icon theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
 
-                    document.querySelectorAll('.btn-dash-theme, .btn-theme-toggle').forEach(function(btn) {
+                    document.querySelectorAll('.btn-dash-theme, .btn-icon-nav[onclick*="toggleTheme"]').forEach(function(btn) {
                         btn.innerHTML = (theme === 'light') ? moonSvg : sunSvg;
                         btn.setAttribute('title', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
                     });
@@ -67,62 +67,19 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                     var adminSun = document.querySelector('.theme-icon-sun');
                     var adminMoon = document.querySelector('.theme-icon-moon');
                     if (adminSun && adminMoon) {
-                        if (theme === 'light') {
-                            adminSun.style.display = 'none';
-                            adminMoon.style.display = 'block';
-                        } else {
-                            adminSun.style.display = 'block';
-                            adminMoon.style.display = 'none';
-                        }
+                        adminSun.style.display = (theme === 'light') ? 'none' : 'block';
+                        adminMoon.style.display = (theme === 'light') ? 'block' : 'none';
                     }
 
-                    // Navbar theme icons
-                    var navSun = document.getElementById('themeIconSun');
-                    var navMoon = document.getElementById('themeIconMoon');
-                    if (navSun && navMoon) {
-                        if (theme === 'light') {
-                            navSun.style.display = 'none';
-                            navMoon.style.display = 'block';
-                        } else {
-                            navSun.style.display = 'block';
-                            navMoon.style.display = 'none';
-                        }
-                    }
+                    // Navbar theme toggle title & aria-label
+                    document.querySelectorAll('.btn-theme-toggle').forEach(function(btn) {
+                        btn.setAttribute('title', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+                        btn.setAttribute('aria-label', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+                    });
                 } catch(e) {}
             }
 
             window.syncThemeIcons = syncThemeUI;
-
-            function runThemeCircleOverlay(x, y, nextTheme, callback) {
-                var endRadius = Math.hypot(
-                    Math.max(x, window.innerWidth - x),
-                    Math.max(y, window.innerHeight - y)
-                );
-                var overlay = document.createElement('div');
-                overlay.id = 'ixThemeRippleOverlay';
-                overlay.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;width:0;height:0;border-radius:50%;' +
-                    'background:' + (nextTheme === 'dark' ? '#070D1A' : '#F8FAFC') + ';' +
-                    'transform:translate(-50%,-50%);pointer-events:none;z-index:99999999;' +
-                    'box-shadow:0 0 50px rgba(99,102,241,0.25);' +
-                    'transition:width 0.52s cubic-bezier(0.22,1,0.36,1),height 0.52s cubic-bezier(0.22,1,0.36,1),opacity 0.28s ease;';
-                document.body.appendChild(overlay);
-                document.documentElement.classList.add('theme-transitioning');
-
-                overlay.getBoundingClientRect();
-
-                var targetSize = Math.ceil(endRadius * 2.2);
-                overlay.style.width = targetSize + 'px';
-                overlay.style.height = targetSize + 'px';
-
-                setTimeout(function() {
-                    callback();
-                    overlay.style.opacity = '0';
-                    setTimeout(function() {
-                        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                        document.documentElement.classList.remove('theme-transitioning');
-                    }, 280);
-                }, 460);
-            }
 
             window.togglePlatformTheme = function(e) {
                 try {
@@ -132,19 +89,28 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                     var toggleBtn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('button') : null;
                     if (toggleBtn) {
                         toggleBtn.classList.add('theme-toggling');
-                        setTimeout(function() { toggleBtn.classList.remove('theme-toggling'); }, 450);
+                        setTimeout(function() { toggleBtn.classList.remove('theme-toggling'); }, 500);
                     }
 
-                    var x = (window.innerWidth - 45);
+                    var x = window.innerWidth - 45;
                     var y = 35;
                     if (evt && evt.clientX && evt.clientX > 0) {
-                        x = evt.clientX;
-                        y = evt.clientY;
+                        x = Math.round(evt.clientX);
+                        y = Math.round(evt.clientY);
                     } else if (toggleBtn && typeof toggleBtn.getBoundingClientRect === 'function') {
                         var rect = toggleBtn.getBoundingClientRect();
                         x = Math.round(rect.left + rect.width / 2);
                         y = Math.round(rect.top + rect.height / 2);
                     }
+
+                    var endRadius = Math.ceil(Math.hypot(
+                        Math.max(x, window.innerWidth - x),
+                        Math.max(y, window.innerHeight - y)
+                    ));
+
+                    document.documentElement.style.setProperty('--ix-toggle-x', x + 'px');
+                    document.documentElement.style.setProperty('--ix-toggle-y', y + 'px');
+                    document.documentElement.style.setProperty('--ix-toggle-radius', endRadius + 'px');
 
                     var current = document.documentElement.getAttribute('data-theme') || 'dark';
                     var next = (current === 'light') ? 'dark' : 'light';
@@ -161,41 +127,20 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                         syncThemeUI(next);
                     };
 
-                    // 1. Native View Transitions API with circular clip-path (Chrome 111+, Edge 111+, Safari 18+)
-                    if (document.startViewTransition) {
-                        var endRadius = Math.hypot(
-                            Math.max(x, window.innerWidth - x),
-                            Math.max(y, window.innerHeight - y)
-                        );
-                        document.documentElement.classList.add('theme-transitioning');
-
-                        var transition = document.startViewTransition(updateThemeDOM);
-                        transition.ready.then(function() {
-                            document.documentElement.animate(
-                                {
-                                    clipPath: [
-                                        'circle(0px at ' + x + 'px ' + y + 'px)',
-                                        'circle(' + endRadius + 'px at ' + x + 'px ' + y + 'px)'
-                                    ]
-                                },
-                                {
-                                    duration: 520,
-                                    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                                    pseudoElement: '::view-transition-new(root)'
-                                }
-                            );
-                        }).catch(function() {
+                    // 1. Native View Transitions API (Chrome 111+, Edge 111+, Safari 18+)
+                    if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                        document.startViewTransition(function() {
                             updateThemeDOM();
-                        });
-
-                        transition.finished.finally(function() {
-                            document.documentElement.classList.remove('theme-transitioning');
                         });
                         return;
                     }
 
-                    // 2. High-performance fallback expanding circular overlay (Firefox, older WebKit)
-                    runThemeCircleOverlay(x, y, next, updateThemeDOM);
+                    // 2. Buttery smooth global CSS color transition fallback (Firefox & older browsers)
+                    document.documentElement.classList.add('theme-transitioning');
+                    updateThemeDOM();
+                    setTimeout(function() {
+                        document.documentElement.classList.remove('theme-transitioning');
+                    }, 450);
 
                 } catch(err) {
                     try { updateThemeDOM(); } catch(e2) {}
