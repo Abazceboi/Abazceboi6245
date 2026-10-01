@@ -30,12 +30,13 @@ if ($pdo) {
 $DATA_FILE = __DIR__ . '/../data/users.json';
 
 // Valid roles in hierarchy order (lowest → highest)
-$VALID_ROLES = ['member', 'uploader', 'moderator', 'sub_admin', 'super_admin'];
+$VALID_ROLES = ['member', 'uploader', 'moderator', 'vendor', 'sub_admin', 'super_admin'];
 
 $ROLE_LABELS = [
     'member'      => 'Active Member',
     'uploader'    => 'Verified Uploader',
     'moderator'   => 'Moderator',
+    'vendor'      => 'Verified Vendor',
     'sub_admin'   => 'Sub-Admin',
     'super_admin' => 'Super Admin'
 ];
@@ -44,6 +45,7 @@ $ROLE_COLORS = [
     'member'      => ['bg' => 'rgba(56, 189, 248, 0.12)', 'border' => 'rgba(56, 189, 248, 0.3)', 'text' => '#38BDF8'],
     'uploader'    => ['bg' => 'rgba(34, 197, 94, 0.12)',  'border' => 'rgba(34, 197, 94, 0.3)',  'text' => '#4ADE80'],
     'moderator'   => ['bg' => 'rgba(251, 191, 36, 0.12)', 'border' => 'rgba(251, 191, 36, 0.3)', 'text' => '#FBBF24'],
+    'vendor'      => ['bg' => 'rgba(245, 158, 11, 0.12)', 'border' => 'rgba(245, 158, 11, 0.3)', 'text' => '#F59E0B'],
     'sub_admin'   => ['bg' => 'rgba(129, 140, 248, 0.12)','border' => 'rgba(129, 140, 248, 0.3)','text' => '#818CF8'],
     'super_admin' => ['bg' => 'rgba(244, 63, 94, 0.12)',  'border' => 'rgba(244, 63, 94, 0.3)',  'text' => '#FB7185']
 ];
@@ -60,6 +62,34 @@ function loadUsers() {
 
 function saveUsers($data) {
     return writeStorageJson('data/users.json', $data);
+}
+
+function syncVendorProfileIfVendor(string $username, string $fullName = '', string $phone = ''): void {
+    if (empty($username)) return;
+    $vendors = readStorageJson('config/vendors.json', []);
+    if (!is_array($vendors)) $vendors = [];
+    $found = false;
+    foreach ($vendors as $v) {
+        if (strtolower($v['username'] ?? '') === strtolower($username) || strtolower($v['name'] ?? '') === strtolower($username)) {
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
+        $vendors[] = [
+            'id' => 'v_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)),
+            'username' => $username,
+            'name' => !empty($fullName) ? $fullName : $username,
+            'location' => 'Nigeria (National)',
+            'rating' => 5.0,
+            'codes' => '0 Codes Sold',
+            'phone' => preg_replace('/[^0-9]/', '', $phone),
+            'telegram' => '',
+            'status' => 'active',
+            'avatar' => '#F59E0B'
+        ];
+        writeStorageJson('config/vendors.json', $vendors);
+    }
 }
 
 $action = $_GET['action'] ?? '';
@@ -213,7 +243,11 @@ switch ($action) {
 
         saveUsers($data);
 
-        // Also persist role update into PostgreSQL database if available
+        if ($newRole === 'vendor') {
+            syncVendorProfileIfVendor($username, $user['full_name'] ?? $username, $user['phone'] ?? '');
+        }
+
+        // Also persist role update into database if available
         if ($pdo) {
             try {
                 $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE LOWER(username) = LOWER(?)");
@@ -241,6 +275,7 @@ switch ($action) {
         $input = json_decode(file_get_contents('php://input'), true);
         $username    = trim($input['username'] ?? '');
         $permissions = $input['permissions'] ?? [];
+        $role        = trim($input['role'] ?? '');
 
         if (empty($username)) {
             echo json_encode(['success' => false, 'error' => 'Username is required']);
@@ -254,6 +289,13 @@ switch ($action) {
             if (strtolower($user['username']) === strtolower($username)) {
                 $user['permissions'] = $permissions;
                 $user['permissions_updated_at'] = date('c');
+                if (!empty($role) && in_array($role, $VALID_ROLES)) {
+                    $user['role'] = $role;
+                    $user['role_label'] = $ROLE_LABELS[$role] ?? 'Staff';
+                    if ($role === 'vendor') {
+                        syncVendorProfileIfVendor($username, $user['full_name'] ?? $username, $user['phone'] ?? '');
+                    }
+                }
                 $found = true;
                 break;
             }
@@ -267,10 +309,18 @@ switch ($action) {
 
         saveUsers($data);
 
+        if ($pdo && !empty($role) && in_array($role, $VALID_ROLES)) {
+            try {
+                $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE LOWER(username) = LOWER(?)");
+                $stmt->execute([$role, $username]);
+            } catch (Exception $e) {}
+        }
+
         echo json_encode([
             'success' => true,
-            'message' => "Permissions updated for '{$username}'",
+            'message' => "Permissions and role updated for '{$username}'",
             'username' => $username,
+            'role' => $role,
             'permissions' => $permissions
         ]);
         break;
@@ -445,6 +495,10 @@ switch ($action) {
 
         saveUsers($data);
 
+        if ($role === 'vendor') {
+            syncVendorProfileIfVendor($newUsername, $fullName, $phone);
+        }
+
         echo json_encode([
             'success' => true,
             'message' => "User '{$targetUsername}' updated successfully.",
@@ -579,6 +633,87 @@ switch ($action) {
             'success' => true,
             'message' => "User @{$targetUsername} has been permanently deleted from the system.",
             'username' => $targetUsername
+        ]);
+        break;
+
+    case 'create_staff_admin':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?: $_POST;
+        $username = strtolower(trim($input['username'] ?? ''));
+        $password = trim($input['password'] ?? '');
+        $fullName = trim($input['full_name'] ?? $input['fullName'] ?? 'Admin Staff');
+        $email    = trim($input['email'] ?? ($username . '@innovationx.internal'));
+        $phone    = trim($input['phone'] ?? '');
+        $role     = trim($input['role'] ?? 'sub_admin');
+        $permissions = $input['permissions'] ?? [];
+
+        if (empty($username) || empty($password)) {
+            echo json_encode(['success' => false, 'error' => 'Username and password are required.']);
+            exit;
+        }
+
+        if (!in_array($role, $VALID_ROLES)) {
+            $role = 'sub_admin';
+        }
+
+        $data = loadUsers();
+        foreach ($data['users'] as $u) {
+            if (strtolower($u['username'] ?? '') === $username) {
+                echo json_encode(['success' => false, 'error' => "Username '@{$username}' already exists. Please choose a different username."]);
+                exit;
+            }
+        }
+
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+        $newUserId = 'STF-' . strtoupper(substr(md5(uniqid()), 0, 8));
+
+        // Add to DB
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO users (id, username, password_hash, full_name, email, phone, role, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+                $stmt->execute([$newUserId, $username, $passwordHash, $fullName, $email, $phone, $role]);
+            } catch (Exception $e) {}
+        }
+
+        $newUser = [
+            'id' => $newUserId,
+            'username' => $username,
+            'password' => $password,
+            'password_hash' => $passwordHash,
+            'full_name' => $fullName,
+            'email' => $email,
+            'phone' => $phone,
+            'role' => $role,
+            'role_label' => $ROLE_LABELS[$role] ?? 'Sub-Admin',
+            'status' => 'active',
+            'permissions' => $permissions,
+            'is_activated' => true,
+            'remaining_cash' => 0,
+            'remaining_pts' => 0,
+            'created_at' => date('c'),
+            'updated_at' => date('c')
+        ];
+
+        $data['users'][] = $newUser;
+        saveUsers($data);
+
+        if ($role === 'vendor') {
+            syncVendorProfileIfVendor($username, $fullName, $phone);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Staff account @{$username} ({$ROLE_LABELS[$role]}) created successfully!",
+            'username' => $username,
+            'password' => $password,
+            'role' => $role,
+            'role_label' => $ROLE_LABELS[$role]
         ]);
         break;
 

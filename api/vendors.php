@@ -192,7 +192,7 @@ if ($action === 'delete_vendor' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $filtered = array_values(array_filter($vendors, function($v) use ($id) {
-        return $v['id'] !== $id;
+        return ($v['id'] ?? '') !== $id && ($v['name'] ?? '') !== $id && ($v['username'] ?? '') !== $id;
     }));
 
     $vendors = $filtered;
@@ -225,6 +225,115 @@ if ($action === 'save_vendors' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     echo json_encode(['success' => false, 'message' => 'Invalid vendors data.']);
+    exit;
+}
+
+// 7. GET SINGLE VENDOR PROFILE
+if ($action === 'get_vendor_profile') {
+    $username = strtolower(trim($_GET['username'] ?? ''));
+    $vendor = null;
+    foreach ($vendors as $v) {
+        if (strtolower($v['username'] ?? '') === $username || strtolower($v['id'] ?? '') === 'v_' . $username || strtolower($v['name'] ?? '') === $username) {
+            $vendor = $v;
+            break;
+        }
+    }
+    echo json_encode([
+        'success' => true,
+        'status' => 'success',
+        'vendor' => $vendor
+    ]);
+    exit;
+}
+
+// 8. VENDOR SELF-SERVICE PROFILE UPDATE (Only vendor can modify handles & picture from their dashboard)
+if ($action === 'update_vendor_profile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $username = strtolower(trim($input['username'] ?? ''));
+    $vendorId = trim($input['id'] ?? '');
+
+    if (empty($username) && empty($vendorId)) {
+        echo json_encode(['success' => false, 'status' => 'error', 'message' => 'Vendor identification required.']);
+        exit;
+    }
+
+    $name = trim($input['name'] ?? '');
+    $phone = preg_replace('/[^0-9]/', '', $input['phone'] ?? '');
+    $rawTelegram = trim($input['telegram'] ?? '');
+    $location = trim($input['location'] ?? '');
+    $avatar = trim($input['avatar'] ?? $input['photo'] ?? '');
+
+    $telegramUrl = '';
+    if (!empty($rawTelegram)) {
+        if (strpos($rawTelegram, 'http') === 0) {
+            $telegramUrl = $rawTelegram;
+        } else {
+            $cleaned = ltrim($rawTelegram, '@');
+            $telegramUrl = 'https://t.me/' . $cleaned;
+        }
+    }
+
+    $found = false;
+    $updatedVendor = null;
+    foreach ($vendors as &$v) {
+        $matches = false;
+        if (!empty($username) && (strtolower($v['username'] ?? '') === $username || strtolower($v['id'] ?? '') === 'v_' . $username)) {
+            $matches = true;
+        } elseif (!empty($vendorId) && ($v['id'] === $vendorId)) {
+            $matches = true;
+        } elseif (!empty($username) && strtolower($v['name'] ?? '') === $username) {
+            $matches = true;
+        }
+
+        if ($matches) {
+            if (!empty($name)) $v['name'] = $name;
+            if (!empty($phone)) $v['phone'] = $phone;
+            $v['telegram'] = $telegramUrl;
+            if (!empty($location)) $v['location'] = $location;
+            if (!empty($avatar)) {
+                $v['avatar'] = $avatar;
+                $v['photo'] = $avatar;
+            }
+            if (empty($v['username']) && !empty($username)) {
+                $v['username'] = $username;
+            }
+            $v['updated_at'] = date('c');
+            $found = true;
+            $updatedVendor = $v;
+            break;
+        }
+    }
+    unset($v);
+
+    if (!$found && !empty($username)) {
+        $newVendor = [
+            'id' => 'v_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)),
+            'username' => $username,
+            'name' => !empty($name) ? $name : $username,
+            'location' => !empty($location) ? $location : 'Nigeria (National)',
+            'rating' => 5.0,
+            'codes' => '0 Codes Sold',
+            'phone' => $phone,
+            'telegram' => $telegramUrl,
+            'status' => 'active',
+            'avatar' => !empty($avatar) ? $avatar : '#F59E0B',
+            'photo' => !empty($avatar) ? $avatar : '',
+            'created_at' => date('c'),
+            'updated_at' => date('c')
+        ];
+        $vendors[] = $newVendor;
+        $updatedVendor = $newVendor;
+        $found = true;
+    }
+
+    writeStorageJson('config/vendors.json', $vendors);
+
+    echo json_encode([
+        'success' => true,
+        'status' => 'success',
+        'message' => 'Vendor profile, handles, and picture updated successfully.',
+        'vendor' => $updatedVendor
+    ]);
     exit;
 }
 

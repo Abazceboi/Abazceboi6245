@@ -1776,15 +1776,44 @@ const server = http.createServer((req, res) => {
                     try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
                 }
 
-                const validRoles = ['member', 'uploader', 'moderator', 'sub_admin', 'super_admin'];
-                const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
+                const validRoles = ['member', 'uploader', 'moderator', 'vendor', 'sub_admin', 'super_admin'];
+                const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', vendor: 'Verified Vendor', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
                 const roleColors = {
                     member: { bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)', text: '#38BDF8' },
                     uploader: { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', text: '#4ADE80' },
                     moderator: { bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)', text: '#FBBF24' },
+                    vendor: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', text: '#F59E0B' },
                     sub_admin: { bg: 'rgba(129,140,248,0.12)', border: 'rgba(129,140,248,0.3)', text: '#818CF8' },
                     super_admin: { bg: 'rgba(244,63,94,0.12)', border: 'rgba(244,63,94,0.3)', text: '#FB7185' }
                 };
+
+                function syncVendorRecord(uName, fName, ph) {
+                    if (!uName) return;
+                    const vFile = path.join(PUBLIC_DIR, 'config', 'vendors.json');
+                    let vList = [];
+                    if (fs.existsSync(vFile)) {
+                        try { vList = JSON.parse(fs.readFileSync(vFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(vList)) vList = [];
+                    const exists = vList.some(v => (v.username || '').toLowerCase() === uName.toLowerCase() || (v.name || '').toLowerCase() === uName.toLowerCase());
+                    if (!exists) {
+                        vList.push({
+                            id: 'v_' + uName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                            username: uName,
+                            name: fName || uName,
+                            location: 'Nigeria (National)',
+                            rating: 5.0,
+                            codes: '0 Codes Sold',
+                            phone: ph || '',
+                            telegram: '',
+                            status: 'active',
+                            avatar: '#F59E0B'
+                        });
+                        const vDir = path.dirname(vFile);
+                        if (!fs.existsSync(vDir)) fs.mkdirSync(vDir, { recursive: true });
+                        fs.writeFileSync(vFile, JSON.stringify(vList, null, 2));
+                    }
+                }
 
                 if (action === 'get_users') {
                     res.end(JSON.stringify({ success: true, users: usersData.users || [], valid_roles: validRoles, role_labels: roleLabels, role_colors: roleColors }));
@@ -1793,12 +1822,13 @@ const server = http.createServer((req, res) => {
 
                 if (action === 'update_role' && req.method === 'POST') {
                     const username = (parsed.username || '').trim();
-                    const newRole = (parsed.new_role || '').trim();
+                    const newRole = (parsed.role || parsed.new_role || '').trim();
                     if (!username || !validRoles.includes(newRole)) {
                         res.end(JSON.stringify({ success: false, error: 'Invalid username or role' }));
                         return;
                     }
                     let found = false;
+                    let targetUserObj = null;
                     usersData.users.forEach(u => {
                         if (u.username.toLowerCase() === username.toLowerCase()) {
                             const oldRole = u.role || 'member';
@@ -1808,14 +1838,20 @@ const server = http.createServer((req, res) => {
                             u.role_history = u.role_history || [];
                             u.role_history.push({ from: oldRole, to: newRole, changed_at: new Date().toISOString(), changed_by: 'super_admin' });
                             found = true;
+                            targetUserObj = u;
                         }
                     });
                     if (!found) {
-                        usersData.users.push({
+                        const newU = {
                             username: username, role: newRole, role_label: roleLabels[newRole],
                             role_updated_at: new Date().toISOString(),
                             role_history: [{ from: 'member', to: newRole, changed_at: new Date().toISOString(), changed_by: 'super_admin' }]
-                        });
+                        };
+                        usersData.users.push(newU);
+                        targetUserObj = newU;
+                    }
+                    if (newRole === 'vendor') {
+                        syncVendorRecord(username, targetUserObj ? targetUserObj.full_name : username, targetUserObj ? targetUserObj.phone : '');
                     }
                     const dataDir = path.dirname(usersFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -1993,6 +2029,103 @@ const server = http.createServer((req, res) => {
                     usersData.users = usersData.users.filter(u => (u.username || '').toLowerCase() !== targetUsername.toLowerCase());
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
                     res.end(JSON.stringify({ success: true, message: `User @${targetUsername} has been permanently deleted from the system.` }));
+                    return;
+                }
+
+                if (action === 'create_staff_admin' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim().toLowerCase();
+                    const password = (parsed.password || '').trim();
+                    const fullName = (parsed.full_name || parsed.fullName || 'Admin Staff').trim();
+                    const email = (parsed.email || (username + '@innovationx.internal')).trim();
+                    const phone = (parsed.phone || '').trim();
+                    const role = (parsed.role || 'sub_admin').trim();
+                    const permissions = parsed.permissions || {};
+
+                    if (!username || !password) {
+                        res.end(JSON.stringify({ success: false, error: 'Username and password are required' }));
+                        return;
+                    }
+                    if (usersData.users.some(u => (u.username || '').toLowerCase() === username)) {
+                        res.end(JSON.stringify({ success: false, error: `Username '@${username}' already exists` }));
+                        return;
+                    }
+
+                    const newUser = {
+                        id: 'STF-' + Date.now().toString(36).toUpperCase(),
+                        username: username,
+                        password: password,
+                        password_hash: password,
+                        full_name: fullName,
+                        email: email,
+                        phone: phone,
+                        role: role,
+                        role_label: roleLabels[role] || 'Sub-Admin',
+                        status: 'active',
+                        permissions: permissions,
+                        is_activated: true,
+                        remaining_cash: 0,
+                        remaining_pts: 0,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    };
+
+                    usersData.users.push(newUser);
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+
+                    if (role === 'vendor') {
+                        syncVendorRecord(username, fullName, phone);
+                    }
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: `Staff account @${username} (${roleLabels[role] || role}) created successfully!`,
+                        username: username,
+                        password: password,
+                        role: role,
+                        role_label: roleLabels[role]
+                    }));
+                    return;
+                }
+
+                if (action === 'update_permissions' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const permissions = parsed.permissions || {};
+                    const role = (parsed.role || '').trim();
+
+                    if (!username) {
+                        res.end(JSON.stringify({ success: false, error: 'Username is required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if (u.username.toLowerCase() === username.toLowerCase()) {
+                            u.permissions = permissions;
+                            u.permissions_updated_at = new Date().toISOString();
+                            if (role && validRoles.includes(role)) {
+                                u.role = role;
+                                u.role_label = roleLabels[role] || 'Staff';
+                                if (role === 'vendor') {
+                                    syncVendorRecord(username, u.full_name, u.phone);
+                                }
+                            }
+                            found = true;
+                        }
+                    });
+
+                    if (!found) {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                        return;
+                    }
+
+                    fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: `Permissions updated for '@${username}'`,
+                        username: username,
+                        role: role,
+                        permissions: permissions
+                    }));
                     return;
                 }
 
@@ -2750,6 +2883,139 @@ const server = http.createServer((req, res) => {
                 }
 
                 res.end(JSON.stringify({ status: 'success', config: vaConfig }));
+                return;
+            }
+
+            // Verified Vendors & Telegram Settings API
+            if (cleanUrl.includes('vendors.php')) {
+                const vFile = path.join(PUBLIC_DIR, 'config', 'vendors.json');
+                const tgFile = path.join(PUBLIC_DIR, 'config', 'telegram_settings.json');
+                let vendorsList = [];
+                let tgConfig = {
+                    enabled: true,
+                    channel_link: 'https://t.me/innovationx_official',
+                    support_link: 'https://t.me/innovationx_support',
+                    popup_title: 'Join Our Official Telegram Community',
+                    popup_description: 'Get instant daily task drops and direct admin support.',
+                    popup_button_text: 'Join Telegram Channel ↗',
+                    popup_delay_seconds: 2
+                };
+                if (fs.existsSync(vFile)) {
+                    try { vendorsList = JSON.parse(fs.readFileSync(vFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(vendorsList)) vendorsList = [];
+                if (fs.existsSync(tgFile)) {
+                    try { tgConfig = Object.assign(tgConfig, JSON.parse(fs.readFileSync(tgFile, 'utf8'))); } catch(e){}
+                }
+
+                if (action === 'get_vendors' || (req.method === 'GET' && !action)) {
+                    res.end(JSON.stringify({ success: true, status: 'success', count: vendorsList.length, vendors: vendorsList, data: vendorsList, telegram: tgConfig }));
+                    return;
+                }
+
+                if (action === 'get_vendor_profile') {
+                    const uname = (urlObj.searchParams.get('username') || '').toLowerCase();
+                    const v = vendorsList.find(x => (x.username || '').toLowerCase() === uname || (x.name || '').toLowerCase() === uname || x.id === 'v_' + uname);
+                    res.end(JSON.stringify({ success: true, status: 'success', vendor: v || null }));
+                    return;
+                }
+
+                if (action === 'update_vendor_profile' && req.method === 'POST') {
+                    const uname = (parsed.username || '').toLowerCase();
+                    const vId = (parsed.id || '');
+                    const name = (parsed.name || '').trim();
+                    const phone = (parsed.phone || '').replace(/[^0-9]/g, '');
+                    let rawTg = (parsed.telegram || '').trim();
+                    if (rawTg && !rawTg.startsWith('http')) {
+                        rawTg = 'https://t.me/' + rawTg.replace(/^@/, '');
+                    }
+                    const location = (parsed.location || '').trim();
+                    const avatar = (parsed.avatar || parsed.photo || '').trim();
+
+                    let found = false;
+                    let targetV = null;
+                    vendorsList.forEach(v => {
+                        if ((uname && (v.username || '').toLowerCase() === uname) || (vId && v.id === vId) || (uname && (v.name || '').toLowerCase() === uname)) {
+                            if (name) v.name = name;
+                            if (phone) v.phone = phone;
+                            v.telegram = rawTg;
+                            if (location) v.location = location;
+                            if (avatar) { v.avatar = avatar; v.photo = avatar; }
+                            if (!v.username && uname) v.username = uname;
+                            v.updated_at = new Date().toISOString();
+                            found = true;
+                            targetV = v;
+                        }
+                    });
+
+                    if (!found && uname) {
+                        targetV = {
+                            id: 'v_' + uname.replace(/[^a-z0-9]/g, ''),
+                            username: uname,
+                            name: name || uname,
+                            location: location || 'Nigeria (National)',
+                            rating: 5.0,
+                            codes: '0 Codes Sold',
+                            phone: phone,
+                            telegram: rawTg,
+                            status: 'active',
+                            avatar: avatar || '#F59E0B',
+                            photo: avatar || '',
+                            created_at: new Date().toISOString()
+                        };
+                        vendorsList.push(targetV);
+                    }
+
+                    const vDir = path.dirname(vFile);
+                    if (!fs.existsSync(vDir)) fs.mkdirSync(vDir, { recursive: true });
+                    fs.writeFileSync(vFile, JSON.stringify(vendorsList, null, 2));
+
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Vendor profile and handles updated successfully.', vendor: targetV }));
+                    return;
+                }
+
+                if (action === 'add_vendor' && req.method === 'POST') {
+                    const name = (parsed.name || '').trim();
+                    const phone = (parsed.phone || '').replace(/[^0-9]/g, '');
+                    let rawTg = (parsed.telegram || '').trim();
+                    if (rawTg && !rawTg.startsWith('http')) {
+                        rawTg = 'https://t.me/' + rawTg.replace(/^@/, '');
+                    }
+                    const newV = {
+                        id: 'v_' + Date.now().toString(36),
+                        name: name,
+                        phone: phone,
+                        telegram: rawTg,
+                        location: (parsed.location || 'Nigeria (National)').trim(),
+                        rating: parseFloat(parsed.rating || 5.0),
+                        codes: (parsed.codes || parsed.badge || '0 Codes Sold').trim(),
+                        status: (parsed.status || 'active').trim(),
+                        avatar: parsed.avatar || '#F59E0B'
+                    };
+                    vendorsList.push(newV);
+                    fs.writeFileSync(vFile, JSON.stringify(vendorsList, null, 2));
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Vendor added', vendor: newV, vendors: vendorsList }));
+                    return;
+                }
+
+                if (action === 'delete_vendor' && req.method === 'POST') {
+                    const delId = (parsed.id || '').trim();
+                    vendorsList = vendorsList.filter(v => v.id !== delId && v.name !== delId && (v.username || '') !== delId);
+                    fs.writeFileSync(vFile, JSON.stringify(vendorsList, null, 2));
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Vendor removed', vendors: vendorsList }));
+                    return;
+                }
+
+                if (action === 'save_telegram_settings' && req.method === 'POST') {
+                    tgConfig = Object.assign(tgConfig, parsed);
+                    const tgDir = path.dirname(tgFile);
+                    if (!fs.existsSync(tgDir)) fs.mkdirSync(tgDir, { recursive: true });
+                    fs.writeFileSync(tgFile, JSON.stringify(tgConfig, null, 2));
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Telegram settings saved', data: tgConfig }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ success: true, vendors: vendorsList, telegram: tgConfig }));
                 return;
             }
 

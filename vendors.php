@@ -108,9 +108,16 @@ if (file_exists($telegramConfigFile)) {
             <div class="vendor-card" data-search="<?= strtolower($v['name'] . ' ' . $v['location']) ?>" style="background:rgba(13,21,40,0.92);border:1px solid rgba(56,189,248,0.2);border-radius:16px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 30px rgba(2,6,23,0.3)">
                 <div>
                     <div class="vendor-top" style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-                        <div class="vendor-avatar" style="width:48px;height:48px;border-radius:12px;background:<?= htmlspecialchars($v['avatar'] ?? '#0284C7') ?>;color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem">
-                            <?= strtoupper(substr($v['name'], 0, 1)) ?>
-                        </div>
+                        <?php 
+                        $pic = $v['photo'] ?? $v['avatar'] ?? '';
+                        $isImage = !empty($pic) && (strpos($pic, 'data:image') === 0 || strpos($pic, 'http') === 0);
+                        if ($isImage): ?>
+                            <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($v['name']) ?>" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid #F59E0B">
+                        <?php else: ?>
+                            <div class="vendor-avatar" style="width:48px;height:48px;border-radius:12px;background:<?= htmlspecialchars($v['avatar'] ?? '#0284C7') ?>;color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem">
+                                <?= strtoupper(substr($v['name'], 0, 1)) ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="vendor-meta">
                             <h3 class="vendor-name" style="font-size:1.05rem;font-weight:800;color:#FFFFFF;margin-bottom:3px"><?= htmlspecialchars($v['name']) ?></h3>
                             <div class="vendor-location" style="font-size:0.75rem;color:#7DD3FC;line-height:1.3"><?= htmlspecialchars($v['location']) ?></div>

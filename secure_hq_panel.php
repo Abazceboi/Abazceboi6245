@@ -1448,6 +1448,7 @@ select.has-custom-dropdown {
                             <option value="member">Active Member</option>
                             <option value="uploader">Verified Uploader</option>
                             <option value="moderator">Moderator</option>
+                            <option value="vendor">Verified Vendor</option>
                             <option value="sub_admin">Sub Admin</option>
                             <option value="super_admin">Super Admin</option>
                         </select>
@@ -2988,14 +2989,50 @@ select.has-custom-dropdown {
 
 <!-- tab-vendors -->
 <div id="tab-vendors" class="tab-pane">
-    <div class="page-header">
-        <h2 class="page-title">Vendors & Telegram</h2>
-        <p class="page-desc">Manage verified coupon PIN distributors and Telegram community settings</p>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2 class="page-title">Vendors & Telegram</h2>
+            <p class="page-desc">Manage verified coupon PIN distributors, monitor stock & sales, and configure Telegram community</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-secondary btn-sm" onclick="loadVendorsData()" style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Refresh Inventory
+            </button>
+        </div>
+    </div>
+
+    <!-- Vendor Stock Monitoring KPIs -->
+    <div class="stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <div class="stat-value" id="vendorKpiTotal">0</div>
+                <div class="stat-label">Verified Vendors</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <div class="stat-value" id="vendorKpiAllocated" style="color: var(--admin-primary-light, #818cf8);">0</div>
+                <div class="stat-label">Total PINs Allocated</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <div class="stat-value" id="vendorKpiSold" style="color: var(--admin-danger, #ef4444);">0</div>
+                <div class="stat-label">Codes Sold (Redeemed)</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-info">
+                <div class="stat-value" id="vendorKpiRemaining" style="color: var(--admin-success, #10b981);">0</div>
+                <div class="stat-label">Codes Left (In Stock)</div>
+            </div>
+        </div>
     </div>
     
     <div class="data-card">
         <div class="data-card-header">
-            <h3 class="data-card-title">Telegram Settings</h3>
+            <h3 class="data-card-title">Telegram Community Settings</h3>
         </div>
         <div class="data-card-body">
             <div class="form-row">
@@ -3028,55 +3065,65 @@ select.has-custom-dropdown {
 
     <div class="data-card">
         <div class="data-card-header">
-            <h3 class="data-card-title">Add Vendor</h3>
+            <h3 class="data-card-title">Add Verified Vendor</h3>
         </div>
         <div class="data-card-body">
+            <div style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--admin-text-primary);">
+                💡 <strong>Self-Service Handle Notice:</strong> Once added or promoted, vendors can also independently set and update their personal Telegram handle, WhatsApp number, and upload profile pictures directly from their <strong>Vendor Dashboard</strong>.
+            </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="newVendorName" class="form-input">
+                    <label>Full / Business Name</label>
+                    <input type="text" id="newVendorName" class="form-input" placeholder="e.g. Victor Codes Exchange">
                 </div>
                 <div class="form-group">
                     <label>WhatsApp Number</label>
-                    <input type="text" id="newVendorPhone" class="form-input">
+                    <input type="text" id="newVendorPhone" class="form-input" placeholder="+234...">
                 </div>
                 <div class="form-group">
                     <label>Telegram Handle</label>
-                    <input type="text" id="newVendorTelegram" class="form-input">
+                    <input type="text" id="newVendorTelegram" class="form-input" placeholder="@handle">
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Location/State</label>
-                    <input type="text" id="newVendorLocation" class="form-input">
+                    <input type="text" id="newVendorLocation" class="form-input" placeholder="e.g. Lagos, Nigeria">
                 </div>
                 <div class="form-group">
                     <label>Rating (1-5)</label>
-                    <input type="number" step="0.1" id="newVendorRating" class="form-input">
+                    <input type="number" step="0.1" id="newVendorRating" class="form-input" value="5.0">
                 </div>
                 <div class="form-group">
                     <label>Sales Badge</label>
-                    <input type="text" id="newVendorBadge" class="form-input" placeholder="2,400+ Codes Sold">
+                    <input type="text" id="newVendorBadge" class="form-input" placeholder="e.g. Top Rated Vendor">
                 </div>
             </div>
             <button class="btn-success" onclick="addVendor()">Add Vendor</button>
         </div>
     </div>
 
+    <!-- Vendor Directory & Stock Monitoring -->
     <div class="data-card">
-        <div class="data-card-header">
-            <h3 class="data-card-title">Vendor Directory</h3>
+        <div class="data-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 class="data-card-title">Vendor Directory & Stock Monitoring</h3>
+                <p style="font-size: 0.82rem; color: var(--admin-text-muted); margin: 3px 0 0 0;">
+                    Monitor assigned inventory, codes sold, and remaining balances per vendor. Click "+ Generate PINs" to allocate new batches directly.
+                </p>
+            </div>
         </div>
         <div class="data-card-body">
             <div class="table-responsive"><table class="data-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Vendor Profile</th>
                         <th>WhatsApp</th>
                         <th>Telegram</th>
                         <th>Location</th>
-                        <th>Rating</th>
-                        <th>Badge</th>
+                        <th style="text-align: center;">Codes Assigned</th>
+                        <th style="text-align: center;">Codes Sold</th>
+                        <th style="text-align: center;">Codes Left</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -3085,6 +3132,55 @@ select.has-custom-dropdown {
                     <!-- Populated by JS -->
                 </tbody>
             </table></div>
+        </div>
+    </div>
+
+    <!-- Direct Vendor PIN Generator Modal -->
+    <div id="vendorPinGenModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3>Generate Codes Directly to Vendor</h3>
+                <button class="btn-icon" onclick="closeModal('vendorPinGenModal')" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); border-radius: 10px; padding: 14px 16px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--admin-primary-light, #818cf8); letter-spacing: 0.8px;">Allocating directly to</div>
+                    <div id="vGenVendorNameDisplay" style="font-size: 1.15rem; font-weight: 800; color: var(--admin-text-primary); margin-top: 4px;">Vendor</div>
+                    <input type="hidden" id="vGenVendorId">
+                    <input type="hidden" id="vGenVendorName">
+                </div>
+
+                <div class="form-group">
+                    <label style="font-weight: 600; font-size: 0.85rem;">Select PIN Type</label>
+                    <select id="vGenPinType" class="form-select">
+                        <option value="AFF">Affiliate Registration PIN (₦1,000)</option>
+                        <option value="UPL">Uploader Accreditation PIN (₦2,000)</option>
+                        <option value="VIP_AFF">VIP Affiliate PIN (₦2,500)</option>
+                        <option value="VIP_UPL">VIP Uploader PIN (₦5,000)</option>
+                        <option value="JOB">Task Quota PIN (₦1,500)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-weight: 600; font-size: 0.85rem;">Quantity of PINs to Generate</label>
+                    <select id="vGenQuantity" class="form-select">
+                        <option value="5">5 PINs</option>
+                        <option value="10" selected>10 PINs</option>
+                        <option value="25">25 PINs</option>
+                        <option value="50">50 PINs</option>
+                        <option value="100">100 PINs</option>
+                        <option value="250">250 PINs</option>
+                    </select>
+                </div>
+
+                <div style="font-size: 0.82rem; color: var(--admin-text-muted);">
+                    These PIN codes will be generated immediately and linked directly to this vendor. The vendor can view, manage, and sell them from their Vendor Dashboard.
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('vendorPinGenModal')">Cancel</button>
+                <button class="btn btn-primary" id="btnSubmitVendorPins" onclick="submitDirectVendorPins()">⚡ Generate & Assign Codes</button>
+            </div>
         </div>
     </div>
 </div>
@@ -3226,9 +3322,17 @@ select.has-custom-dropdown {
 
 <!-- tab-team -->
 <div id="tab-team" class="tab-pane">
-    <div class="page-header">
-        <h2 class="page-title">Staff & Roles</h2>
-        <p class="page-desc">Assign staff roles and configure granular permission access for sub-administrators</p>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2 class="page-title">Staff & Roles</h2>
+            <p class="page-desc">Assign staff roles and configure granular permission access for sub-administrators</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-primary" onclick="openCreateStaffModal()" style="display: inline-flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                + Create Staff / Admin Account
+            </button>
+        </div>
     </div>
     
     <div class="data-card">
@@ -3287,61 +3391,230 @@ select.has-custom-dropdown {
         </div>
     </div>
 
-    <!-- Permission Editor Modal -->
-    <div id="permissionsModal" class="modal-overlay" style="display: none;">
-        <div class="modal-box">
+    <!-- Create Staff / Admin Account Modal -->
+    <div id="createStaffModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 580px;">
             <div class="modal-header">
-                <h3>Edit Permissions: <span id="permStaffUser"></span></h3>
-                <button class="btn-icon" onclick="closePermissionsModal()">X</button>
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                    Create Staff / Admin Account
+                </h3>
+                <button class="btn-icon" onclick="closeModal('createStaffModal')" aria-label="Close">✕</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                <p style="font-size: 0.84rem; color: var(--admin-text-muted); margin: 0;">
+                    Generate administrative or staff credentials. You can auto-generate unique usernames and secure passwords with one click.
+                </p>
+
+                <!-- Username with Auto-Generator -->
                 <div class="form-group">
-                    <label>Role</label>
-                    <select id="permRole" class="form-select">
-                        <option value="super_admin">Super Admin</option>
-                        <option value="sub_admin">Sub-Admin</option>
-                        <option value="task_uploader">Task Uploader</option>
-                    </select>
+                    <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600;">
+                        <span>Admin Username *</span>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="generateStaffUsername()" style="font-size: 0.75rem; color: var(--admin-primary-light, #818cf8); padding: 2px 8px;">
+                            ⚡ Auto-Generate
+                        </button>
+                    </label>
+                    <input type="text" id="newStaffUsername" class="form-input" placeholder="e.g. admin_ops92" required>
                 </div>
+
+                <!-- Password with Strong Generator -->
                 <div class="form-group">
-                    <label>Granular Permissions (Sub-Admins)</label>
-                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <label style="display: flex; justify-content: space-between; align-items: center; font-weight: 600;">
+                        <span>Admin Password *</span>
+                        <button type="button" class="btn btn-sm btn-ghost" onclick="generateStaffPassword()" style="font-size: 0.75rem; color: var(--admin-primary-light, #818cf8); padding: 2px 8px;">
+                            🔑 Generate Strong Password
+                        </button>
+                    </label>
+                    <input type="text" id="newStaffPassword" class="form-input" placeholder="Click 'Generate Strong Password' or type here" required style="font-family: monospace;">
+                </div>
+
+                <!-- Role Selection -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Staff Role *</label>
+                        <select id="newStaffRole" class="form-select" onchange="toggleStaffPermsVisibility()">
+                            <option value="sub_admin" selected>Sub-Admin (Custom Permissions)</option>
+                            <option value="super_admin">Super Admin (Full Access)</option>
+                            <option value="uploader">Task Uploader (Tasks Only)</option>
+                            <option value="vendor">Verified Vendor (PIN Distribution)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Full Name</label>
+                        <input type="text" id="newStaffFullName" class="form-input" placeholder="Staff Name">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Email (Optional)</label>
+                        <input type="email" id="newStaffEmail" class="form-input" placeholder="staff@internal.inx">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Phone / WhatsApp (Optional)</label>
+                        <input type="text" id="newStaffPhone" class="form-input" placeholder="+234...">
+                    </div>
+                </div>
+
+                <!-- Granular Permissions (visible for sub_admin) -->
+                <div id="newStaffPermsSection" style="background: rgba(15,23,42,0.6); border: 1px solid var(--admin-border, #334155); border-radius: 8px; padding: 14px;">
+                    <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--admin-primary-light, #818cf8); letter-spacing: 0.5px; margin-bottom: 10px;">
+                        Granular Sub-Admin Permissions
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permPayouts">
+                            <input type="checkbox" id="newPermPayouts" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">Payout Approvals & Withdrawals</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Payout Approvals</span>
                         </label>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permBroadcasts">
+                            <input type="checkbox" id="newPermBroadcasts" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">Broadcast Management</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Broadcasts</span>
                         </label>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permNotifications">
+                            <input type="checkbox" id="newPermNotifications" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">In-App Notifications</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">In-App Notifications</span>
                         </label>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permVtu">
+                            <input type="checkbox" id="newPermVtu" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">VTU Telecoms Gateway</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">VTU Gateway</span>
                         </label>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permTasks">
+                            <input type="checkbox" id="newPermTasks" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">Opportunities & Tasks</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Opportunities & Tasks</span>
                         </label>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="permVendors">
+                            <input type="checkbox" id="newPermVendors" checked>
                             <span class="toggle-slider"></span>
-                            <span style="margin-left: 10px;">Vendors Directory</span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Vendors Directory</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="newPermUsers" checked>
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Users Management</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="newPermCoupons" checked>
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 8px; font-size: 0.82rem;">Coupons & PINs</span>
                         </label>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-primary" onclick="savePermissions()">Save Permissions</button>
-                <button class="btn-secondary" onclick="closePermissionsModal()">Cancel</button>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('createStaffModal')">Cancel</button>
+                <button class="btn btn-primary" id="btnSubmitStaffAdmin" onclick="submitCreateStaffAdmin()">Create Staff Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Created Result Modal -->
+    <div id="staffCreatedResultModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 480px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; position: relative;">
+                <h3 style="color: var(--admin-success, #10b981); display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Staff Account Created!
+                </h3>
+                <button class="btn-icon" onclick="closeModal('staffCreatedResultModal')" aria-label="Close" style="position: absolute; right: 16px; top: 16px;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 24px 20px;">
+                <p style="font-size: 0.88rem; color: var(--admin-text-muted); margin-bottom: 16px;">
+                    The new staff account is ready. Please copy the login credentials below:
+                </p>
+                <div style="background: var(--admin-card-bg, #0f172a); border: 2px dashed var(--admin-primary, #6366f1); border-radius: 12px; padding: 18px 16px; margin-bottom: 20px; text-align: left;">
+                    <div style="margin-bottom: 10px;">
+                        <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--admin-text-muted);">Username:</span>
+                        <div id="createdStaffUsernameVal" style="font-family: monospace; font-size: 1.15rem; font-weight: 800; color: var(--admin-primary-light, #818cf8); user-select: all;"></div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; color: var(--admin-text-muted);">Password:</span>
+                        <div id="createdStaffPasswordVal" style="font-family: monospace; font-size: 1.15rem; font-weight: 800; color: var(--admin-success, #10b981); user-select: all;"></div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-primary" onclick="copyCreatedStaffCredentials()" style="padding: 10px 24px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copy Credentials
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeModal('staffCreatedResultModal')" style="padding: 10px 20px;">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permission Editor Modal -->
+    <div id="permissionsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Edit Staff Permissions: <span id="permStaffUser" style="color: var(--admin-primary-light, #818cf8);"></span></h3>
+                <button class="btn-icon" onclick="closePermissionsModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-weight: 600;">Assigned Role</label>
+                    <select id="permRole" class="form-select">
+                        <option value="super_admin">Super Admin (Full Unrestricted Access)</option>
+                        <option value="sub_admin">Sub-Admin (Granular Permissions)</option>
+                        <option value="uploader">Task Uploader</option>
+                        <option value="vendor">Verified Vendor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="font-weight: 600; display: block; margin-bottom: 8px;">Granular Permission Access</label>
+                    <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(15,23,42,0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--admin-border, #334155);">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permPayouts">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Payout Approvals & Withdrawals</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permBroadcasts">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Broadcast Management</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permNotifications">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">In-App Notifications</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permVtu">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">VTU Telecoms Gateway</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permTasks">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Opportunities & Tasks Hub</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permVendors">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Vendors Directory & Monitoring</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permUsers">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Users & Ledgers Management</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="permCoupons">
+                            <span class="toggle-slider"></span>
+                            <span style="margin-left: 10px; font-size: 0.85rem;">Coupons & PIN Generator</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closePermissionsModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePermissions()">Save Permissions</button>
             </div>
         </div>
     </div>
@@ -4020,11 +4293,12 @@ select.has-custom-dropdown {
                 <td>${u.email||''}</td>
                 <td>${u.phone||''}</td>
                 <td><select class="form-select" style="width:125px;padding:3px 6px;font-size:.74rem" onchange="updateUserRole('${u.username||u.id}',this.value)">
-                    ${['member','uploader','moderator','sub_admin','super_admin'].map(r=>`<option value="${r}"${(u.role||'member')===r?' selected':''}>${r.replace('_',' ')}</option>`).join('')}
+                    ${['member','uploader','moderator','vendor','sub_admin','super_admin'].map(r=>`<option value="${r}"${(u.role||'member')===r?' selected':''}>${r==='vendor'?'Verified Vendor':r.replace('_',' ')}</option>`).join('')}
                 </select></td>
                 <td>${fmtNaira(u.cash_balance||u.balance||0)}<br><small>${fmt(u.points_balance||u.points||0)} PTS</small></td>
                 <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;">
                     <button class="btn btn-sm btn-secondary" onclick="openEditUserModal('${u.username||u.id}')" title="Edit Profile">Edit</button>
+                    ${(u.role !== 'vendor') ? `<button class="btn btn-sm" style="background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.3);font-weight:700;font-size:0.72rem;padding:4px 6px;" onclick="promoteUserToVendor('${u.username||u.id}')" title="Promote user directly to Verified Vendor">⭐ Vendor</button>` : ''}
                     <button class="btn btn-sm btn-ghost" onclick="openUserLedger('${u.username||u.id}')" title="View Ledger">Ledger</button>
                     <button class="btn btn-sm" style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);font-weight:700;font-size:0.72rem;padding:4px 6px;" onclick="quickResetPassword('${u.username||u.id}')" title="Force Reset Password">🔑 Reset</button>
                     <button class="btn btn-sm" style="background:${isFrozen?'rgba(16,185,129,0.12)':'rgba(56,189,248,0.12)'};color:${isFrozen?'#10b981':'#38bdf8'};border:1px solid ${isFrozen?'rgba(16,185,129,0.3)':'rgba(56,189,248,0.3)'};font-weight:700;font-size:0.72rem;padding:4px 6px;" onclick="toggleFreezeUser('${u.username||u.id}')" title="${isFrozen?'Unfreeze Account':'Freeze Transactions'}">${isFrozen?'⚡ Unfreeze':'❄️ Freeze'}</button>
@@ -4050,7 +4324,19 @@ select.has-custom-dropdown {
         try {
             await apiCall('api/users.php?action=update_role', 'POST', { username: userId, role });
             showAlert('Role updated to ' + role, 'success');
+            loadUsersData();
+            if (typeof loadVendorsData === 'function') loadVendorsData();
         } catch(e) { showAlert('Failed to update role', 'error'); }
+    };
+
+    window.promoteUserToVendor = async function(userId) {
+        if (!confirm(`Promote user @${userId} directly to a Verified Vendor?\n\nThey will gain access to the Vendor Dashboard and be listed in the Verified Vendor directory.`)) return;
+        try {
+            await apiCall('api/users.php?action=update_role', 'POST', { username: userId, role: 'vendor' });
+            showAlert(`User @${userId} promoted to Verified Vendor successfully!`, 'success');
+            loadUsersData();
+            if (typeof loadVendorsData === 'function') loadVendorsData();
+        } catch(e) { showAlert('Failed to promote user: ' + (e.message || 'Error'), 'error'); }
     };
 
     window.openModal = function(id) {
@@ -4204,6 +4490,7 @@ select.has-custom-dropdown {
                 showPasswordResetSuccess(targetUsername, newPassword);
             }
             loadUsersData();
+            if (typeof loadVendorsData === 'function') loadVendorsData();
         } catch(e) { showAlert('Failed to save user details: ' + (e.message || 'Server error'), 'error'); }
     };
 
@@ -5306,11 +5593,14 @@ select.has-custom-dropdown {
     // ════════════════════════════════════════════════════
     async function loadVendorsData() {
         try {
-            const [vendors, tg] = await Promise.all([
+            const [vendorsRes, tg, couponsRes] = await Promise.all([
                 apiCall('api/vendors.php?action=get_vendors'),
-                apiCall('api/vendors.php?action=get_telegram_settings').catch(()=>({}))
+                apiCall('api/vendors.php?action=get_telegram_settings').catch(()=>({})),
+                apiCall('api/coupons.php?action=get_pins').catch(()=>({pins:[]}))
             ]);
-            renderVendorsTable(vendors.vendors || vendors.data || []);
+            const pinList = (couponsRes && (couponsRes.pins || couponsRes.data)) || allCoupons || [];
+            allCoupons = pinList;
+            renderVendorsTable(vendorsRes.vendors || vendorsRes.data || [], pinList);
             const ts = tg.settings || tg.data || tg;
             if(el('tgLink')) el('tgLink').value = ts.channel_link || ts.link || '';
             if(el('tgHandle')) el('tgHandle').value = ts.support_handle || ts.handle || '';
@@ -5320,18 +5610,148 @@ select.has-custom-dropdown {
         } catch(e) { console.error('Vendors load error:', e); }
     }
 
-    function renderVendorsTable(vendors) {
+    function renderVendorsTable(vendors, coupons) {
         const tbody = el('vendorsTableBody');
         if (!tbody) return;
-        if (!vendors.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No vendors registered</td></tr>'; return; }
-        tbody.innerHTML = vendors.map(v => `<tr>
-            <td><strong>${v.name||''}</strong></td><td>${v.whatsapp||v.phone||''}</td>
-            <td>${v.telegram||''}</td><td>${v.location||''}</td>
-            <td>${v.rating||'—'} ⭐</td><td>${v.sales_badge||v.badge||''}</td>
-            <td><span class="badge badge-success">${v.status||'Active'}</span></td>
-            <td><button class="btn btn-sm btn-danger" onclick="deleteVendor('${v.id||v.name}')">Remove</button></td>
-        </tr>`).join('');
+        const pinList = Array.isArray(coupons) ? coupons : (allCoupons || []);
+
+        let totalAssignedAll = 0;
+        let totalSoldAll = 0;
+        let totalLeftAll = 0;
+
+        if (!vendors.length) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No vendors registered in directory</td></tr>';
+            if(el('vendorKpiTotal')) el('vendorKpiTotal').textContent = '0';
+            if(el('vendorKpiAllocated')) el('vendorKpiAllocated').textContent = '0';
+            if(el('vendorKpiSold')) el('vendorKpiSold').textContent = '0';
+            if(el('vendorKpiRemaining')) el('vendorKpiRemaining').textContent = '0';
+            return;
+        }
+
+        tbody.innerHTML = vendors.map(v => {
+            const vId = String(v.id || '').toLowerCase().trim();
+            const vName = String(v.name || '').toLowerCase().trim();
+            const vUser = String(v.username || '').toLowerCase().trim();
+
+            const vPins = pinList.filter(c => {
+                const cVid = String(c.vendor_id || c.vendorId || '').toLowerCase().trim();
+                const cVname = String(c.vendor_name || c.vendorName || '').toLowerCase().trim();
+                return (cVid && (cVid === vId || cVid === vName || (vUser && cVid === vUser))) ||
+                       (cVname && (cVname === vName || cVname === vId || (vUser && cVname === vUser)));
+            });
+
+            const assigned = vPins.length;
+            const sold = vPins.filter(c => c.is_used || c.used_by).length;
+            const left = Math.max(0, assigned - sold);
+
+            totalAssignedAll += assigned;
+            totalSoldAll += sold;
+            totalLeftAll += left;
+
+            const photo = v.photo || v.avatar || '';
+            const hasImg = photo && (photo.startsWith('data:image') || photo.startsWith('http'));
+            const initial = (v.name || v.username || 'V').charAt(0).toUpperCase();
+
+            const avatarHtml = hasImg 
+                ? `<img src="${photo}" alt="${v.name||''}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--admin-primary,#6366f1);flex-shrink:0;">`
+                : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95rem;flex-shrink:0;">${initial}</div>`;
+
+            const safeId = (v.id || v.name || '').replace(/'/g, "\\'");
+            const safeName = (v.name || v.id || '').replace(/'/g, "\\'");
+
+            return `<tr>
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        ${avatarHtml}
+                        <div>
+                            <strong style="color:var(--admin-text-primary);display:block;">${v.name||''}</strong>
+                            <small style="color:var(--admin-text-muted);font-size:0.75rem;">${v.username ? '@'+v.username : (v.sales_badge||'Verified Vendor')}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>${v.whatsapp || v.phone || '—'}</td>
+                <td>${v.telegram ? `<strong>${v.telegram}</strong>` : '—'}</td>
+                <td>${v.location || '—'}</td>
+                <td style="text-align:center;"><strong style="font-size:1rem;color:var(--admin-primary-light,#818cf8);">${assigned}</strong></td>
+                <td style="text-align:center;"><span class="badge ${sold>0?'badge-danger':'badge-secondary'}" style="font-weight:700;">${sold}</span></td>
+                <td style="text-align:center;"><span class="badge ${left>0?'badge-success':'badge-secondary'}" style="font-weight:700;font-size:0.85rem;">${left}</span></td>
+                <td><span class="badge badge-success">${v.status || 'Active'}</span></td>
+                <td style="white-space:nowrap;">
+                    <button class="btn btn-sm btn-primary" onclick="openDirectVendorPinGen('${safeId}','${safeName}')" style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:4px 8px;" title="Generate PINs directly for this vendor">⚡ + PINs</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteVendor('${safeId}')" style="font-size:0.75rem;padding:4px 8px;">Remove</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        if(el('vendorKpiTotal')) el('vendorKpiTotal').textContent = fmt(vendors.length);
+        if(el('vendorKpiAllocated')) el('vendorKpiAllocated').textContent = fmt(totalAssignedAll);
+        if(el('vendorKpiSold')) el('vendorKpiSold').textContent = fmt(totalSoldAll);
+        if(el('vendorKpiRemaining')) el('vendorKpiRemaining').textContent = fmt(totalLeftAll);
     }
+
+    window.openDirectVendorPinGen = function(vendorId, vendorName) {
+        if (el('vGenVendorNameDisplay')) el('vGenVendorNameDisplay').textContent = vendorName || vendorId;
+        if (el('vGenVendorId')) el('vGenVendorId').value = vendorId;
+        if (el('vGenVendorName')) el('vGenVendorName').value = vendorName || vendorId;
+        openModal('vendorPinGenModal');
+    };
+
+    window.submitDirectVendorPins = async function() {
+        const vendorId = el('vGenVendorId')?.value || '';
+        const vendorName = el('vGenVendorName')?.value || vendorId;
+        const type = el('vGenPinType')?.value || 'AFF';
+        const qty = parseInt(el('vGenQuantity')?.value) || 10;
+        const btn = el('btnSubmitVendorPins');
+
+        if (!vendorId && !vendorName) {
+            showAlert('Please select a valid vendor', 'error');
+            return;
+        }
+
+        if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+
+        try {
+            const isUploader = (type === 'UPL' || type === 'VIP_UPL');
+            const channel = isUploader ? 'UPLOADER' : 'AFFILIATE';
+            let amount = 1000;
+            let typeLabel = 'Affiliate Registration PIN';
+            if (type === 'AFF') { amount = 1000; typeLabel = 'Affiliate Registration PIN (₦1,000)'; }
+            else if (type === 'UPL') { amount = 2000; typeLabel = 'Uploader Accreditation PIN (₦2,000)'; }
+            else if (type === 'VIP_AFF') { amount = 2500; typeLabel = 'VIP Affiliate PIN (₦2,500)'; }
+            else if (type === 'VIP_UPL') { amount = 5000; typeLabel = 'VIP Uploader PIN (₦5,000)'; }
+            else if (type === 'JOB') { amount = 1500; typeLabel = 'Task Quota PIN'; }
+
+            const pins = [];
+            for (let i = 0; i < qty; i++) {
+                const r = () => Math.random().toString(36).substring(2,6).toUpperCase();
+                pins.push({
+                    code: `INX-${type}-${r()}-${r()}`,
+                    type: type,
+                    channel: channel,
+                    type_label: typeLabel,
+                    amount: amount,
+                    vendor_id: vendorId,
+                    vendor_name: vendorName,
+                    is_used: false,
+                    created_at: new Date().toISOString()
+                });
+            }
+
+            const res = await apiCall('api/coupons.php?action=save_pins', 'POST', { pins: pins, coupons: pins });
+            if (res && res.success !== false) {
+                showAlert(`${qty} ${channel} PINs generated directly for ${vendorName}!`, 'success');
+                closeModal('vendorPinGenModal');
+                await loadCouponsData();
+                await loadVendorsData();
+            } else {
+                showAlert((res && (res.message || res.error)) || 'Failed to generate PINs for vendor', 'error');
+            }
+        } catch(e) {
+            showAlert('Error: ' + (e.message || 'Server error'), 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '⚡ Generate & Assign Codes'; }
+        }
+    };
 
     window.saveTelegramSettings = async function() {
         const data = {
@@ -5359,18 +5779,18 @@ select.has-custom-dropdown {
         };
         try {
             await apiCall('api/vendors.php?action=add_vendor', 'POST', data);
-            showAlert('Vendor added!', 'success');
+            showAlert('Vendor added successfully!', 'success');
             loadVendorsData();
         } catch(e) { showAlert('Failed to add vendor', 'error'); }
     };
 
     window.deleteVendor = async function(id) {
-        if (!confirm('Remove this vendor?')) return;
+        if (!confirm('Remove this vendor from the active directory?')) return;
         try {
             await apiCall('api/vendors.php?action=delete_vendor', 'POST', { id });
-            showAlert('Vendor removed', 'success');
+            showAlert('Vendor removed from directory', 'success');
             loadVendorsData();
-        } catch(e) { showAlert('Failed', 'error'); }
+        } catch(e) { showAlert('Failed to remove vendor', 'error'); }
     };
 
     // ════════════════════════════════════════════════════
@@ -5384,7 +5804,7 @@ select.has-custom-dropdown {
             if (!tbody) return;
             if (!notifs.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No notifications sent</td></tr>'; return; }
             tbody.innerHTML = notifs.map(n => `<tr>
-                <td>${n.icon||'ðŸ””'}</td><td>${n.title||''}</td>
+                <td>${n.icon||'🔔'}</td><td>${n.title||''}</td>
                 <td>${(n.message||n.body||'').substring(0,60)}...</td>
                 <td>${n.target||'All'}</td><td>${n.created_at||n.date||''}</td>
                 <td><button class="btn btn-sm btn-danger" onclick="deleteNotification('${n.id}')">Delete</button></td>
@@ -5423,45 +5843,169 @@ select.has-custom-dropdown {
     async function loadTeamData() {
         try {
             const res = await apiCall('api/users.php?action=get_users');
-            const users = (res.users || res.data || []).filter(u => ['super_admin','sub_admin','uploader','moderator'].includes(u.role));
+            const users = (res.users || res.data || []).filter(u => ['super_admin','sub_admin','uploader','moderator','vendor'].includes(u.role));
             const tbody = el('teamTableBody');
             if (!tbody) return;
             if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No staff members</td></tr>'; return; }
             tbody.innerHTML = users.map(u => `<tr>
-                <td><strong>${u.username||''}</strong></td>
-                <td><span class="badge ${u.role==='super_admin'?'badge-danger':'badge-info'}">${(u.role||'').replace('_',' ')}</span></td>
+                <td><strong>${u.username||''}</strong><br><small style="color:var(--admin-text-muted);">${u.full_name||u.fullname||''}</small></td>
+                <td><span class="badge ${u.role==='super_admin'?'badge-danger':(u.role==='vendor'?'badge-success':'badge-info')}">${u.role==='vendor'?'Verified Vendor':(u.role||'').replace('_',' ')}</span></td>
                 <td>${u.email||''}</td><td>${u.created_at||''}</td>
                 <td><button class="btn btn-sm btn-secondary" onclick="openPermissionsModal('${u.username}','${u.role}')">Permissions</button></td>
             </tr>`).join('');
         } catch(e) { console.error('Team load error:', e); }
     }
 
+    window.openCreateStaffModal = function() {
+        if (el('newStaffFullName')) el('newStaffFullName').value = '';
+        if (el('newStaffEmail')) el('newStaffEmail').value = '';
+        if (el('newStaffPhone')) el('newStaffPhone').value = '';
+        if (el('newStaffRole')) el('newStaffRole').value = 'sub_admin';
+        toggleStaffPermsVisibility();
+        generateStaffUsername();
+        generateStaffPassword();
+        openModal('createStaffModal');
+    };
+
+    window.generateStaffUsername = function() {
+        const role = el('newStaffRole')?.value || 'sub_admin';
+        const prefix = role === 'super_admin' ? 'admin_' : (role === 'vendor' ? 'vendor_' : 'staff_');
+        const rand = Math.random().toString(36).substring(2, 7);
+        if (el('newStaffUsername')) el('newStaffUsername').value = prefix + rand;
+    };
+
+    window.generateStaffPassword = function() {
+        const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lower = 'abcdefghijkmnpqrstuvwxyz';
+        const nums = '23456789';
+        const syms = '!@#$%^&*';
+        let p = '';
+        p += upper.charAt(Math.floor(Math.random() * upper.length));
+        p += lower.charAt(Math.floor(Math.random() * lower.length));
+        p += nums.charAt(Math.floor(Math.random() * nums.length));
+        p += syms.charAt(Math.floor(Math.random() * syms.length));
+        const all = upper + lower + nums + syms;
+        for (let i = 0; i < 8; i++) p += all.charAt(Math.floor(Math.random() * all.length));
+        p = p.split('').sort(() => 0.5 - Math.random()).join('');
+        if (el('newStaffPassword')) el('newStaffPassword').value = p;
+    };
+
+    window.toggleStaffPermsVisibility = function() {
+        const role = el('newStaffRole')?.value;
+        const sec = el('newStaffPermsSection');
+        if (!sec) return;
+        sec.style.display = (role === 'sub_admin') ? 'block' : 'none';
+    };
+
+    window.submitCreateStaffAdmin = async function() {
+        const username = (el('newStaffUsername')?.value || '').trim();
+        const password = (el('newStaffPassword')?.value || '').trim();
+        const fullName = (el('newStaffFullName')?.value || '').trim() || 'Admin Staff';
+        const email = (el('newStaffEmail')?.value || '').trim();
+        const phone = (el('newStaffPhone')?.value || '').trim();
+        const role = el('newStaffRole')?.value || 'sub_admin';
+        const btn = el('btnSubmitStaffAdmin');
+
+        if (!username || !password) {
+            showAlert('Please provide both username and password', 'error');
+            return;
+        }
+
+        const permissions = {
+            payouts: el('newPermPayouts')?.checked ?? true,
+            broadcasts: el('newPermBroadcasts')?.checked ?? true,
+            notifications: el('newPermNotifications')?.checked ?? true,
+            vtu: el('newPermVtu')?.checked ?? true,
+            tasks: el('newPermTasks')?.checked ?? true,
+            vendors: el('newPermVendors')?.checked ?? true,
+            users: el('newPermUsers')?.checked ?? true,
+            coupons: el('newPermCoupons')?.checked ?? true
+        };
+
+        if (btn) { btn.disabled = true; btn.textContent = 'Creating Account...'; }
+
+        try {
+            const payload = { username, password, full_name: fullName, email, phone, role, permissions };
+            const res = await apiCall('api/users.php?action=create_staff_admin', 'POST', payload);
+            if (res && res.success) {
+                closeModal('createStaffModal');
+                if (el('createdStaffUsernameVal')) el('createdStaffUsernameVal').textContent = username;
+                if (el('createdStaffPasswordVal')) el('createdStaffPasswordVal').textContent = password;
+                openModal('staffCreatedResultModal');
+                loadTeamData();
+                loadUsersData();
+                if (role === 'vendor' && typeof loadVendorsData === 'function') loadVendorsData();
+            } else {
+                showAlert((res && (res.error || res.message)) || 'Failed to create staff account', 'error');
+            }
+        } catch(e) {
+            showAlert('Error: ' + (e.message || 'Server error'), 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Create Staff Account'; }
+        }
+    };
+
+    window.copyCreatedStaffCredentials = function() {
+        const u = el('createdStaffUsernameVal')?.textContent || '';
+        const p = el('createdStaffPasswordVal')?.textContent || '';
+        const text = `INNOVATIONX Staff Credentials:\nUsername: ${u}\nPassword: ${p}`;
+        navigator.clipboard.writeText(text);
+        showAlert('Credentials copied to clipboard!', 'success');
+    };
+
     window.openPermissionsModal = function(username, role) {
         if(el('permStaffUser')) el('permStaffUser').textContent = username;
-        if(el('permRole')) el('permRole').value = role;
-        el('permissionsModal')?.classList.add('active');
+        if(el('permRole')) el('permRole').value = role || 'sub_admin';
+
+        const user = (allUsers || []).find(u => (u.username||'').toLowerCase() === (username||'').toLowerCase()) || {};
+        const p = user.permissions || {};
+        const isSuper = (role === 'super_admin');
+
+        if (el('permPayouts')) el('permPayouts').checked = isSuper ? true : (p.payouts !== false);
+        if (el('permBroadcasts')) el('permBroadcasts').checked = isSuper ? true : (p.broadcasts !== false);
+        if (el('permNotifications')) el('permNotifications').checked = isSuper ? true : (p.notifications !== false);
+        if (el('permVtu')) el('permVtu').checked = isSuper ? true : (p.vtu !== false);
+        if (el('permTasks')) el('permTasks').checked = isSuper ? true : (p.tasks !== false);
+        if (el('permVendors')) el('permVendors').checked = isSuper ? true : (p.vendors !== false);
+        if (el('permUsers')) el('permUsers').checked = isSuper ? true : (p.users !== false);
+        if (el('permCoupons')) el('permCoupons').checked = isSuper ? true : (p.coupons !== false);
+
+        openModal('permissionsModal');
+    };
+
+    window.closePermissionsModal = function() {
+        closeModal('permissionsModal');
     };
 
     window.savePermissions = async function() {
         const username = el('permStaffUser')?.textContent;
+        const role = el('permRole')?.value || 'sub_admin';
         const data = {
             username,
-            role: el('permRole')?.value,
+            role,
             permissions: {
                 payouts: el('permPayouts')?.checked || false,
                 broadcasts: el('permBroadcasts')?.checked || false,
                 notifications: el('permNotifications')?.checked || false,
                 vtu: el('permVtu')?.checked || false,
                 tasks: el('permTasks')?.checked || false,
-                vendors: el('permVendors')?.checked || false
+                vendors: el('permVendors')?.checked || false,
+                users: el('permUsers')?.checked || false,
+                coupons: el('permCoupons')?.checked || false
             }
         };
         try {
-            await apiCall('api/users.php?action=update_permissions', 'POST', data);
-            showAlert('Permissions saved!', 'success');
-            closeModal('permissionsModal');
-            loadTeamData();
-        } catch(e) { showAlert('Failed to save', 'error'); }
+            const res = await apiCall('api/users.php?action=update_permissions', 'POST', data);
+            if (res && res.success !== false) {
+                showAlert(`Permissions for @${username} saved successfully!`, 'success');
+                closeModal('permissionsModal');
+                loadTeamData();
+                loadUsersData();
+                if (role === 'vendor' && typeof loadVendorsData === 'function') loadVendorsData();
+            } else {
+                showAlert((res && (res.error || res.message)) || 'Failed to save', 'error');
+            }
+        } catch(e) { showAlert('Failed to save permissions: ' + (e.message || 'Server error'), 'error'); }
     };
 
     // ════════════════════════════════════════════════════

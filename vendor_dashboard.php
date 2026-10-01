@@ -205,6 +205,63 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
             </div>
         </div>
 
+        <!-- Vendor Public Profile & Handle Settings -->
+        <div class="card-panel" style="border: 1px solid rgba(245, 158, 11, 0.35); background: linear-gradient(180deg, rgba(245,158,11,0.05) 0%, rgba(15,23,42,0.95) 100%); margin-bottom: 24px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+                <div>
+                    <div class="card-title" style="display:flex; align-items:center; gap:8px;">
+                        <span>Vendor Directory Identity & Handles</span>
+                        <span style="font-size:0.7rem; font-weight:800; background:rgba(245,158,11,0.2); color:#F59E0B; padding:3px 8px; border-radius:6px; text-transform:uppercase;">Self-Managed</span>
+                    </div>
+                    <div class="card-desc" style="margin:0;">Only you can configure your vendor profile, WhatsApp number, Telegram handle, and picture shown on the public directory.</div>
+                </div>
+                <div id="vendorProfileSaveStatus" style="font-size:0.85rem; font-weight:700; color:#10B981;"></div>
+            </div>
+
+            <form id="vendorProfileForm" onsubmit="saveVendorProfile(event)">
+                <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start;">
+                    <!-- Photo Upload Area -->
+                    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; min-width:140px;">
+                        <div id="vendorAvatarContainer" style="width:96px; height:96px; border-radius:20px; overflow:hidden; border:2px solid #F59E0B; background:#1E293B; display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                            <img id="vendorPhotoImg" src="" alt="Vendor Photo" style="width:100%; height:100%; object-fit:cover; display:none;">
+                            <div id="vendorPhotoInitial" style="font-size:2.2rem; font-weight:900; color:#F59E0B;"><?= strtoupper(substr($username, 0, 1)) ?></div>
+                        </div>
+                        <input type="file" id="vendorPhotoFile" accept="image/*" style="display:none" onchange="handleVendorPhotoSelect(this)">
+                        <button type="button" class="btn-copy" onclick="document.getElementById('vendorPhotoFile').click()" style="padding:6px 12px; font-size:0.78rem;">
+                            📷 Upload Picture
+                        </button>
+                        <span style="font-size:0.7rem; color:#94A3B8; margin-top:4px;">JPG, PNG, WebP (Max 2MB)</span>
+                    </div>
+
+                    <!-- Input Fields -->
+                    <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div>
+                            <label style="font-size:0.75rem;font-weight:700;color:#94A3B8;text-transform:uppercase;display:block;margin-bottom:6px">Vendor / Business Name</label>
+                            <input type="text" id="vpName" class="search-box" style="width:100%" placeholder="e.g. Samuel Okon Codes">
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;font-weight:700;color:#94A3B8;text-transform:uppercase;display:block;margin-bottom:6px">WhatsApp Number (e.g. 2348012345678)</label>
+                            <input type="text" id="vpPhone" class="search-box" style="width:100%" placeholder="2348012345678">
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;font-weight:700;color:#94A3B8;text-transform:uppercase;display:block;margin-bottom:6px">Telegram Handle (e.g. @my_handle)</label>
+                            <input type="text" id="vpTelegram" class="search-box" style="width:100%" placeholder="@samuel_pins">
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem;font-weight:700;color:#94A3B8;text-transform:uppercase;display:block;margin-bottom:6px">Coverage / Location & Banks</label>
+                            <input type="text" id="vpLocation" class="search-box" style="width:100%" placeholder="Lagos / National (GTBank, OPay, Palmpay)">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:18px; display:flex; justify-content:flex-end;">
+                    <button type="submit" id="btnSaveVendorProfile" class="btn-action-primary">
+                        💾 Save Profile & Update Handles
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- WhatsApp Quick Dispatch Tool -->
         <div class="card-panel">
             <div class="card-title">Instant WhatsApp / SMS Dispatch Generator</div>
@@ -260,13 +317,108 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
     </div>
 
     <script>
+        const currentVendorUser = '<?= htmlspecialchars($username) ?>';
+        const isSuperAdmin = <?= json_encode($isAdmin) ?>;
         let allVendorPins = [];
+        let currentVendorPhotoBase64 = '';
+
+        async function loadVendorProfile() {
+            try {
+                const res = await fetch('/api/vendors.php?action=get_vendor_profile&username=' + encodeURIComponent(currentVendorUser));
+                const data = await res.json();
+                if (data && data.vendor) {
+                    const v = data.vendor;
+                    if (document.getElementById('vpName') && v.name) document.getElementById('vpName').value = v.name;
+                    if (document.getElementById('vpPhone') && v.phone) document.getElementById('vpPhone').value = v.phone;
+                    if (document.getElementById('vpTelegram') && v.telegram) document.getElementById('vpTelegram').value = v.telegram.replace('https://t.me/', '@');
+                    if (document.getElementById('vpLocation') && v.location) document.getElementById('vpLocation').value = v.location;
+
+                    const avatar = v.photo || v.avatar || '';
+                    if (avatar && (avatar.startsWith('data:image') || avatar.startsWith('http'))) {
+                        currentVendorPhotoBase64 = avatar;
+                        const img = document.getElementById('vendorPhotoImg');
+                        img.src = avatar;
+                        img.style.display = 'block';
+                        document.getElementById('vendorPhotoInitial').style.display = 'none';
+                    }
+                }
+            } catch(e) { console.error('Failed to load vendor profile:', e); }
+        }
+
+        function handleVendorPhotoSelect(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 2.5 * 1024 * 1024) {
+                alert('Image too large. Please select a picture under 2MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentVendorPhotoBase64 = e.target.result;
+                const img = document.getElementById('vendorPhotoImg');
+                img.src = currentVendorPhotoBase64;
+                img.style.display = 'block';
+                document.getElementById('vendorPhotoInitial').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveVendorProfile(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveVendorProfile');
+            const statusEl = document.getElementById('vendorProfileSaveStatus');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            statusEl.textContent = '';
+
+            const payload = {
+                username: currentVendorUser,
+                name: document.getElementById('vpName').value.trim(),
+                phone: document.getElementById('vpPhone').value.trim(),
+                telegram: document.getElementById('vpTelegram').value.trim(),
+                location: document.getElementById('vpLocation').value.trim(),
+                avatar: currentVendorPhotoBase64
+            };
+
+            try {
+                const res = await fetch('/api/vendors.php?action=update_vendor_profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data && data.success) {
+                    statusEl.textContent = '✓ Profile & Handles Saved!';
+                    setTimeout(() => { statusEl.textContent = ''; }, 4000);
+                    alert('Your vendor handles, WhatsApp, and picture have been updated successfully!');
+                } else {
+                    alert((data && data.message) || 'Failed to save profile');
+                }
+            } catch(err) {
+                alert('Failed to save profile: ' + (err.message || 'Server error'));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💾 Save Profile & Update Handles';
+            }
+        }
 
         async function loadVendorInventory() {
             try {
                 const res = await fetch('/api/coupons.php?action=get_pins');
                 const data = await res.json();
-                allVendorPins = data.coupons || [];
+                const rawPins = data.coupons || [];
+
+                // Filter to pins allocated to this vendor unless super admin
+                if (isSuperAdmin) {
+                    allVendorPins = rawPins;
+                } else {
+                    allVendorPins = rawPins.filter(p => {
+                        const vId = (p.vendor_id || p.vendorId || '').toLowerCase();
+                        const vName = (p.vendor_name || p.vendorName || '').toLowerCase();
+                        const u = currentVendorUser.toLowerCase();
+                        return vId === u || vName === u || vId === ('v_' + u);
+                    });
+                }
 
                 let available = 0;
                 let sold = 0;
@@ -374,7 +526,10 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
             return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
         }
 
-        document.addEventListener('DOMContentLoaded', loadVendorInventory);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadVendorProfile();
+            loadVendorInventory();
+        });
     </script>
 </body>
 </html>
