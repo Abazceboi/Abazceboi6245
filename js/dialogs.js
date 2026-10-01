@@ -149,6 +149,17 @@
         box-shadow: 0 10px 30px rgba(147, 51, 234, 0.65);
         border-color: rgba(255, 255, 255, 0.6);
     }
+    .ix-dialog-btn-danger {
+        background: linear-gradient(135deg, #EF4444, #DC2626);
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+    }
+    .ix-dialog-btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.65);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
     .ix-dialog-btn-secondary {
         background: rgba(255, 255, 255, 0.08);
         color: #E2E8F0;
@@ -245,7 +256,7 @@
 
         // Automatic Type Detection
         const fullLower = str.toLowerCase();
-        if (fullLower.includes('invalid') || fullLower.includes('error') || fullLower.includes('already taken') || fullLower.includes('denied') || fullLower.includes('failed')) {
+        if (fullLower.includes('delete') || fullLower.includes('remove') || fullLower.includes('permanent') || fullLower.includes('invalid') || fullLower.includes('error') || fullLower.includes('already taken') || fullLower.includes('denied') || fullLower.includes('failed')) {
             type = 'error';
         } else if (fullLower.includes('success') || fullLower.includes('activated') || fullLower.includes('verified') || fullLower.includes('credited') || fullLower.includes('copied') || fullLower.includes('welcome')) {
             type = 'success';
@@ -278,8 +289,11 @@
             const inputEl = document.getElementById('ixFancyDialogInput');
             const btnRow = document.getElementById('ixFancyDialogBtnRow');
 
-            iconWrap.className = `ix-dialog-icon-wrap ix-dialog-icon-${type}`;
-            iconWrap.innerHTML = icons[type] || icons.info;
+            const isDestructive = (type === 'error' || /delete|remove|permanent/i.test(title + ' ' + message));
+            const activeType = isDestructive ? 'error' : type;
+
+            iconWrap.className = `ix-dialog-icon-wrap ix-dialog-icon-${activeType}`;
+            iconWrap.innerHTML = icons[activeType] || icons.info;
 
             titleEl.textContent = title;
             msgEl.textContent = message;
@@ -306,9 +320,14 @@
                 btnRow.appendChild(cancelBtn);
             }
 
+            let finalConfirmText = confirmText;
+            if (isDestructive && mode === 'confirm' && (confirmText === 'Confirm' || confirmText === 'OK')) {
+                finalConfirmText = 'Yes, Delete';
+            }
+
             const confirmBtn = document.createElement('button');
-            confirmBtn.className = 'ix-dialog-btn ix-dialog-btn-primary';
-            confirmBtn.textContent = confirmText;
+            confirmBtn.className = (isDestructive && mode === 'confirm') ? 'ix-dialog-btn ix-dialog-btn-danger' : 'ix-dialog-btn ix-dialog-btn-primary';
+            confirmBtn.textContent = finalConfirmText;
             confirmBtn.onclick = () => {
                 const val = inputEl.value;
                 closeDialog();
@@ -342,7 +361,10 @@
 
             // Open Modal with smooth spring animation
             overlay.classList.add('ix-active');
-            if (mode !== 'prompt') {
+            if (mode === 'confirm') {
+                const cancel = btnRow.querySelector('.ix-dialog-btn-secondary');
+                if (cancel) setTimeout(() => cancel.focus(), 50);
+            } else if (mode !== 'prompt') {
                 setTimeout(() => confirmBtn.focus(), 50);
             }
         });

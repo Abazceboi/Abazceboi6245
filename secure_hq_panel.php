@@ -4400,7 +4400,9 @@ select.has-custom-dropdown {
     };
 
     window.promoteUserToVendor = async function(userId) {
-        if (!confirm(`Promote user @${userId} directly to a Verified Vendor?\n\nThey will gain access to the Vendor Dashboard and be listed in the Verified Vendor directory.`)) return;
+        if (!userId) return;
+        const ok = await fancyConfirm('Promote to Vendor', `Promote user @${userId} directly to a Verified Vendor?\n\nThey will gain access to the Vendor Dashboard and be listed in the Verified Vendor directory.`);
+        if (!ok) return;
         try {
             await apiCall('api/users.php?action=update_role', 'POST', { username: userId, role: 'vendor' });
             showAlert(`User @${userId} promoted to Verified Vendor successfully!`, 'success');
@@ -4493,7 +4495,10 @@ select.has-custom-dropdown {
             showAlert('Cannot delete primary super admin account!', 'error');
             return;
         }
-        const ok = confirm(`Are you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and credentials immediately.`);
+        const ok = await fancyConfirm(
+            'Confirm Permanent Deletion',
+            `Are you sure you want to permanently delete user @${userId}?\n\nThis will remove their profile, wallet balances, and credentials immediately. This action cannot be undone.`
+        );
         if (!ok) return;
 
         try {
@@ -4606,7 +4611,8 @@ select.has-custom-dropdown {
     window.quickResetPassword = async function(userId) {
         if (!userId) return;
         const confirmMsg = `Force reset password for user @${userId}?\n\nA strong temporary password will be generated and displayed for you to copy.`;
-        if (!confirm(confirmMsg)) return;
+        const ok = await fancyConfirm('Reset Password', confirmMsg);
+        if (!ok) return;
 
         try {
             const res = await apiCall('api/users.php?action=force_reset_password', 'POST', {
@@ -4811,7 +4817,9 @@ select.has-custom-dropdown {
     };
 
     window.deleteCoupon = async function(code) {
-        if (!confirm('Are you sure you want to delete PIN code: ' + code + '?')) return;
+        if (!code) return;
+        const ok = await fancyConfirm('Delete Coupon PIN', 'Are you sure you want to delete PIN code: ' + code + '?');
+        if (!ok) return;
         // Optimistic instant delete from table
         allCoupons = allCoupons.filter(c => (c.code || '').trim().toUpperCase() !== code.trim().toUpperCase());
         renderCouponsTable();
@@ -5300,11 +5308,14 @@ select.has-custom-dropdown {
         </tr>`).join('');
     }
 
-    window.deleteTask = function(idx) {
+    window.deleteTask = async function(idx) {
+        const ok = await fancyConfirm('Delete Task', 'Are you sure you want to permanently delete this task opportunity?');
+        if (!ok) return;
         let tasks = JSON.parse(localStorage.getItem('ix_admin_tasks') || '[]');
         tasks.splice(idx, 1);
         localStorage.setItem('ix_admin_tasks', JSON.stringify(tasks));
         renderTasksTable();
+        showAlert('Task deleted', 'success');
     };
 
     // ════════════════════════════════════════════════════
@@ -5514,7 +5525,9 @@ select.has-custom-dropdown {
     };
 
     window.deleteToken = async function(symbol) {
-        if (!confirm('Remove token ' + symbol + '?')) return;
+        if (!symbol) return;
+        const ok = await fancyConfirm('Remove Token', `Are you sure you want to remove token ${symbol} from the OTC trading desk?`);
+        if (!ok) return;
         try {
             const res = await apiCall('api/tokens.php?action=admin_delete_token', 'POST', { symbol });
             if (res.success) { showAlert('Token removed', 'success'); loadTokensData(); }
@@ -5576,7 +5589,9 @@ select.has-custom-dropdown {
         try { await apiCall('api/adverts.php?action=update_status', 'POST', { id, status:'rejected' }); showAlert('Campaign rejected & refunded','success'); loadAdvertsData(); } catch(e) { showAlert('Failed','error'); }
     };
     window.deleteAdvert = async function(id) {
-        if (!confirm('Delete this campaign?')) return;
+        if (!id) return;
+        const ok = await fancyConfirm('Delete Campaign', 'Are you sure you want to permanently delete this member advertisement campaign?');
+        if (!ok) return;
         try { await apiCall('api/adverts.php?action=delete_advert', 'POST', { id }); showAlert('Deleted','success'); loadAdvertsData(); } catch(e) { showAlert('Failed','error'); }
     };
 
@@ -5922,7 +5937,9 @@ select.has-custom-dropdown {
     };
 
     window.deleteVendor = async function(id) {
-        if (!confirm('Remove this vendor from the active directory?')) return;
+        if (!id) return;
+        const ok = await fancyConfirm('Remove Vendor', 'Are you sure you want to remove this vendor from the active directory?');
+        if (!ok) return;
         try {
             await apiCall('api/vendors.php?action=delete_vendor', 'POST', { id });
             showAlert('Vendor removed from directory', 'success');
@@ -5967,6 +5984,9 @@ select.has-custom-dropdown {
     };
 
     window.deleteNotification = async function(id) {
+        if (!id) return;
+        const ok = await fancyConfirm('Delete Notification', 'Are you sure you want to delete this notification record?');
+        if (!ok) return;
         try {
             await apiCall('api/notifications.php?action=delete', 'POST', { id });
             showAlert('Notification deleted', 'success');
@@ -6332,8 +6352,9 @@ select.has-custom-dropdown {
         showAlert('FAQ item added!', 'success');
     };
 
-    window.deleteFaqItem = function(idx) {
-        if (!confirm('Delete this FAQ entry?')) return;
+    window.deleteFaqItem = async function(idx) {
+        const ok = await fancyConfirm('Delete FAQ', 'Are you sure you want to delete this FAQ entry?');
+        if (!ok) return;
         faqItems.splice(idx, 1);
         saveFaqToFile();
         renderFaqList();

@@ -411,7 +411,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
         }
 
         async function approveProof(subId) {
-            if (!confirm('Approve this submission and credit reward points to the member?')) return;
+            if (!await fancyConfirm('Approve Submission', 'Approve this submission and credit reward points to the member?')) return;
             const res = await fetch('/api/tasks.php?action=approve_task_proof', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -423,7 +423,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
         }
 
         async function rejectProof(subId) {
-            if (!confirm('Reject this proof submission?')) return;
+            if (!await fancyConfirm('Reject Submission', 'Reject this proof submission?')) return;
             const res = await fetch('/api/tasks.php?action=reject_task_proof', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -435,7 +435,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
         }
 
         async function deleteTask(id) {
-            if (!confirm('Permanently remove this campaign?')) return;
+            if (!await fancyConfirm('Delete Campaign', 'Permanently remove this campaign?')) return;
             await fetch('/api/tasks.php?action=delete_task', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
