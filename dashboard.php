@@ -270,36 +270,34 @@ input,textarea,select{font-family:var(--ff);}
 }
 
 .dock-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 9999px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   border: none;
   background: transparent;
   color: var(--txt-2);
-  font-size: 12.5px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
+  position: relative;
 }
 
 .dock-item svg {
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
   transition: transform 0.22s ease, filter 0.22s ease;
 }
 
 .dock-item:hover {
   color: var(--txt);
-  background: rgba(255, 255, 255, 0.07);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px) scale(1.06);
 }
 
 [data-theme="light"] .dock-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .dock-item.active {
@@ -308,16 +306,15 @@ input,textarea,select{font-family:var(--ff);}
   box-shadow: 
     0 6px 20px rgba(37, 99, 235, 0.45),
     0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  transform: translateY(-1px) scale(1.02);
+  transform: translateY(-2px) scale(1.08);
 }
 
 .dock-item.active svg {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
-  transform: scale(1.08);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .dock-item:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 /* ═══════════════════════════ REFERRAL BOX ═════════════════════════════ */
@@ -466,20 +463,12 @@ input,textarea,select{font-family:var(--ff);}
     width:auto;
   }
   .dock-item{
-    padding:8px 10px;
-    gap:3px;
-    flex-direction:column;
-    border-radius:12px;
-  }
-  .dock-item span{
-    display:block;
-    font-size:9.5px;
-    font-weight:600;
-    line-height:1;
+    width:38px;
+    height:38px;
   }
   .dock-item svg{
-    width:15px;
-    height:15px;
+    width:17px;
+    height:17px;
   }
   .stats-grid{grid-template-columns:1fr 1fr;}
   .notif-dropdown{right:-30px;width:290px;}
@@ -746,29 +735,23 @@ input,textarea,select{font-family:var(--ff);}
 
 <!-- ══════════════════════════ FLOATING DOWN TAB BAR ══════════════════════ -->
 <nav class="floating-dock">
-  <button class="dock-item active" onclick="switchTab('home', this)">
+  <button class="dock-item active" onclick="switchTab('home', this)" title="Home">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <span>Home</span>
   </button>
-  <button class="dock-item" onclick="switchTab('tasks', this)">
+  <button class="dock-item" onclick="switchTab('tasks', this)" title="Tasks">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    <span>Tasks</span>
   </button>
-  <button class="dock-item" onclick="switchTab('surveys', this)">
+  <button class="dock-item" onclick="switchTab('surveys', this)" title="Surveys">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-    <span>Surveys</span>
   </button>
-  <button class="dock-item" onclick="switchTab('referrals', this)">
+  <button class="dock-item" onclick="switchTab('referrals', this)" title="Referrals">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    <span>Referrals</span>
   </button>
-  <button class="dock-item" onclick="switchTab('wallet', this)">
+  <button class="dock-item" onclick="switchTab('wallet', this)" title="Wallet">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-    <span>Wallet</span>
   </button>
-  <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings">
+  <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings" title="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>Settings</span>
   </button>
 </nav>
 
