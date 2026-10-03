@@ -948,6 +948,70 @@ switch ($action) {
         ]);
         break;
 
+    case 'update_profile':
+    case 'update_settings':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $username = trim($input['username'] ?? '');
+        $fullName = trim($input['full_name'] ?? '');
+        $email    = trim($input['email'] ?? '');
+        $phone    = trim($input['phone'] ?? '');
+        $newPass  = trim($input['new_password'] ?? '');
+
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username is required']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $found = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username']) === strtolower($username)) {
+                if (!empty($fullName)) $u['full_name'] = $fullName;
+                if (!empty($email))    $u['email'] = $email;
+                if (!empty($phone))    $u['phone'] = $phone;
+                if (!empty($newPass)) {
+                    $u['password'] = $newPass;
+                    $u['password_hash'] = password_hash($newPass, PASSWORD_BCRYPT);
+                    $u['password_updated_at'] = date('c');
+                }
+                $found = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($found) {
+            saveUsers($data);
+        }
+
+        if ($pdo) {
+            try {
+                if (!empty($newPass)) {
+                    $hash = password_hash($newPass, PASSWORD_BCRYPT);
+                    $stmt = $pdo->prepare('UPDATE users SET "fullName" = ?, email = ?, phone = ?, "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$fullName, $email, $phone, $hash, $username]);
+                } else {
+                    $stmt = $pdo->prepare('UPDATE users SET "fullName" = ?, email = ?, phone = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$fullName, $email, $phone, $username]);
+                }
+            } catch (Exception $e) {}
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Settings updated successfully!',
+            'full_name' => $fullName,
+            'email' => $email,
+            'phone' => $phone
+        ]);
+        break;
+
     case 'claim_daily_streak':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);

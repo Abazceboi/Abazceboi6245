@@ -412,9 +412,6 @@ input,textarea,select{font-family:var(--ff);}
       <span class="user-dot"></span>
       <span><?= htmlspecialchars($username) ?></span>
     </div>
-    <?php if ($isAdmin): ?>
-    <a href="secure_hq_panel.php" class="btn btn-secondary btn-sm" title="Admin Panel">Admin</a>
-    <?php endif; ?>
     <!-- Notification Bell -->
     <div style="position:relative;">
       <button class="icon-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" style="position:relative;">
@@ -426,13 +423,21 @@ input,textarea,select{font-family:var(--ff);}
       <div id="notifDropdown" class="notif-dropdown">
         <div class="notif-header">
           <span style="font-weight:700;font-size:13px;">Notifications</span>
-          <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
+            <button class="btn btn-ghost btn-sm" onclick="markAllNotificationsRead()" style="font-size:10px;padding:3px 7px;line-height:1;">Mark all read</button>
+          </div>
         </div>
         <div id="notifList" class="notif-list">
           <div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">Loading notifications...</div>
         </div>
       </div>
     </div>
+
+    <!-- Settings Button -->
+    <button class="icon-btn" onclick="openSettingsTab()" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
 
     <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -451,35 +456,27 @@ input,textarea,select{font-family:var(--ff);}
       <div class="stat-card">
         <div class="stat-label">Points Balance</div>
         <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
-        <div class="stat-sub">PTS ≈ ₦<?= number_format($ptsInNaira, 2) ?></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Cash Balance</div>
         <div class="stat-value" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
-        <div class="stat-sub">Available referral cash</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Tasks Completed</div>
         <div class="stat-value" style="color:var(--amber);"><?= $tasksCompleted ?></div>
-        <div class="stat-sub">Verified task jobs</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Surveys Completed</div>
         <div class="stat-value" style="color:var(--purple);"><?= $surveysCompleted ?></div>
-        <div class="stat-sub">Graded video surveys</div>
       </div>
     </div>
 
-    <!-- Referral Link Box on Overview -->
+    <!-- Referral Link Box on Overview (Clean, No unnecessary subtexts) -->
     <div class="card">
       <div class="card-title">Your Referral Link</div>
-      <div class="card-sub">Share your invite link with partners to receive cash commissions on signups.</div>
-      <div class="ref-box">
+      <div class="ref-box" style="margin-top:12px;margin-bottom:0;">
         <input type="text" id="homeRefInput" readonly value="<?= htmlspecialchars($referralLink) ?>">
         <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
-      </div>
-      <div style="font-size:12px;color:var(--txt-3);">
-        Earn ₦<?= number_format($refBonus) ?> direct cash when an earner registers and activates through your link.
       </div>
     </div>
   </div>
@@ -599,6 +596,60 @@ input,textarea,select{font-family:var(--ff);}
     </div>
   </div>
 
+  <!-- ══ TAB: SETTINGS ═════════════════════════════════════════════════════ -->
+  <div id="tab-settings" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Profile Settings</div>
+      <div class="card-sub">Manage your personal profile and contact information.</div>
+      <form onsubmit="handleSaveProfile(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="setFullName" value="<?= htmlspecialchars($userFullName) ?>" placeholder="Full Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="setEmail" value="<?= htmlspecialchars($userEmail) ?>" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="form-input" id="setPhone" value="<?= htmlspecialchars($userPhone) ?>" placeholder="080...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" value="<?= htmlspecialchars($username) ?>" readonly style="opacity:0.7;cursor:not-allowed;">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="btnSaveProfile">Save Profile</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Security & Password</div>
+      <div class="card-sub">Update your account login password.</div>
+      <form onsubmit="handleSavePassword(event)">
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="form-input" id="setNewPassword" required minlength="6" placeholder="Minimum 6 characters">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" class="form-input" id="setConfirmPassword" required minlength="6" placeholder="Repeat new password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="btnSavePassword">Update Password</button>
+      </form>
+    </div>
+
+    <?php if ($isAdmin): ?>
+    <div class="card">
+      <div class="card-title">Administrator Console</div>
+      <div class="card-sub">Authorized administrator console for platform management.</div>
+      <a href="secure_hq_panel.php" class="btn btn-secondary btn-sm" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Open Admin HQ Panel
+      </a>
+    </div>
+    <?php endif; ?>
+  </div>
+
 </main>
 
 <!-- ══════════════════════════ FLOATING DOWN TAB BAR ══════════════════════ -->
@@ -622,6 +673,10 @@ input,textarea,select{font-family:var(--ff);}
   <button class="dock-item" onclick="switchTab('wallet', this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
     <span>Wallet</span>
+  </button>
+  <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Settings</span>
   </button>
 </nav>
 
@@ -780,8 +835,9 @@ async function loadNotifications() {
     const badge = document.getElementById('notifBadge');
     const listEl = document.getElementById('notifList');
 
+    const isDismissed = localStorage.getItem('ix_notif_dot_dismissed') === 'true';
     if (list && list.length > 0) {
-      if (badge) badge.style.display = 'block';
+      if (badge && !isDismissed) badge.style.display = 'block';
       if (countEl) countEl.textContent = `${list.length} update${list.length > 1 ? 's' : ''}`;
       if (listEl) {
         listEl.innerHTML = list.map(n => `
@@ -803,8 +859,27 @@ async function loadNotifications() {
 }
 
 function toggleNotifications() {
+  const badge = document.getElementById('notifBadge');
+  if (badge) badge.style.display = 'none';
+  localStorage.setItem('ix_notif_dot_dismissed', 'true');
   const d = document.getElementById('notifDropdown');
   if (d) d.classList.toggle('open');
+}
+
+async function markAllNotificationsRead() {
+  const badge = document.getElementById('notifBadge');
+  if (badge) badge.style.display = 'none';
+  localStorage.setItem('ix_notif_dot_dismissed', 'true');
+  const countEl = document.getElementById('notifCountText');
+  if (countEl) countEl.textContent = '0 updates';
+  const listEl = document.getElementById('notifList');
+  if (listEl) {
+    listEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">No unread notifications.</div>';
+  }
+  try {
+    await fetch('/api/notifications.php?action=clear_all', { method: 'POST' });
+    toast('All notifications marked as read', 'success');
+  } catch(e) {}
 }
 
 document.addEventListener('click', (e) => {
@@ -818,7 +893,7 @@ document.addEventListener('click', (e) => {
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOATING DOWN TAB BAR NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet'];
+const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'settings'];
 
 function switchTab(tab, btn) {
   TABS.forEach(t => {
@@ -831,6 +906,83 @@ function switchTab(tab, btn) {
   if (tab === 'tasks') loadTasks();
   if (tab === 'surveys') loadSurveys();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openSettingsTab() {
+  const btn = document.getElementById('dockBtnSettings');
+  switchTab('settings', btn);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+async function handleSaveProfile(e) {
+  e.preventDefault();
+  const fullName = document.getElementById('setFullName').value.trim();
+  const email = document.getElementById('setEmail').value.trim();
+  const phone = document.getElementById('setPhone').value.trim();
+  const btn = document.getElementById('btnSaveProfile');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const r = await fetch('/api/users.php?action=update_profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: CURRENT_USER,
+        full_name: fullName,
+        email: email,
+        phone: phone
+      })
+    });
+    const d = await r.json();
+    if (d.success || d.status === 'success') {
+      toast('Profile updated successfully!', 'success');
+    } else {
+      toast(d.error || 'Failed to update profile', 'error');
+    }
+  } catch(err) {
+    toast('Network error updating profile', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Profile';
+}
+
+async function handleSavePassword(e) {
+  e.preventDefault();
+  const newPass = document.getElementById('setNewPassword').value;
+  const confPass = document.getElementById('setConfirmPassword').value;
+  const btn = document.getElementById('btnSavePassword');
+
+  if (newPass.length < 6) {
+    toast('Password must be at least 6 characters.', 'error');
+    return;
+  }
+  if (newPass !== confPass) {
+    toast('Passwords do not match.', 'error');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try {
+    const r = await fetch('/api/users.php?action=update_profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: CURRENT_USER,
+        new_password: newPass
+      })
+    });
+    const d = await r.json();
+    if (d.success || d.status === 'success') {
+      toast('Password updated successfully!', 'success');
+      document.getElementById('setNewPassword').value = '';
+      document.getElementById('setConfirmPassword').value = '';
+    } else {
+      toast(d.error || 'Failed to update password', 'error');
+    }
+  } catch(err) {
+    toast('Network error updating password', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Update Password';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

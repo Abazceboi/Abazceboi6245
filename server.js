@@ -1532,10 +1532,10 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                if (action === 'clear_all' && req.method === 'POST') {
+                if ((action === 'clear_all' || action === 'mark_all_read') && req.method === 'POST') {
                     notifs = [];
                     fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
-                    res.end(JSON.stringify({ success: true, message: 'All notifications cleared', notifications: [] }));
+                    res.end(JSON.stringify({ success: true, message: 'All notifications marked as read', notifications: [] }));
                     return;
                 }
 
@@ -2729,6 +2729,47 @@ const server = http.createServer((req, res) => {
                             bank_name: bankName,
                             account_number: accNum,
                             account_name: accName
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                    }
+                    return;
+                }
+
+                if ((action === 'update_profile' || action === 'update_settings') && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const fullName = (parsed.full_name || '').trim();
+                    const email    = (parsed.email || '').trim();
+                    const phone    = (parsed.phone || '').trim();
+                    const newPass  = (parsed.new_password || '').trim();
+
+                    if (!username) {
+                        res.end(JSON.stringify({ success: false, error: 'Username is required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    usersData.users.forEach(u => {
+                        if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                            if (fullName) u.full_name = fullName;
+                            if (email)    u.email = email;
+                            if (phone)    u.phone = phone;
+                            if (newPass) {
+                                u.password = newPass;
+                                u.password_updated_at = new Date().toISOString();
+                            }
+                            found = true;
+                        }
+                    });
+
+                    if (found) {
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                        res.end(JSON.stringify({
+                            success: true,
+                            message: 'Settings updated successfully!',
+                            full_name: fullName,
+                            email: email,
+                            phone: phone
                         }));
                     } else {
                         res.end(JSON.stringify({ success: false, error: 'User not found' }));
