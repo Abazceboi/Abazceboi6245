@@ -1,6 +1,7 @@
 <?php
 /**
- * INNOVATIONX — Member Dashboard (Complete Rewrite)
+ * INNOVATIONX — Member Dashboard
+ * Fresh modern design with floating bottom dock, ATM card wallet, and zero emojis.
  */
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/config/db.php';
@@ -25,47 +26,43 @@ if (!$authUser) {
     exit;
 }
 
-$username    = $authUser['username'] ?? 'Member';
-$initials    = strtoupper(substr($username, 0, 2));
-$userPoints  = 100;
-$userCash    = 0.00;
-$userRole    = 'member';
-$userPhone   = $authUser['phone'] ?? '';
-$userEmail   = $authUser['email'] ?? '';
-$userFullName= $authUser['fullName'] ?? $username;
-$bankName    = '';
-$accountNumber = '';
-$accountName = $userFullName;
-$referralCode = 'INX-' . strtoupper(substr(md5($username . 'ref'), 0, 8));
-$referralCount = 0;
-$referralEarnings = 0;
-$isActivated = false;
+$username       = $authUser['username'] ?? 'Member';
+$userPoints     = 100;
+$userCash       = 0.00;
+$userRole       = 'member';
+$userPhone      = $authUser['phone'] ?? '';
+$userEmail      = $authUser['email'] ?? '';
+$userFullName   = $authUser['fullName'] ?? $username;
+$bankName       = 'OPay Digital Services';
+$accountNumber  = '0801234567';
+$accountName    = $userFullName;
+$referralCode   = 'INX-' . strtoupper(substr(md5($username . 'ref'), 0, 8));
+$referralCount  = 0;
+$referralEarnings = 0.00;
 $tasksCompleted = 0;
 $surveysCompleted = 0;
 
-// Read from users.json
+// Read user record from users.json
 $usersJsonFile = __DIR__ . '/data/users.json';
 if (file_exists($usersJsonFile)) {
     $uData    = @json_decode(@file_get_contents($usersJsonFile), true);
     $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
     foreach ($allUsers as $ju) {
         if (strtolower($ju['username'] ?? '') === strtolower($username)) {
-            $userPoints     = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
-            $userCash       = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
-            if (!empty($ju['role']))           $userRole    = $ju['role'];
-            if (!empty($ju['phone']))          $userPhone   = $ju['phone'];
-            if (!empty($ju['email']))          $userEmail   = $ju['email'];
-            if (!empty($ju['full_name']))      $userFullName = $ju['full_name'];
-            if (!empty($ju['bank_name']))      $bankName    = $ju['bank_name'];
-            if (!empty($ju['account_number'])) $accountNumber = $ju['account_number'];
-            if (!empty($ju['account_name']))   $accountName = $ju['account_name'];
-            if (!empty($ju['referral_code']))  $referralCode = $ju['referral_code'];
-            if (!empty($ju['referral_count'])) $referralCount = intval($ju['referral_count']);
+            $userPoints       = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
+            $userCash         = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
+            if (!empty($ju['role']))           $userRole         = $ju['role'];
+            if (!empty($ju['phone']))          $userPhone        = $ju['phone'];
+            if (!empty($ju['email']))          $userEmail        = $ju['email'];
+            if (!empty($ju['full_name']))      $userFullName     = $ju['full_name'];
+            if (!empty($ju['bank_name']))      $bankName         = $ju['bank_name'];
+            if (!empty($ju['account_number'])) $accountNumber    = $ju['account_number'];
+            if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
+            if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
+            if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
             if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
-            if (!empty($ju['tasks_completed'])) $tasksCompleted = intval($ju['tasks_completed']);
+            if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
             if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
-            $isActivated = !empty($ju['is_activated']) || !empty($ju['coupon_activated'])
-                || in_array($ju['role'] ?? '', ['admin','super_admin','uploader','vendor']);
             break;
         }
     }
@@ -79,19 +76,18 @@ if ($pdo) {
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
-            if (isset($row['pointsBalance']))  $userPoints  = intval($row['pointsBalance']);
-            if (isset($row['cashBalance']))    $userCash    = floatval($row['cashBalance']);
-            if (!empty($row['role']))          $userRole    = $row['role'];
-            if (!empty($row['bankName']))      $bankName    = $row['bankName'];
-            if (!empty($row['accountNumber'])) $accountNumber = $row['accountNumber'];
-            if (!empty($row['accountName']))   $accountName = $row['accountName'];
+            if (isset($row['pointsBalance']))  $userPoints   = intval($row['pointsBalance']);
+            if (isset($row['cashBalance']))    $userCash     = floatval($row['cashBalance']);
+            if (!empty($row['role']))          $userRole     = $row['role'];
+            if (!empty($row['bankName']))      $bankName     = $row['bankName'];
+            if (!empty($row['accountNumber'])) $accountNumber= $row['accountNumber'];
+            if (!empty($row['accountName']))   $accountName  = $row['accountName'];
             if (!empty($row['fullName']))      $userFullName = $row['fullName'];
             if (!empty($row['referralCode']))  $referralCode = $row['referralCode'];
         }
     } catch(Exception $e){}
 }
 
-// Platform settings
 $pricingFile = __DIR__ . '/config/app_pricing.json';
 $pricing     = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
 $ptsRate     = floatval($pricing['points_rate'] ?? 1.0);
@@ -112,23 +108,21 @@ $referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — InnovationX</title>
+<title>Member Dashboard — InnovationX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════ DESIGN TOKENS ═══════════════════════════ */
 :root {
   --bg:          #07090F;
   --surface:     #0D1117;
   --card:        #111827;
   --card-hover:  #161E2E;
-  --border:      rgba(255,255,255,0.07);
-  --border-mid:  rgba(255,255,255,0.12);
+  --border:      rgba(255,255,255,0.08);
+  --border-mid:  rgba(255,255,255,0.15);
   --txt:         #F0F4FA;
   --txt-2:       #8B9AB0;
   --txt-3:       #4E5F73;
   --accent:      #3B82F6;
-  --accent-2:    #60A5FA;
   --green:       #10B981;
   --amber:       #F59E0B;
   --red:         #EF4444;
@@ -136,7 +130,8 @@ $referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
   --radius:      12px;
   --radius-lg:   18px;
   --ff:          'Inter', system-ui, sans-serif;
-  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --mono:        'Space Mono', monospace;
+  --shadow:      0 8px 32px rgba(0,0,0,0.45);
   --trans:       0.18s ease;
 }
 [data-theme="light"] {
@@ -144,83 +139,42 @@ $referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
   --surface:    #FFFFFF;
   --card:       #FFFFFF;
   --card-hover: #F8FAFF;
-  --border:     rgba(0,0,0,0.07);
-  --border-mid: rgba(0,0,0,0.12);
+  --border:     rgba(0,0,0,0.08);
+  --border-mid: rgba(0,0,0,0.14);
   --txt:        #0D1117;
   --txt-2:      #4B5563;
   --txt-3:      #9CA3AF;
   --accent:     #2563EB;
-  --accent-2:   #3B82F6;
-  --shadow:     0 4px 24px rgba(0,0,0,0.08);
+  --shadow:     0 8px 32px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;overflow-x:hidden;}
+body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;padding-bottom:100px;overflow-x:hidden;}
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
 input,textarea,select{font-family:var(--ff);}
 
-/* ═══════════════════════════ LAYOUT ═══════════════════════════════════ */
-.layout{display:flex;min-height:100vh;}
-
-/* Sidebar */
-.sidebar{
-  width:240px;min-width:240px;background:var(--surface);
-  border-right:1px solid var(--border);display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;height:100vh;z-index:200;
-  transition:transform var(--trans);
-}
-.sidebar-logo{
-  padding:22px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
-}
-.sidebar-logo-mark{
-  width:34px;height:34px;border-radius:8px;
-  background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:14px;color:#fff;letter-spacing:-0.5px;flex-shrink:0;
-}
-.sidebar-logo-name{font-weight:700;font-size:15px;letter-spacing:-0.3px;}
-.sidebar-logo-name span{color:var(--accent);}
-
-.nav-section{padding:12px 10px 0;flex:1;overflow-y:auto;}
-.nav-label{font-size:10px;font-weight:600;color:var(--txt-3);text-transform:uppercase;
-  letter-spacing:0.8px;padding:0 10px;margin-bottom:4px;margin-top:16px;}
-.nav-label:first-child{margin-top:0;}
-.nav-item{
-  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
-  font-size:13.5px;font-weight:500;color:var(--txt-2);cursor:pointer;
-  transition:background var(--trans),color var(--trans);border:none;background:transparent;width:100%;text-align:left;
-}
-.nav-item:hover{background:var(--card);color:var(--txt);}
-.nav-item.active{background:rgba(59,130,246,0.12);color:var(--accent);font-weight:600;}
-.nav-item svg{width:16px;height:16px;flex-shrink:0;}
-.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;
-  font-weight:700;padding:2px 6px;border-radius:20px;}
-
-.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
-.sidebar-user{
-  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
-  cursor:pointer;transition:background var(--trans);
-}
-.sidebar-user:hover{background:var(--card);}
-.avatar{
-  width:32px;height:32px;border-radius:8px;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
-}
-.sidebar-user-info{flex:1;min-width:0;}
-.sidebar-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sidebar-user-role{font-size:11px;color:var(--txt-3);text-transform:capitalize;}
-
-/* Main content */
-.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+/* ═══════════════════════════ TOPBAR ═══════════════════════════════════ */
 .topbar{
   position:sticky;top:0;z-index:100;background:var(--surface);
   border-bottom:1px solid var(--border);padding:0 24px;
-  display:flex;align-items:center;gap:12px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;height:60px;
 }
-.topbar-title{font-size:15px;font-weight:600;flex:1;}
-.topbar-actions{display:flex;align-items:center;gap:8px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{
+  width:32px;height:32px;border-radius:8px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:#fff;
+}
+.brand-text{font-size:15px;font-weight:700;letter-spacing:-0.3px;}
+.brand-text span{color:var(--accent);}
+
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+.user-pill{
+  display:flex;align-items:center;gap:8px;padding:5px 12px;
+  border-radius:20px;background:var(--card);border:1px solid var(--border);
+  font-size:12.5px;font-weight:600;
+}
+.user-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
 .icon-btn{
   width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;cursor:pointer;
@@ -228,631 +182,470 @@ input,textarea,select{font-family:var(--ff);}
 }
 .icon-btn:hover{background:var(--card-hover);color:var(--txt);}
 .icon-btn svg{width:16px;height:16px;}
-.menu-toggle{display:none;}
 
-.content{padding:24px;flex:1;}
+/* ═══════════════════════════ MAIN CONTENT ═════════════════════════════ */
+.app-container{max-width:960px;margin:0 auto;padding:24px 20px;}
 
-/* ═══════════════════════════ CARDS ════════════════════════════════════ */
-.card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:20px;
-}
-.card-title{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px;}
-.card-sub{font-size:12px;color:var(--txt-3);}
-
-/* Stats row */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+/* Stats Row */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
 .stat-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
   padding:16px;display:flex;flex-direction:column;gap:4px;
 }
 .stat-label{font-size:11px;font-weight:500;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;}
-.stat-value{font-size:24px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
-.stat-sub{font-size:11px;color:var(--txt-3);margin-top:2px;}
-.stat-green{color:var(--green);}
-.stat-blue{color:var(--accent);}
-.stat-amber{color:var(--amber);}
-.stat-purple{color:var(--purple);}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-0.5px;}
+.stat-sub{font-size:11px;color:var(--txt-3);}
 
-/* Section heading */
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.section-title{font-size:15px;font-weight:700;}
-.section-actions{display:flex;gap:8px;}
+/* Cards */
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:22px;margin-bottom:16px;
+}
+.card-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--txt-3);margin-bottom:16px;}
 
-/* ═══════════════════════════ BUTTONS ══════════════════════════════════ */
+/* Buttons */
 .btn{
   display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;
   font-size:13px;font-weight:600;border:none;transition:all var(--trans);line-height:1;
 }
-.btn svg{width:14px;height:14px;flex-shrink:0;}
+.btn svg{width:14px;height:14px;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:#2563EB;}
-.btn-secondary{background:var(--card);color:var(--txt);border:1px solid var(--border);}
+.btn-secondary{background:var(--surface);color:var(--txt);border:1px solid var(--border);}
 .btn-secondary:hover{background:var(--card-hover);}
 .btn-ghost{background:transparent;color:var(--txt-2);border:1px solid var(--border);}
-.btn-ghost:hover{background:var(--card);color:var(--txt);}
-.btn-green{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
-.btn-green:hover{background:rgba(16,185,129,0.2);}
+.btn-ghost:hover{background:var(--surface);color:var(--txt);}
 .btn-sm{padding:6px 12px;font-size:12px;}
-.btn:disabled{opacity:0.5;cursor:not-allowed;}
-.btn-full{width:100%;justify-content:center;}
 
-/* ═══════════════════════════ TASKS ════════════════════════════════════ */
-.tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-.task-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:18px;display:flex;flex-direction:column;gap:12px;
-  transition:border-color var(--trans),box-shadow var(--trans);
+/* Forms */
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--txt-2);}
+.form-input,.form-select,.form-textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--txt);padding:10px 12px;font-size:13px;width:100%;outline:none;
 }
-.task-card:hover{border-color:var(--border-mid);box-shadow:var(--shadow);}
-.task-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.task-card-title{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
-.task-pts{
-  background:rgba(59,130,246,0.12);color:var(--accent);font-size:12px;font-weight:700;
-  padding:4px 8px;border-radius:6px;white-space:nowrap;
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+
+/* ═══════════════════════════ FLOATING BOTTOM DOCK ═════════════════════ */
+.floating-dock{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(13, 17, 23, 0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border-mid);border-radius:9999px;padding:6px 10px;
+  box-shadow:var(--shadow);z-index:900;display:flex;align-items:center;gap:4px;
 }
-.task-meta{display:flex;gap:8px;flex-wrap:wrap;}
-.tag{font-size:11px;font-weight:500;padding:3px 8px;border-radius:5px;
-  background:var(--surface);color:var(--txt-3);border:1px solid var(--border);}
-.task-instructions{font-size:12px;color:var(--txt-2);line-height:1.5;}
-.task-timer{
-  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--amber);font-weight:500;
+[data-theme="light"] .floating-dock{
+  background:rgba(255, 255, 255, 0.94);border-color:rgba(0,0,0,0.12);
 }
-.task-timer svg{width:13px;height:13px;}
-.task-expired-badge{
-  display:inline-flex;align-items:center;font-size:11px;font-weight:600;
-  padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.1);color:var(--red);
+.dock-item{
+  display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:9999px;
+  border:none;background:transparent;color:var(--txt-2);font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:all var(--trans);white-space:nowrap;
 }
-.task-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;}
-.task-slots{font-size:11px;color:var(--txt-3);}
-.task-done-badge{
-  display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;
-  color:var(--green);padding:4px 10px;border-radius:6px;background:rgba(16,185,129,0.08);
+.dock-item svg{width:16px;height:16px;}
+.dock-item:hover{color:var(--txt);background:rgba(255,255,255,0.05);}
+.dock-item.active{
+  background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(59,130,246,0.35);
 }
 
-/* ═══════════════════════════ SURVEYS ══════════════════════════════════ */
-.survey-card{
+/* ═══════════════════════════ REFERRAL BOX ═════════════════════════════ */
+.ref-box{
+  display:flex;align-items:center;gap:10px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;
+}
+.ref-box input{
+  flex:1;background:transparent;border:none;color:var(--txt);
+  font-size:13px;font-family:var(--mono);outline:none;
+}
+
+/* ═══════════════════════════ ATM CARD WIDGET ══════════════════════════ */
+.atm-card-wrapper{display:flex;flex-direction:column;align-items:center;margin:16px 0 24px;}
+.atm-card{
+  width:100%;max-width:380px;height:220px;border-radius:16px;
+  background:linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #07090F 100%);
+  border:1px solid rgba(255,255,255,0.18);box-shadow:0 14px 40px rgba(0,0,0,0.6);
+  padding:22px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;color:#F8FAFC;font-family:var(--mono);
+}
+.atm-card::before{
+  content:'';position:absolute;top:-40%;right:-20%;width:220px;height:220px;
+  background:radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+  pointer-events:none;
+}
+.atm-card-top{display:flex;align-items:center;justify-content:space-between;z-index:1;}
+.atm-bank-name{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#38BDF8;}
+.atm-chip-row{display:flex;align-items:center;gap:12px;margin-top:14px;z-index:1;}
+.atm-chip{
+  width:38px;height:28px;border-radius:5px;
+  background:linear-gradient(135deg, #E2B842 0%, #D49B24 100%);
+  border:1px solid rgba(0,0,0,0.2);position:relative;
+}
+.atm-chip::after{
+  content:'';position:absolute;inset:4px 6px;border:1px solid rgba(0,0,0,0.25);border-radius:2px;
+}
+.atm-contactless{width:18px;height:18px;color:#94A3B8;}
+.atm-card-number{
+  font-size:17px;font-weight:700;letter-spacing:3px;margin-top:14px;
+  color:#FFFFFF;text-shadow:0 2px 4px rgba(0,0,0,0.5);z-index:1;
+}
+.atm-card-bottom{display:flex;align-items:flex-end;justify-content:space-between;z-index:1;}
+.atm-card-holder{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#CBD5E1;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.atm-brand-badge{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#38BDF8;}
+
+/* ═══════════════════════════ TASKS & SURVEYS ══════════════════════════ */
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.grid-item-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
   padding:18px;display:flex;flex-direction:column;gap:12px;
   transition:border-color var(--trans);
 }
-.survey-card:hover{border-color:var(--border-mid);}
-.survey-pts{
-  background:rgba(139,92,246,0.12);color:var(--purple);font-size:12px;font-weight:700;
+.grid-item-card:hover{border-color:var(--border-mid);}
+.item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.item-title{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
+.item-pts{
+  background:rgba(59,130,246,0.12);color:var(--accent);font-size:12px;font-weight:700;
   padding:4px 8px;border-radius:6px;white-space:nowrap;
 }
+.item-tag{font-size:11px;padding:3px 8px;border-radius:5px;background:var(--surface);color:var(--txt-3);border:1px solid var(--border);}
+.item-timer{font-size:12px;color:var(--amber);font-weight:500;display:flex;align-items:center;gap:6px;}
+.item-timer svg{width:13px;height:13px;}
+.item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
 
-/* ═══════════════════════════ REFERRAL ═════════════════════════════════ */
-.referral-link-box{
-  display:flex;align-items:center;gap:8px;background:var(--surface);
-  border:1px solid var(--border);border-radius:8px;padding:10px 14px;
-}
-.referral-link-url{
-  flex:1;font-size:12px;color:var(--txt-2);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;font-family:monospace;
-}
-.ref-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
-.ref-stat{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  padding:12px;text-align:center;
-}
-.ref-stat-val{font-size:22px;font-weight:700;}
-.ref-stat-lbl{font-size:11px;color:var(--txt-3);margin-top:2px;}
-.ref-how{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
-.ref-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--txt-2);}
-.ref-num{
-  width:22px;height:22px;border-radius:50%;background:rgba(59,130,246,0.12);
-  color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;
-  justify-content:center;flex-shrink:0;margin-top:1px;
-}
+/* Tab Panels */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
 
-/* ═══════════════════════════ MODAL ════════════════════════════════════ */
+/* Modals */
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
-  z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;
+  z-index:950;display:flex;align-items:center;justify-content:center;padding:16px;
   opacity:0;pointer-events:none;transition:opacity 0.2s;
 }
 .modal-backdrop.open{opacity:1;pointer-events:auto;}
 .modal{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
-  width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
-  transform:translateY(16px);transition:transform 0.2s;
+  width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
 }
-.modal-backdrop.open .modal{transform:translateY(0);}
-.modal-header{
-  padding:18px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;
-  background:var(--card);z-index:1;
-}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:15px;font-weight:700;}
-.modal-close{
-  width:30px;height:30px;border-radius:6px;background:transparent;border:none;
-  color:var(--txt-3);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:background var(--trans);font-size:18px;line-height:1;
-}
-.modal-close:hover{background:var(--surface);color:var(--txt);}
+.modal-close{background:none;border:none;color:var(--txt-3);font-size:18px;cursor:pointer;}
 .modal-body{padding:20px;}
-.modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
 
-/* ═══════════════════════════ FORM ═════════════════════════════════════ */
-.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-.form-label{font-size:12px;font-weight:600;color:var(--txt-2);}
-.form-input,.form-select,.form-textarea{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  color:var(--txt);padding:9px 12px;font-size:13px;width:100%;
-  transition:border-color var(--trans);outline:none;
-}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
-.form-textarea{resize:vertical;min-height:80px;}
-.form-note{font-size:11px;color:var(--txt-3);}
-
-/* Upload zone */
-.upload-zone{
-  border:2px dashed var(--border);border-radius:8px;padding:24px 16px;text-align:center;
-  cursor:pointer;transition:border-color var(--trans),background var(--trans);
-}
-.upload-zone:hover{border-color:var(--accent);background:rgba(59,130,246,0.03);}
-.upload-zone-text{font-size:13px;color:var(--txt-3);margin-top:6px;}
-.upload-zone-sub{font-size:11px;color:var(--txt-3);margin-top:3px;}
-
-/* Preview */
-.proof-preview{margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
-.proof-preview img{max-width:100%;max-height:160px;display:block;object-fit:contain;}
-.proof-preview-actions{padding:8px;display:flex;justify-content:center;}
-
-/* ═══════════════════════════ SURVEY MODAL ══════════════════════════════ */
-.survey-question{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  padding:14px;margin-bottom:12px;
-}
-.question-text{font-size:13px;font-weight:600;margin-bottom:10px;line-height:1.4;}
-.option-list{display:flex;flex-direction:column;gap:6px;}
-.option-btn{
-  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;
-  border:1px solid var(--border);background:var(--card);cursor:pointer;
-  transition:all var(--trans);font-size:13px;color:var(--txt-2);text-align:left;width:100%;
-}
-.option-btn:hover{border-color:var(--accent);color:var(--txt);}
-.option-btn.selected{border-color:var(--accent);background:rgba(59,130,246,0.08);color:var(--accent);font-weight:600;}
-.option-btn.correct{border-color:var(--green);background:rgba(16,185,129,0.08);color:var(--green);font-weight:600;}
-.option-btn.wrong{border-color:var(--red);background:rgba(239,68,68,0.08);color:var(--red);}
-.option-dot{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.option-dot-fill{width:8px;height:8px;border-radius:50%;background:currentColor;display:none;}
-.option-btn.selected .option-dot-fill{display:block;}
-.q-progress{margin-bottom:14px;font-size:12px;color:var(--txt-3);}
-.progress-bar-track{height:4px;background:var(--surface);border-radius:2px;margin-top:6px;}
-.progress-bar-fill{height:100%;border-radius:2px;background:var(--accent);transition:width 0.3s;}
-
-/* Survey result */
-.result-circle{
-  width:80px;height:80px;border-radius:50%;margin:0 auto 14px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;font-weight:800;
-}
-.result-pass{background:rgba(16,185,129,0.12);color:var(--green);}
-.result-fail{background:rgba(239,68,68,0.08);color:var(--red);}
-
-/* Video embed */
-.video-container{position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;background:#000;}
-.video-container iframe,.video-container video{position:absolute;top:0;left:0;width:100%;height:100%;}
-
-/* ═══════════════════════════ EMPTY STATES ══════════════════════════════ */
-.empty{
-  text-align:center;padding:40px 20px;color:var(--txt-3);
-}
-.empty-title{font-size:14px;font-weight:600;color:var(--txt-2);margin-bottom:4px;}
-.empty-desc{font-size:12px;}
-
-/* ═══════════════════════════ TOAST ════════════════════════════════════ */
-#toast-stack{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+/* Toast */
+#toast-stack{position:fixed;bottom:80px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
 .toast{
-  background:var(--card);border:1px solid var(--border);border-radius:10px;
-  padding:11px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;
-  pointer-events:auto;max-width:340px;box-shadow:var(--shadow);
-  transform:translateX(110%);transition:transform 0.28s cubic-bezier(.16,1,.3,1);
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;
+  pointer-events:auto;max-width:320px;box-shadow:var(--shadow);
+  transform:translateX(110%);transition:transform 0.2s;
 }
 .toast.show{transform:translateX(0);}
-.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast-dot{width:7px;height:7px;border-radius:50%;}
 .toast-success .toast-dot{background:var(--green);}
 .toast-error   .toast-dot{background:var(--red);}
 .toast-info    .toast-dot{background:var(--accent);}
-.toast-warn    .toast-dot{background:var(--amber);}
 
-/* ═══════════════════════════ TABS ═════════════════════════════════════ */
-.tab-bar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;
-  scrollbar-width:none;}
-.tab-bar::-webkit-scrollbar{display:none;}
-.tab-btn{
-  padding:8px 16px;font-size:13px;font-weight:500;color:var(--txt-3);border:none;
-  background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;
-  cursor:pointer;white-space:nowrap;transition:color var(--trans),border-color var(--trans);
-}
-.tab-btn.active{color:var(--txt);border-color:var(--accent);font-weight:600;}
-.tab-btn:hover:not(.active){color:var(--txt-2);}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
-
-/* ═══════════════════════════ MOBILE NAV ════════════════════════════════ */
-.bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--surface);border-top:1px solid var(--border);
-  z-index:200;padding:6px 0 safe-bottom;
-}
-.bottom-nav-inner{display:flex;justify-content:space-around;}
-.bnav-item{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:6px 12px;border-radius:8px;cursor:pointer;
-  font-size:10px;color:var(--txt-3);transition:color var(--trans);border:none;background:none;
-}
-.bnav-item.active{color:var(--accent);}
-.bnav-item svg{width:20px;height:20px;}
-
-/* Overlay */
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
-
-/* ═══════════════════════════ RESPONSIVE ════════════════════════════════ */
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.open{transform:translateX(0);}
-  .sidebar-overlay.open{display:block;}
-  .main{margin-left:0;padding-bottom:72px;}
-  .menu-toggle{display:flex;}
-  .bottom-nav{display:block;}
-  .stats-row{grid-template-columns:1fr 1fr;}
-  .tasks-grid{grid-template-columns:1fr;}
-}
-@media(max-width:400px){
-  .stats-row{grid-template-columns:1fr;}
-  .content{padding:14px;}
+@media(max-width:600px){
+  .dock-item span{display:none;}
+  .dock-item{padding:10px 14px;}
+  .floating-dock{bottom:14px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 <body>
 
-<div class="layout">
+<!-- Hidden Data Holders for Resilient JS (zero chance of template evaluation syntax error) -->
+<span id="dataUser" data-user="<?= htmlspecialchars($username) ?>" style="display:none"></span>
+<span id="dataRefLink" data-link="<?= htmlspecialchars($referralLink) ?>" style="display:none"></span>
+<span id="dataRefCode" data-code="<?= htmlspecialchars($referralCode) ?>" style="display:none"></span>
 
-<!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-mark">IX</div>
-    <div class="sidebar-logo-name">Innovation<span>X</span></div>
+<!-- Top Bar (Clean, No hamburger, No notification icon) -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">IX</div>
+    <div class="brand-text">Innovation<span>X</span></div>
   </div>
-
-  <nav class="nav-section">
-    <div class="nav-label">Overview</div>
-    <button class="nav-item active" onclick="switchPage('overview',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Dashboard
-    </button>
-
-    <div class="nav-label">Earn</div>
-    <button class="nav-item" onclick="switchPage('tasks',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Tasks
-    </button>
-    <button class="nav-item" onclick="switchPage('surveys',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-      Surveys
-    </button>
-    <button class="nav-item" onclick="switchPage('referral',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Referrals
-    </button>
-
-    <div class="nav-label">Account</div>
-    <button class="nav-item" onclick="switchPage('wallet',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-      Wallet
-    </button>
-
+  <div class="topbar-actions">
+    <div class="user-pill">
+      <span class="user-dot"></span>
+      <span><?= htmlspecialchars($username) ?></span>
+    </div>
     <?php if ($isAdmin): ?>
-    <div class="nav-label">Admin</div>
-    <a href="secure_hq_panel.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Admin Panel
-    </a>
+    <a href="secure_hq_panel.php" class="btn btn-secondary btn-sm" title="Admin Panel">Admin</a>
     <?php endif; ?>
-  </nav>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <a href="logout.php" class="icon-btn" title="Sign out">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </a>
+  </div>
+</header>
 
-  <div class="sidebar-footer">
-    <div class="sidebar-user" onclick="switchPage('account',null)">
-      <div class="avatar"><?= $initials ?></div>
-      <div class="sidebar-user-info">
-        <div class="sidebar-user-name"><?= htmlspecialchars($username) ?></div>
-        <div class="sidebar-user-role"><?= htmlspecialchars(str_replace('_',' ', $userRole)) ?></div>
+<main class="app-container">
+
+  <!-- ══ TAB: HOME / OVERVIEW ═════════════════════════════════════════════ -->
+  <div id="tab-home" class="tab-panel active">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Points Balance</div>
+        <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
+        <div class="stat-sub">PTS ≈ ₦<?= number_format($ptsInNaira, 2) ?></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cash Balance</div>
+        <div class="stat-value" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
+        <div class="stat-sub">Available referral cash</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tasks Completed</div>
+        <div class="stat-value" style="color:var(--amber);"><?= $tasksCompleted ?></div>
+        <div class="stat-sub">Verified task jobs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Surveys Completed</div>
+        <div class="stat-value" style="color:var(--purple);"><?= $surveysCompleted ?></div>
+        <div class="stat-sub">Graded video surveys</div>
+      </div>
+    </div>
+
+    <!-- Referral Link Box on Overview -->
+    <div class="card">
+      <div class="card-title">Your Referral Link</div>
+      <div class="card-sub">Share your invite link with partners to receive cash commissions on signups.</div>
+      <div class="ref-box">
+        <input type="text" id="homeRefInput" readonly value="<?= htmlspecialchars($referralLink) ?>">
+        <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt-3);">
+        Earn ₦<?= number_format($refBonus) ?> direct cash when an earner registers and activates through your link.
       </div>
     </div>
   </div>
-</aside>
 
-<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
-<div class="main">
-  <div class="topbar">
-    <button class="icon-btn menu-toggle" id="menuToggleBtn" onclick="toggleSidebar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <span class="topbar-title" id="topbarTitle">Dashboard</span>
-    <div class="topbar-actions">
-      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="themeToggleBtn">
-        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-      <a href="logout.php" class="icon-btn" title="Sign out">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </a>
+  <!-- ══ TAB: TASKS ═══════════════════════════════════════════════════════ -->
+  <div id="tab-tasks" class="tab-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:700;">Earning Tasks</h2>
+        <p style="font-size:12px;color:var(--txt-3);">Complete tasks before timer expires and submit verification proof.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadTasks()">Refresh</button>
+    </div>
+    <div id="tasksContainer" class="items-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Loading tasks...</div>
     </div>
   </div>
 
-  <div class="content">
-
-    <!-- ══ PAGE: OVERVIEW ══════════════════════════════════════════════════ -->
-    <div id="page-overview" class="tab-panel active">
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-label">Points Balance</div>
-          <div class="stat-value stat-blue" id="dispPoints"><?= number_format($userPoints) ?></div>
-          <div class="stat-sub">PTS — Worth ₦<?= number_format($ptsInNaira, 2) ?></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Cash Balance</div>
-          <div class="stat-value stat-green">₦<?= number_format($userCash, 2) ?></div>
-          <div class="stat-sub">Referral earnings</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Tasks Done</div>
-          <div class="stat-value stat-amber" id="dispTasksDone"><?= $tasksCompleted ?></div>
-          <div class="stat-sub">Completed tasks</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Surveys Done</div>
-          <div class="stat-value stat-purple" id="dispSurveysDone"><?= $surveysCompleted ?></div>
-          <div class="stat-sub">Completed surveys</div>
-        </div>
+  <!-- ══ TAB: SURVEYS ═════════════════════════════════════════════════════ -->
+  <div id="tab-surveys" class="tab-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:18px;font-weight:700;">Surveys & Quizzes</h2>
+        <p style="font-size:12px;color:var(--txt-3);">Watch video materials and answer questions to earn instant point rewards.</p>
       </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="overview-grid">
-        <div class="card" style="grid-column:1/-1">
-          <div class="section-head">
-            <div class="section-title">Quick Actions</div>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="switchPage('tasks',null)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              View Tasks
-            </button>
-            <button class="btn btn-secondary" onclick="switchPage('surveys',null)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-              Take Surveys
-            </button>
-            <button class="btn btn-secondary" onclick="switchPage('referral',null)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              Refer Friends
-            </button>
-            <button class="btn btn-ghost" onclick="switchPage('wallet',null)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-              Wallet
-            </button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Your Referral Code</div>
-          <div class="card-sub" style="margin-bottom:12px;">Share to earn ₦<?= number_format($refBonus) ?> per signup</div>
-          <div class="referral-link-box">
-            <div class="referral-link-url" id="ov-refUrl"><?= htmlspecialchars($referralLink) ?></div>
-            <button class="btn btn-sm btn-primary" onclick="copyRef()">Copy</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Bank Account</div>
-          <div class="card-sub" style="margin-bottom:12px;">Withdrawal destination</div>
-          <?php if ($accountNumber): ?>
-            <div style="font-size:13px;color:var(--txt-2);line-height:1.7;">
-              <div><strong><?= htmlspecialchars($bankName ?: 'Bank') ?></strong></div>
-              <div><?= htmlspecialchars($accountNumber) ?></div>
-              <div style="font-size:12px;color:var(--txt-3);"><?= htmlspecialchars($accountName) ?></div>
-            </div>
-          <?php else: ?>
-            <div style="font-size:12px;color:var(--txt-3);">No bank account saved. Add one in Wallet settings.</div>
-          <?php endif; ?>
-        </div>
-      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadSurveys()">Refresh</button>
     </div>
-
-    <!-- ══ PAGE: TASKS ═════════════════════════════════════════════════════ -->
-    <div id="page-tasks" class="tab-panel">
-      <div class="section-head">
-        <div class="section-title">Available Tasks</div>
-        <button class="btn btn-sm btn-ghost" onclick="loadTasks()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Refresh
-        </button>
-      </div>
-      <div id="tasksGrid" class="tasks-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading tasks...</div>
-      </div>
+    <div id="surveysContainer" class="items-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Loading surveys...</div>
     </div>
-
-    <!-- ══ PAGE: SURVEYS ═══════════════════════════════════════════════════ -->
-    <div id="page-surveys" class="tab-panel">
-      <div class="section-head">
-        <div class="section-title">Surveys</div>
-        <button class="btn btn-sm btn-ghost" onclick="loadSurveys()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Refresh
-        </button>
-      </div>
-      <div id="surveysGrid" class="tasks-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading surveys...</div>
-      </div>
-    </div>
-
-    <!-- ══ PAGE: REFERRAL ══════════════════════════════════════════════════ -->
-    <div id="page-referral" class="tab-panel">
-      <div class="section-head">
-        <div class="section-title">Referral Program</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px;">
-        <div class="card" style="grid-column:1/-1;">
-          <div class="card-title">Your Referral Link</div>
-          <div class="card-sub" style="margin-bottom:14px;">Share this link. Every verified signup earns you ₦<?= number_format($refBonus) ?> in cash.</div>
-          <div class="referral-link-box">
-            <div class="referral-link-url" id="refLink"><?= htmlspecialchars($referralLink) ?></div>
-            <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
-          </div>
-          <div class="ref-how">
-            <div class="ref-step"><div class="ref-num">1</div><div>Share your unique referral link with friends or on social media.</div></div>
-            <div class="ref-step"><div class="ref-num">2</div><div>Your friend registers using your link and activates their account.</div></div>
-            <div class="ref-step"><div class="ref-num">3</div><div>You receive ₦<?= number_format($refBonus) ?> cash credited directly to your wallet.</div></div>
-          </div>
-        </div>
-        <div class="ref-stat" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;">
-          <div class="ref-stat-val stat-blue" id="dispRefCount"><?= $referralCount ?></div>
-          <div class="ref-stat-lbl">Total Referrals</div>
-        </div>
-        <div class="ref-stat" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;">
-          <div class="ref-stat-val stat-green">₦<?= number_format($referralEarnings, 2) ?></div>
-          <div class="ref-stat-lbl">Total Earned</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ PAGE: WALLET ════════════════════════════════════════════════════ -->
-    <div id="page-wallet" class="tab-panel">
-      <div class="section-head">
-        <div class="section-title">Wallet</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px;">
-        <div class="stat-card">
-          <div class="stat-label">Points Balance</div>
-          <div class="stat-value stat-blue"><?= number_format($userPoints) ?> PTS</div>
-          <div class="stat-sub">≈ ₦<?= number_format($ptsInNaira, 2) ?> at ₦<?= $ptsRate ?>/pt</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Cash Balance</div>
-          <div class="stat-value stat-green">₦<?= number_format($userCash, 2) ?></div>
-          <div class="stat-sub">Referral cash</div>
-        </div>
-
-        <div class="card" style="grid-column:1/-1;">
-          <div class="card-title">Bank Account</div>
-          <div class="card-sub" style="margin-bottom:14px;">Linked withdrawal account</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
-            <div>
-              <div class="form-label">Bank Name</div>
-              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($bankName ?: 'Not set') ?></div>
-            </div>
-            <div>
-              <div class="form-label">Account Number</div>
-              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($accountNumber ?: 'Not set') ?></div>
-            </div>
-            <div>
-              <div class="form-label">Account Name</div>
-              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($accountName ?: 'Not set') ?></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="grid-column:1/-1;">
-          <div class="card-title">Withdrawal</div>
-          <div class="card-sub" style="margin-bottom:14px;">Minimum: ₦<?= number_format($minCashWd) ?> for cash • ₦<?= number_format($minTaskWd) ?> for task points</div>
-          <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /content -->
-</div><!-- /main -->
-</div><!-- /layout -->
-
-<!-- ── BOTTOM NAV (mobile) ─────────────────────────────────────────────── -->
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <button class="bnav-item active" id="bnav-overview" onclick="switchPage('overview',this)" data-bnav="overview">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Home
-    </button>
-    <button class="bnav-item" id="bnav-tasks" onclick="switchPage('tasks',this)" data-bnav="tasks">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Tasks
-    </button>
-    <button class="bnav-item" id="bnav-surveys" onclick="switchPage('surveys',this)" data-bnav="surveys">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-      Surveys
-    </button>
-    <button class="bnav-item" id="bnav-referral" onclick="switchPage('referral',this)" data-bnav="referral">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Refer
-    </button>
-    <button class="bnav-item" id="bnav-wallet" onclick="switchPage('wallet',this)" data-bnav="wallet">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-      Wallet
-    </button>
   </div>
+
+  <!-- ══ TAB: REFERRALS ═══════════════════════════════════════════════════ -->
+  <div id="tab-referrals" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Affiliate Referral Link</div>
+      <div class="card-sub">Share your personal link to recruit earners and build your network revenue.</div>
+      <div class="ref-box">
+        <input type="text" id="pageRefInput" readonly value="<?= htmlspecialchars($referralLink) ?>">
+        <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--accent);"><?= $referralCount ?></div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Referrals</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:var(--green);">₦<?= number_format($referralEarnings, 2) ?></div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Earned Cash</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: WALLET (ATM CARD FORMAT) ═════════════════════════════════════ -->
+  <div id="tab-wallet" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Settlement Bank Card</div>
+      <div class="card-sub">Your registered destination account for bank withdrawals.</div>
+
+      <!-- Realistic ATM Card Display -->
+      <div class="atm-card-wrapper">
+        <div class="atm-card">
+          <div class="atm-card-top">
+            <span class="atm-bank-name" id="atmBankName"><?= htmlspecialchars($bankName ?: 'OPAY DIGITAL') ?></span>
+            <span class="atm-brand-badge">INNOVATIONX</span>
+          </div>
+
+          <div class="atm-chip-row">
+            <div class="atm-chip"></div>
+            <svg class="atm-contactless" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8.5 16.5a5 5 0 0 1 0-9M12 19a8.5 8.5 0 0 0 0-14M15.5 21.5a12 12 0 0 0 0-19"/>
+            </svg>
+          </div>
+
+          <div class="atm-card-number" id="atmCardNumber">
+            <?= htmlspecialchars(chunk_split($accountNumber ?: '0801234567', 4, '  ')) ?>
+          </div>
+
+          <div class="atm-card-bottom">
+            <div>
+              <div style="font-size:8px;color:#94A3B8;letter-spacing:1px;margin-bottom:2px;">CARD HOLDER</div>
+              <div class="atm-card-holder" id="atmCardHolder"><?= htmlspecialchars($accountName ?: $username) ?></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:8px;color:#94A3B8;letter-spacing:1px;margin-bottom:2px;">STATUS</div>
+              <div style="font-size:11px;color:#38BDF8;font-weight:700;">VERIFIED</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditBank')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Edit Bank Card Details
+          </button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
+        <div class="stat-card">
+          <div class="stat-label">Task Points Wallet</div>
+          <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
+          <div class="stat-sub">Min payout: ₦<?= number_format($minTaskWd) ?></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Referral Cash Wallet</div>
+          <div class="stat-value" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
+          <div class="stat-sub">Min payout: ₦<?= number_format($minCashWd) ?></div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════════════ FLOATING DOWN TAB BAR ══════════════════════ -->
+<nav class="floating-dock">
+  <button class="dock-item active" onclick="switchTab('home', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="dock-item" onclick="switchTab('tasks', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Tasks</span>
+  </button>
+  <button class="dock-item" onclick="switchTab('surveys', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+    <span>Surveys</span>
+  </button>
+  <button class="dock-item" onclick="switchTab('referrals', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Referrals</span>
+  </button>
+  <button class="dock-item" onclick="switchTab('wallet', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+    <span>Wallet</span>
+  </button>
 </nav>
 
 <!-- ══════════════════════════ MODALS ══════════════════════════════════════ -->
 
+<!-- Edit Bank Card Modal -->
+<div class="modal-backdrop" id="modalEditBank">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Bank Details</div>
+      <button class="modal-close" onclick="closeModal('modalEditBank')">&times;</button>
+    </div>
+    <form onsubmit="handleUpdateBank(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" class="form-input" id="editBankName" required value="<?= htmlspecialchars($bankName) ?>" placeholder="e.g. Opay, PalmPay, GTBank">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number (10 Digits)</label>
+          <input type="text" class="form-input" id="editAccountNumber" required value="<?= htmlspecialchars($accountNumber) ?>" maxlength="10" placeholder="10-digit number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Holder Name</label>
+          <input type="text" class="form-input" id="editAccountName" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full account name">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modalEditBank')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveBank">Save Card</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Task Proof Modal -->
 <div class="modal-backdrop" id="modalTaskProof">
-  <div class="modal" style="max-width:480px;">
+  <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="taskProofTitle">Submit Proof</div>
+      <div class="modal-title" id="proofTaskTitle">Submit Task Proof</div>
       <button class="modal-close" onclick="closeModal('modalTaskProof')">&times;</button>
     </div>
     <div class="modal-body">
-      <input type="hidden" id="taskProofId">
-      <input type="hidden" id="taskProofPts">
-      <div id="taskProofInstr" style="font-size:13px;color:var(--txt-2);margin-bottom:14px;padding:10px;background:var(--surface);border-radius:8px;line-height:1.5;"></div>
+      <input type="hidden" id="proofTaskId">
+      <input type="hidden" id="proofTaskPts">
+      <div id="proofTaskInstr" style="font-size:12.5px;color:var(--txt-2);padding:10px;background:var(--surface);border-radius:8px;margin-bottom:14px;line-height:1.5;"></div>
 
       <div class="form-group">
-        <label class="form-label">Upload Screenshot</label>
-        <div class="upload-zone" id="proofDropzone" onclick="document.getElementById('proofFileInput').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px;color:var(--txt-3);margin:0 auto;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <div class="upload-zone-text">Click to choose screenshot</div>
-          <div class="upload-zone-sub">PNG, JPG, WEBP — max 5MB</div>
-          <input type="file" id="proofFileInput" accept="image/*" style="display:none" onchange="handleProofFile(event)">
-        </div>
-        <div class="proof-preview" id="proofPreview" style="display:none;">
-          <img id="proofPreviewImg" src="" alt="Preview">
-          <div class="proof-preview-actions">
-            <button class="btn btn-sm btn-ghost" onclick="clearProofFile()">Remove</button>
-          </div>
+        <label class="form-label">Upload Proof Screenshot</label>
+        <input type="file" id="proofFile" accept="image/*" class="form-input" onchange="handleProofImage(event)">
+        <div id="proofPreviewBox" style="margin-top:8px;display:none;">
+          <img id="proofPreviewImg" src="" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--border);">
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Or Proof URL / Handle</label>
-        <input type="text" class="form-input" id="taskProofUrl" placeholder="https://... or @yourusername">
+        <label class="form-label">Or Proof Link / Handle</label>
+        <input type="text" class="form-input" id="proofUrl" placeholder="https://... or @handle">
       </div>
+
       <div class="form-group">
-        <label class="form-label">Notes (optional)</label>
-        <input type="text" class="form-input" id="taskProofNotes" placeholder="Any additional info">
+        <label class="form-label">Notes (Optional)</label>
+        <input type="text" class="form-input" id="proofNotes" placeholder="Additional details">
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalTaskProof')">Cancel</button>
-      <button class="btn btn-primary" id="btnSubmitProof" onclick="submitTaskProof()">Submit Proof</button>
+      <button class="btn btn-primary" id="btnSendProof" onclick="sendTaskProof()">Submit Proof</button>
     </div>
   </div>
 </div>
 
-<!-- Survey Modal -->
-<div class="modal-backdrop" id="modalSurvey">
-  <div class="modal" style="max-width:580px;">
+<!-- Survey Flow Modal -->
+<div class="modal-backdrop" id="modalSurveyRunner">
+  <div class="modal" style="max-width:540px;">
     <div class="modal-header">
-      <div class="modal-title" id="surveyModalTitle">Survey</div>
-      <button class="modal-close" onclick="closeSurveyModal()">&times;</button>
+      <div class="modal-title" id="surveyRunnerTitle">Survey</div>
+      <button class="modal-close" onclick="closeModal('modalSurveyRunner')">&times;</button>
     </div>
-    <div class="modal-body" id="surveyModalBody">
-      <!-- populated by JS -->
-    </div>
-    <div class="modal-footer" id="surveyModalFooter">
-      <button class="btn btn-ghost" onclick="closeSurveyModal()">Cancel</button>
-      <button class="btn btn-primary" id="btnSurveyAction">Next</button>
+    <div class="modal-body" id="surveyRunnerBody"></div>
+    <div class="modal-footer" id="surveyRunnerFooter">
+      <button class="btn btn-ghost" onclick="closeModal('modalSurveyRunner')">Cancel</button>
+      <button class="btn btn-primary" id="btnSurveyNext">Next</button>
     </div>
   </div>
 </div>
@@ -861,37 +654,29 @@ input,textarea,select{font-family:var(--ff);}
 <div class="modal-backdrop" id="modalWithdraw">
   <div class="modal" style="max-width:420px;">
     <div class="modal-header">
-      <div class="modal-title">Request Withdrawal</div>
+      <div class="modal-title">Request Bank Withdrawal</div>
       <button class="modal-close" onclick="closeModal('modalWithdraw')">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Wallet Type</label>
-        <select class="form-select" id="wdType">
-          <option value="task">Task Points Wallet (min ₦<?= number_format($minTaskWd) ?>)</option>
-          <option value="cash">Cash Wallet — Referral (min ₦<?= number_format($minCashWd) ?>)</option>
+        <label class="form-label">Select Wallet</label>
+        <select class="form-select" id="wdWalletType">
+          <option value="task">Task Points Wallet (Min ₦<?= number_format($minTaskWd) ?>)</option>
+          <option value="cash">Referral Cash Wallet (Min ₦<?= number_format($minCashWd) ?>)</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Amount (₦)</label>
+        <label class="form-label">Withdrawal Amount (₦)</label>
         <input type="number" class="form-input" id="wdAmount" placeholder="e.g. 5000">
       </div>
-      <div class="form-group">
-        <label class="form-label">Bank Name</label>
-        <input type="text" class="form-input" id="wdBank" placeholder="e.g. Opay" value="<?= htmlspecialchars($bankName) ?>">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Account Number</label>
-        <input type="text" class="form-input" id="wdAccNum" placeholder="10-digit account number" value="<?= htmlspecialchars($accountNumber) ?>">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Account Name</label>
-        <input type="text" class="form-input" id="wdAccName" placeholder="Account name" value="<?= htmlspecialchars($accountName) ?>">
+      <div style="font-size:12px;color:var(--txt-3);line-height:1.5;">
+        Funds will be settled directly to your registered bank card: <br>
+        <strong style="color:var(--txt);"><?= htmlspecialchars($bankName) ?> — <?= htmlspecialchars($accountNumber) ?></strong>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalWithdraw')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitWithdrawal()">Submit Request</button>
+      <button class="btn btn-primary" onclick="submitWithdrawalReq()">Confirm Payout</button>
     </div>
   </div>
 </div>
@@ -900,82 +685,59 @@ input,textarea,select{font-family:var(--ff);}
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// INITIALIZATION & STATE
 // ═══════════════════════════════════════════════════════════════════════════
-const CURRENT_USER = <?= json_encode($username) ?>;
-const REFERRAL_LINK = <?= json_encode($referralLink) ?>;
-const MIN_CASH_WD   = <?= $minCashWd ?>;
-const MIN_TASK_WD   = <?= $minTaskWd ?>;
+const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
+const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
+
+function getReferralLink() {
+  const raw = document.getElementById('dataRefLink')?.dataset.link;
+  if (raw && raw.length > 5 && !raw.includes('<?=')) return raw;
+  return window.location.origin + '/register.php?ref=' + encodeURIComponent(REF_CODE);
+}
+
+const FINAL_REF_LINK = getReferralLink();
+
+// Populate referral inputs
+document.addEventListener('DOMContentLoaded', () => {
+  const hInput = document.getElementById('homeRefInput');
+  const pInput = document.getElementById('pageRefInput');
+  if (hInput) hInput.value = FINAL_REF_LINK;
+  if (pInput) pInput.value = FINAL_REF_LINK;
+  loadTasks();
+  loadSurveys();
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION
+// FLOATING DOWN TAB BAR NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const PAGES = ['overview','tasks','surveys','referral','wallet'];
+const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet'];
 
-function switchPage(page, clickedEl) {
-  PAGES.forEach(p => {
-    const panel = document.getElementById('page-' + p);
-    if (panel) panel.classList.toggle('active', p === page);
+function switchTab(tab, btn) {
+  TABS.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.classList.toggle('active', t === tab);
   });
+  document.querySelectorAll('.dock-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
 
-  // Sidebar nav items
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  if (clickedEl && clickedEl.classList.contains('nav-item')) {
-    clickedEl.classList.add('active');
-  } else {
-    // find by data or text
-    document.querySelectorAll('.nav-item').forEach(el => {
-      if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`'${page}'`)) {
-        el.classList.add('active');
-      }
-    });
-  }
-
-  // Bottom nav
-  document.querySelectorAll('.bnav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.bnav === page);
-  });
-
-  // Topbar title
-  const titles = {overview:'Dashboard',tasks:'Tasks',surveys:'Surveys',referral:'Referrals',wallet:'Wallet'};
-  const el = document.getElementById('topbarTitle');
-  if (el) el.textContent = titles[page] || page;
-
-  // Lazy load
-  if (page === 'tasks')   loadTasks();
-  if (page === 'surveys') loadSurveys();
-
-  closeSidebar();
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
+  if (tab === 'tasks') loadTasks();
+  if (tab === 'surveys') loadSurveys();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// THEME
+// THEME & TOAST
 // ═══════════════════════════════════════════════════════════════════════════
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('iconSun').style.display  = t === 'dark' ? 'block' : 'none';
-  document.getElementById('iconMoon').style.display = t === 'light' ? 'block' : 'none';
-}
+function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); }
 function toggleTheme() {
-  const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = cur === 'dark' ? 'light' : 'dark';
   localStorage.setItem('ix_theme', next);
   applyTheme(next);
 }
-(function(){ applyTheme(localStorage.getItem('ix_theme') || 'dark'); })();
+applyTheme(localStorage.getItem('ix_theme') || 'dark');
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════════════════════════
 function toast(msg, type = 'info') {
   const stack = document.getElementById('toast-stack');
   const t = document.createElement('div');
@@ -983,12 +745,9 @@ function toast(msg, type = 'info') {
   t.innerHTML = `<span class="toast-dot"></span><span>${msg}</span>`;
   stack.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 3200);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MODAL
-// ═══════════════════════════════════════════════════════════════════════════
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-backdrop').forEach(m => {
@@ -999,102 +758,132 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
 // REFERRAL COPY
 // ═══════════════════════════════════════════════════════════════════════════
 function copyRef() {
-  navigator.clipboard.writeText(REFERRAL_LINK).then(() => toast('Referral link copied!', 'success')).catch(() => {
+  navigator.clipboard.writeText(FINAL_REF_LINK).then(() => {
+    toast('Referral link copied to clipboard!', 'success');
+  }).catch(() => {
     const ta = document.createElement('textarea');
-    ta.value = REFERRAL_LINK; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-    toast('Referral link copied!', 'success');
+    ta.value = FINAL_REF_LINK; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Referral link copied to clipboard!', 'success');
   });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TASKS
+// ATM CARD & BANK UPDATE
 // ═══════════════════════════════════════════════════════════════════════════
-let completedTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
-let currentTasks     = [];
+async function handleUpdateBank(e) {
+  e.preventDefault();
+  const bankName = document.getElementById('editBankName').value.trim();
+  const accNum = document.getElementById('editAccountNumber').value.trim();
+  const accName = document.getElementById('editAccountName').value.trim();
+  const btn = document.getElementById('btnSaveBank');
+
+  if (!bankName || !accNum || accNum.length < 9) {
+    toast('Please enter a valid bank name and 10-digit account number.', 'error');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const r = await fetch('/api/users.php?action=update_bank_details', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: CURRENT_USER,
+        bank_name: bankName,
+        account_number: accNum,
+        account_name: accName
+      })
+    });
+    const d = await r.json();
+    if (d.success || d.status === 'success') {
+      toast('Bank card updated successfully!', 'success');
+      document.getElementById('atmBankName').textContent = bankName.toUpperCase();
+      document.getElementById('atmCardNumber').textContent = accNum.replace(/(\d{4})/g, '$1  ').trim();
+      document.getElementById('atmCardHolder').textContent = (accName || CURRENT_USER).toUpperCase();
+      closeModal('modalEditBank');
+    } else {
+      toast(d.error || d.message || 'Failed to update bank details', 'error');
+    }
+  } catch(err) {
+    toast('Network error updating bank card', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Card';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TASKS LOGIC (LIST, TIMERS, PROOF UPLOAD)
+// ═══════════════════════════════════════════════════════════════════════════
+let allTasksList = [];
+let doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
+let proofBase64 = '';
 
 async function loadTasks() {
-  const grid = document.getElementById('tasksGrid');
-  if (!grid) return;
-  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading...</div>';
+  const container = document.getElementById('tasksContainer');
   try {
-    const r    = await fetch('/api/tasks.php?action=get_tasks');
-    const data = await r.json();
-    currentTasks = data.tasks || [];
-    renderTasks(currentTasks);
+    const r = await fetch('/api/tasks.php?action=get_tasks');
+    const d = await r.json();
+    allTasksList = d.tasks || [];
+    renderTasks(allTasksList);
   } catch(e) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Unable to load tasks right now.</div>';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load tasks right now.</div>';
   }
 }
 
-function renderTasks(tasks) {
-  const grid = document.getElementById('tasksGrid');
-  if (!tasks.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;" class="empty"><div class="empty-title">No tasks available</div><div class="empty-desc">Check back soon for new earning opportunities.</div></div>';
+function renderTasks(list) {
+  const container = document.getElementById('tasksContainer');
+  if (!list.length) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">No earning tasks available right now. Check back soon.</div>';
     return;
   }
   const now = Date.now();
-  grid.innerHTML = tasks.map(t => {
-    const done     = completedTaskIds.includes(t.id);
-    const expiry   = t.expires_at ? new Date(t.expires_at).getTime() : null;
-    const expired  = expiry && expiry < now;
-    const msLeft   = expiry ? expiry - now : null;
-    const timerStr = msLeft > 0 ? formatDuration(msLeft) : '';
-    const slots    = t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots;
+  container.innerHTML = list.map(t => {
+    const isDone = doneTaskIds.includes(t.id);
+    const expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
+    const isExp = expTime && expTime < now;
+    const diff = expTime ? expTime - now : null;
+    const timerText = diff > 0 ? formatMs(diff) : '';
 
-    return `<div class="task-card">
-      <div class="task-card-head">
-        <div class="task-card-title">${esc(t.title)}</div>
-        <div class="task-pts">+${t.reward_points} PTS</div>
+    return `
+      <div class="grid-item-card">
+        <div class="item-head">
+          <div class="item-title">${esc(t.title)}</div>
+          <div class="item-pts">+${t.reward_points} PTS</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="item-tag">${esc(t.category || 'General')}</span>
+          <span class="item-tag">${esc(t.proof_type || 'Proof')}</span>
+          ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
+        </div>
+        ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;">${esc(t.instructions)}</div>` : ''}
+        ${timerText && !isExp ? `<div class="item-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
+        <div class="item-footer">
+          <span style="font-size:11px;color:var(--txt-3);">${t.remaining_slots || t.total_slots || 0} slots left</span>
+          ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
+                   : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
+                   : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">Start Task</button>`)}
+        </div>
       </div>
-      <div class="task-meta">
-        <span class="tag">${esc(t.category || 'General')}</span>
-        <span class="tag">${esc(t.proof_type || 'proof')}</span>
-        ${expired ? `<span class="task-expired-badge">Expired</span>` : ''}
-      </div>
-      ${t.description ? `<div class="task-instructions">${esc(t.description)}</div>` : ''}
-      ${t.instructions ? `<div class="task-instructions">${esc(t.instructions)}</div>` : ''}
-      ${timerStr && !expired ? `<div class="task-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerStr}</div>` : ''}
-      <div class="task-footer">
-        <div class="task-slots">${slots !== undefined ? `${slots} slot${slots !== 1 ? 's' : ''} left` : ''}</div>
-        ${done ? `<div class="task-done-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="20 6 9 17 4 12"/></svg>Submitted</div>`
-               : (expired ? `<button class="btn btn-sm btn-ghost" disabled>Closed</button>`
-               : `<button class="btn btn-sm btn-primary" onclick="openTaskProof(${JSON.stringify(t).replace(/"/g,'&quot;')})">Start Task</button>`)}
-      </div>
-    </div>`;
+    `;
   }).join('');
 }
 
-function formatDuration(ms) {
-  const s  = Math.floor(ms / 1000);
-  const m  = Math.floor(s / 60);
-  const h  = Math.floor(m / 60);
-  const d  = Math.floor(h / 24);
-  if (d > 0)  return `${d}d ${h % 24}h`;
-  if (h > 0)  return `${h}h ${m % 60}m`;
-  if (m > 0)  return `${m}m`;
-  return `${s}s`;
-}
-
-// ── Task proof modal ─────────────────────────────────────────────────────
-let currentTaskId  = '';
-let currentTaskPts = 0;
-let proofBase64    = '';
-
-function openTaskProof(task) {
-  currentTaskId  = task.id;
-  currentTaskPts = task.reward_points;
-  proofBase64    = '';
-  clearProofFile();
-  document.getElementById('taskProofId').value      = task.id;
-  document.getElementById('taskProofPts').value     = task.reward_points;
-  document.getElementById('taskProofTitle').textContent = task.title;
-  document.getElementById('taskProofInstr').textContent = task.instructions || task.description || 'Complete the task and submit your proof.';
-  document.getElementById('taskProofUrl').value   = '';
-  document.getElementById('taskProofNotes').value = '';
+function openTaskSubmission(id) {
+  const t = allTasksList.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('proofTaskId').value = t.id;
+  document.getElementById('proofTaskPts').value = t.reward_points;
+  document.getElementById('proofTaskTitle').textContent = t.title;
+  document.getElementById('proofTaskInstr').textContent = t.instructions || 'Follow the task link, complete the requirements, and upload verification proof.';
+  document.getElementById('proofUrl').value = '';
+  document.getElementById('proofNotes').value = '';
+  document.getElementById('proofFile').value = '';
+  document.getElementById('proofPreviewBox').style.display = 'none';
+  proofBase64 = '';
   openModal('modalTaskProof');
 }
 
-function handleProofFile(e) {
+function handleProofImage(e) {
   const file = e.target.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { toast('File too large (max 5MB)', 'error'); return; }
@@ -1102,301 +891,293 @@ function handleProofFile(e) {
   reader.onload = ev => {
     proofBase64 = ev.target.result;
     document.getElementById('proofPreviewImg').src = proofBase64;
-    document.getElementById('proofPreview').style.display = 'block';
-    document.getElementById('proofDropzone').style.display = 'none';
+    document.getElementById('proofPreviewBox').style.display = 'block';
   };
   reader.readAsDataURL(file);
 }
 
-function clearProofFile() {
-  proofBase64 = '';
-  document.getElementById('proofFileInput').value  = '';
-  document.getElementById('proofPreview').style.display  = 'none';
-  document.getElementById('proofDropzone').style.display = 'block';
-  const img = document.getElementById('proofPreviewImg'); if(img) img.src = '';
-}
-
-async function submitTaskProof() {
-  const proofUrl = document.getElementById('taskProofUrl').value.trim();
-  const notes    = document.getElementById('taskProofNotes').value.trim();
+async function sendTaskProof() {
+  const taskId = document.getElementById('proofTaskId').value;
+  const pts = parseInt(document.getElementById('proofTaskPts').value) || 150;
+  const proofUrl = document.getElementById('proofUrl').value.trim();
+  const notes = document.getElementById('proofNotes').value.trim();
   const finalProof = proofBase64 || proofUrl;
-  if (!finalProof) { toast('Please upload a screenshot or enter a proof URL.', 'warn'); return; }
-  const btn = document.getElementById('btnSubmitProof');
+
+  if (!finalProof) {
+    toast('Please upload a screenshot or enter a proof URL.', 'error');
+    return;
+  }
+  const btn = document.getElementById('btnSendProof');
   btn.disabled = true; btn.textContent = 'Submitting...';
+
   try {
-    const task = currentTasks.find(t => t.id === currentTaskId) || {};
+    const t = allTasksList.find(x => x.id === taskId);
     const r = await fetch('/api/tasks.php?action=submit_task_proof', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ task_id: currentTaskId, task_title: task.title, username: CURRENT_USER,
-        proof_url: finalProof, notes, reward_points: currentTaskPts })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        task_id: taskId,
+        task_title: t ? t.title : 'Task',
+        username: CURRENT_USER,
+        proof_url: finalProof,
+        notes: notes,
+        reward_points: pts
+      })
     });
     const d = await r.json();
     if (d.status === 'success') {
-      completedTaskIds.push(currentTaskId);
-      localStorage.setItem('ix_done_tasks', JSON.stringify(completedTaskIds));
-      toast(d.message, 'success');
+      doneTaskIds.push(taskId);
+      localStorage.setItem('ix_done_tasks', JSON.stringify(doneTaskIds));
+      toast('Proof submitted! The review team will verify and credit your points.', 'success');
       closeModal('modalTaskProof');
-      renderTasks(currentTasks);
-    } else { toast(d.message || 'Submission failed', 'error'); }
-  } catch(e) { toast('Server error. Please try again.', 'error'); }
+      renderTasks(allTasksList);
+    } else {
+      toast(d.message || 'Error submitting proof', 'error');
+    }
+  } catch(err) {
+    toast('Network error submitting proof', 'error');
+  }
   btn.disabled = false; btn.textContent = 'Submit Proof';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SURVEYS
+// SURVEYS & QUIZZES LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
-let currentSurveys   = [];
-let completedSurveys = JSON.parse(localStorage.getItem('ix_done_surveys') || '[]');
-let activeSurvey     = null;
-let surveyAnswers    = {};
-let surveyStep       = 0; // 0=intro, 1..N=question, N+1=result
+let allSurveysList = [];
+let doneSurveyIds = JSON.parse(localStorage.getItem('ix_done_surveys') || '[]');
+let activeSurvey = null;
+let surveyAnswers = {};
+let surveyStep = 0;
 
 async function loadSurveys() {
-  const grid = document.getElementById('surveysGrid');
-  if (!grid) return;
-  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading...</div>';
+  const container = document.getElementById('surveysContainer');
   try {
-    // Also fetch completed surveys for this user from server
     const [r1, r2] = await Promise.all([
       fetch('/api/surveys.php?action=get_surveys'),
       fetch('/api/surveys.php?action=get_user_completed', {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: CURRENT_USER })
       })
     ]);
     const d1 = await r1.json();
     const d2 = await r2.json();
-    currentSurveys = d1.surveys || [];
-    const serverCompleted = d2.completed_surveys || [];
-    // Merge local + server completed
-    completedSurveys = [...new Set([...completedSurveys, ...serverCompleted])];
-    localStorage.setItem('ix_done_surveys', JSON.stringify(completedSurveys));
-    renderSurveys(currentSurveys);
+    allSurveysList = d1.surveys || [];
+    const serverDone = d2.completed_surveys || [];
+    doneSurveyIds = [...new Set([...doneSurveyIds, ...serverDone])];
+    localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+    renderSurveys(allSurveysList);
   } catch(e) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Unable to load surveys.</div>';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load surveys right now.</div>';
   }
 }
 
-function renderSurveys(surveys) {
-  const grid = document.getElementById('surveysGrid');
-  if (!surveys.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;" class="empty"><div class="empty-title">No surveys available</div><div class="empty-desc">The admin will post surveys here. Check back soon.</div></div>';
+function renderSurveys(list) {
+  const container = document.getElementById('surveysContainer');
+  if (!list.length) {
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">No active surveys right now. Check back soon.</div>';
     return;
   }
   const now = Date.now();
-  grid.innerHTML = surveys.map(s => {
-    const done     = completedSurveys.includes(s.id);
-    const expiry   = s.expires_at ? new Date(s.expires_at).getTime() : null;
-    const expired  = expiry && expiry < now;
-    const msLeft   = expiry ? expiry - now : null;
-    const timerStr = msLeft > 0 ? formatDuration(msLeft) : '';
-    const qCount   = (s.questions || []).length;
+  container.innerHTML = list.map(s => {
+    const isDone = doneSurveyIds.includes(s.id);
+    const expTime = s.expires_at ? new Date(s.expires_at).getTime() : null;
+    const isExp = expTime && expTime < now;
+    const qCount = (s.questions || []).length;
 
-    return `<div class="survey-card">
-      <div class="task-card-head">
-        <div class="task-card-title">${esc(s.title)}</div>
-        <div class="survey-pts">+${s.reward_points} PTS</div>
+    return `
+      <div class="grid-item-card">
+        <div class="item-head">
+          <div class="item-title">${esc(s.title)}</div>
+          <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} PTS</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="item-tag">${esc(s.category || 'Survey')}</span>
+          ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : ''}
+          ${s.video_url ? '<span class="item-tag" style="color:var(--accent);">Video</span>' : ''}
+          ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
+        </div>
+        ${s.description ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;">${esc(s.description)}</div>` : ''}
+        <div class="item-footer">
+          <span style="font-size:11px;color:var(--txt-3);">${s.remaining_slots || s.total_slots || 0} spots</span>
+          ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Completed</span>'
+                   : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
+                   : `<button class="btn btn-primary btn-sm" onclick="startSurvey('${esc(s.id)}')">Start Survey</button>`)}
+        </div>
       </div>
-      <div class="task-meta">
-        <span class="tag">${esc(s.category || 'General')}</span>
-        ${qCount ? `<span class="tag">${qCount} question${qCount !== 1 ? 's' : ''}</span>` : ''}
-        ${expired ? `<span class="task-expired-badge">Expired</span>` : ''}
-      </div>
-      ${s.description ? `<div class="task-instructions">${esc(s.description)}</div>` : ''}
-      ${s.video_url ? `<div class="task-instructions" style="color:var(--accent);font-size:12px;font-weight:500;">Video included — watch before answering.</div>` : ''}
-      ${timerStr && !expired ? `<div class="task-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerStr}</div>` : ''}
-      <div class="task-footer">
-        <div class="task-slots">${s.remaining_slots !== undefined ? `${s.remaining_slots} spots left` : ''}</div>
-        ${done ? `<div class="task-done-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="20 6 9 17 4 12"/></svg>Completed</div>`
-               : (expired ? `<button class="btn btn-sm btn-ghost" disabled>Closed</button>`
-               : `<button class="btn btn-sm btn-primary" onclick="openSurvey('${esc(s.id)}')">Start Survey</button>`)}
-      </div>
-    </div>`;
+    `;
   }).join('');
 }
 
-function openSurvey(surveyId) {
-  const sv = currentSurveys.find(s => s.id === surveyId);
-  if (!sv) return;
-  activeSurvey  = sv;
+function startSurvey(id) {
+  const s = allSurveysList.find(x => x.id === id);
+  if (!s) return;
+  activeSurvey = s;
   surveyAnswers = {};
-  surveyStep    = 0;
+  surveyStep = 0;
   renderSurveyStep();
-  openModal('modalSurvey');
-}
-
-function closeSurveyModal() {
-  closeModal('modalSurvey');
-  activeSurvey = null;
+  openModal('modalSurveyRunner');
 }
 
 function renderSurveyStep() {
   if (!activeSurvey) return;
+  const body = document.getElementById('surveyRunnerBody');
+  const footer = document.getElementById('surveyRunnerFooter');
+  const nextBtn = document.getElementById('btnSurveyNext');
   const questions = activeSurvey.questions || [];
-  const totalSteps = (activeSurvey.video_url ? 1 : 0) + questions.length;
-  let videoStep = activeSurvey.video_url ? 0 : -1;
-  let questionOffset = activeSurvey.video_url ? 1 : 0;
 
-  const title   = document.getElementById('surveyModalTitle');
-  const body    = document.getElementById('surveyModalBody');
-  const footer  = document.getElementById('surveyModalFooter');
-  const actionBtn = document.getElementById('btnSurveyAction');
+  document.getElementById('surveyRunnerTitle').textContent = activeSurvey.title;
 
-  title.textContent = activeSurvey.title;
-
-  // Intro / video step
+  // Step 0: Video & Overview
   if (surveyStep === 0) {
     let html = '';
     if (activeSurvey.description) {
-      html += `<div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-bottom:16px;">${esc(activeSurvey.description)}</div>`;
+      html += `<div style="font-size:13px;color:var(--txt-2);margin-bottom:14px;line-height:1.5;">${esc(activeSurvey.description)}</div>`;
     }
     if (activeSurvey.video_url) {
-      html += `<div style="margin-bottom:14px;"><div class="form-label" style="margin-bottom:8px;">Watch this video before answering</div>`;
       const vid = activeSurvey.video_url;
-      // Detect YouTube
-      const ytMatch = vid.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
-      if (ytMatch) {
-        html += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
-      } else {
-        html += `<div class="video-container"><video src="${esc(vid)}" controls></video></div>`;
-      }
-      html += `</div>`;
+      const yt = vid.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+      html += `<div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--accent);">Watch Video:</div>
+        <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;background:#000;">
+          ${yt ? `<iframe src="https://www.youtube.com/embed/${yt[1]}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>`
+               : `<video src="${esc(vid)}" controls style="position:absolute;top:0;left:0;width:100%;height:100%;"></video>`}
+        </div>
+      </div>`;
     }
-    html += `<div style="background:var(--surface);border-radius:8px;padding:12px;font-size:12px;color:var(--txt-2);">`;
-    html += `<strong style="color:var(--txt);font-size:13px;">${questions.length} question${questions.length !== 1 ? 's' : ''}</strong> — Earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong> for passing.`;
-    html += `</div>`;
+    html += `<div style="font-size:12px;color:var(--txt-3);background:var(--surface);padding:10px;border-radius:8px;">
+      Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.
+    </div>`;
     body.innerHTML = html;
-    actionBtn.textContent = questions.length ? 'Begin' : 'Submit';
-    actionBtn.onclick = () => {
-      if (!questions.length) submitSurvey();
+    nextBtn.textContent = questions.length ? 'Begin Quiz' : 'Submit';
+    nextBtn.onclick = () => {
+      if (!questions.length) submitSurveyAnswers();
       else { surveyStep = 1; renderSurveyStep(); }
     };
     return;
   }
 
-  // Question steps
+  // Step 1..N: Questions
   const qIdx = surveyStep - 1;
   if (qIdx < questions.length) {
     const q = questions[qIdx];
     const selected = surveyAnswers[q.id];
     body.innerHTML = `
-      <div class="q-progress">Question ${surveyStep} of ${questions.length}
-        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${(surveyStep/questions.length)*100}%"></div></div>
+      <div style="font-size:11px;color:var(--txt-3);margin-bottom:8px;">Question ${surveyStep} of ${questions.length}</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.4;">${esc(q.question)}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${(q.options || []).map((opt, oIdx) => `
+          <button type="button" class="btn btn-secondary" style="justify-content:flex-start;text-align:left;padding:10px 14px;font-size:13px;${selected === oIdx ? 'border-color:var(--accent);background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;' : ''}" onclick="pickAnswer('${esc(q.id)}', ${oIdx})">
+            ${esc(opt)}
+          </button>
+        `).join('')}
       </div>
-      <div class="survey-question">
-        <div class="question-text">${esc(q.question)}</div>
-        <div class="option-list">
-          ${(q.options || []).map((opt, i) => `
-            <button class="option-btn ${selected === i ? 'selected' : ''}" onclick="selectOption('${esc(q.id)}', ${i})">
-              <span class="option-dot"><span class="option-dot-fill"></span></span>
-              ${esc(opt)}
-            </button>`).join('')}
-        </div>
-      </div>`;
+    `;
     const isLast = qIdx === questions.length - 1;
-    actionBtn.textContent = isLast ? 'Submit Survey' : 'Next';
-    actionBtn.onclick = () => {
-      if (surveyAnswers[q.id] === undefined) { toast('Please select an answer.', 'warn'); return; }
-      if (isLast) submitSurvey();
+    nextBtn.textContent = isLast ? 'Submit Survey' : 'Next Question';
+    nextBtn.onclick = () => {
+      if (surveyAnswers[q.id] === undefined) { toast('Please choose an answer.', 'error'); return; }
+      if (isLast) submitSurveyAnswers();
       else { surveyStep++; renderSurveyStep(); }
     };
   }
 }
 
-function selectOption(questionId, idx) {
-  surveyAnswers[questionId] = idx;
-  // Re-render options
-  document.querySelectorAll('.option-btn').forEach((btn, i) => {
-    btn.classList.toggle('selected', i === idx);
-  });
+function pickAnswer(qId, idx) {
+  surveyAnswers[qId] = idx;
+  renderSurveyStep();
 }
 
-async function submitSurvey() {
-  const actionBtn = document.getElementById('btnSurveyAction');
-  actionBtn.disabled = true; actionBtn.textContent = 'Submitting...';
+async function submitSurveyAnswers() {
+  const nextBtn = document.getElementById('btnSurveyNext');
+  nextBtn.disabled = true; nextBtn.textContent = 'Grading...';
   try {
     const r = await fetch('/api/surveys.php?action=submit_survey', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ survey_id: activeSurvey.id, username: CURRENT_USER, answers: surveyAnswers })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        survey_id: activeSurvey.id,
+        username: CURRENT_USER,
+        answers: surveyAnswers
+      })
     });
     const d = await r.json();
     if (d.status === 'success') {
-      completedSurveys.push(activeSurvey.id);
-      localStorage.setItem('ix_done_surveys', JSON.stringify(completedSurveys));
+      doneSurveyIds.push(activeSurvey.id);
+      localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
       showSurveyResult(d);
     } else {
-      toast(d.message || 'Submission failed', 'error');
-      actionBtn.disabled = false; actionBtn.textContent = 'Submit Survey';
+      toast(d.message || 'Submission error', 'error');
+      nextBtn.disabled = false; nextBtn.textContent = 'Submit Survey';
     }
   } catch(e) {
-    toast('Server error. Try again.', 'error');
-    actionBtn.disabled = false; actionBtn.textContent = 'Submit Survey';
+    toast('Network error grading survey', 'error');
+    nextBtn.disabled = false; nextBtn.textContent = 'Submit Survey';
   }
 }
 
-function showSurveyResult(result) {
-  const body   = document.getElementById('surveyModalBody');
-  const footer = document.getElementById('surveyModalFooter');
-  const passed = result.passed;
+function showSurveyResult(res) {
+  const body = document.getElementById('surveyRunnerBody');
+  const footer = document.getElementById('surveyRunnerFooter');
   body.innerHTML = `
-    <div style="text-align:center;padding:10px 0 20px;">
-      <div class="result-circle ${passed ? 'result-pass' : 'result-fail'}">${result.score}%</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">${passed ? 'Survey Passed' : 'Survey Complete'}</div>
-      <div style="font-size:13px;color:var(--txt-2);margin-bottom:16px;">${esc(result.message)}</div>
-      ${passed ? `<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px;font-size:13px;font-weight:600;color:var(--green);">+${result.reward_points} points credited to your account</div>` : ''}
+    <div style="text-align:center;padding:16px 0;">
+      <div style="font-size:32px;font-weight:800;color:${res.passed ? 'var(--green)' : 'var(--red)'};">${res.score}%</div>
+      <div style="font-size:15px;font-weight:700;margin:6px 0;">${res.passed ? 'Survey Passed!' : 'Survey Completed'}</div>
+      <div style="font-size:13px;color:var(--txt-2);margin-bottom:12px;">${esc(res.message)}</div>
+      ${res.passed ? `<div style="font-size:13px;font-weight:700;color:var(--green);padding:10px;background:rgba(16,185,129,0.1);border-radius:8px;">+${res.reward_points} PTS Credited to Wallet</div>` : ''}
     </div>
-    ${result.graded && result.graded.length ? `
-    <div style="margin-top:16px;">
-      <div class="form-label" style="margin-bottom:8px;">Answer Review</div>
-      ${result.graded.map(g => `
-        <div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:8px;">
-          <div style="font-size:12px;font-weight:600;color:var(--txt-2);margin-bottom:6px;">${esc(g.question)}</div>
-          <div style="font-size:12px;color:${g.is_correct ? 'var(--green)' : 'var(--red)'};">
-            ${g.is_correct ? 'Correct' : 'Incorrect'}
-          </div>
-        </div>`).join('')}
-    </div>` : ''}`;
-  footer.innerHTML = `<button class="btn btn-primary" onclick="closeSurveyModal();renderSurveys(currentSurveys);">Close</button>`;
+  `;
+  footer.innerHTML = `<button class="btn btn-primary" onclick="closeModal('modalSurveyRunner');renderSurveys(allSurveysList);">Done</button>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WITHDRAWAL
+// WITHDRAWALS
 // ═══════════════════════════════════════════════════════════════════════════
-async function submitWithdrawal() {
-  const type   = document.getElementById('wdType').value;
+async function submitWithdrawalReq() {
+  const type = document.getElementById('wdWalletType').value;
   const amount = parseFloat(document.getElementById('wdAmount').value);
-  const bank   = document.getElementById('wdBank').value.trim();
-  const accNum = document.getElementById('wdAccNum').value.trim();
-  const accNam = document.getElementById('wdAccName').value.trim();
-  const minReq = type === 'cash' ? MIN_CASH_WD : MIN_TASK_WD;
-  if (!amount || amount < minReq) { toast(`Minimum withdrawal is ₦${minReq.toLocaleString()}`, 'warn'); return; }
-  if (!bank || !accNum || !accNam) { toast('Please fill in all bank details.', 'warn'); return; }
+  const min = type === 'cash' ? 5000 : 1000;
+  if (!amount || amount < min) { toast(`Minimum payout is ₦${min.toLocaleString()}`, 'error'); return; }
+
   try {
     const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ username: CURRENT_USER, amount, wallet_type: type, bank_name: bank, account_number: accNum, account_name: accNam })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: CURRENT_USER,
+        amount: amount,
+        wallet_type: type
+      })
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      toast('Withdrawal request submitted!', 'success');
+      toast('Withdrawal requested! Processing within settlement window.', 'success');
       closeModal('modalWithdraw');
-    } else { toast(d.message || 'Request failed', 'error'); }
-  } catch(e) { toast('Server error. Try again.', 'error'); }
+    } else {
+      toast(d.message || d.error || 'Failed to submit withdrawal', 'error');
+    }
+  } catch(e) {
+    toast('Network error processing request', 'error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// UTILS
+// HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
+function formatMs(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (d > 0) return `${d}d ${h % 24}h`;
+  if (h > 0) return `${h}h ${m % 60}m`;
+  if (m > 0) return `${m}m`;
+  return `${s}s`;
+}
+
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  loadTasks();
-});
 </script>
 </body>
 </html>

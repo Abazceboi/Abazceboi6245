@@ -114,6 +114,18 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*json_encode\(\$welcomeShown\)\s*\?>/g, JSON.stringify(Boolean(context.welcomeShown)));
     content = content.replace(/<\?=\s*htmlspecialchars\(\$loginError\s*\?\?\s*''\)\s*\?>/g, context.loginError || '');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pinFromQuery\)\s*\?>/g, '');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$referralLink\)\s*\?>/g, context.referralLink || '');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$referralCode\)\s*\?>/g, context.referralCode || '');
+    content = content.replace(/<\?=\s*\$referralCount\s*\?>/g, String(context.referralCount || 0));
+    content = content.replace(/<\?=\s*number_format\(\$referralEarnings,\s*2\)\s*\?>/g, Number(context.referralEarnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    content = content.replace(/<\?=\s*number_format\(\$refBonus\)\s*\?>/g, Number(context.refBonus || 500).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*\$tasksCompleted\s*\?>/g, String(context.tasksCompleted || 0));
+    content = content.replace(/<\?=\s*\$surveysCompleted\s*\?>/g, String(context.surveysCompleted || 0));
+    content = content.replace(/<\?=\s*\$minCashWd\s*\?>/g, String(context.minCashWd || 5000));
+    content = content.replace(/<\?=\s*\$minTaskWd\s*\?>/g, String(context.minTaskWd || 1000));
+    content = content.replace(/<\?=\s*number_format\(\$minTaskWd\)\s*\?>/g, Number(context.minTaskWd || 1000).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*json_encode\(\$referralLink\)\s*\?>/g, JSON.stringify(context.referralLink || ''));
+    content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
 
     const activePage = path.basename(filePath, '.php');
     content = content.replace(/<\?=\s*isActive\(['"]([^'"]+)['"],\s*\$currentPage\)\s*\?>/g, (m, pageName) => {
@@ -121,7 +133,6 @@ function renderPhpFile(filePath, context = {}) {
     });
 
     content = content.replace(/<\?=\s*json_encode\(\$(?:tokensList|allUsers|coupons|tasks|vendors|records|items|data|list|dashTokensList)[^)]*\)\s*\?>/gi, '[]');
-    content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
     content = content.replace(/<\?=\s*json_encode\([^)]*\)\s*\?>/g, '{}');
     if (content.includes('faq-list')) {
         try {
@@ -3774,7 +3785,21 @@ const server = http.createServer((req, res) => {
                                 context.streakCount = parseInt(userRecord.streak_count || 1);
                                 context.isActivated = Boolean(userRecord.is_activated || userRecord.coupon_activated || ['admin', 'super_admin', 'uploader', 'vendor'].includes(userRecord.role));
                                 context.welcomeShown = Boolean(userRecord.welcome_shown);
+                                context.referralCode = userRecord.referral_code || ('INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase());
+                                const proto = req.headers['x-forwarded-proto'] || 'http';
+                                const host = req.headers.host || 'localhost:5050';
+                                context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
+                                context.referralCount = parseInt(userRecord.referral_count || 0);
+                                context.referralEarnings = parseFloat(userRecord.referral_earnings || 0);
+                                context.tasksCompleted = parseInt(userRecord.tasks_completed || 0);
+                                context.surveysCompleted = parseInt(userRecord.surveys_completed || 0);
                             }
+                        }
+                        if (!context.referralCode) {
+                            context.referralCode = 'INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase();
+                            const proto = req.headers['x-forwarded-proto'] || 'http';
+                            const host = req.headers.host || 'localhost:5050';
+                            context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
                         }
                         const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                         let ptsRate = 1.0;
