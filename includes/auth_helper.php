@@ -229,7 +229,8 @@ function authenticateUserCredentials(string $username, string $password): array 
                         'phone' => $u['phone'] ?? '',
                         'fullName' => $u['full_name'] ?? $u['fullName'] ?? $uName,
                         'role' => $isAdminUser ? 'super_admin' : $uRole,
-                        'is_admin' => $isAdminUser
+                        'is_admin' => $isAdminUser,
+                        'is_activated' => !empty($u['is_activated']) || !empty($u['coupon_activated']) || $isAdminUser || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor'])
                     ];
                     break;
                 }
@@ -359,6 +360,7 @@ function authenticateUserCredentials(string $username, string $password): array 
         $_SESSION['fullName'] = $matchedUser['fullName'];
         $_SESSION['role'] = $uRole;
         $_SESSION['is_admin'] = $isAdmin;
+        $_SESSION['is_activated'] = !empty($matchedUser['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']);
         if ($isAdmin) {
             $_SESSION['admin_auth_step'] = 1; // Step 1 complete: password verified, awaiting 2-step PIN
         }
@@ -377,6 +379,7 @@ function authenticateUserCredentials(string $username, string $password): array 
             'fullName' => $matchedUser['fullName'],
             'role' => $uRole,
             'isAdmin' => $isAdmin,
+            'is_activated' => !empty($matchedUser['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']),
             'admin_auth_step' => $isAdmin ? 1 : 0
         ];
     }

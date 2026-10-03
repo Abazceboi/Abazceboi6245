@@ -42,6 +42,8 @@ $referralEarnings = 0.00;
 $tasksCompleted = 0;
 $surveysCompleted = 0;
 
+$isActivated    = false;
+
 // Read user record from users.json
 $usersJsonFile = __DIR__ . '/data/users.json';
 if (file_exists($usersJsonFile)) {
@@ -63,9 +65,19 @@ if (file_exists($usersJsonFile)) {
             if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
             if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
             if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
+            if (!empty($ju['is_activated']) || !empty($ju['coupon_activated'])) {
+                $isActivated = true;
+            }
             break;
         }
     }
+}
+
+if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
+    $isActivated = true;
+}
+if (!empty($_SESSION['is_activated'])) {
+    $isActivated = true;
 }
 
 // DB fallback
@@ -84,8 +96,15 @@ if ($pdo) {
             if (!empty($row['accountName']))   $accountName  = $row['accountName'];
             if (!empty($row['fullName']))      $userFullName = $row['fullName'];
             if (!empty($row['referralCode']))  $referralCode = $row['referralCode'];
+            if (!empty($row['is_activated']) || !empty($row['couponPinUsed'])) {
+                $isActivated = true;
+            }
         }
     } catch(Exception $e){}
+}
+
+if ($isActivated) {
+    $_SESSION['is_activated'] = true;
 }
 
 $pricingFile = __DIR__ . '/config/app_pricing.json';
@@ -1503,6 +1522,9 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataBankName" data-bank="<?= htmlspecialchars($bankName) ?>" style="display:none"></span>
 <span id="dataAccountNo" data-acc="<?= htmlspecialchars($accountNumber) ?>" style="display:none"></span>
 <span id="dataAccountName" data-name="<?= htmlspecialchars($accountName) ?>" style="display:none"></span>
+<span id="dataCashBal" data-cash="<?= htmlspecialchars((string)$userCash) ?>" style="display:none"></span>
+<span id="dataPtsBal" data-pts="<?= htmlspecialchars((string)$userPoints) ?>" style="display:none"></span>
+<span id="dataActivated" data-activated="<?= $isActivated ? '1' : '0' ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
@@ -1991,7 +2013,75 @@ input,textarea,select{font-family:var(--ff);}
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalWithdraw')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitWithdrawalReq()">Confirm Payout</button>
+      <button class="btn btn-primary" onclick="proceedToWithdrawalConfirm()">Review Payout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Withdrawal Settlement Confirmation Modal -->
+<div class="modal-backdrop" id="modalWithdrawConfirm">
+  <div class="modal" style="max-width: 480px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.28); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 45px rgba(56, 189, 248, 0.12);">
+    <div class="modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.3);color:#38BDF8;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="modal-title" style="font-size:16px;font-weight:800;color:var(--txt);">Confirm Payout Settlement</div>
+          <div style="font-size:11px;color:var(--txt-3);">Review authorization details prior to execution</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalWithdrawConfirm')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding-top:16px;">
+      <!-- Payout Amount Banner -->
+      <div style="text-align:center;padding:18px 14px;background:linear-gradient(135deg, rgba(56,189,248,0.08), rgba(2,132,199,0.04));border:1px solid rgba(56,189,248,0.22);border-radius:14px;margin-bottom:16px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:#7DD3FC;margin-bottom:4px;">Net Settlement Amount</div>
+        <div id="confirmWdAmount" style="font-size:2rem;font-weight:900;color:var(--txt);font-variant-numeric:tabular-nums;letter-spacing:-0.5px;">₦0.00</div>
+        <div style="display:inline-block;margin-top:6px;font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(34,197,94,0.12);color:#22C55E;font-weight:700;border:1px solid rgba(34,197,94,0.25);">Direct Bank Settlement</div>
+      </div>
+
+      <!-- Detail rows -->
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Source Wallet:</span>
+          <span id="confirmWdWallet" style="font-weight:700;color:var(--txt);">Referral Cash Wallet</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Destination Bank:</span>
+          <span id="confirmWdBank" style="font-weight:700;color:var(--txt);"><?= htmlspecialchars($bankName) ?></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Account Number:</span>
+          <span id="confirmWdAccount" style="font-weight:800;letter-spacing:0.5px;color:var(--txt);font-family:monospace;"><?= htmlspecialchars($accountNumber) ?></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Beneficiary Name:</span>
+          <span id="confirmWdName" style="font-weight:700;color:var(--txt);"><?= htmlspecialchars($accountName) ?></span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Transfer Fee:</span>
+          <span style="color:#22C55E;font-weight:800;">₦0.00 (Zero Fee / Subsidized)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--txt-3);">Settlement Channel:</span>
+          <span style="color:var(--txt);font-weight:600;">NIBSS Instant Payment (NIP)</span>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--txt-3);line-height:1.55;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.16);padding:10px 12px;border-radius:10px;">
+        <strong style="color:var(--txt);">Authorization Agreement:</strong>
+        Please review and accept these settlement details. By confirming, you authorize INNOVATIONX to debit your wallet and transfer funds directly to your verified bank account. Once confirmed, your official transaction receipt will be generated.
+      </div>
+    </div>
+    <div class="modal-footer" style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalWithdrawConfirm'); openModal('modalWithdraw');" style="flex:1;">Cancel / Edit</button>
+      <button type="button" class="btn btn-primary" id="btnAuthorizePayout" onclick="executeWithdrawalReq()" style="flex:1.4;background:linear-gradient(135deg, #0284C7, #38BDF8);font-weight:700;">
+        Accept &amp; Authorize Payout
+      </button>
     </div>
   </div>
 </div>
@@ -2110,6 +2200,46 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 </div>
 
+<?php if (!$isActivated): ?>
+<!-- Mandatory Coupon Activation Gate Overlay -->
+<div class="modal-backdrop active" id="modalActivationGate" style="z-index:99999;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(5,7,15,0.88);">
+  <div class="modal activation-gate-modal" style="max-width:480px;border-radius:20px;border:1px solid rgba(56,189,248,0.3);box-shadow:0 25px 60px rgba(0,0,0,0.8),0 0 50px rgba(56,189,248,0.15);padding:32px 28px;text-align:center;">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#38BDF8;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <h2 style="font-size:1.4rem;font-weight:900;margin:0 0 8px;color:var(--txt);">Account Activation Required</h2>
+    <p style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;">
+      Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.
+    </p>
+
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-2);margin-bottom:6px;">Coupon Activation PIN</label>
+      <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter') submitAccountActivation()">
+    </div>
+
+    <div id="activationErrorMsg" style="display:none;padding:10px 14px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#EF4444;font-size:12px;margin-bottom:14px;text-align:left;line-height:1.4;"></div>
+
+    <button type="button" class="btn btn-primary" id="btnActivateAccount" onclick="submitAccountActivation()" style="width:100%;justify-content:center;padding:13px;font-size:14px;font-weight:800;border-radius:12px;margin-bottom:16px;background:linear-gradient(135deg, #0284C7, #38BDF8);box-shadow:0 4px 16px rgba(56,189,248,0.35);">
+      Activate Account Now
+    </button>
+
+    <div style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+      Need an activation code?
+      <a href="vendors.php" target="_blank" style="color:#7DD3FC;font-weight:700;text-decoration:underline;margin-left:4px;">Contact Verified Vendors</a>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:center;gap:16px;font-size:12px;">
+      <a href="logout.php" style="color:var(--txt-3);text-decoration:none;">Sign Out</a>
+      <span style="color:var(--border);">|</span>
+      <a href="https://t.me/InnovationXHQ" target="_blank" style="color:var(--txt-3);text-decoration:none;">Telegram Community</a>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
 <div id="toast-stack"></div>
 
 <script>
@@ -2155,6 +2285,17 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTasks();
   loadSurveys();
   loadNotifications();
+
+  // Instant Admin Upload Sync (polls every 20s and immediately when window/tab gains focus)
+  window.addEventListener('focus', () => {
+    loadTasks();
+    loadSurveys();
+    loadNotifications();
+  });
+  setInterval(() => {
+    loadTasks();
+    loadNotifications();
+  }, 20000);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2162,7 +2303,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 async function loadNotifications() {
   try {
-    const r = await fetch('/api/notifications.php?action=get');
+    const r = await fetch(`/api/notifications.php?action=get&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
     const d = await r.json();
     const list = d.notifications || d.data || [];
     const countEl = document.getElementById('notifCountText');
@@ -2420,7 +2564,10 @@ let proofBase64 = '';
 async function loadTasks() {
   const container = document.getElementById('tasksContainer');
   try {
-    const r = await fetch('/api/tasks.php?action=get_tasks');
+    const r = await fetch(`/api/tasks.php?action=get_tasks&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
     const d = await r.json();
     allTasksList = d.tasks || [];
     renderTasks(allTasksList);
@@ -2552,7 +2699,10 @@ async function loadSurveys() {
   const container = document.getElementById('surveysContainer');
   try {
     const [r1, r2] = await Promise.all([
-      fetch('/api/surveys.php?action=get_surveys'),
+      fetch(`/api/surveys.php?action=get_surveys&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      }),
       fetch('/api/surveys.php?action=get_user_completed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2795,16 +2945,60 @@ document.addEventListener('click', (e) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WITHDRAWALS & RECEIPT
+// WITHDRAWALS & RECEIPT (WITH MANDATORY CONFIRMATION STEP)
 // ═══════════════════════════════════════════════════════════════════════════
-async function submitWithdrawalReq() {
+let pendingWithdrawalData = null;
+
+function proceedToWithdrawalConfirm() {
   const type = document.getElementById('wdWalletType').value;
   const amount = parseFloat(document.getElementById('wdAmount').value);
   const min = type === 'cash' ? 5000 : 1000;
-  if (!amount || amount < min) { toast(`Minimum payout is ₦${min.toLocaleString()}`, 'error'); return; }
 
-  const btn = event?.target || document.querySelector('#modalWithdraw .btn-primary');
-  if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+  if (!amount || isNaN(amount) || amount < min) {
+    toast(`Minimum payout is ₦${min.toLocaleString()}`, 'error');
+    return;
+  }
+
+  // Check balance
+  const cashBal = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || 0);
+  const ptsBal = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || 0);
+
+  if (type === 'cash' && amount > cashBal) {
+    toast(`Insufficient balance in Referral Cash Wallet (₦${cashBal.toLocaleString()})`, 'error');
+    return;
+  }
+  if (type === 'task' && amount > ptsBal) {
+    toast(`Insufficient balance in Task Points Wallet (${ptsBal.toLocaleString()} PTS)`, 'error');
+    return;
+  }
+
+  pendingWithdrawalData = {
+    type: type,
+    amount: amount
+  };
+
+  const walletLabel = type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet';
+  const amountStr = '₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const bankName = document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
+  const accNo = document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
+  const accName = document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
+
+  document.getElementById('confirmWdAmount').textContent = amountStr;
+  document.getElementById('confirmWdWallet').textContent = walletLabel;
+  document.getElementById('confirmWdBank').textContent = bankName;
+  document.getElementById('confirmWdAccount').textContent = accNo;
+  document.getElementById('confirmWdName').textContent = accName;
+
+  closeModal('modalWithdraw');
+  openModal('modalWithdrawConfirm');
+}
+
+async function executeWithdrawalReq() {
+  if (!pendingWithdrawalData) return;
+  const { type, amount } = pendingWithdrawalData;
+
+  const btn = document.getElementById('btnAuthorizePayout');
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
 
   try {
     const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
@@ -2818,7 +3012,7 @@ async function submitWithdrawalReq() {
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      closeModal('modalWithdraw');
+      closeModal('modalWithdrawConfirm');
 
       // Populate Digital Receipt with verified details
       const rc = d.receipt || {};
@@ -2841,18 +3035,77 @@ async function submitWithdrawalReq() {
 
       // Open official withdrawal receipt modal
       openModal('modalWithdrawReceipt');
-      toast('Withdrawal request successfully queued!', 'success');
+      toast('Withdrawal settlement successfully authorized & queued!', 'success');
 
-      // Clear withdrawal input
+      // Clear input and pending data
+      pendingWithdrawalData = null;
       const amtInput = document.getElementById('wdAmount');
       if (amtInput) amtInput.value = '';
     } else {
       toast(d.message || d.error || 'Failed to submit withdrawal', 'error');
     }
   } catch(e) {
-    toast('Network error processing request', 'error');
+    toast('Network error processing settlement request', 'error');
   }
-  if (btn) { btn.disabled = false; btn.textContent = 'Confirm Payout'; }
+  if (btn) { btn.disabled = false; btn.textContent = 'Accept & Authorize Payout'; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COUPON ACTIVATION GATE LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+async function submitAccountActivation() {
+  const pinInput = document.getElementById('activationPinInput');
+  const errBox = document.getElementById('activationErrorMsg');
+  const btn = document.getElementById('btnActivateAccount');
+  if (!pinInput) return;
+  const pin = pinInput.value.trim().toUpperCase();
+
+  if (!pin) {
+    if (errBox) {
+      errBox.textContent = 'Please enter your coupon activation PIN.';
+      errBox.style.display = 'block';
+    }
+    pinInput.focus();
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Validating Activation PIN...'; }
+  if (errBox) errBox.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/coupons.php?action=activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: pin,
+        username: CURRENT_USER
+      })
+    });
+    const d = await r.json();
+    if (d.success || d.status === 'success') {
+      try {
+        localStorage.setItem('ix_is_activated', '1');
+      } catch(e) {}
+      toast('Account activated successfully! Unlocking platform...', 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    } else {
+      if (errBox) {
+        errBox.textContent = d.message || 'Invalid or already used coupon code.';
+        errBox.style.display = 'block';
+      }
+      toast(d.message || 'Activation failed', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Activate Account Now'; }
+    }
+  } catch(e) {
+    if (errBox) {
+      errBox.textContent = 'Network error connecting to activation gateway. Please try again.';
+      errBox.style.display = 'block';
+    }
+    toast('Network error verifying coupon', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Activate Account Now'; }
+  }
 }
 
 function copyReceiptTxn() {

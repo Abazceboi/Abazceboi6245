@@ -836,6 +836,64 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
+                if ((effAction === 'activate' || effAction === 'activate_coupon') && (req.method === 'POST' || Object.keys(parsed).length > 0)) {
+                    const pin = (parsed.code || parsed.pin || urlObj.searchParams.get('code') || urlObj.searchParams.get('pin') || '').trim().toUpperCase();
+                    const sessUser = parseSessionCookie(req);
+                    const username = (parsed.username || (sessUser ? sessUser.username : '')).trim();
+
+                    if (!pin) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: 'Please enter an activation coupon PIN.' }));
+                        return;
+                    }
+
+                    const targetPin = coupons.find(c => (c.code || '').toUpperCase() === pin);
+                    if (!targetPin) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a genuine code from our verified vendors.` }));
+                        return;
+                    }
+                    if (pin.includes('UPL') || (targetPin.type && targetPin.type.includes('UPL')) || targetPin.channel === 'UPLOADER') {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration.` }));
+                        return;
+                    }
+                    if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
+                        return;
+                    }
+
+                    targetPin.is_used = true;
+                    targetPin.isUsed = true;
+                    targetPin.used_by = username || 'Member';
+                    targetPin.usedBy = username || 'Member';
+                    targetPin.used_at = new Date().toISOString();
+                    fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    if (fs.existsSync(usersFile)) {
+                        try {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const users = uData.users || (Array.isArray(uData) ? uData : []);
+                            const userRecord = users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                            if (userRecord) {
+                                userRecord.is_activated = true;
+                                userRecord.coupon_activated = true;
+                                userRecord.coupon_pin_used = pin;
+                                userRecord.role_label = 'Active Member';
+                                userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
+                                userRecord.pointsBalance = userRecord.remaining_pts;
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e) {}
+                    }
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        message: 'Account successfully activated! All features are now unlocked.',
+                        is_activated: true
+                    }));
+                    return;
+                }
+
                 if (action === 'redeem_uploader_pin' && req.method === 'POST') {
                     const code = (parsed.code || parsed.pin || '').trim().toUpperCase();
                     const username = (parsed.username || '').trim();
