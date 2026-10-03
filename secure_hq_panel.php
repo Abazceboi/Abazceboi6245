@@ -280,15 +280,39 @@ body.sidebar-retracted .main{
 .btn-sm{padding:5px 10px;font-size:12px;}
 
 /* Forms */
-.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px;}
-.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
-.form-label{font-size:12px;font-weight:600;color:var(--txt-2);}
-.form-input,.form-select,.form-textarea{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  color:var(--txt);padding:9px 12px;font-size:13px;width:100%;outline:none;
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-label{
+  font-size:12px;font-weight:600;color:var(--txt-2);letter-spacing:0.3px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-bottom:2px;
 }
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
-.form-textarea{resize:vertical;min-height:70px;}
+.form-group:has(.form-select) .form-label{
+  font-weight:700;color:var(--txt);
+}
+.form-label .label-hint{
+  font-size:9.5px;font-weight:700;color:var(--accent);
+  background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.22);
+  padding:2px 8px;border-radius:12px;letter-spacing:0.4px;
+  text-transform:uppercase;display:inline-flex;align-items:center;
+}
+.form-input,.form-textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;
+  color:var(--txt);padding:10px 14px;font-size:13px;width:100%;outline:none;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-select{
+  background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  border:1px solid var(--border);border-radius:9px;
+  color:var(--txt);padding:10px 38px 10px 14px;font-size:13px;font-weight:600;width:100%;outline:none;
+  cursor:pointer;transition:border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+.form-select:hover{border-color:var(--accent);background-color:var(--card-hover);}
+.form-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.22);}
+.form-select option{background:#0F172A;color:#F8FAFC;padding:12px;font-size:13px;font-weight:500;}
+.form-input:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.18);}
+.form-textarea{resize:vertical;min-height:75px;}
 
 /* Tables */
 .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);}
@@ -492,18 +516,38 @@ body.sidebar-retracted .main{
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Video URL (YouTube or Direct Video MP4)</label>
-              <input type="url" class="form-input" id="svVideoUrl" placeholder="https://www.youtube.com/watch?v=... or https://...">
+          <!-- Direct Video Upload Section for Survey -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span class="form-label" style="font-size:13px;font-weight:700;color:var(--accent);margin:0;">Direct Survey Video Upload (On-Site Player)</span>
+              <span style="font-size:11px;color:var(--txt-3);">MP4, WebM, OGG, MOV</span>
             </div>
-            <div class="form-group">
-              <label class="form-label">Reward Points (PTS)</label>
-              <input type="number" class="form-input" id="svReward" value="150" min="10" required>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Choose Video File to Upload</label>
+                <input type="file" class="form-input" id="svVideoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime" onchange="handleSurveyVideoFile(event)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Or Video Stream URL</label>
+                <input type="text" class="form-input" id="svVideoUrl" placeholder="/uploads/videos/... or https://..." oninput="updateSurveyVideoPreview()">
+              </div>
+            </div>
+            <div id="svVideoUploadProgress" style="display:none;margin-top:8px;">
+              <div style="font-size:12px;color:var(--accent);margin-bottom:4px;" id="svVideoUploadStatusText">Uploading survey video...</div>
+              <div style="width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                <div id="svVideoUploadProgressBar" style="width:0%;height:100%;background:var(--accent);transition:width 0.3s;"></div>
+              </div>
+            </div>
+            <div id="svVideoPreviewBox" style="display:none;margin-top:12px;border-radius:8px;overflow:hidden;background:#000;">
+              <video id="svVideoPreviewEl" controls style="width:100%;max-height:220px;display:block;"></video>
             </div>
           </div>
 
           <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Reward Points (PTS)</label>
+              <input type="number" class="form-input" id="svReward" value="150" min="10" required>
+            </div>
             <div class="form-group">
               <label class="form-label">Participant Slots</label>
               <input type="number" class="form-input" id="svSlots" value="500" min="1" required>
@@ -601,7 +645,10 @@ body.sidebar-retracted .main{
               <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. Platform Features Video Walkthrough">
             </div>
             <div class="form-group">
-              <label class="form-label">Category</label>
+              <label class="form-label">
+                <span>Category</span>
+                <span class="label-hint">Opportunity Type</span>
+              </label>
               <select class="form-select" id="taskCategory">
                 <option value="Sponsored Video">Sponsored Video</option>
                 <option value="Video Watch">Watch & Earn Video</option>
@@ -654,7 +701,10 @@ body.sidebar-retracted .main{
               <input type="number" class="form-input" id="taskSlots" value="250" min="1" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Proof Requirement</label>
+              <label class="form-label">
+                <span>Proof Requirement</span>
+                <span class="label-hint">Verification Mode</span>
+              </label>
               <select class="form-select" id="taskProofType">
                 <option value="video_watch">Video Watch Completion</option>
                 <option value="screenshot">Screenshot Upload</option>
@@ -780,30 +830,57 @@ body.sidebar-retracted .main{
     <div id="tab-coupons" class="tab-content">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Generate Activation PINs</div>
+          <div>
+            <div class="card-title">Generate Activation PINs</div>
+            <div class="card-sub">Generate single codes or bulk batches for direct vendor distribution or general inventory pool.</div>
+          </div>
         </div>
         <form onsubmit="handleGenerateCoupons(event)">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">PIN Type</label>
+              <label class="form-label">
+                <span>PIN Code Type</span>
+                <span class="label-hint">Tier Selection</span>
+              </label>
               <select class="form-select" id="couponType">
-                <option value="AFF">Affiliate Membership (₦1,000)</option>
-                <option value="UPL">Uploader License (₦2,000)</option>
-                <option value="VIP">VIP Access (₦5,000)</option>
+                <option value="AFF">Affiliate Membership PIN (₦1,000)</option>
+                <option value="UPL">Uploader License PIN (₦2,000)</option>
+                <option value="VIP">VIP Access PIN (₦5,000)</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Quantity</label>
-              <select class="form-select" id="couponQty">
-                <option value="5">5 Codes</option>
-                <option value="10">10 Codes</option>
-                <option value="25">25 Codes</option>
-                <option value="50">50 Codes</option>
-                <option value="100">100 Codes</option>
+              <label class="form-label">
+                <span>Assign Directly to Vendor</span>
+                <span class="label-hint">Distributor Pool</span>
+              </label>
+              <select class="form-select" id="couponVendor">
+                <option value="">General Platform Pool (Unassigned)</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label">
+                <span>Quantity</span>
+                <span class="label-hint">Any amount (Min: 1)</span>
+              </label>
+              <input type="number" class="form-input" id="couponQty" min="1" max="1000" value="1" placeholder="e.g. 1, 5, 20" required>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary" id="btnGenCoupons">Generate PIN Codes</button>
+
+          <!-- Quick Quantity Selection Pills -->
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+            <span style="font-size:11px;color:var(--txt-3);font-weight:600;">Quick Quantity:</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(1)">1 Code</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(5)">5 Codes</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(10)">10 Codes</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(25)">25 Codes</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(50)">50 Codes</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setCouponQty(100)">100 Codes</button>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btnGenCoupons">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-6 6l-2 2m-6 6l-2 2M3 21l2-2m6-6l2-2m6-6l2-2"/></svg>
+            Generate PIN Codes
+          </button>
         </form>
       </div>
 
@@ -811,7 +888,7 @@ body.sidebar-retracted .main{
         <div class="card-header">
           <div class="card-title">Issued Coupon PINs</div>
           <div style="display:flex;gap:8px;">
-            <input type="text" class="form-input" id="couponSearchInput" placeholder="Search PIN..." oninput="filterCoupons()" style="width:200px;">
+            <input type="text" class="form-input" id="couponSearchInput" placeholder="Search PIN or vendor..." oninput="filterCoupons()" style="width:220px;">
             <button class="btn btn-ghost btn-sm" onclick="loadCouponsData()">Refresh</button>
           </div>
         </div>
@@ -821,13 +898,14 @@ body.sidebar-retracted .main{
               <tr>
                 <th>PIN Code</th>
                 <th>Type</th>
+                <th>Assigned Vendor</th>
                 <th>Status</th>
                 <th>Created</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="couponsTableBody">
-              <tr><td colspan="5" style="text-align:center;padding:20px;">Loading coupons...</td></tr>
+              <tr><td colspan="6" style="text-align:center;padding:20px;">Loading coupons...</td></tr>
             </tbody>
           </table>
         </div>
@@ -931,7 +1009,10 @@ body.sidebar-retracted .main{
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Account Role</label>
+          <label class="form-label">
+            <span>Account Role</span>
+            <span class="label-hint">Permission Level</span>
+          </label>
           <select class="form-select" id="editRole">
             <option value="member">Active Member</option>
             <option value="uploader">Verified Uploader</option>
@@ -942,7 +1023,10 @@ body.sidebar-retracted .main{
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Account Status</label>
+          <label class="form-label">
+            <span>Account Status</span>
+            <span class="label-hint">Access State</span>
+          </label>
           <select class="form-select" id="editStatus">
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
@@ -1113,7 +1197,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'surveys') { loadSurveysData(); loadSurveySubmissions(); }
   if (tab === 'tasks') { loadTasksData(); loadTaskSubmissions(); }
   if (tab === 'users') loadUsersData();
-  if (tab === 'coupons') loadCouponsData();
+  if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
   if (tab === 'withdrawals') loadWithdrawalsData();
   if (tab === 'pricing') loadPricingData();
   if (window.innerWidth <= 768) document.getElementById('adminSidebar').classList.remove('mobile-open');
@@ -1179,6 +1263,110 @@ function renderQuestionsBuilder() {
   `).join('');
 }
 
+let svUploadedVideoUrl = '';
+
+function updateSurveyVideoPreview() {
+  const url = document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl;
+  const previewBox = document.getElementById('svVideoPreviewBox');
+  const previewEl = document.getElementById('svVideoPreviewEl');
+  if (url) {
+    previewEl.src = url;
+    previewBox.style.display = 'block';
+  } else {
+    previewBox.style.display = 'none';
+  }
+}
+
+async function handleSurveyVideoFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const progressBox = document.getElementById('svVideoUploadProgress');
+  const progressBar = document.getElementById('svVideoUploadProgressBar');
+  const statusText = document.getElementById('svVideoUploadStatusText');
+  progressBox.style.display = 'block';
+  progressBar.style.width = '25%';
+  statusText.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
+
+  try {
+    const formData = new FormData();
+    formData.append('video', file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload_video.php', true);
+
+    xhr.upload.onprogress = (ev) => {
+      if (ev.lengthComputable) {
+        const percent = Math.round((ev.loaded / ev.total) * 90);
+        progressBar.style.width = percent + '%';
+        statusText.textContent = `Uploading survey video: ${percent}%...`;
+      }
+    };
+
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (resp.video_url || resp.url) {
+            const finalUrl = resp.video_url || resp.url;
+            svUploadedVideoUrl = finalUrl;
+            document.getElementById('svVideoUrl').value = finalUrl;
+            progressBar.style.width = '100%';
+            statusText.textContent = 'Survey video uploaded successfully!';
+            updateSurveyVideoPreview();
+            toast('Survey video uploaded!', 'success');
+            return;
+          }
+        } catch(err) {}
+      }
+      fallbackBase64SurveyVideoUpload(file);
+    };
+
+    xhr.onerror = () => {
+      fallbackBase64SurveyVideoUpload(file);
+    };
+
+    xhr.send(formData);
+  } catch(err) {
+    fallbackBase64SurveyVideoUpload(file);
+  }
+}
+
+function fallbackBase64SurveyVideoUpload(file) {
+  const progressBar = document.getElementById('svVideoUploadProgressBar');
+  const statusText = document.getElementById('svVideoUploadStatusText');
+  statusText.textContent = 'Encoding survey video stream...';
+  progressBar.style.width = '60%';
+
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const b64 = ev.target.result;
+    try {
+      const r = await fetch('/api/upload_video.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_base64: b64, filename: file.name })
+      });
+      const d = await r.json();
+      if (d.video_url || d.success) {
+        svUploadedVideoUrl = d.video_url;
+        document.getElementById('svVideoUrl').value = d.video_url;
+        progressBar.style.width = '100%';
+        statusText.textContent = 'Survey video uploaded successfully!';
+        updateSurveyVideoPreview();
+        toast('Survey video uploaded!', 'success');
+      } else {
+        statusText.textContent = 'Upload error: ' + (d.message || 'Server error');
+        toast(d.message || 'Upload error', 'error');
+      }
+    } catch(e) {
+      statusText.textContent = 'Upload network error';
+      toast('Network error uploading video', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 async function handleCreateSurvey(e) {
   e.preventDefault();
   if (!surveyQuestions.length) {
@@ -1189,7 +1377,7 @@ async function handleCreateSurvey(e) {
   const payload = {
     title: document.getElementById('svTitle').value.trim(),
     category: document.getElementById('svCategory').value.trim(),
-    video_url: document.getElementById('svVideoUrl').value.trim(),
+    video_url: document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl,
     reward_points: parseInt(document.getElementById('svReward').value) || 150,
     total_slots: parseInt(document.getElementById('svSlots').value) || 500,
     expires_at: document.getElementById('svExpiresAt').value,
@@ -1209,6 +1397,9 @@ async function handleCreateSurvey(e) {
     if (d.status === 'success') {
       toast('Survey published successfully!', 'success');
       document.getElementById('createSurveyForm').reset();
+      svUploadedVideoUrl = '';
+      document.getElementById('svVideoPreviewBox').style.display = 'none';
+      document.getElementById('svVideoUploadProgress').style.display = 'none';
       surveyQuestions = [];
       renderQuestionsBuilder();
       loadSurveysData();
@@ -1782,10 +1973,37 @@ async function handleDeleteUser(username) {
 // ═══════════════════════════════════════════════════════════════════════════
 let allCouponsList = [];
 
+function setCouponQty(n) {
+  const el = document.getElementById('couponQty');
+  if (el) {
+    el.value = n;
+  }
+}
+
+async function loadVendorsDropdown() {
+  const select = document.getElementById('couponVendor');
+  if (!select) return;
+  try {
+    const r = await fetch('/api/vendors.php?action=get_vendors');
+    const d = await r.json();
+    const vendors = d.vendors || d.data || [];
+    let opts = '<option value="">General Platform Pool (Unassigned)</option>';
+    vendors.forEach(v => {
+      opts += `<option value="${esc(v.id || v.name)}" data-name="${esc(v.name)}">${esc(v.name)} (${esc(v.phone || v.whatsapp || 'Verified')})</option>`;
+    });
+    select.innerHTML = opts;
+  } catch(e){}
+}
+
 async function handleGenerateCoupons(e) {
   e.preventDefault();
   const type = document.getElementById('couponType').value;
-  const count = parseInt(document.getElementById('couponQty').value) || 5;
+  const count = parseInt(document.getElementById('couponQty').value) || 1;
+  const vendorSelect = document.getElementById('couponVendor');
+  const vendor_id = vendorSelect ? vendorSelect.value : '';
+  const selectedOption = vendorSelect && vendorSelect.selectedIndex >= 0 ? vendorSelect.options[vendorSelect.selectedIndex] : null;
+  const vendor_name = (selectedOption && vendor_id) ? (selectedOption.getAttribute('data-name') || selectedOption.textContent.split('(')[0].trim()) : '';
+
   const btn = document.getElementById('btnGenCoupons');
   btn.disabled = true; btn.textContent = 'Generating...';
 
@@ -1793,11 +2011,16 @@ async function handleGenerateCoupons(e) {
     const r = await fetch('/api/coupons.php?action=generate_pins', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pin_type: type, quantity: count })
+      body: JSON.stringify({
+        pin_type: type,
+        quantity: count,
+        vendor_id: vendor_id,
+        vendor_name: vendor_name
+      })
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      toast(`Generated ${count} PIN codes!`, 'success');
+      toast(`Generated ${count} PIN code(s)${vendor_name ? ' for ' + vendor_name : ''}!`, 'success');
       loadCouponsData();
     } else {
       toast(d.message || 'Generation failed', 'error');
@@ -1821,27 +2044,36 @@ async function loadCouponsData() {
 function renderCoupons(list) {
   const tbody = document.getElementById('couponsTableBody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--txt-3);">No PIN codes available.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-3);">No PIN codes available.</td></tr>';
     return;
   }
-  tbody.innerHTML = list.map(c => `
-    <tr>
-      <td><code style="font-family:monospace;font-size:13px;font-weight:700;">${esc(c.code || c.pin)}</code></td>
-      <td>${esc(c.type || 'Affiliate')}</td>
-      <td><span class="badge ${c.status === 'used' ? 'badge-rejected' : 'badge-active'}">${esc(c.status || 'available')}</span></td>
-      <td style="font-size:11px;">${esc(c.created_at || '-')}</td>
-      <td>
-        <button class="btn btn-ghost btn-sm" onclick="copyPin('${esc(c.code || c.pin)}')">Copy</button>
-        <button class="btn btn-danger btn-sm" onclick="handleDeleteCoupon('${esc(c.code || c.pin)}')">Delete</button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = list.map(c => {
+    const isUsed = c.status === 'used' || c.is_used || c.isUsed;
+    const vName = c.vendor_name || c.vendorName || '';
+    return `
+      <tr>
+        <td><code style="font-family:monospace;font-size:13px;font-weight:700;">${esc(c.code || c.pin)}</code></td>
+        <td>${esc(c.type_label || c.type || 'Affiliate')}</td>
+        <td><span class="badge ${vName && vName !== 'General Pool' ? 'badge-info' : 'badge-neutral'}">${esc(vName || 'General Pool')}</span></td>
+        <td><span class="badge ${isUsed ? 'badge-rejected' : 'badge-active'}">${esc(isUsed ? 'used' : 'available')}</span></td>
+        <td style="font-size:11px;">${esc((c.created_at || '-').replace('T', ' ').substring(0, 19))}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="copyPin('${esc(c.code || c.pin)}')">Copy</button>
+          <button class="btn btn-danger btn-sm" onclick="handleDeleteCoupon('${esc(c.code || c.pin)}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function filterCoupons() {
   const q = document.getElementById('couponSearchInput').value.toLowerCase().trim();
   if (!q) { renderCoupons(allCouponsList); return; }
-  const f = allCouponsList.filter(c => (c.code || c.pin || '').toLowerCase().includes(q));
+  const f = allCouponsList.filter(c => 
+    (c.code || c.pin || '').toLowerCase().includes(q) ||
+    (c.vendor_name || c.vendorName || '').toLowerCase().includes(q) ||
+    (c.type || '').toLowerCase().includes(q)
+  );
   renderCoupons(f);
 }
 
@@ -1986,6 +2218,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTasksData();
   loadUsersData();
   loadWithdrawalsData();
+  loadCouponsData();
+  loadVendorsDropdown();
 });
 </script>
 </body>
