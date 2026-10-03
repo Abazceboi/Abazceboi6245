@@ -1,3322 +1,1402 @@
 <?php
 /**
- * INNOVATIONX — Redesigned High-Yield Member Dashboard
- * Modern Luxury Fintech UI/UX with Retained Platinum Bank Card & Real-Time Admin Sync
+ * INNOVATIONX — Member Dashboard (Complete Rewrite)
  */
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/config/db.php';
 
 $authUser = function_exists('getAuthenticatedUser') ? getAuthenticatedUser() : null;
 if (!$authUser) {
-    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying Session...</title><script>'
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying...</title><script>'
         . '(function(){'
         . 'try{'
-        . 'var retried = sessionStorage.getItem("ix_auth_retried");'
-        . 'var t = localStorage.getItem("ix_session_token");'
-        . 'if(t && !retried){'
-        . 'sessionStorage.setItem("ix_auth_retried", "1");'
-        . 'var s = location.protocol === "https:" ? "; Secure" : "";'
-        . 'document.cookie = "ix_session=" + encodeURIComponent(t) + "; path=/; max-age=2592000; SameSite=Lax" + s;'
-        . 'location.reload();'
-        . 'return;'
-        . '}'
+        . 'var r=sessionStorage.getItem("ix_auth_retried");'
+        . 'var t=localStorage.getItem("ix_session_token");'
+        . 'if(t&&!r){'
+        . 'sessionStorage.setItem("ix_auth_retried","1");'
+        . 'var s=location.protocol==="https:"?"; Secure":"";'
+        . 'document.cookie="ix_session="+encodeURIComponent(t)+"; path=/; max-age=2592000; SameSite=Lax"+s;'
+        . 'location.reload();return;}'
         . '}catch(e){}'
         . 'sessionStorage.removeItem("ix_auth_retried");'
         . 'location.replace("login.php");'
         . '})();'
-        . '</script></head><body style="background:#0A0A0F;color:#7DD3FC;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><p>Verifying member credentials...</p></body></html>';
+        . '</script></head><body style="background:#07090F;color:#64748B;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;"><p>Verifying session...</p></body></html>';
     exit;
 }
 
-$username = $authUser['username'] ?? $_SESSION['username'] ?? 'Member';
-$userId = $authUser['id'] ?? $authUser['user_id'] ?? $_SESSION['user_id'] ?? '';
-$initials = strtoupper(substr($username, 0, 2));
-
-// Live Database Balances & Profile
-$userPoints = 100;
-$userCash = 0.00;
-$userRole = 'member';
-$userPhone = $authUser['phone'] ?? $_SESSION['phone'] ?? '';
-$userEmail = $authUser['email'] ?? $_SESSION['email'] ?? '';
-$userFullName = $authUser['fullName'] ?? $_SESSION['fullName'] ?? $username;
-$bankName = 'OPay Digital Services';
-$accountNumber = '0801234567';
+$username    = $authUser['username'] ?? 'Member';
+$initials    = strtoupper(substr($username, 0, 2));
+$userPoints  = 100;
+$userCash    = 0.00;
+$userRole    = 'member';
+$userPhone   = $authUser['phone'] ?? '';
+$userEmail   = $authUser['email'] ?? '';
+$userFullName= $authUser['fullName'] ?? $username;
+$bankName    = '';
+$accountNumber = '';
 $accountName = $userFullName;
-$streakCount = 1;
-$referralCode = 'REF-' . strtoupper(substr(md5($username), 0, 6));
-$isActivated = in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor']);
-$welcomeShown = false;
+$referralCode = 'INX-' . strtoupper(substr(md5($username . 'ref'), 0, 8));
+$referralCount = 0;
+$referralEarnings = 0;
+$isActivated = false;
+$tasksCompleted = 0;
+$surveysCompleted = 0;
 
-// Fast read from data/users.json
+// Read from users.json
 $usersJsonFile = __DIR__ . '/data/users.json';
 if (file_exists($usersJsonFile)) {
-    $uData = @json_decode(@file_get_contents($usersJsonFile), true);
+    $uData    = @json_decode(@file_get_contents($usersJsonFile), true);
     $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
     foreach ($allUsers as $ju) {
         if (strtolower($ju['username'] ?? '') === strtolower($username)) {
-            $userPoints = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
-            $userCash = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
-            if (!empty($ju['role'])) $userRole = $ju['role'];
-            if (!empty($ju['phone'])) $userPhone = $ju['phone'];
-            if (!empty($ju['email'])) $userEmail = $ju['email'];
-            if (!empty($ju['full_name'])) $userFullName = $ju['full_name'];
-            if (!empty($ju['bank_name'])) $bankName = $ju['bank_name'];
+            $userPoints     = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
+            $userCash       = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
+            if (!empty($ju['role']))           $userRole    = $ju['role'];
+            if (!empty($ju['phone']))          $userPhone   = $ju['phone'];
+            if (!empty($ju['email']))          $userEmail   = $ju['email'];
+            if (!empty($ju['full_name']))      $userFullName = $ju['full_name'];
+            if (!empty($ju['bank_name']))      $bankName    = $ju['bank_name'];
             if (!empty($ju['account_number'])) $accountNumber = $ju['account_number'];
-            if (!empty($ju['account_name'])) $accountName = $ju['account_name'];
-            if (!empty($ju['referral_code'])) $referralCode = $ju['referral_code'];
-            if (!empty($ju['streak_count'])) $streakCount = intval($ju['streak_count']);
-            if (!empty($ju['is_activated']) || !empty($ju['coupon_activated'])) $isActivated = true;
-            if (!empty($ju['welcome_shown'])) $welcomeShown = true;
+            if (!empty($ju['account_name']))   $accountName = $ju['account_name'];
+            if (!empty($ju['referral_code']))  $referralCode = $ju['referral_code'];
+            if (!empty($ju['referral_count'])) $referralCount = intval($ju['referral_count']);
+            if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
+            if (!empty($ju['tasks_completed'])) $tasksCompleted = intval($ju['tasks_completed']);
+            if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
+            $isActivated = !empty($ju['is_activated']) || !empty($ju['coupon_activated'])
+                || in_array($ju['role'] ?? '', ['admin','super_admin','uploader','vendor']);
             break;
         }
     }
 }
 
-// Fallback to SQL DB if connected
+// DB fallback
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT "pointsBalance", "cashBalance", role, "bankName", "accountNumber", "accountName", phone, email, "fullName", "referralCode" FROM users WHERE LOWER(username) = LOWER(?)');
+        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode" FROM users WHERE LOWER(username)=LOWER(?)');
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
-            if (isset($row['pointsBalance'])) $userPoints = intval($row['pointsBalance']);
-            if (isset($row['cashBalance'])) $userCash = floatval($row['cashBalance']);
-            if (!empty($row['role'])) $userRole = $row['role'];
-            if (!empty($row['bankName'])) $bankName = $row['bankName'];
+            if (isset($row['pointsBalance']))  $userPoints  = intval($row['pointsBalance']);
+            if (isset($row['cashBalance']))    $userCash    = floatval($row['cashBalance']);
+            if (!empty($row['role']))          $userRole    = $row['role'];
+            if (!empty($row['bankName']))      $bankName    = $row['bankName'];
             if (!empty($row['accountNumber'])) $accountNumber = $row['accountNumber'];
-            if (!empty($row['accountName'])) $accountName = $row['accountName'];
-            if (!empty($row['fullName'])) $userFullName = $row['fullName'];
-            if (!empty($row['referralCode'])) $referralCode = $row['referralCode'];
+            if (!empty($row['accountName']))   $accountName = $row['accountName'];
+            if (!empty($row['fullName']))      $userFullName = $row['fullName'];
+            if (!empty($row['referralCode']))  $referralCode = $row['referralCode'];
         }
     } catch(Exception $e){}
 }
 
-// Read dynamic platform settings from Admin
+// Platform settings
 $pricingFile = __DIR__ . '/config/app_pricing.json';
-$pricing = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
-$ptsRate = floatval($pricing['points_rate'] ?? 1.0);
-$refBonus = floatval($pricing['ref_commission'] ?? 500);
+$pricing     = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
+$ptsRate     = floatval($pricing['points_rate'] ?? 1.0);
+$refBonus    = floatval($pricing['ref_commission'] ?? 500);
 
-$wdFile = __DIR__ . '/config/withdrawal_settings.json';
-$wdSettings = file_exists($wdFile) ? @json_decode(@file_get_contents($wdFile), true) : [];
-$minCashWd = floatval($wdSettings['affiliate']['min_amount'] ?? 5000);
-$minTaskWd = floatval($wdSettings['task']['min_amount'] ?? 1000);
+$wdFile      = __DIR__ . '/config/withdrawal_settings.json';
+$wdSettings  = file_exists($wdFile) ? @json_decode(@file_get_contents($wdFile), true) : [];
+$minCashWd   = floatval($wdSettings['affiliate']['min_amount'] ?? 5000);
+$minTaskWd   = floatval($wdSettings['task']['min_amount'] ?? 1000);
 
-$ptsInNaira = $userPoints * $ptsRate;
-$totalLiquidNaira = $userCash + $ptsInNaira;
-
-$featAccessFile = __DIR__ . '/config/feature_access.json';
-$featAccessData = file_exists($featAccessFile) ? @json_decode(@file_get_contents($featAccessFile), true) : [];
-$modalTitle = !empty($featAccessData['modal_content']['title']) ? $featAccessData['modal_content']['title'] : 'Activate Full Membership';
-$modalSubtitle = !empty($featAccessData['modal_content']['subtitle']) ? $featAccessData['modal_content']['subtitle'] : 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals';
-$modalNotice = !empty($featAccessData['modal_content']['notice']) ? $featAccessData['modal_content']['notice'] : 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.';
-
-$isAdmin = in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']) || in_array($userRole, ['admin', 'super_admin']);
-$isUploader = $isAdmin || ($userRole === 'uploader');
-$isVendor = $isAdmin || ($userRole === 'vendor');
-
-$pageTitle = 'Dashboard | ' . APP_NAME;
-$hideNavbar = true;
-$hideFooter = true;
+$ptsInNaira  = $userPoints * $ptsRate;
+$isAdmin     = in_array(strtolower($username), ['admin','abas6245','abazceboi']) || in_array($userRole, ['admin','super_admin']);
+$appUrl      = rtrim(APP_URL, '/');
+$referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-base: #080B14;
-            --bg-surface: #0F172A;
-            --bg-card: #141E33;
-            --bg-card-hover: #1A2642;
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-focus: #38BDF8;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --text-dim: #64748B;
-            --primary: #38BDF8;
-            --primary-glow: rgba(56, 189, 248, 0.25);
-            --accent-green: #10B981;
-            --accent-amber: #F59E0B;
-            --accent-purple: #8B5CF6;
-            --accent-rose: #F43F5E;
-            --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-display: 'Space Grotesk', sans-serif;
-            --font-mono: 'SF Mono', Consolas, monospace;
-            --radius-sm: 8px;
-            --radius-md: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 26px;
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.35);
-            --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.2);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — InnovationX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════ DESIGN TOKENS ═══════════════════════════ */
+:root {
+  --bg:          #07090F;
+  --surface:     #0D1117;
+  --card:        #111827;
+  --card-hover:  #161E2E;
+  --border:      rgba(255,255,255,0.07);
+  --border-mid:  rgba(255,255,255,0.12);
+  --txt:         #F0F4FA;
+  --txt-2:       #8B9AB0;
+  --txt-3:       #4E5F73;
+  --accent:      #3B82F6;
+  --accent-2:    #60A5FA;
+  --green:       #10B981;
+  --amber:       #F59E0B;
+  --red:         #EF4444;
+  --purple:      #8B5CF6;
+  --radius:      12px;
+  --radius-lg:   18px;
+  --ff:          'Inter', system-ui, sans-serif;
+  --shadow:      0 4px 24px rgba(0,0,0,0.4);
+  --trans:       0.18s ease;
+}
+[data-theme="light"] {
+  --bg:         #F4F6FB;
+  --surface:    #FFFFFF;
+  --card:       #FFFFFF;
+  --card-hover: #F8FAFF;
+  --border:     rgba(0,0,0,0.07);
+  --border-mid: rgba(0,0,0,0.12);
+  --txt:        #0D1117;
+  --txt-2:      #4B5563;
+  --txt-3:      #9CA3AF;
+  --accent:     #2563EB;
+  --accent-2:   #3B82F6;
+  --shadow:     0 4px 24px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer;font-family:var(--ff);}
+input,textarea,select{font-family:var(--ff);}
 
-        [data-theme="light"] {
-            --bg-base: #F8FAFC;
-            --bg-surface: #FFFFFF;
-            --bg-card: #F1F5F9;
-            --bg-card-hover: #E2E8F0;
-            --border-subtle: rgba(0, 0, 0, 0.08);
-            --border-focus: #0284C7;
-            --text-main: #0F172A;
-            --text-muted: #475569;
-            --text-dim: #64748B;
-            --primary: #0284C7;
-            --primary-glow: rgba(2, 132, 199, 0.2);
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
+/* ═══════════════════════════ LAYOUT ═══════════════════════════════════ */
+.layout{display:flex;min-height:100vh;}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+/* Sidebar */
+.sidebar{
+  width:240px;min-width:240px;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:200;
+  transition:transform var(--trans);
+}
+.sidebar-logo{
+  padding:22px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--accent);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#fff;letter-spacing:-0.5px;flex-shrink:0;
+}
+.sidebar-logo-name{font-weight:700;font-size:15px;letter-spacing:-0.3px;}
+.sidebar-logo-name span{color:var(--accent);}
 
-        /* Ambient Glow Background */
-        .ambient-glow {
-            position: fixed;
-            top: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 1000px;
-            height: 380px;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(139, 92, 246, 0.04) 50%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
+.nav-section{padding:12px 10px 0;flex:1;overflow-y:auto;}
+.nav-label{font-size:10px;font-weight:600;color:var(--txt-3);text-transform:uppercase;
+  letter-spacing:0.8px;padding:0 10px;margin-bottom:4px;margin-top:16px;}
+.nav-label:first-child{margin-top:0;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
+  font-size:13.5px;font-weight:500;color:var(--txt-2);cursor:pointer;
+  transition:background var(--trans),color var(--trans);border:none;background:transparent;width:100%;text-align:left;
+}
+.nav-item:hover{background:var(--card);color:var(--txt);}
+.nav-item.active{background:rgba(59,130,246,0.12);color:var(--accent);font-weight:600;}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 6px;border-radius:20px;}
 
-        /* Top Executive Navigation Bar */
-        .dash-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
+.sidebar-user{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
+  cursor:pointer;transition:background var(--trans);
+}
+.sidebar-user:hover{background:var(--card);}
+.avatar{
+  width:32px;height:32px;border-radius:8px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.sidebar-user-info{flex:1;min-width:0;}
+.sidebar-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-user-role{font-size:11px;color:var(--txt-3);text-transform:capitalize;}
 
-        .brand-logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: var(--text-main);
-        }
+/* Main content */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  position:sticky;top:0;z-index:100;background:var(--surface);
+  border-bottom:1px solid var(--border);padding:0 24px;
+  display:flex;align-items:center;gap:12px;height:56px;
+}
+.topbar-title{font-size:15px;font-weight:600;flex:1;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.icon-btn{
+  width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background var(--trans);color:var(--txt-2);
+}
+.icon-btn:hover{background:var(--card-hover);color:var(--txt);}
+.icon-btn svg{width:16px;height:16px;}
+.menu-toggle{display:none;}
 
-        .brand-badge {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #0284C7, #38BDF8);
-            color: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: -0.5px;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-        }
+.content{padding:24px;flex:1;}
 
-        .brand-title {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 1.25rem;
-            letter-spacing: 0.5px;
-        }
+/* ═══════════════════════════ CARDS ════════════════════════════════════ */
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;
+}
+.card-title{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--txt-3);}
 
-        .brand-title span { color: var(--primary); }
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;display:flex;flex-direction:column;gap:4px;
+}
+.stat-label{font-size:11px;font-weight:500;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;}
+.stat-value{font-size:24px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
+.stat-sub{font-size:11px;color:var(--txt-3);margin-top:2px;}
+.stat-green{color:var(--green);}
+.stat-blue{color:var(--accent);}
+.stat-amber{color:var(--amber);}
+.stat-purple{color:var(--purple);}
 
-        .nav-right-cluster {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+/* Section heading */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-size:15px;font-weight:700;}
+.section-actions{display:flex;gap:8px;}
 
-        .role-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(56, 189, 248, 0.12);
-            color: #38BDF8;
-            border: 1px solid rgba(56, 189, 248, 0.25);
-        }
+/* ═══════════════════════════ BUTTONS ══════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;
+  font-size:13px;font-weight:600;border:none;transition:all var(--trans);line-height:1;
+}
+.btn svg{width:14px;height:14px;flex-shrink:0;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#2563EB;}
+.btn-secondary{background:var(--card);color:var(--txt);border:1px solid var(--border);}
+.btn-secondary:hover{background:var(--card-hover);}
+.btn-ghost{background:transparent;color:var(--txt-2);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--card);color:var(--txt);}
+.btn-green{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2);}
+.btn-green:hover{background:rgba(16,185,129,0.2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-full{width:100%;justify-content:center;}
 
-        .btn-portal-jump {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 14px;
-            border-radius: 10px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .btn-jump-uploader {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34D399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .btn-jump-uploader:hover {
-            background: #10B981;
-            color: #FFFFFF;
-            transform: translateY(-1px);
-        }
-        .btn-jump-vendor {
-            background: rgba(245, 158, 11, 0.15);
-            color: #FBBF24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-        .btn-jump-vendor:hover {
-            background: #F59E0B;
-            color: #FFFFFF;
-            transform: translateY(-1px);
-        }
-        .btn-jump-admin {
-            background: rgba(244, 63, 94, 0.15);
-            color: #FB7185;
-            border: 1px solid rgba(244, 63, 94, 0.3);
-        }
-        .btn-jump-admin:hover {
-            background: #F43F5E;
-            color: #FFFFFF;
-            transform: translateY(-1px);
-        }
+/* ═══════════════════════════ TASKS ════════════════════════════════════ */
+.tasks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.task-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:18px;display:flex;flex-direction:column;gap:12px;
+  transition:border-color var(--trans),box-shadow var(--trans);
+}
+.task-card:hover{border-color:var(--border-mid);box-shadow:var(--shadow);}
+.task-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.task-card-title{font-size:14px;font-weight:600;line-height:1.4;flex:1;}
+.task-pts{
+  background:rgba(59,130,246,0.12);color:var(--accent);font-size:12px;font-weight:700;
+  padding:4px 8px;border-radius:6px;white-space:nowrap;
+}
+.task-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.tag{font-size:11px;font-weight:500;padding:3px 8px;border-radius:5px;
+  background:var(--surface);color:var(--txt-3);border:1px solid var(--border);}
+.task-instructions{font-size:12px;color:var(--txt-2);line-height:1.5;}
+.task-timer{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--amber);font-weight:500;
+}
+.task-timer svg{width:13px;height:13px;}
+.task-expired-badge{
+  display:inline-flex;align-items:center;font-size:11px;font-weight:600;
+  padding:3px 8px;border-radius:5px;background:rgba(239,68,68,0.1);color:var(--red);
+}
+.task-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;}
+.task-slots{font-size:11px;color:var(--txt-3);}
+.task-done-badge{
+  display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;
+  color:var(--green);padding:4px 10px;border-radius:6px;background:rgba(16,185,129,0.08);
+}
 
-        .btn-icon-nav {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .btn-icon-nav:hover {
-            color: var(--text-main);
-            border-color: var(--primary);
-        }
+/* ═══════════════════════════ SURVEYS ══════════════════════════════════ */
+.survey-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:18px;display:flex;flex-direction:column;gap:12px;
+  transition:border-color var(--trans);
+}
+.survey-card:hover{border-color:var(--border-mid);}
+.survey-pts{
+  background:rgba(139,92,246,0.12);color:var(--purple);font-size:12px;font-weight:700;
+  padding:4px 8px;border-radius:6px;white-space:nowrap;
+}
 
-        .notif-badge-dot {
-            position: absolute;
-            top: 7px; right: 7px;
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: #F43F5E;
-            box-shadow: 0 0 6px #F43F5E;
-        }
+/* ═══════════════════════════ REFERRAL ═════════════════════════════════ */
+.referral-link-box{
+  display:flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;padding:10px 14px;
+}
+.referral-link-url{
+  flex:1;font-size:12px;color:var(--txt-2);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;font-family:monospace;
+}
+.ref-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+.ref-stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:12px;text-align:center;
+}
+.ref-stat-val{font-size:22px;font-weight:700;}
+.ref-stat-lbl{font-size:11px;color:var(--txt-3);margin-top:2px;}
+.ref-how{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+.ref-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--txt-2);}
+.ref-num{
+  width:22px;height:22px;border-radius:50%;background:rgba(59,130,246,0.12);
+  color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;margin-top:1px;
+}
 
-        .user-avatar-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #1E293B, #334155);
-            border: 1px solid var(--border-subtle);
-            color: #38BDF8;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
+/* ═══════════════════════════ MODAL ════════════════════════════════════ */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+  z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-backdrop.open{opacity:1;pointer-events:auto;}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+  transform:translateY(16px);transition:transform 0.2s;
+}
+.modal-backdrop.open .modal{transform:translateY(0);}
+.modal-header{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;
+  background:var(--card);z-index:1;
+}
+.modal-title{font-size:15px;font-weight:700;}
+.modal-close{
+  width:30px;height:30px;border-radius:6px;background:transparent;border:none;
+  color:var(--txt-3);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background var(--trans);font-size:18px;line-height:1;
+}
+.modal-close:hover{background:var(--surface);color:var(--txt);}
+.modal-body{padding:20px;}
+.modal-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
 
-        /* Main Container */
-        .dash-shell {
-            max-width: 1240px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 24px 20px 80px;
-            position: relative;
-            z-index: 10;
-        }
+/* ═══════════════════════════ FORM ═════════════════════════════════════ */
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--txt-2);}
+.form-input,.form-select,.form-textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--txt);padding:9px 12px;font-size:13px;width:100%;
+  transition:border-color var(--trans);outline:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-note{font-size:11px;color:var(--txt-3);}
 
-        /* Top Welcome Banner */
-        .welcome-hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
+/* Upload zone */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:8px;padding:24px 16px;text-align:center;
+  cursor:pointer;transition:border-color var(--trans),background var(--trans);
+}
+.upload-zone:hover{border-color:var(--accent);background:rgba(59,130,246,0.03);}
+.upload-zone-text{font-size:13px;color:var(--txt-3);margin-top:6px;}
+.upload-zone-sub{font-size:11px;color:var(--txt-3);margin-top:3px;}
 
-        .welcome-text h1 {
-            font-size: 1.65rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .welcome-text p {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
+/* Preview */
+.proof-preview{margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.proof-preview img{max-width:100%;max-height:160px;display:block;object-fit:contain;}
+.proof-preview-actions{padding:8px;display:flex;justify-content:center;}
 
-        .live-sync-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 16px;
-            background: rgba(16, 185, 129, 0.1);
-            color: #34D399;
-            font-size: 0.72rem;
-            font-weight: 700;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        .pulse-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: #10B981;
-            box-shadow: 0 0 6px #10B981;
-            animation: pulseSync 2s infinite;
-        }
-        @keyframes pulseSync {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
+/* ═══════════════════════════ SURVEY MODAL ══════════════════════════════ */
+.survey-question{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:14px;margin-bottom:12px;
+}
+.question-text{font-size:13px;font-weight:600;margin-bottom:10px;line-height:1.4;}
+.option-list{display:flex;flex-direction:column;gap:6px;}
+.option-btn{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;
+  border:1px solid var(--border);background:var(--card);cursor:pointer;
+  transition:all var(--trans);font-size:13px;color:var(--txt-2);text-align:left;width:100%;
+}
+.option-btn:hover{border-color:var(--accent);color:var(--txt);}
+.option-btn.selected{border-color:var(--accent);background:rgba(59,130,246,0.08);color:var(--accent);font-weight:600;}
+.option-btn.correct{border-color:var(--green);background:rgba(16,185,129,0.08);color:var(--green);font-weight:600;}
+.option-btn.wrong{border-color:var(--red);background:rgba(239,68,68,0.08);color:var(--red);}
+.option-dot{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.option-dot-fill{width:8px;height:8px;border-radius:50%;background:currentColor;display:none;}
+.option-btn.selected .option-dot-fill{display:block;}
+.q-progress{margin-bottom:14px;font-size:12px;color:var(--txt-3);}
+.progress-bar-track{height:4px;background:var(--surface);border-radius:2px;margin-top:6px;}
+.progress-bar-fill{height:100%;border-radius:2px;background:var(--accent);transition:width 0.3s;}
 
-        /* Hero Deck: Wallets + Realistic Platinum Settlement Card */
-        .hero-deck-grid {
-            display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
-            gap: 20px;
-            margin-bottom: 28px;
-        }
-        @media (max-width: 900px) {
-            .hero-deck-grid { grid-template-columns: 1fr; }
-        }
+/* Survey result */
+.result-circle{
+  width:80px;height:80px;border-radius:50%;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;
+}
+.result-pass{background:rgba(16,185,129,0.12);color:var(--green);}
+.result-fail{background:rgba(239,68,68,0.08);color:var(--red);}
 
-        /* Wallets Column */
-        .wallets-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+/* Video embed */
+.video-container{position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;background:#000;}
+.video-container iframe,.video-container video{position:absolute;top:0;left:0;width:100%;height:100%;}
 
-        .wallet-card-primary {
-            background: linear-gradient(135deg, rgba(20, 30, 51, 0.95), rgba(15, 23, 42, 0.98));
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: var(--shadow-subtle);
-            position: relative;
-            overflow: hidden;
-        }
-        .wallet-card-primary::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, #0284C7, #38BDF8, #818CF8);
-        }
+/* ═══════════════════════════ EMPTY STATES ══════════════════════════════ */
+.empty{
+  text-align:center;padding:40px 20px;color:var(--txt-3);
+}
+.empty-title{font-size:14px;font-weight:600;color:var(--txt-2);margin-bottom:4px;}
+.empty-desc{font-size:12px;}
 
-        .wallet-top-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .wallet-title-label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+/* ═══════════════════════════ TOAST ════════════════════════════════════ */
+#toast-stack{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:11px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;
+  pointer-events:auto;max-width:340px;box-shadow:var(--shadow);
+  transform:translateX(110%);transition:transform 0.28s cubic-bezier(.16,1,.3,1);
+}
+.toast.show{transform:translateX(0);}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.toast-success .toast-dot{background:var(--green);}
+.toast-error   .toast-dot{background:var(--red);}
+.toast-info    .toast-dot{background:var(--accent);}
+.toast-warn    .toast-dot{background:var(--amber);}
 
-        .wallet-main-balance {
-            font-family: var(--font-display);
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: -0.8px;
-            color: #FFFFFF;
-            display: flex;
-            align-items: baseline;
-            gap: 4px;
-        }
-        .wallet-main-balance .currency {
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
+/* ═══════════════════════════ TABS ═════════════════════════════════════ */
+.tab-bar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;
+  scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{
+  padding:8px 16px;font-size:13px;font-weight:500;color:var(--txt-3);border:none;
+  background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;
+  cursor:pointer;white-space:nowrap;transition:color var(--trans),border-color var(--trans);
+}
+.tab-btn.active{color:var(--txt);border-color:var(--accent);font-weight:600;}
+.tab-btn:hover:not(.active){color:var(--txt-2);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
 
-        .wallet-sub-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border-subtle);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .wallet-stat-col {
-            display: flex;
-            flex-direction: column;
-        }
-        .wallet-stat-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: var(--text-dim);
-            text-transform: uppercase;
-        }
-        .wallet-stat-val {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-top: 2px;
-        }
+/* ═══════════════════════════ MOBILE NAV ════════════════════════════════ */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  z-index:200;padding:6px 0 safe-bottom;
+}
+.bottom-nav-inner{display:flex;justify-content:space-around;}
+.bnav-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 12px;border-radius:8px;cursor:pointer;
+  font-size:10px;color:var(--txt-3);transition:color var(--trans);border:none;background:none;
+}
+.bnav-item.active{color:var(--accent);}
+.bnav-item svg{width:20px;height:20px;}
 
-        .btn-withdraw-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0284C7, #0EA5E9);
-            color: #FFFFFF;
-            font-weight: 700;
-            font-size: 0.85rem;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-            transition: all 0.2s ease;
-        }
-        .btn-withdraw-action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
-        }
+/* Overlay */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
 
-        /* Task Points Wallet Mini-Card */
-        .points-wallet-bar {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .points-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .points-coin-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: rgba(245, 158, 11, 0.15);
-            color: #F59E0B;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .points-val {
-            font-family: var(--font-display);
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #FFFFFF;
-        }
-        .points-sub {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* ═══════════════════════════════════════════════════════
-           RETAINED PLATINUM SETTLEMENT BANK CARD WIDGET
-           ═══════════════════════════════════════════════════════ */
-        .deck-credit-card {
-            background: linear-gradient(135deg, #0B132B 0%, #1C2541 60%, #1B2A4A 100%);
-            border: 1px solid rgba(125, 211, 252, 0.25);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 240px;
-        }
-        .credit-card-mesh-bg {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.18) 0%, transparent 45%),
-                              radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.12) 0%, transparent 40%);
-            pointer-events: none;
-        }
-        .credit-card-sheen {
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.04) 50%, transparent 55%);
-            pointer-events: none;
-            transform: rotate(25deg);
-        }
-
-        .credit-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            z-index: 2;
-        }
-        .credit-card-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .credit-card-logo-icon {
-            width: 28px; height: 28px;
-            border-radius: 7px;
-            background: linear-gradient(135deg, #0284C7, #38BDF8);
-            color: #FFFFFF;
-            font-weight: 900;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .credit-card-site-name {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 0.95rem;
-            letter-spacing: 0.8px;
-            color: #FFFFFF;
-        }
-        .credit-card-tier-tag {
-            font-size: 0.65rem;
-            color: #7DD3FC;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            display: block;
-        }
-        .credit-card-bank-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 0.76rem;
-            font-weight: 700;
-            color: #E2E8F0;
-        }
-
-        .credit-card-chip-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin: 16px 0;
-            position: relative;
-            z-index: 2;
-        }
-        .credit-card-emv-chip {
-            width: 40px; height: 30px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #EAB308, #CA8A04, #FDE047);
-            border: 1px solid rgba(0, 0, 0, 0.3);
-            position: relative;
-            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        .emv-lines-horizontal {
-            position: absolute; top: 50%; left: 0; right: 0; height: 1px;
-            background: rgba(0, 0, 0, 0.3); transform: translateY(-50%);
-        }
-        .emv-lines-vertical {
-            position: absolute; left: 35%; top: 0; bottom: 0; width: 1px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .credit-card-contactless {
-            color: #7DD3FC;
-            opacity: 0.85;
-        }
-
-        .credit-card-number-block {
-            position: relative;
-            z-index: 2;
-            margin-bottom: 12px;
-        }
-        .credit-card-number-lbl {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            color: #94A3B8;
-            margin-bottom: 2px;
-        }
-        .credit-card-number-digits {
-            font-family: var(--font-mono);
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: #FFFFFF;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            user-select: none;
-        }
-
-        .credit-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            z-index: 2;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .credit-card-holder-name {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .btn-credit-manage {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #7DD3FC;
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-credit-manage:hover {
-            background: #0284C7;
-            color: #FFFFFF;
-        }
-
-        /* ═══════════════════════════════════════════════════════
-           DAILY EARNING STREAK CONSOLE
-           ═══════════════════════════════════════════════════════ */
-        .daily-streak-banner {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.08));
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 28px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .streak-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .streak-flame-icon {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            background: rgba(245, 158, 11, 0.2);
-            color: #F59E0B;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-        .streak-title {
-            font-weight: 800;
-            font-size: 0.98rem;
-            color: #FFFFFF;
-        }
-        .streak-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-        .btn-claim-streak {
-            padding: 9px 18px;
-            border-radius: var(--radius-sm);
-            background: #F59E0B;
-            color: #000000;
-            font-weight: 800;
-            font-size: 0.82rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-claim-streak:hover {
-            background: #D97706;
-            color: #FFFFFF;
-            transform: translateY(-1px);
-        }
-
-        /* Navigation Tab Pill Bar */
-        .nav-tabs-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .tab-pill-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: 12px;
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-muted);
-            font-size: 0.86rem;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-        }
-        .tab-pill-btn:hover {
-            color: var(--text-main);
-            background: var(--bg-card);
-        }
-        .tab-pill-btn.active {
-            background: rgba(56, 189, 248, 0.12);
-            color: var(--primary);
-            border-color: rgba(56, 189, 248, 0.3);
-        }
-
-        /* Tab Content Containers */
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Grid Utilities */
-        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        @media (max-width: 900px) {
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-        }
-
-        /* Content Cards */
-        .dash-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: var(--shadow-subtle);
-            margin-bottom: 20px;
-        }
-        .dash-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-        }
-        .dash-card-title {
-            font-size: 1.05rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #FFFFFF;
-        }
-        .dash-card-sub {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        /* Quick Action Shortcuts */
-        .shortcut-item {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 18px 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .shortcut-item:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
-        }
-        .shortcut-icon {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        .shortcut-title {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #FFFFFF;
-        }
-        .shortcut-sub {
-            font-size: 0.72rem;
-            color: var(--text-dim);
-            margin-top: 3px;
-        }
-
-        /* Task Cards */
-        .task-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: all 0.2s ease;
-        }
-        .task-card:hover {
-            border-color: rgba(56, 189, 248, 0.4);
-            transform: translateY(-2px);
-        }
-        .task-badge-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .category-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 6px;
-            background: rgba(56, 189, 248, 0.1);
-            color: #38BDF8;
-        }
-        .reward-badge {
-            font-size: 0.78rem;
-            font-weight: 800;
-            color: #10B981;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .task-card-title {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #FFFFFF;
-            margin-bottom: 6px;
-        }
-        .task-card-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 14px;
-            line-height: 1.4;
-        }
-        .btn-task-action {
-            width: 100%;
-            padding: 9px;
-            border-radius: 8px;
-            background: #0284C7;
-            color: #FFFFFF;
-            font-weight: 700;
-            font-size: 0.82rem;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-task-action:hover { background: #0369A1; }
-
-        /* Lucky Spin Wheel Canvas */
-        .wheel-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 0;
-            position: relative;
-        }
-        .wheel-wrapper {
-            position: relative;
-            width: 320px;
-            height: 320px;
-        }
-        #spinCanvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-shadow: 0 0 35px rgba(56, 189, 248, 0.25);
-            border: 4px solid #1E293B;
-        }
-        .wheel-pointer {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-top: 24px solid #F59E0B;
-            z-index: 10;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
-        }
-        .wheel-center-btn {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 64px; height: 64px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0284C7, #38BDF8);
-            color: #FFFFFF;
-            font-weight: 900;
-            font-size: 0.85rem;
-            border: 3px solid #FFFFFF;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 12;
-            transition: transform 0.15s;
-        }
-        .wheel-center-btn:hover { transform: translate(-50%, -50%) scale(1.05); }
-
-        /* Form Controls */
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 14px;
-        }
-        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
-        .form-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: var(--radius-sm);
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-main);
-            font-family: inherit;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus, .form-select:focus {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-        }
-        .btn-submit-main {
-            width: 100%;
-            padding: 13px;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0284C7, #0EA5E9);
-            color: #FFFFFF;
-            font-weight: 800;
-            font-size: 0.92rem;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
-            transition: all 0.2s;
-        }
-        .btn-submit-main:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55);
-        }
-
-        /* Activity Ledger Table */
-        .table-responsive { width: 100%; overflow-x: auto; }
-        .activity-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-        .activity-table th {
-            text-align: left;
-            padding: 12px 16px;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-dim);
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .activity-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-subtle);
-            color: var(--text-main);
-        }
-
-        /* Generic Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
-        .modal-card {
-            background: #111A2E;
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 480px;
-            padding: 28px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            position: relative;
-        }
-        .modal-close-btn {
-            position: absolute;
-            top: 18px; right: 18px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        /* Toast Notifications */
-        .toast-bubble {
-            position: fixed;
-            bottom: 24px; right: 24px;
-            padding: 14px 20px;
-            border-radius: 12px;
-            background: #1E293B;
-            border: 1px solid var(--border-subtle);
-            color: #FFFFFF;
-            font-size: 0.85rem;
-            font-weight: 700;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 2000;
-        }
-        .toast-bubble.show { display: flex; animation: slideUp 0.3s ease; }
-        /* ═══════════════════════════════════════════════════
-           MODERN WITHDRAWAL RECEIPT STYLES & PRINT ENGINE
-           ═══════════════════════════════════════════════════ */
-        .receipt-modal-box {
-            position: relative;
-            animation: zoomReceipt 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes zoomReceipt {
-            from { transform: scale(0.92) translateY(20px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        .receipt-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.84rem;
-        }
-        .receipt-row:last-child {
-            border-bottom: none;
-        }
-        .receipt-row-label {
-            color: #94A3B8;
-        }
-        .receipt-row-val {
-            color: #FFFFFF;
-            font-weight: 600;
-            text-align: right;
-        }
-        .receipt-history-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            transition: all 0.2s ease;
-        }
-        .receipt-history-card:hover {
-            border-color: rgba(56, 189, 248, 0.3);
-            background: rgba(56, 189, 248, 0.03);
-        }
-
-        /* Print Media Style - Only shows printableReceiptCard on clean white background */
-        @media print {
-            body {
-                background: #FFFFFF !important;
-                color: #0F172A !important;
-            }
-            body * {
-                visibility: hidden !important;
-            }
-            #receiptModal, #receiptModal * {
-                visibility: visible !important;
-            }
-            #receiptModal {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                background: transparent !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                display: block !important;
-            }
-            .receipt-modal-box {
-                max-width: 100% !important;
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-            }
-            #printableReceiptCard {
-                background: #FFFFFF !important;
-                color: #0F172A !important;
-                border: 2px solid #0F172A !important;
-                box-shadow: none !important;
-                margin: 0 auto !important;
-                max-width: 600px !important;
-                padding: 24px !important;
-            }
-            #printableReceiptCard * {
-                color: #0F172A !important;
-                text-shadow: none !important;
-            }
-            #printableReceiptCard #dispReceiptAmount {
-                color: #0F172A !important;
-            }
-            #printableReceiptCard #dispReceiptNet {
-                color: #0F172A !important;
-            }
-            #printableReceiptCard #dispReceiptSummary {
-                color: #0284C7 !important;
-            }
-            #printableReceiptCard [style*="border-bottom"], 
-            #printableReceiptCard [style*="border-top"],
-            #printableReceiptCard .receipt-row {
-                border-color: #CBD5E1 !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-    </style>
+/* ═══════════════════════════ RESPONSIVE ════════════════════════════════ */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay.open{display:block;}
+  .main{margin-left:0;padding-bottom:72px;}
+  .menu-toggle{display:flex;}
+  .bottom-nav{display:block;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .tasks-grid{grid-template-columns:1fr;}
+}
+@media(max-width:400px){
+  .stats-row{grid-template-columns:1fr;}
+  .content{padding:14px;}
+}
+</style>
 </head>
 <body>
-    <div class="ambient-glow" aria-hidden="true"></div>
 
-    <!-- Top Navigation Header -->
-    <nav class="dash-nav">
-        <a href="dashboard.php" class="brand-logo-area">
-            <div class="brand-badge">IX</div>
-            <div class="brand-title">INNOVATION<span>X</span></div>
-        </a>
+<div class="layout">
 
-        <div class="nav-right-cluster">
-            <!-- Role Badges & Direct Jump Portals -->
-            <?php if ($isAdmin): ?>
-                <a href="secure_hq_panel.php" class="btn-portal-jump btn-jump-admin" title="Open Master Admin Control Panel">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    <span>Admin HQ</span>
-                </a>
-            <?php endif; ?>
+<!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">IX</div>
+    <div class="sidebar-logo-name">Innovation<span>X</span></div>
+  </div>
 
-            <?php if ($isUploader): ?>
-                <a href="uploader_dashboard.php" class="btn-portal-jump btn-jump-uploader" title="Switch to Uploader Publishing Studio">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <span>Uploader Hub</span>
-                </a>
-            <?php endif; ?>
+  <nav class="nav-section">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" onclick="switchPage('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
 
-            <?php if ($isVendor): ?>
-                <a href="vendor_dashboard.php" class="btn-portal-jump btn-jump-vendor" title="Switch to Vendor Wholesale PIN Portal">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                    <span>Vendor Portal</span>
-                </a>
-            <?php endif; ?>
+    <div class="nav-label">Earn</div>
+    <button class="nav-item" onclick="switchPage('tasks',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Tasks
+    </button>
+    <button class="nav-item" onclick="switchPage('surveys',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Surveys
+    </button>
+    <button class="nav-item" onclick="switchPage('referral',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Referrals
+    </button>
 
-            <div class="role-pill" id="hudUserRole">
-                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#38BDF8"></span>
-                <?= htmlspecialchars(ucfirst($userRole)) ?>
-            </div>
+    <div class="nav-label">Account</div>
+    <button class="nav-item" onclick="switchPage('wallet',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      Wallet
+    </button>
 
-            <!-- Notifications Bell -->
-            <button type="button" class="btn-icon-nav" onclick="openNotifModal()" aria-label="Notifications" title="Notifications">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                <span class="notif-badge-dot"></span>
+    <?php if ($isAdmin): ?>
+    <div class="nav-label">Admin</div>
+    <a href="secure_hq_panel.php" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin Panel
+    </a>
+    <?php endif; ?>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user" onclick="switchPage('account',null)">
+      <div class="avatar"><?= $initials ?></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name"><?= htmlspecialchars($username) ?></div>
+        <div class="sidebar-user-role"><?= htmlspecialchars(str_replace('_',' ', $userRole)) ?></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <button class="icon-btn menu-toggle" id="menuToggleBtn" onclick="toggleSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <span class="topbar-title" id="topbarTitle">Dashboard</span>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="themeToggleBtn">
+        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="logout.php" class="icon-btn" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PAGE: OVERVIEW ══════════════════════════════════════════════════ -->
+    <div id="page-overview" class="tab-panel active">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Points Balance</div>
+          <div class="stat-value stat-blue" id="dispPoints"><?= number_format($userPoints) ?></div>
+          <div class="stat-sub">PTS — Worth ₦<?= number_format($ptsInNaira, 2) ?></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cash Balance</div>
+          <div class="stat-value stat-green">₦<?= number_format($userCash, 2) ?></div>
+          <div class="stat-sub">Referral earnings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tasks Done</div>
+          <div class="stat-value stat-amber" id="dispTasksDone"><?= $tasksCompleted ?></div>
+          <div class="stat-sub">Completed tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Surveys Done</div>
+          <div class="stat-value stat-purple" id="dispSurveysDone"><?= $surveysCompleted ?></div>
+          <div class="stat-sub">Completed surveys</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="overview-grid">
+        <div class="card" style="grid-column:1/-1">
+          <div class="section-head">
+            <div class="section-title">Quick Actions</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="switchPage('tasks',null)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              View Tasks
             </button>
-
-            <!-- Theme Toggle -->
-            <button type="button" class="btn-icon-nav" id="btnDashThemeToggle" onclick="toggleTheme(event)" aria-label="Toggle Theme" title="Toggle Dark/Light">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <button class="btn btn-secondary" onclick="switchPage('surveys',null)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+              Take Surveys
             </button>
-
-            <!-- User Menu / Sign Out -->
-            <a href="logout.php" class="btn-icon-nav" title="Sign Out">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            </a>
-        </div>
-    </nav>
-
-    <!-- Main Content Container -->
-    <main class="dash-shell">
-
-        <!-- Welcome Banner -->
-        <div class="welcome-hero">
-            <div class="welcome-text">
-                <h1>Hello, <span id="dispUsername"><?= htmlspecialchars($username) ?></span> 👋</h1>
-                <p>Welcome to your SoftLife daily earnings workstation. Real-time platform status is online.</p>
-            </div>
-            <div class="live-sync-indicator" title="Connected to Admin HQ Real-Time Sync Engine">
-                <span class="pulse-dot"></span>
-                <span>SYNCED WITH ADMIN HQ</span>
-            </div>
-        </div>
-
-        <!-- Free Mode Restriction Alert Banner -->
-        <div id="freeModeBanner" style="display:none;background:linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(2, 132, 199, 0.15));border:1px solid rgba(245, 158, 11, 0.35);padding:12px 18px;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-            <div style="display:flex;align-items:center;gap:12px">
-                <span style="font-size:1.35rem">⚡</span>
-                <span id="freeModeBannerText" style="font-size:0.86rem;color:#FDE047">
-                    <strong>Free Mode Active:</strong> Only Airtime &amp; Data is unlocked. Enter your coupon code to unlock earning tasks, lucky wheel, and bank withdrawals.
-                </span>
-            </div>
-            <button type="button" onclick="promptActivationModal('Enter your coupon PIN to unlock all platform features.')" style="background:linear-gradient(135deg, #D97706, #F59E0B);color:#FFFFFF;font-weight:700;font-size:0.8rem;padding:7px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 12px rgba(245,158,11,0.3)">
-                Enter Coupon Code 🔑
+            <button class="btn btn-secondary" onclick="switchPage('referral',null)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              Refer Friends
             </button>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             HERO DECK: LIVE WALLETS & RETAINED PLATINUM BANK CARD
-             ═══════════════════════════════════════════════════════ -->
-        <section class="hero-deck-grid">
-            <!-- Wallets Stack -->
-            <div class="wallets-stack">
-                <div class="wallet-card-primary">
-                    <div class="wallet-top-meta">
-                        <span class="wallet-title-label">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                            Available Cash &amp; Referral Wallet
-                        </span>
-                        <span class="role-pill" style="font-size:0.7rem;padding:3px 8px">Settlement Ready</span>
-                    </div>
-
-                    <div class="wallet-main-balance">
-                        <span class="currency">₦</span><span id="dispCashBalance"><?= number_format($userCash, 2) ?></span>
-                    </div>
-
-                    <div class="wallet-sub-row">
-                        <div class="wallet-stat-col">
-                            <span class="wallet-stat-label">Total Liquid Value</span>
-                            <span class="wallet-stat-val" id="dispTotalLiquid">₦<?= number_format($totalLiquidNaira, 2) ?></span>
-                        </div>
-                        <div class="wallet-stat-col">
-                            <span class="wallet-stat-label">Min Withdrawal (Admin Sync)</span>
-                            <span class="wallet-stat-val" id="dispMinWd">₦<?= number_format($minCashWd) ?></span>
-                        </div>
-                        <button type="button" class="btn-withdraw-action" onclick="openWithdrawModal()">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-                            <span>Withdraw Funds</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Points Wallet Bar -->
-                <div class="points-wallet-bar">
-                    <div class="points-left">
-                        <div class="points-coin-icon">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        </div>
-                        <div>
-                            <div class="points-val"><span id="dispPointsBalance"><?= number_format($userPoints) ?></span> <span style="font-size:0.85rem;color:#F59E0B">PTS</span></div>
-                            <div class="points-sub">Valued at <strong id="dispPointsValNaira">₦<?= number_format($ptsInNaira, 2) ?></strong> (Rate: 1 PTS = ₦<span id="dispPointsRate"><?= number_format($ptsRate, 2) ?></span>)</div>
-                        </div>
-                    </div>
-                    <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tasks')" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3)">
-                        <span>Earn More PTS ↗</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Retained Realistic Platinum Settlement Credit Card -->
-            <div class="deck-credit-card" id="overviewSavedBankCard">
-                <div class="credit-card-mesh-bg" aria-hidden="true"></div>
-                <div class="credit-card-sheen" aria-hidden="true"></div>
-
-                <!-- Card Header -->
-                <div class="credit-card-header">
-                    <div class="credit-card-brand">
-                        <div class="credit-card-logo-icon">IX</div>
-                        <div>
-                            <span class="credit-card-site-name">INNOVATIONX</span>
-                            <span class="credit-card-tier-tag">PLATINUM SETTLEMENT</span>
-                        </div>
-                    </div>
-                    <div class="credit-card-bank-badge">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"/></svg>
-                        <span id="dispCardBankName"><?= htmlspecialchars($bankName) ?></span>
-                    </div>
-                </div>
-
-                <!-- EMV Chip & Contactless Sensor -->
-                <div class="credit-card-chip-row">
-                    <div class="credit-card-emv-chip" aria-hidden="true">
-                        <div class="emv-lines-horizontal"></div>
-                        <div class="emv-lines-vertical"></div>
-                    </div>
-                    <div class="credit-card-contactless" aria-hidden="true" title="Contactless Payout Terminal">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" stroke-width="2.2" stroke-linecap="round">
-                            <path d="M8.5 9.5a3.5 3.5 0 0 1 0 5"/>
-                            <path d="M12 7a7 7 0 0 1 0 10"/>
-                            <path d="M15.5 4.5a10.5 10.5 0 0 1 0 15"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- NUBAN Account Number -->
-                <div class="credit-card-number-block">
-                    <div class="credit-card-number-lbl">SETTLEMENT ACCOUNT NUMBER (NUBAN)</div>
-                    <div class="credit-card-number-digits" id="dispCardAccountNo"><?= htmlspecialchars($accountNumber) ?></div>
-                </div>
-
-                <!-- Card Footer: Holder + Manage Bank Trigger -->
-                <div class="credit-card-footer">
-                    <div>
-                        <div class="credit-card-number-lbl">ACCOUNT HOLDER</div>
-                        <div class="credit-card-holder-name" id="dispCardAccountName"><?= htmlspecialchars($accountName) ?></div>
-                    </div>
-                    <button type="button" class="btn-credit-manage" onclick="openBankModal()">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        <span>Manage Bank</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Daily Streak Console -->
-        <section class="daily-streak-banner">
-            <div class="streak-left">
-                <div class="streak-flame-icon">🔥</div>
-                <div>
-                    <div class="streak-title">Daily Earning Streak: <span id="dispStreakCount"><?= $streakCount ?></span> Days</div>
-                    <div class="streak-desc">Check in every 24 hours to build your earning streak multiplier and receive free Task Points.</div>
-                </div>
-            </div>
-            <button type="button" class="btn-claim-streak" onclick="claimDailyStreak()">
-                <span>Claim Daily Streak Bonus (+50 PTS)</span>
+            <button class="btn btn-ghost" onclick="switchPage('wallet',null)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+              Wallet
             </button>
-        </section>
-
-        <!-- Navigation Tabs Bar -->
-        <div class="nav-tabs-bar">
-            <button type="button" class="tab-pill-btn active" onclick="switchTab('tab-overview')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span>Overview</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tasks')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                <span>Tasks &amp; Gigs</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-spin')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                <span>Lucky Spin &amp; Win</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-vtu')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>VTU Airtime &amp; Data</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-tokens')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="2" y1="12" x2="4" y2="12"></line></svg>
-                <span>OTC Tokens</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-referrals')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span>Refer &amp; Earn</span>
-            </button>
-            <button type="button" class="tab-pill-btn" onclick="switchTab('tab-bank')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2L2 7h20l-10-5z"/></svg>
-                <span>Bank &amp; Security</span>
-            </button>
+          </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 1: OVERVIEW & SHORTCUTS
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-overview" class="tab-pane active">
-            <!-- Quick Shortcuts -->
-            <div class="grid-4" style="margin-bottom:24px">
-                <div class="shortcut-item" onclick="openWithdrawModal()">
-                    <div class="shortcut-icon" style="background:rgba(2,132,199,0.15);color:#38BDF8">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                    </div>
-                    <div class="shortcut-title">Withdraw Funds</div>
-                    <div class="shortcut-sub">To Settlement Bank</div>
-                </div>
-
-                <div class="shortcut-item" onclick="switchTab('tab-tasks')">
-                    <div class="shortcut-icon" style="background:rgba(16,185,129,0.15);color:#34D399">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                    </div>
-                    <div class="shortcut-title">Complete Tasks</div>
-                    <div class="shortcut-sub">Earn Task Points</div>
-                </div>
-
-                <div class="shortcut-item" onclick="switchTab('tab-spin')">
-                    <div class="shortcut-icon" style="background:rgba(245,158,11,0.15);color:#FBBF24">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-                    </div>
-                    <div class="shortcut-title">Lucky Spin Wheel</div>
-                    <div class="shortcut-sub">Daily Flash Prizes</div>
-                </div>
-
-                <div class="shortcut-item" onclick="switchTab('tab-vtu')">
-                    <div class="shortcut-icon" style="background:rgba(139,92,246,0.15);color:#A78BFA">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                    </div>
-                    <div class="shortcut-title">VTU Airtime &amp; Data</div>
-                    <div class="shortcut-sub">Pay with PTS or Cash</div>
-                </div>
-            </div>
-
-            <!-- Recent Activity Audit Ledger -->
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">Recent Activity &amp; Audit Ledger</div>
-                        <div class="dash-card-sub">Real-time log of rewards, tasks, payouts, and top-ups</div>
-                    </div>
-                    <button type="button" class="tab-pill-btn" onclick="syncLiveUserData()" style="font-size:0.75rem;padding:6px 12px">
-                        <span>↻ Refresh Ledger</span>
-                    </button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="activity-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Activity Type</th>
-                                <th>Description</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activityTableBody">
-                            <tr>
-                                <td>Just now</td>
-                                <td><span class="role-pill" style="font-size:0.7rem;padding:2px 8px">Session</span></td>
-                                <td>Dashboard workstation active and synchronized with Admin HQ</td>
-                                <td><span style="color:#10B981;font-weight:700">Verified</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="card">
+          <div class="card-title">Your Referral Code</div>
+          <div class="card-sub" style="margin-bottom:12px;">Share to earn ₦<?= number_format($refBonus) ?> per signup</div>
+          <div class="referral-link-box">
+            <div class="referral-link-url" id="ov-refUrl"><?= htmlspecialchars($referralLink) ?></div>
+            <button class="btn btn-sm btn-primary" onclick="copyRef()">Copy</button>
+          </div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 2: DAILY TASKS & GIGS
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-tasks" class="tab-pane">
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">Live Earning Tasks &amp; Sponsored Drops</div>
-                        <div class="dash-card-sub">Published directly by Admin &amp; Accredited Uploaders. Submit proof to claim instant points.</div>
-                    </div>
-                </div>
-
-                <div id="tasksGrid" class="grid-3">
-                    <!-- Tasks dynamically loaded via API -->
-                </div>
+        <div class="card">
+          <div class="card-title">Bank Account</div>
+          <div class="card-sub" style="margin-bottom:12px;">Withdrawal destination</div>
+          <?php if ($accountNumber): ?>
+            <div style="font-size:13px;color:var(--txt-2);line-height:1.7;">
+              <div><strong><?= htmlspecialchars($bankName ?: 'Bank') ?></strong></div>
+              <div><?= htmlspecialchars($accountNumber) ?></div>
+              <div style="font-size:12px;color:var(--txt-3);"><?= htmlspecialchars($accountName) ?></div>
             </div>
+          <?php else: ?>
+            <div style="font-size:12px;color:var(--txt-3);">No bank account saved. Add one in Wallet settings.</div>
+          <?php endif; ?>
         </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 3: LUCKY SPIN & WIN
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-spin" class="tab-pane">
-            <div class="dash-card" style="text-align:center">
-                <div class="dash-card-title" style="justify-content:center">Lucky Spin &amp; Win Wheel</div>
-                <div class="dash-card-sub">Spin to win instant points, cash bonuses, or free airtime credits. Synced with Admin probability tables.</div>
-
-                <div class="wheel-container">
-                    <div class="wheel-wrapper">
-                        <div class="wheel-pointer"></div>
-                        <canvas id="spinCanvas" width="320" height="320"></canvas>
-                        <button type="button" class="wheel-center-btn" id="btnSpinWheel" onclick="spinWheel()">SPIN</button>
-                    </div>
-                </div>
-                <div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted)">
-                    Remaining Free Spins Today: <strong style="color:#F59E0B" id="dispFreeSpins">1</strong>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 4: VTU TELECOMS TOPUP
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-vtu" class="tab-pane">
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">VTU Airtime &amp; SME Data Bundle Topup</div>
-                        <div class="dash-card-sub">Instant delivery via PrimeBiller API Gateway. Real-time rates configured by Admin.</div>
-                    </div>
-                </div>
-
-                <form id="vtuOrderForm" onsubmit="handleVtuOrder(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Service Type</label>
-                            <select id="vtuServiceType" class="form-select" onchange="toggleVtuFields()">
-                                <option value="airtime">Airtime Recharge (Discounted %)</option>
-                                <option value="data">SME Data Bundle (High Speed)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Mobile Network</label>
-                            <select id="vtuNetwork" class="form-select">
-                                <option value="mtn">MTN Nigeria</option>
-                                <option value="airtel">Airtel Nigeria</option>
-                                <option value="glo">Glo Nigeria</option>
-                                <option value="9mobile">9mobile</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" id="vtuPhone" class="form-input" placeholder="08123456789" required value="<?= htmlspecialchars($userPhone) ?>">
-                        </div>
-                        <div class="form-group" id="vtuDataPlanGroup" style="display:none">
-                            <label class="form-label">Data Plan</label>
-                            <select id="vtuDataPlan" class="form-select">
-                                <option value="1GB">1GB SME (₦250 / 250 PTS)</option>
-                                <option value="2GB">2GB SME (₦490 / 490 PTS)</option>
-                                <option value="5GB">5GB SME (₦1,200 / 1200 PTS)</option>
-                                <option value="10GB">10GB SME (₦2,350 / 2350 PTS)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="vtuAirtimeAmountGroup">
-                            <label class="form-label">Airtime Amount (₦)</label>
-                            <input type="number" id="vtuAmount" class="form-input" placeholder="e.g. 500" min="50" step="50" value="200">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Payment Source</label>
-                        <select id="vtuPaySource" class="form-select">
-                            <option value="points">Task Points Wallet (<?= number_format($userPoints) ?> PTS Available)</option>
-                            <option value="cash">Cash / Referral Wallet (₦<?= number_format($userCash, 2) ?> Available)</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn-submit-main" id="btnVtuSubmit">
-                        <span>Dispatch VTU Order Now</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 5: OTC UNLISTED TOKENS
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-tokens" class="tab-pane">
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">OTC Unlisted Project Tokens Terminal</div>
-                        <div class="dash-card-sub">Trade verified unlisted project tokens prior to global DEX listings.</div>
-                    </div>
-                </div>
-
-                <div class="grid-3" id="tokensMarketList">
-                    <!-- Populated dynamically from config/tokens_config.json -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 6: REFER & EARN
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-referrals" class="tab-pane">
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">Affiliate Referral Program</div>
-                        <div class="dash-card-sub">Earn ₦<span id="dispRefCommission"><?= number_format($refBonus) ?></span> instant cash for every friend who joins via your referral link.</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Your Unique Referral Link</label>
-                    <div style="display:flex;gap:10px">
-                        <input type="text" id="refLinkInput" class="form-input" readonly value="https://innovationx.ng/register.php?ref=<?= urlencode($username) ?>">
-                        <button type="button" class="btn-submit-main" onclick="copyRefLink()" style="width:auto;padding:12px 20px">
-                            <span>Copy Link</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid-3" style="margin-top:20px">
-                    <div class="shortcut-item">
-                        <div class="wallet-stat-label">Referral Code</div>
-                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#38BDF8"><?= htmlspecialchars($referralCode) ?></div>
-                    </div>
-                    <div class="shortcut-item">
-                        <div class="wallet-stat-label">Bonus per Referral</div>
-                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#10B981">₦<span id="dispRefBonusVal"><?= number_format($refBonus) ?></span></div>
-                    </div>
-                    <div class="shortcut-item">
-                        <div class="wallet-stat-label">Tier Status</div>
-                        <div class="wallet-main-balance" style="font-size:1.4rem;color:#F59E0B">Tier 1 Ambassador</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             TAB 7: BANK & SECURITY PIN
-             ═══════════════════════════════════════════════════════ -->
-        <div id="tab-bank" class="tab-pane">
-            <div class="dash-card">
-                <div class="dash-card-header">
-                    <div>
-                        <div class="dash-card-title">Settlement Bank &amp; Security PIN</div>
-                        <div class="dash-card-sub">Update your receiving bank details for automated cash payouts.</div>
-                    </div>
-                </div>
-
-                <form onsubmit="handleSaveBankForm(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Receiving Bank Name</label>
-                            <input type="text" id="bankFormName" class="form-input" required value="<?= htmlspecialchars($bankName) ?>" placeholder="e.g. OPay, GTBank, Kuda, Zenith">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">10-Digit NUBAN Account Number</label>
-                            <input type="text" id="bankFormNumber" class="form-input" maxlength="10" required value="<?= htmlspecialchars($accountNumber) ?>" placeholder="0801234567">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Account Beneficiary Name</label>
-                        <input type="text" id="bankFormHolder" class="form-input" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full Legal Account Name">
-                    </div>
-
-                    <button type="submit" class="btn-submit-main" id="btnSaveBankForm">
-                        <span>Save Settlement Bank Details</span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Settlement Receipts & History -->
-            <div class="dash-card" style="margin-top:24px">
-                <div class="dash-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-                    <div>
-                        <div class="dash-card-title">Withdrawal Settlements &amp; Receipts</div>
-                        <div class="dash-card-sub">Download official settlement receipts and proof of transfer vouchers for your payouts.</div>
-                    </div>
-                    <button type="button" class="tab-pill-btn" onclick="loadUserWithdrawalReceipts()" style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                        <span>Refresh Receipts</span>
-                    </button>
-                </div>
-                <div id="withdrawalHistoryList" style="margin-top:16px">
-                    <div style="color:var(--text-muted);text-align:center;padding:24px 12px;font-size:0.88rem">
-                        Loading your settlement receipts...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- ═══════════════════════════════════════════════════════
-         MODALS: WITHDRAWAL, BANK DETAILS, TASK PROOF, NOTIFS
-         ═══════════════════════════════════════════════════════ -->
-
-    <!-- Withdraw Modal -->
-    <div id="withdrawModal" class="modal-overlay">
-        <div class="modal-card">
-            <button type="button" class="modal-close-btn" onclick="closeWithdrawModal()">&times;</button>
-            <div class="dash-card-title" style="margin-bottom:8px">Instant Payout Request</div>
-            <div class="dash-card-sub" style="margin-bottom:20px">Funds are dispatched automatically to your verified settlement card.</div>
-
-            <form onsubmit="handleWithdrawSubmit(event)">
-                <div class="form-group">
-                    <label class="form-label">Select Wallet Source</label>
-                    <select id="wdWalletType" class="form-select" onchange="updateWithdrawMinNotice()">
-                        <option value="cash">Cash &amp; Referral Wallet (₦<?= number_format($userCash, 2) ?> Available)</option>
-                        <option value="points">Task Points Wallet (<?= number_format($userPoints) ?> PTS Available)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Amount</label>
-                    <input type="number" id="wdAmount" class="form-input" required placeholder="Enter amount" min="<?= $minCashWd ?>">
-                    <div id="wdMinNotice" style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">
-                        Minimum withdrawal: ₦<span id="dispModalMinWd"><?= number_format($minCashWd) ?></span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Destination Bank</label>
-                    <input type="text" class="form-input" readonly value="<?= htmlspecialchars($bankName) ?> (<?= htmlspecialchars($accountNumber) ?>)">
-                </div>
-
-                <button type="submit" class="btn-submit-main" id="btnWdSubmit">
-                    <span>Confirm &amp; Request Transfer</span>
-                </button>
-            </form>
-        </div>
+      </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════
-         MODERN TRANSACTION SETTLEMENT RECEIPT MODAL
-         ═══════════════════════════════════════════════════════ -->
-    <div id="receiptModal" class="modal-overlay" style="z-index:999999">
-        <div class="modal-card receipt-modal-box" style="max-width:520px;padding:0;overflow:hidden;border:1px solid rgba(56,189,248,0.3);background:#090D16;box-shadow:0 30px 80px rgba(0,0,0,0.9), 0 0 50px rgba(56,189,248,0.15)">
-            
-            <!-- Sticky Modal Control Bar (Screen Only) -->
-            <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:rgba(15,23,42,0.8);border-bottom:1px solid rgba(255,255,255,0.08)">
-                <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:700;color:#38BDF8">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    <span>Transaction Settlement Voucher</span>
-                </div>
-                <button type="button" class="modal-close-btn" onclick="closeReceiptModal()" style="position:static;display:flex;align-items:center;justify-content:center">&times;</button>
-            </div>
+    <!-- ══ PAGE: TASKS ═════════════════════════════════════════════════════ -->
+    <div id="page-tasks" class="tab-panel">
+      <div class="section-head">
+        <div class="section-title">Available Tasks</div>
+        <button class="btn btn-sm btn-ghost" onclick="loadTasks()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div id="tasksGrid" class="tasks-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading tasks...</div>
+      </div>
+    </div>
 
-            <!-- Scrollable Receipt Area -->
-            <div style="max-height:calc(85vh - 120px);overflow-y:auto;padding:20px">
-                
-                <!-- Printable Voucher Card -->
-                <div id="printableReceiptCard" class="printable-receipt" style="background:#0F172A;border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:24px 20px;position:relative;overflow:hidden">
-                    
-                    <!-- Decorative Top Accent Bar -->
-                    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0284C7,#38BDF8,#F59E0B,#10B981)"></div>
+    <!-- ══ PAGE: SURVEYS ═══════════════════════════════════════════════════ -->
+    <div id="page-surveys" class="tab-panel">
+      <div class="section-head">
+        <div class="section-title">Surveys</div>
+        <button class="btn btn-sm btn-ghost" onclick="loadSurveys()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div id="surveysGrid" class="tasks-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading surveys...</div>
+      </div>
+    </div>
 
-                    <!-- Watermark Logo Overlay -->
-                    <div class="receipt-watermark" style="position:absolute;right:-20px;bottom:-20px;opacity:0.04;pointer-events:none;font-size:11rem;font-weight:900;color:#FFF;user-select:none;line-height:1">IX</div>
-
-                    <!-- Header -->
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px">
-                        <div>
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-                                <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0284C7,#38BDF8);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0F172A;font-size:0.95rem">IX</div>
-                                <span style="font-size:1.15rem;font-weight:900;letter-spacing:0.5px;color:#FFFFFF">INNOVATION<span style="color:#38BDF8">X</span></span>
-                            </div>
-                            <div style="font-size:0.75rem;color:#94A3B8;letter-spacing:0.5px;text-transform:uppercase;font-weight:600">Official Settlement Receipt</div>
-                        </div>
-                        <div style="text-align:right">
-                            <div id="receiptStatusBadge" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#34D399;font-size:0.72rem;font-weight:700;letter-spacing:0.5px">
-                                <span style="width:6px;height:6px;border-radius:50%;background:#10B981"></span>
-                                <span id="dispReceiptStatusLabel">SETTLEMENT QUEUED</span>
-                            </div>
-                            <div style="font-size:0.7rem;color:#64748B;margin-top:4px" id="dispReceiptDate">01 Oct 2026, 00:30 WAT</div>
-                        </div>
-                    </div>
-
-                    <!-- Amount Section -->
-                    <div style="text-align:center;padding:16px 10px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.06);margin-bottom:20px">
-                        <div style="font-size:0.75rem;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:4px">Total Payout Amount</div>
-                        <div id="dispReceiptAmount" style="font-size:2.4rem;font-weight:900;color:#FFFFFF;font-family:var(--font-mono);letter-spacing:-0.5px">₦0.00</div>
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;font-size:0.8rem;color:#38BDF8">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span id="dispReceiptSummary">Instant Transfer to Verified Bank</span>
-                        </div>
-                    </div>
-
-                    <!-- Perforated Ticket Divider -->
-                    <div style="position:relative;margin:18px -20px 20px -20px;display:flex;align-items:center">
-                        <div style="width:16px;height:24px;border-radius:0 12px 12px 0;background:#090D16;border:1px solid rgba(255,255,255,0.1);border-left:none"></div>
-                        <div style="flex:1;border-bottom:2px dashed rgba(255,255,255,0.12);height:1px;margin:0 4px"></div>
-                        <div style="width:16px;height:24px;border-radius:12px 0 0 12px;background:#090D16;border:1px solid rgba(255,255,255,0.1);border-right:none"></div>
-                    </div>
-
-                    <!-- Itemized Ledger Grid -->
-                    <div style="display:flex;flex-direction:column;gap:11px;font-size:0.84rem">
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Transaction ID</span>
-                            <div style="display:flex;align-items:center;gap:6px">
-                                <span id="dispReceiptTxnId" style="font-family:var(--font-mono);color:#FFFFFF;font-weight:700">IX-WD-XXXXXX</span>
-                                <button type="button" class="no-print" onclick="copyReceiptTxnId()" style="background:transparent;border:none;color:#38BDF8;cursor:pointer;padding:2px" title="Copy Reference">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Receipt Number</span>
-                            <span id="dispReceiptNo" style="font-family:var(--font-mono);color:#94A3B8">REC-XXXXXXXX</span>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Wallet Source</span>
-                            <span id="dispReceiptWallet" style="color:#FFFFFF;font-weight:600">Cash &amp; Referral Wallet</span>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Beneficiary Member</span>
-                            <span id="dispReceiptHolder" style="color:#FFFFFF;font-weight:600">John Doe (@username)</span>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Settlement Destination</span>
-                            <span id="dispReceiptBank" style="color:#FFFFFF;font-weight:600">OPay Digital Services</span>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Account Number</span>
-                            <span id="dispReceiptAccount" style="font-family:var(--font-mono);color:#FFFFFF;font-weight:700">0801234567</span>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#94A3B8">Transfer &amp; Gateway Fee</span>
-                            <span style="color:#34D399;font-weight:700">₦0.00 (Free / Zero Fee)</span>
-                        </div>
-
-                        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:11px;display:flex;justify-content:space-between;align-items:center">
-                            <span style="color:#FFFFFF;font-weight:700">Net Settled Payout</span>
-                            <span id="dispReceiptNet" style="color:#F59E0B;font-weight:800;font-family:var(--font-mono);font-size:0.98rem">₦0.00</span>
-                        </div>
-                    </div>
-
-                    <!-- Security & QR Code Section -->
-                    <div style="margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:14px">
-                        <div>
-                            <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:700;color:#FDE047;margin-bottom:4px">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                <span>Cryptographically Signed</span>
-                            </div>
-                            <div style="font-size:0.68rem;color:#94A3B8;line-height:1.4">
-                                Audited &amp; guaranteed by INNOVATIONX Central Settlement Engine.
-                            </div>
-                            <div style="font-size:0.65rem;font-family:var(--font-mono);color:#64748B;margin-top:5px" id="dispReceiptHash">
-                                HASH: 8A2F...3B9C
-                            </div>
-                        </div>
-                        <div id="receiptQrContainer" style="width:68px;height:68px;background:#FFFFFF;border-radius:10px;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <!-- SVG QR code rendered via JS -->
-                        </div>
-                    </div>
-
-                    <div style="margin-top:16px;text-align:center;font-size:0.68rem;color:#64748B">
-                        Support: +234 703 776 5714 &bull; support@innovationx.ng
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Receipt Modal Actions (Screen Only) -->
-            <div class="no-print" style="padding:16px 20px;background:#0F172A;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:10px;flex-wrap:wrap">
-                <button type="button" class="btn-claim-streak" onclick="downloadReceiptImage()" style="flex:1;min-width:140px;justify-content:center;padding:11px 16px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#090D16;font-weight:800;font-size:0.88rem">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    <span>Download Receipt (PNG)</span>
-                </button>
-                <button type="button" class="tab-pill-btn" onclick="printReceipt()" style="flex:1;min-width:120px;justify-content:center;padding:11px 16px;background:rgba(255,255,255,0.06);color:#FFFFFF;border:1px solid rgba(255,255,255,0.15);font-size:0.88rem">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                    <span>Print / Save PDF</span>
-                </button>
-                <button type="button" class="tab-pill-btn" onclick="closeReceiptModal()" style="padding:11px 16px;background:transparent;color:#94A3B8;border:1px solid rgba(255,255,255,0.1)">
-                    Close
-                </button>
-            </div>
-
+    <!-- ══ PAGE: REFERRAL ══════════════════════════════════════════════════ -->
+    <div id="page-referral" class="tab-panel">
+      <div class="section-head">
+        <div class="section-title">Referral Program</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px;">
+        <div class="card" style="grid-column:1/-1;">
+          <div class="card-title">Your Referral Link</div>
+          <div class="card-sub" style="margin-bottom:14px;">Share this link. Every verified signup earns you ₦<?= number_format($refBonus) ?> in cash.</div>
+          <div class="referral-link-box">
+            <div class="referral-link-url" id="refLink"><?= htmlspecialchars($referralLink) ?></div>
+            <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
+          </div>
+          <div class="ref-how">
+            <div class="ref-step"><div class="ref-num">1</div><div>Share your unique referral link with friends or on social media.</div></div>
+            <div class="ref-step"><div class="ref-num">2</div><div>Your friend registers using your link and activates their account.</div></div>
+            <div class="ref-step"><div class="ref-num">3</div><div>You receive ₦<?= number_format($refBonus) ?> cash credited directly to your wallet.</div></div>
+          </div>
         </div>
-    </div>
-
-    <!-- Manage Bank Modal -->
-    <div id="bankModal" class="modal-overlay">
-        <div class="modal-card">
-            <button type="button" class="modal-close-btn" onclick="closeBankModal()">&times;</button>
-            <div class="dash-card-title" style="margin-bottom:8px">Manage Settlement Bank</div>
-            <div class="dash-card-sub" style="margin-bottom:20px">Update receiving bank details for your Platinum Settlement Card.</div>
-
-            <form onsubmit="handleModalBankSubmit(event)">
-                <div class="form-group">
-                    <label class="form-label">Bank Name</label>
-                    <input type="text" id="modalBankName" class="form-input" required value="<?= htmlspecialchars($bankName) ?>">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Account Number</label>
-                    <input type="text" id="modalAccountNo" class="form-input" maxlength="10" required value="<?= htmlspecialchars($accountNumber) ?>">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Account Name</label>
-                    <input type="text" id="modalAccountName" class="form-input" required value="<?= htmlspecialchars($accountName) ?>">
-                </div>
-                <button type="submit" class="btn-submit-main" id="btnModalBankSubmit">
-                    <span>Update Card Details</span>
-                </button>
-            </form>
+        <div class="ref-stat" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;">
+          <div class="ref-stat-val stat-blue" id="dispRefCount"><?= $referralCount ?></div>
+          <div class="ref-stat-lbl">Total Referrals</div>
         </div>
-    </div>
-
-    <!-- Task Submission Modal -->
-    <div id="taskSubmitModal" class="modal-overlay">
-        <div class="modal-card">
-            <button type="button" class="modal-close-btn" onclick="closeTaskSubmitModal()">&times;</button>
-            <div class="dash-card-title" id="taskModalTitle" style="margin-bottom:8px">Submit Task Proof</div>
-            <div class="dash-card-sub" id="taskModalInstructions" style="margin-bottom:20px">Provide evidence of completing the task.</div>
-
-            <form onsubmit="handleTaskProofSubmit(event)">
-                <input type="hidden" id="taskModalId">
-                <input type="hidden" id="taskModalReward">
-                
-                <div class="form-group" style="margin-bottom: 14px;">
-                    <label class="form-label" style="font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                        <span>Upload Screenshot Proof</span>
-                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">JPG, PNG, WEBP (Max 5MB)</span>
-                    </label>
-                    <div id="taskProofDropzone" style="border: 2px dashed rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: rgba(56, 189, 248, 0.05); transition: all 0.2s ease;" onclick="document.getElementById('taskModalProofFile').click()">
-                        <div id="taskUploadPrompt">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #38bdf8; margin: 0 auto 6px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                            <span style="font-size: 0.85rem; font-weight: 600; color: #38bdf8;">Choose Screenshot or Drag & Drop</span>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px;">Attach your task completion proof directly</div>
-                        </div>
-                        <input type="file" id="taskModalProofFile" accept="image/*" style="display:none;" onchange="handleTaskProofFileChange(event)">
-                    </div>
-                    <div id="taskProofPreviewWrap" style="display: none; margin-top: 10px; text-align: center;">
-                        <img id="taskProofPreviewImg" src="" alt="Proof Preview" style="max-height: 140px; max-width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle); object-fit: contain;">
-                        <div style="margin-top: 6px;">
-                            <button type="button" onclick="clearTaskProofFile()" style="background: none; border: none; color: #ef4444; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-decoration: underline;">✕ Remove Image</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 14px;">
-                    <label class="form-label" style="font-weight: 600;">Or Proof Link / Handle (Optional if image uploaded)</label>
-                    <input type="text" id="taskModalProofUrl" class="form-input" placeholder="e.g. https://... or @username">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 18px;">
-                    <label class="form-label" style="font-weight: 600;">Verification Notes (Optional)</label>
-                    <input type="text" id="taskModalNotes" class="form-input" placeholder="e.g. Followed from handle @myusername">
-                </div>
-
-                <button type="submit" class="btn-submit-main" id="btnSubmitTaskProof">
-                    <span>Submit for Immediate Review</span>
-                </button>
-            </form>
+        <div class="ref-stat" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;">
+          <div class="ref-stat-val stat-green">₦<?= number_format($referralEarnings, 2) ?></div>
+          <div class="ref-stat-lbl">Total Earned</div>
         </div>
+      </div>
     </div>
 
-    <!-- Notification Drawer Modal -->
-    <div id="notifModal" class="modal-overlay">
-        <div class="modal-card">
-            <button type="button" class="modal-close-btn" onclick="closeNotifModal()">&times;</button>
-            <div class="dash-card-title" style="margin-bottom:8px">Platform Notifications</div>
-            <div class="dash-card-sub" style="margin-bottom:16px">Official system broadcasts and earnings alerts.</div>
-            <div id="notifList" style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto">
-                <div style="padding:10px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border-subtle);font-size:0.82rem">
-                    <strong style="color:#38BDF8">Admin Broadcast:</strong> Real-time synchronization is active across all workstations.
-                </div>
+    <!-- ══ PAGE: WALLET ════════════════════════════════════════════════════ -->
+    <div id="page-wallet" class="tab-panel">
+      <div class="section-head">
+        <div class="section-title">Wallet</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px;">
+        <div class="stat-card">
+          <div class="stat-label">Points Balance</div>
+          <div class="stat-value stat-blue"><?= number_format($userPoints) ?> PTS</div>
+          <div class="stat-sub">≈ ₦<?= number_format($ptsInNaira, 2) ?> at ₦<?= $ptsRate ?>/pt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cash Balance</div>
+          <div class="stat-value stat-green">₦<?= number_format($userCash, 2) ?></div>
+          <div class="stat-sub">Referral cash</div>
+        </div>
+
+        <div class="card" style="grid-column:1/-1;">
+          <div class="card-title">Bank Account</div>
+          <div class="card-sub" style="margin-bottom:14px;">Linked withdrawal account</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
+            <div>
+              <div class="form-label">Bank Name</div>
+              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($bankName ?: 'Not set') ?></div>
             </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════
-         POPUP 1: ONE-TIME ONBOARDING WELCOME MODAL
-         ═══════════════════════════════════════════════════════ -->
-    <div id="welcomeModal" class="modal-overlay" style="z-index:99998">
-        <div class="modal-card" style="max-width:460px;text-align:center;position:relative;border:1px solid rgba(56,189,248,0.3);box-shadow:0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(56,189,248,0.15)">
-            <div style="width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,#0284C7,#38BDF8);color:#FFF;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 16px;box-shadow:0 8px 24px rgba(56,189,248,0.35)">🚀</div>
-            <div class="dash-card-title" style="font-size:1.4rem;margin-bottom:6px;color:#FFFFFF">Welcome to INNOVATIONX!</div>
-            <div class="dash-card-sub" style="margin-bottom:18px;font-size:0.92rem;color:#7DD3FC;font-weight:600">Your Member Account Is Live, @<?= htmlspecialchars($username) ?></div>
-            <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:24px">
-                Welcome to the high-yield daily earnings and digital services platform. Explore your personal dashboard, track your cash and points wallets, and access instant VTU telecoms recharges.
-            </p>
-            <button type="button" class="btn-claim-streak" style="width:100%;justify-content:center;padding:14px;font-size:0.95rem" onclick="proceedFromWelcomeToActivation()">
-                <span>Continue &rarr;</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════
-         POPUP 2: COUPON ACTIVATION MODAL (STRICT OR DISMISSIBLE)
-         ═══════════════════════════════════════════════════════ -->
-    <div id="couponActivationModal" class="modal-overlay" style="z-index:99999">
-        <div class="modal-card" style="max-width:480px;position:relative;border:1px solid rgba(245,158,11,0.35);box-shadow:0 25px 60px rgba(0,0,0,0.9), 0 0 40px rgba(245,158,11,0.2)">
-            
-            <!-- Checkmark / Dismiss Button (Active or Void depending on Admin Strict Setting) -->
-            <button type="button" id="modalDismissCheckBtn" class="modal-close-btn" onclick="dismissActivationModal()" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);color:#94A3B8;font-size:1.1rem;border:1px solid rgba(255,255,255,0.12);cursor:pointer;transition:all 0.2s" title="Continue in Free Mode">
-                ✓
-            </button>
-
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-                <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,0.15);color:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:1.5rem">🔑</div>
-                <div>
-                    <div class="dash-card-title" style="font-size:1.25rem;color:#FFFFFF" id="actModalTitle"><?= htmlspecialchars($modalTitle) ?></div>
-                    <div class="dash-card-sub" id="actModalSub"><?= htmlspecialchars($modalSubtitle) ?></div>
-                </div>
+            <div>
+              <div class="form-label">Account Number</div>
+              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($accountNumber ?: 'Not set') ?></div>
             </div>
-
-            <div id="actModalNotice" style="padding:10px 14px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);color:#FDE047;font-size:0.82rem;line-height:1.5;margin-bottom:18px">
-                <?= $modalNotice ?>
+            <div>
+              <div class="form-label">Account Name</div>
+              <div style="margin-top:3px;color:var(--txt);"><?= htmlspecialchars($accountName ?: 'Not set') ?></div>
             </div>
-
-            <form onsubmit="submitCouponActivation(event)" style="display:flex;flex-direction:column;gap:14px">
-                <div class="form-group" style="margin:0">
-                    <label class="form-label" style="display:block;margin-bottom:6px;font-size:0.8rem;font-weight:700;color:#94A3B8">Activation Coupon Code / PIN</label>
-                    <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" required style="font-family:var(--font-mono);font-size:1.05rem;letter-spacing:1px;text-transform:uppercase;text-align:center">
-                </div>
-
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem">
-                    <span style="color:var(--text-muted)">Need an activation code?</span>
-                    <a href="vendors.php" target="_blank" style="color:#7DD3FC;text-decoration:none;font-weight:700">Buy PIN from Verified Vendor &rarr;</a>
-                </div>
-
-                <button type="submit" id="btnSubmitActivation" class="btn-claim-streak" style="width:100%;justify-content:center;padding:12px 18px;font-size:0.92rem;background:linear-gradient(135deg,#D97706,#F59E0B);color:#FFF">
-                    <span>Activate Account Now</span>
-                </button>
-
-                <button type="button" id="btnFreeModeAction" onclick="dismissActivationModal()" style="background:transparent;border:1px solid var(--border-subtle);color:var(--text-muted);padding:10px;border-radius:8px;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-                    <span>✓ Continue in Free Airtime &amp; Data Mode</span>
-                </button>
-            </form>
+          </div>
         </div>
+
+        <div class="card" style="grid-column:1/-1;">
+          <div class="card-title">Withdrawal</div>
+          <div class="card-sub" style="margin-bottom:14px;">Minimum: ₦<?= number_format($minCashWd) ?> for cash • ₦<?= number_format($minTaskWd) ?> for task points</div>
+          <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Toast Bubble -->
-    <div id="toastBubble" class="toast-bubble">
-        <span id="toastIcon">✓</span>
-        <span id="toastMsg">Action completed</span>
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── BOTTOM NAV (mobile) ─────────────────────────────────────────────── -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" id="bnav-overview" onclick="switchPage('overview',this)" data-bnav="overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Home
+    </button>
+    <button class="bnav-item" id="bnav-tasks" onclick="switchPage('tasks',this)" data-bnav="tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Tasks
+    </button>
+    <button class="bnav-item" id="bnav-surveys" onclick="switchPage('surveys',this)" data-bnav="surveys">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Surveys
+    </button>
+    <button class="bnav-item" id="bnav-referral" onclick="switchPage('referral',this)" data-bnav="referral">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Refer
+    </button>
+    <button class="bnav-item" id="bnav-wallet" onclick="switchPage('wallet',this)" data-bnav="wallet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+      Wallet
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════ MODALS ══════════════════════════════════════ -->
+
+<!-- Task Proof Modal -->
+<div class="modal-backdrop" id="modalTaskProof">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title" id="taskProofTitle">Submit Proof</div>
+      <button class="modal-close" onclick="closeModal('modalTaskProof')">&times;</button>
     </div>
-
-    <!-- ═══════════════════════════════════════════════════════
-         CLIENT-SIDE ENGINE & REAL-TIME ADMIN SYNCHRONIZATION
-         ═══════════════════════════════════════════════════════ -->
-    <script>
-        const CURRENT_USER = <?= json_encode($username) ?>;
-        let isUserActivated = <?= json_encode($isActivated) ?>;
-        let welcomeAlreadyShown = <?= json_encode($welcomeShown) ?>;
-        let userPointsBalance = <?= intval($userPoints) ?>;
-        let userCashBalance = <?= floatval($userCash) ?>;
-        let pointsConversionRate = <?= floatval($ptsRate) ?>;
-        let minCashWithdrawal = <?= floatval($minCashWd) ?>;
-        let minTaskWithdrawal = <?= floatval($minTaskWd) ?>;
-        let currentStreak = <?= intval($streakCount) ?>;
-
-        let couponGatingRules = <?= json_encode($featAccessData ?: [
-            'strict_modal_lock' => false,
-            'allow_modal_dismiss' => true,
-            'modal_content' => [
-                'title' => 'Activate Full Membership',
-                'subtitle' => 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
-                'notice' => 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.'
-            ],
-            'features' => [
-                'vtu_telecoms' => false,
-                'tasks_gigs' => true,
-                'spin_wheel' => true,
-                'otc_tokens' => true,
-                'refer_earn' => true,
-                'withdrawals' => true,
-                'streak_bonus' => true
-            ]
-        ]) ?>;
-
-        function checkFeatureAccess(featureKey) {
-            if (isUserActivated) return true;
-            if (!couponGatingRules || !couponGatingRules.features) return true;
-            return couponGatingRules.features[featureKey] !== true;
-        }
-
-        function promptActivationModal(msg = '', title = '') {
-            const modal = document.getElementById('couponActivationModal');
-            if (!modal) return;
-            const defTitle = couponGatingRules?.modal_content?.title || 'Activate Full Membership';
-            const defNotice = couponGatingRules?.modal_content?.notice || 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark <strong style="color:#FFF">✓</strong> above to operate only Airtime &amp; Data.';
-            document.getElementById('actModalNotice').innerHTML = msg || defNotice;
-            document.getElementById('actModalTitle').textContent = title || defTitle;
-            if (couponGatingRules?.modal_content?.subtitle && document.getElementById('actModalSub')) {
-                document.getElementById('actModalSub').textContent = couponGatingRules.modal_content.subtitle;
-            }
-            applyStrictModalLockUI();
-            modal.classList.add('open');
-        }
-
-        function applyStrictModalLockUI() {
-            const isStrict = Boolean(couponGatingRules.strict_modal_lock);
-            const checkBtn = document.getElementById('modalDismissCheckBtn');
-            const freeBtn = document.getElementById('btnFreeModeAction');
-            if (isStrict) {
-                if (checkBtn) {
-                    checkBtn.style.opacity = '0.25';
-                    checkBtn.style.cursor = 'not-allowed';
-                    checkBtn.title = 'Activation code strictly required by Admin';
-                    checkBtn.onclick = () => alert('Activation code is strictly required to access the platform. Please enter your coupon PIN.');
-                }
-                if (freeBtn) freeBtn.style.display = 'none';
-            } else {
-                if (checkBtn) {
-                    checkBtn.style.opacity = '1';
-                    checkBtn.style.cursor = 'pointer';
-                    checkBtn.title = 'Continue in Free Mode';
-                    checkBtn.onclick = dismissActivationModal;
-                }
-                if (freeBtn) freeBtn.style.display = 'flex';
-            }
-        }
-
-        function dismissActivationModal() {
-            if (couponGatingRules.strict_modal_lock) {
-                alert('Activation code is strictly required by Admin. Please input your code to proceed.');
-                return;
-            }
-            document.getElementById('couponActivationModal').classList.remove('open');
-            if (checkFeatureAccess('vtu_telecoms')) {
-                switchTab('tab-vtu');
-            }
-            updateFreeBannerDisplay();
-        }
-
-        function proceedFromWelcomeToActivation() {
-            document.getElementById('welcomeModal').classList.remove('open');
-            localStorage.setItem('ix_welcome_seen_' + CURRENT_USER, '1');
-            welcomeAlreadyShown = true;
-            if (!isUserActivated) {
-                setTimeout(() => {
-                    promptActivationModal();
-                }, 200);
-            }
-        }
-
-        function updateFreeBannerDisplay() {
-            const banner = document.getElementById('freeModeBanner');
-            if (!banner) return;
-            if (isUserActivated) {
-                banner.style.display = 'none';
-            } else {
-                banner.style.display = 'flex';
-                const vtuFree = checkFeatureAccess('vtu_telecoms');
-                const bannerText = document.getElementById('freeModeBannerText');
-                if (bannerText) {
-                    if (vtuFree) {
-                        bannerText.innerHTML = '<strong>Free Mode Active:</strong> Only Airtime &amp; Data is unlocked. Enter your coupon code to unlock earning tasks, lucky wheel, and bank withdrawals.';
-                    } else {
-                        bannerText.innerHTML = '<strong>Activation Required:</strong> All features including Airtime &amp; Data are locked. Please enter your activation coupon code.';
-                    }
-                }
-            }
-        }
-
-        async function submitCouponActivation(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitActivation');
-            const pin = document.getElementById('activationPinInput').value.trim().toUpperCase();
-            if (!pin) {
-                alert('Please enter an activation coupon PIN.');
-                return;
-            }
-            btn.disabled = true;
-            btn.innerHTML = '<span>Verifying Code...</span>';
-
-            try {
-                const res = await fetch('/api/auth.php?action=activate_coupon', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pin: pin, username: CURRENT_USER })
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    isUserActivated = true;
-                    document.getElementById('couponActivationModal').classList.remove('open');
-                    showToast('Account Activated! All features are now unlocked. Welcome!');
-                    updateFreeBannerDisplay();
-                    syncLiveUserData();
-                } else {
-                    alert(data.message || 'Invalid activation code.');
-                    btn.disabled = false;
-                    btn.innerHTML = '<span>Activate Account Now</span>';
-                }
-            } catch(err) {
-                alert('Network error. Please try again.');
-                btn.disabled = false;
-                btn.innerHTML = '<span>Activate Account Now</span>';
-            }
-        }
-
-        // Toast Helper
-        function showToast(msg, isSuccess = true) {
-            const toast = document.getElementById('toastBubble');
-            const icon = document.getElementById('toastIcon');
-            const text = document.getElementById('toastMsg');
-            if (!toast) return;
-            icon.textContent = isSuccess ? '✓' : '⚠';
-            icon.style.color = isSuccess ? '#10B981' : '#EF4444';
-            text.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3500);
-        }
-
-        // Theme Toggle with Silky Smooth Transitions
-        function syncDashThemeUI(theme) {
-            const btn = document.getElementById('btnDashThemeToggle');
-            if (!btn) return;
-            const moonSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-            const sunSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-            btn.innerHTML = (theme === 'light') ? moonSvg : sunSvg;
-            btn.setAttribute('title', (theme === 'light') ? 'Switch to Dark Mode' : 'Switch to Light Mode');
-        }
-
-        function toggleTheme(e) {
-            const evt = e || window.event;
-            const toggleBtn = (evt && (evt.currentTarget || evt.target)) ? (evt.currentTarget || evt.target).closest('button') : null;
-            if (toggleBtn) {
-                toggleBtn.classList.add('theme-toggling');
-                setTimeout(() => toggleBtn.classList.remove('theme-toggling'), 500);
-            }
-
-            let x = window.innerWidth - 45;
-            let y = 35;
-            if (evt && evt.clientX && evt.clientX > 0) {
-                x = Math.round(evt.clientX);
-                y = Math.round(evt.clientY);
-            } else if (toggleBtn && typeof toggleBtn.getBoundingClientRect === 'function') {
-                const rect = toggleBtn.getBoundingClientRect();
-                x = Math.round(rect.left + rect.width / 2);
-                y = Math.round(rect.top + rect.height / 2);
-            }
-
-            const endRadius = Math.ceil(Math.hypot(
-                Math.max(x, window.innerWidth - x),
-                Math.max(y, window.innerHeight - y)
-            ));
-
-            document.documentElement.style.setProperty('--ix-toggle-x', x + 'px');
-            document.documentElement.style.setProperty('--ix-toggle-y', y + 'px');
-            document.documentElement.style.setProperty('--ix-toggle-radius', endRadius + 'px');
-
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            const next = current === 'dark' ? 'light' : 'dark';
-
-            const updateThemeDOM = () => {
-                document.documentElement.setAttribute('data-theme', next);
-                if (document.body) document.body.setAttribute('data-theme', next);
-                localStorage.setItem('ix_theme', next);
-                localStorage.setItem('theme', next);
-                syncDashThemeUI(next);
-            };
-
-            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.startViewTransition(updateThemeDOM);
-                return;
-            }
-
-            document.documentElement.classList.add('theme-transitioning');
-            updateThemeDOM();
-            setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 450);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-            syncDashThemeUI(theme);
-        });
-
-        // Tab Switching with Gating Interception
-        function switchTab(tabId) {
-            const tabFeatureMap = {
-                'tab-vtu': 'vtu_telecoms',
-                'tab-tasks': 'tasks_gigs',
-                'tab-spin': 'spin_wheel',
-                'tab-tokens': 'otc_tokens',
-                'tab-referrals': 'refer_earn',
-                'tab-bank': 'withdrawals'
-            };
-
-            const featKey = tabFeatureMap[tabId];
-            if (featKey && !checkFeatureAccess(featKey)) {
-                const tabTitle = document.querySelector(`[onclick="switchTab('${tabId}')"] span`)?.textContent || 'This feature';
-                promptActivationModal(`<strong>${escapeHtml(tabTitle)}</strong> requires full membership activation. Enter your coupon code below to unlock all features immediately.`);
-                return;
-            }
-
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-pill-btn').forEach(el => el.classList.remove('active'));
-            const targetPane = document.getElementById(tabId);
-            if (targetPane) targetPane.classList.add('active');
-            const btn = document.querySelector(`[onclick="switchTab('${tabId}')"]`);
-            if (btn) btn.classList.add('active');
-
-            if (tabId === 'tab-tasks') loadLiveTasks();
-            if (tabId === 'tab-spin') drawWheel();
-            if (tabId === 'tab-tokens') loadTokensMarket();
-            if (tabId === 'tab-bank') loadUserWithdrawalReceipts();
-        }
-
-        // Modals Management
-        function openWithdrawModal() {
-            if (!checkFeatureAccess('withdrawals')) {
-                promptActivationModal('Bank payouts require full membership activation. Enter your coupon code below to unlock instant withdrawals.');
-                return;
-            }
-            document.getElementById('withdrawModal').classList.add('open');
-        }
-        function closeWithdrawModal() { document.getElementById('withdrawModal').classList.remove('open'); }
-        function openBankModal() { document.getElementById('bankModal').classList.add('open'); }
-        function closeBankModal() { document.getElementById('bankModal').classList.remove('open'); }
-        function closeTaskSubmitModal() { 
-            const m = document.getElementById('taskSubmitModal');
-            if (m) m.classList.remove('open'); 
-            if (typeof clearTaskProofFile === 'function') clearTaskProofFile();
-            const uInput = document.getElementById('taskModalProofUrl');
-            if (uInput) uInput.value = '';
-            const nInput = document.getElementById('taskModalNotes');
-            if (nInput) nInput.value = '';
-        }
-        function openNotifModal() { document.getElementById('notifModal').classList.add('open'); }
-        function closeNotifModal() { document.getElementById('notifModal').classList.remove('open'); }
-
-        function updateWithdrawMinNotice() {
-            const type = document.getElementById('wdWalletType').value;
-            const min = type === 'cash' ? minCashWithdrawal : minTaskWithdrawal;
-            document.getElementById('dispModalMinWd').textContent = Number(min).toLocaleString();
-            document.getElementById('wdAmount').min = min;
-        }
-
-        // Referral Link Copy
-        function copyRefLink() {
-            const input = document.getElementById('refLinkInput');
-            input.select();
-            navigator.clipboard.writeText(input.value);
-            showToast('Referral link copied to clipboard!');
-        }
-
-        // Update Bank Details Handler
-        async function handleSaveBankForm(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSaveBankForm');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
-
-            const bankName = document.getElementById('bankFormName').value.trim();
-            const accNum = document.getElementById('bankFormNumber').value.trim();
-            const accName = document.getElementById('bankFormHolder').value.trim();
-
-            try {
-                const res = await fetch('/api/users.php?action=update_bank_details', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: CURRENT_USER, bank_name: bankName, account_number: accNum, account_name: accName })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('Bank details updated successfully!');
-                    document.getElementById('dispCardBankName').textContent = bankName;
-                    document.getElementById('dispCardAccountNo').textContent = accNum;
-                    document.getElementById('dispCardAccountName').textContent = accName;
-                } else {
-                    showToast(data.error || 'Failed to update bank details', false);
-                }
-            } catch(err) {
-                showToast('Unable to connect to server', false);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Save Settlement Bank Details';
-            }
-        }
-
-        async function handleModalBankSubmit(e) {
-            e.preventDefault();
-            const bankName = document.getElementById('modalBankName').value.trim();
-            const accNum = document.getElementById('modalAccountNo').value.trim();
-            const accName = document.getElementById('modalAccountName').value.trim();
-
-            const res = await fetch('/api/users.php?action=update_bank_details', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: CURRENT_USER, bank_name: bankName, account_number: accNum, account_name: accName })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('Bank details saved to Platinum Settlement Card!');
-                document.getElementById('dispCardBankName').textContent = bankName;
-                document.getElementById('dispCardAccountNo').textContent = accNum;
-                document.getElementById('dispCardAccountName').textContent = accName;
-                document.getElementById('bankFormName').value = bankName;
-                document.getElementById('bankFormNumber').value = accNum;
-                document.getElementById('bankFormHolder').value = accName;
-                closeBankModal();
-            } else {
-                showToast(data.error || 'Update failed', false);
-            }
-        }
-
-        // Daily Streak Claim
-        async function claimDailyStreak() {
-            if (!checkFeatureAccess('streak_bonus')) {
-                promptActivationModal('Daily streak rewards require full membership activation. Enter your coupon code to unlock your streak bonus.');
-                return;
-            }
-            try {
-                const res = await fetch('/api/users.php?action=claim_daily_streak', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: CURRENT_USER })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(data.message);
-                    userPointsBalance += data.points_awarded;
-                    currentStreak = data.streak_count;
-                    document.getElementById('dispStreakCount').textContent = currentStreak;
-                    updateUIBalances();
-                } else {
-                    showToast(data.error || 'Reward already claimed today', false);
-                }
-            } catch(err) {
-                showToast('Streak claim server error', false);
-            }
-        }
-
-        // Withdrawal Submit
-        async function handleWithdrawSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnWdSubmit');
-            btn.disabled = true;
-            btn.textContent = 'Processing Payout...';
-
-            const wallet = document.getElementById('wdWalletType').value;
-            const amount = parseFloat(document.getElementById('wdAmount').value);
-
-            try {
-                const res = await fetch('/api/withdrawals.php?action=request_withdrawal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: CURRENT_USER, wallet: wallet, amount: amount })
-                });
-                const data = await res.json();
-                if (data.status === 'success' || data.success) {
-                    showToast('Withdrawal queued successfully! Generating receipt...');
-                    closeWithdrawModal();
-                    syncLiveUserData();
-                    if (data.receipt) {
-                        showReceiptModal(data.receipt);
-                    }
-                    loadUserWithdrawalReceipts();
-                } else {
-                    showToast(data.message || data.error || 'Withdrawal rejected', false);
-                }
-            } catch(err) {
-                showToast('Transfer request failed', false);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Confirm & Request Transfer';
-            }
-        }
-
-        // ═══════════════════════════════════════════════════
-        // MODERN WITHDRAWAL RECEIPT ENGINE & EXPORT SUITE
-        // ═══════════════════════════════════════════════════
-        let currentReceiptData = null;
-
-        function showReceiptModal(receipt) {
-            if (!receipt) return;
-            currentReceiptData = receipt;
-
-            const isApproved = receipt.status === 'Approved';
-            const statusLabel = (receipt.status_label || (isApproved ? 'SETTLEMENT APPROVED' : 'SETTLEMENT QUEUED')).toUpperCase();
-            document.getElementById('dispReceiptStatusLabel').textContent = statusLabel;
-            
-            const badge = document.getElementById('receiptStatusBadge');
-            if (badge) {
-                if (isApproved) {
-                    badge.style.background = 'rgba(16,185,129,0.2)';
-                    badge.style.borderColor = '#10B981';
-                    badge.style.color = '#34D399';
-                } else {
-                    badge.style.background = 'rgba(245,158,11,0.2)';
-                    badge.style.borderColor = '#F59E0B';
-                    badge.style.color = '#FDE047';
-                }
-            }
-
-            document.getElementById('dispReceiptDate').textContent = receipt.date_formatted || receipt.created_at || 'Just now';
-            document.getElementById('dispReceiptAmount').textContent = receipt.amount_formatted || ('₦' + Number(receipt.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
-            document.getElementById('dispReceiptSummary').textContent = 'Instant Transfer to ' + (receipt.bank_name || receipt.bank || 'Settlement Bank');
-
-            document.getElementById('dispReceiptTxnId').textContent = receipt.txn_id || receipt.id || 'IX-WD-PENDING';
-            document.getElementById('dispReceiptNo').textContent = receipt.receipt_no || ('REC-' + (receipt.txn_id || 'OFFICIAL'));
-            document.getElementById('dispReceiptWallet').textContent = receipt.wallet_type || (receipt.service_type === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet');
-            document.getElementById('dispReceiptHolder').textContent = (receipt.beneficiary_name || receipt.account_name || receipt.full_name || 'Member') + ' (@' + (receipt.username || CURRENT_USER) + ')';
-            document.getElementById('dispReceiptBank').textContent = receipt.bank_name || receipt.bank || 'Verified Bank';
-            document.getElementById('dispReceiptAccount').textContent = receipt.account_number || receipt.account || '0000000000';
-            document.getElementById('dispReceiptNet').textContent = receipt.net_amount_formatted || receipt.amount_formatted || ('₦' + Number(receipt.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
-            document.getElementById('dispReceiptHash').textContent = 'AUTH HASH: ' + (receipt.security_hash || 'SHA256-INX-CENTRAL-LEDGER-VERIFIED');
-
-            renderReceiptQr(receipt.txn_id || 'IX-WD-' + Date.now());
-
-            const modal = document.getElementById('receiptModal');
-            if (modal) modal.classList.add('open');
-        }
-
-        function closeReceiptModal() {
-            const modal = document.getElementById('receiptModal');
-            if (modal) modal.classList.remove('open');
-        }
-
-        function printReceipt() {
-            window.print();
-        }
-
-        function copyReceiptTxnId() {
-            if (currentReceiptData && currentReceiptData.txn_id) {
-                navigator.clipboard.writeText(currentReceiptData.txn_id);
-                showToast('Transaction ID copied: ' + currentReceiptData.txn_id);
-            }
-        }
-
-        function renderReceiptQr(ref) {
-            const container = document.getElementById('receiptQrContainer');
-            if (!container) return;
-            const size = 60;
-            const modules = 21;
-            const cellSize = (size / modules).toFixed(2);
-            
-            let seed = 0;
-            for (let i = 0; i < ref.length; i++) seed = (seed * 31 + ref.charCodeAt(i)) & 0xFFFFFFFF;
-            
-            function pseudo(row, col) {
-                if ((row < 7 && col < 7) || (row < 7 && col >= modules - 7) || (row >= modules - 7 && col < 7)) {
-                    const r = row < 7 ? row : row - (modules - 7);
-                    const c = col < 7 ? col : col - (modules - 7);
-                    if (r === 0 || r === 6 || c === 0 || c === 6) return true;
-                    if (r >= 2 && r <= 4 && c >= 2 && c <= 4) return true;
-                    return false;
-                }
-                if (row === 6 || col === 6) return (row + col) % 2 === 0;
-                seed = (seed * 1664525 + 1013904223) & 0xFFFFFFFF;
-                return (seed >>> 16) % 3 !== 0;
-            }
-
-            let rects = '';
-            for (let r = 0; r < modules; r++) {
-                for (let c = 0; c < modules; c++) {
-                    if (pseudo(r, c)) {
-                        rects += `<rect x="${(c * cellSize)}" y="${(r * cellSize)}" width="${cellSize}" height="${cellSize}" fill="#0F172A"/>`;
-                    }
-                }
-            }
-
-            container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="border-radius:4px">${rects}</svg>`;
-        }
-
-        function downloadReceiptImage() {
-            if (!currentReceiptData) {
-                showToast('No receipt data loaded to export', false);
-                return;
-            }
-            const r = currentReceiptData;
-
-            const width = 1000;
-            const height = 1420;
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-
-            function roundRect(c, x, y, w, h, rad) {
-                c.beginPath();
-                c.moveTo(x + rad, y);
-                c.lineTo(x + w - rad, y);
-                c.quadraticCurveTo(x + w, y, x + w, y + rad);
-                c.lineTo(x + w, y + h - rad);
-                c.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
-                c.lineTo(x + rad, y + h);
-                c.quadraticCurveTo(x, y + h, x, y + h - rad);
-                c.lineTo(x, y + rad);
-                c.quadraticCurveTo(x, y, x + rad, y);
-                c.closePath();
-            }
-
-            // 1. Base Slate
-            ctx.fillStyle = '#080C16';
-            ctx.fillRect(0, 0, width, height);
-
-            // 2. Card Body
-            const pad = 40;
-            const cardW = width - (pad * 2);
-            const cardH = height - (pad * 2);
-            ctx.fillStyle = '#0F172A';
-            roundRect(ctx, pad, pad, cardW, cardH, 26);
-            ctx.fill();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
-            roundRect(ctx, pad, pad, cardW, cardH, 26);
-            ctx.stroke();
-
-            // 3. Top Accent Bar
-            const grad = ctx.createLinearGradient(pad, pad, pad + cardW, pad);
-            grad.addColorStop(0, '#0284C7');
-            grad.addColorStop(0.35, '#38BDF8');
-            grad.addColorStop(0.7, '#F59E0B');
-            grad.addColorStop(1, '#10B981');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(pad + 26, pad);
-            ctx.lineTo(pad + cardW - 26, pad);
-            ctx.quadraticCurveTo(pad + cardW, pad, pad + cardW, pad + 10);
-            ctx.lineTo(pad, pad + 10);
-            ctx.quadraticCurveTo(pad, pad, pad + 26, pad);
-            ctx.closePath();
-            ctx.fill();
-
-            // 4. Header & Branding
-            ctx.fillStyle = '#38BDF8';
-            roundRect(ctx, 80, 80, 54, 54, 14);
-            ctx.fill();
-            ctx.fillStyle = '#0F172A';
-            ctx.font = '900 28px sans-serif';
-            ctx.fillText('IX', 92, 117);
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '900 30px sans-serif';
-            ctx.fillText('INNOVATIONX', 150, 106);
-            ctx.fillStyle = '#94A3B8';
-            ctx.font = '600 15px sans-serif';
-            ctx.fillText('OFFICIAL TRANSACTION SETTLEMENT RECEIPT', 150, 130);
-
-            const isApproved = r.status === 'Approved';
-            ctx.fillStyle = isApproved ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)';
-            roundRect(ctx, width - 360, 85, 280, 44, 22);
-            ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = isApproved ? '#10B981' : '#F59E0B';
-            roundRect(ctx, width - 360, 85, 280, 44, 22);
-            ctx.stroke();
-
-            ctx.fillStyle = isApproved ? '#10B981' : '#F59E0B';
-            ctx.beginPath();
-            ctx.arc(width - 335, 107, 6, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = isApproved ? '#34D399' : '#FDE047';
-            ctx.font = '700 14px sans-serif';
-            ctx.fillText((r.status_label || (isApproved ? 'SETTLEMENT APPROVED' : 'SETTLEMENT QUEUED')).toUpperCase(), width - 318, 112);
-
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(80, 160);
-            ctx.lineTo(width - 80, 160);
-            ctx.stroke();
-
-            // 5. Amount Box
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-            roundRect(ctx, 80, 185, width - 160, 180, 18);
-            ctx.fill();
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-            roundRect(ctx, 80, 185, width - 160, 180, 18);
-            ctx.stroke();
-
-            ctx.fillStyle = '#94A3B8';
-            ctx.font = '700 16px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('TOTAL SETTLEMENT DISPATCHED', width / 2, 230);
-
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = '900 64px monospace, sans-serif';
-            ctx.fillText(r.amount_formatted || ('₦' + Number(r.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})), width / 2, 305);
-
-            ctx.fillStyle = '#38BDF8';
-            ctx.font = '600 18px sans-serif';
-            ctx.fillText('✓ Transferred to ' + (r.bank_name || r.bank || 'Settlement Bank') + ' (' + (r.account_number || r.account || '080***') + ')', width / 2, 342);
-            ctx.textAlign = 'left';
-
-            // 6. Perforated ticket notches
-            ctx.fillStyle = '#080C16';
-            ctx.beginPath();
-            ctx.arc(pad, 405, 18, -Math.PI / 2, Math.PI / 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(width - pad, 405, 18, Math.PI / 2, -Math.PI / 2);
-            ctx.fill();
-
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([8, 6]);
-            ctx.beginPath();
-            ctx.moveTo(pad + 28, 405);
-            ctx.lineTo(width - pad - 28, 405);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // 7. Key Value Rows
-            let curY = 465;
-            const rowGap = 45;
-            const leftX = 85;
-            const rightX = width - 85;
-
-            const rows = [
-                ['Transaction ID', r.txn_id || 'IX-WD-XXXXX', '#38BDF8', true],
-                ['Receipt Voucher No', r.receipt_no || ('REC-' + r.txn_id), '#94A3B8', true],
-                ['Settlement Date', r.date_formatted || r.created_at || 'Just now', '#FFFFFF', false],
-                ['Wallet Source', r.wallet_type || 'Cash & Referral Wallet', '#FFFFFF', false],
-                ['Beneficiary Member', (r.beneficiary_name || r.account_name || r.full_name || 'Member') + ' (@' + (r.username || CURRENT_USER) + ')', '#FFFFFF', true],
-                ['Receiving Bank', r.bank_name || r.bank || 'OPay Digital Services', '#FFFFFF', true],
-                ['Account Number', r.account_number || r.account || '0000000000', '#FFFFFF', true],
-                ['Transfer & Gateway Fee', '₦0.00 (Zero Fee / Subsidized)', '#34D399', true],
-                ['Net Settled Payout', r.net_amount_formatted || r.amount_formatted || ('₦' + Number(r.amount||0).toLocaleString('en-US', {minimumFractionDigits:2})), '#F59E0B', true]
-            ];
-
-            rows.forEach(([label, val, valColor, isBold]) => {
-                ctx.fillStyle = '#94A3B8';
-                ctx.font = '500 18px sans-serif';
-                ctx.fillText(label, leftX, curY);
-
-                ctx.fillStyle = valColor || '#FFFFFF';
-                ctx.font = (isBold ? '700 ' : '500 ') + '19px sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText(val, rightX, curY);
-                ctx.textAlign = 'left';
-
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(leftX, curY + 14);
-                ctx.lineTo(rightX, curY + 14);
-                ctx.stroke();
-
-                curY += rowGap;
-            });
-
-            // 8. Security & Verification Box
-            curY += 20;
-            ctx.fillStyle = 'rgba(56, 189, 248, 0.04)';
-            roundRect(ctx, 80, curY, width - 160, 160, 18);
-            ctx.fill();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
-            roundRect(ctx, 80, curY, width - 160, 160, 18);
-            ctx.stroke();
-
-            ctx.fillStyle = '#FDE047';
-            ctx.font = '700 17px sans-serif';
-            ctx.fillText('🛡️ Cryptographically Signed & Audited Transaction', 110, curY + 45);
-
-            ctx.fillStyle = '#94A3B8';
-            ctx.font = '400 15px sans-serif';
-            ctx.fillText('Official electronic payment settlement voucher generated by INNOVATIONX Central Ledger.', 110, curY + 76);
-            ctx.fillText('Settlement Channel: NIBSS Instant Payment (NIP) / Priority Settlement Clearing', 110, curY + 102);
-
-            ctx.fillStyle = '#64748B';
-            ctx.font = '600 14px monospace';
-            ctx.fillText('AUTH HASH: ' + (r.security_hash || 'SHA256-INX-CENTRAL-LEDGER-VERIFIED'), 110, curY + 132);
-
-            // 9. Footer Note
-            ctx.fillStyle = '#64748B';
-            ctx.font = '500 14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('INNOVATIONX Financial Clearing • WhatsApp Support: +234 703 776 5714 • support@innovationx.ng', width / 2, height - 70);
-
-            // Download Trigger
-            const link = document.createElement('a');
-            link.download = 'INNOVATIONX_Receipt_' + (r.txn_id || 'Settlement') + '.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            showToast('Receipt downloaded successfully!');
-        }
-
-        async function loadUserWithdrawalReceipts() {
-            const container = document.getElementById('withdrawalHistoryList');
-            if (!container) return;
-
-            try {
-                const res = await fetch('/api/withdrawals.php?action=get_user_withdrawals&username=' + encodeURIComponent(CURRENT_USER));
-                const data = await res.json();
-                const list = data.requests || [];
-
-                if (list.length === 0) {
-                    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px 12px;font-size:0.88rem;background:rgba(255,255,255,0.01);border:1px dashed rgba(255,255,255,0.08);border-radius:12px">No withdrawal settlements requested yet. When you request a payout, your downloadable receipts will be listed here.</div>';
-                    return;
-                }
-
-                container.innerHTML = list.map(r => {
-                    const isApproved = r.status === 'Approved';
-                    const amountStr = r.amount_formatted || ('₦' + Number(r.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 }));
-                    const jsonStr = escapeHtml(JSON.stringify(r));
-                    return `
-                        <div class="receipt-history-card">
-                            <div style="display:flex;align-items:center;gap:12px">
-                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.12);color:#38BDF8;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                                </div>
-                                <div>
-                                    <div style="display:flex;align-items:center;gap:8px">
-                                        <span style="font-weight:700;color:#FFFFFF;font-size:0.95rem">${escapeHtml(amountStr)}</span>
-                                        <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;font-weight:700;${isApproved ? 'background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3)' : 'background:rgba(245,158,11,0.15);color:#FDE047;border:1px solid rgba(245,158,11,0.3)'}">
-                                            ${isApproved ? '✓ APPROVED' : '● QUEUED'}
-                                        </span>
-                                    </div>
-                                    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">
-                                        ${escapeHtml(r.date_formatted || r.created_at || 'Recent')} &bull; ${escapeHtml(r.bank_name || r.bank || 'Bank')} (${escapeHtml(r.account_number || r.account || '')})
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="tab-pill-btn" onclick='showReceiptModal(${jsonStr})' style="background:rgba(56,189,248,0.1);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);font-size:0.8rem;gap:6px">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                <span>Receipt</span>
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            } catch(e) {
-                container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:16px;font-size:0.85rem">Could not load receipts. Please try again.</div>';
-            }
-        }
-
-        // Live Tasks Loader
-        async function loadLiveTasks() {
-            const grid = document.getElementById('tasksGrid');
-            grid.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Loading tasks from Admin & Uploaders...</div>';
-            try {
-                const res = await fetch('/api/tasks.php?action=get_tasks');
-                const data = await res.json();
-                const tasks = data.tasks || [];
-                if (tasks.length === 0) {
-                    grid.innerHTML = '<div style="color:var(--text-muted);padding:30px;grid-column:1/-1;text-align:center">No active tasks right now. Check back shortly!</div>';
-                    return;
-                }
-
-                grid.innerHTML = tasks.map(t => `
-                    <div class="task-card">
-                        <div>
-                            <div class="task-badge-row">
-                                <span class="category-badge">${escapeHtml(t.category || 'Gig')}</span>
-                                <span class="reward-badge">+${t.reward_points || 150} PTS</span>
-                            </div>
-                            <div class="task-card-title">${escapeHtml(t.title)}</div>
-                            <div class="task-card-desc">${escapeHtml(t.instructions || 'Follow instructions and submit verification.')}</div>
-                        </div>
-                        <div>
-                            ${t.action_url ? `<a href="${escapeHtml(t.action_url)}" target="_blank" rel="noopener" class="tab-pill-btn" style="width:100%;justify-content:center;margin-bottom:8px;background:rgba(56,189,248,0.08);color:#38BDF8">Open Task URL ↗</a>` : ''}
-                            <button type="button" class="btn-task-action" onclick="openTaskProofModal('${escapeHtml(t.id)}', '${escapeHtml(t.title)}', '${escapeHtml(t.instructions || '')}', ${t.reward_points || 150})">Submit Proof &amp; Claim</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(err) {
-                grid.innerHTML = '<div style="color:#EF4444;padding:20px;grid-column:1/-1;text-align:center">Unable to load tasks</div>';
-            }
-        }
-
-        let taskUploadedBase64 = '';
-
-        function handleTaskProofFileChange(e) {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('Image file too large (max 5MB)', false);
-                e.target.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                taskUploadedBase64 = evt.target.result;
-                const prevImg = document.getElementById('taskProofPreviewImg');
-                const prevWrap = document.getElementById('taskProofPreviewWrap');
-                const promptBox = document.getElementById('taskUploadPrompt');
-                if (prevImg) prevImg.src = taskUploadedBase64;
-                if (prevWrap) prevWrap.style.display = 'block';
-                if (promptBox) promptBox.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function clearTaskProofFile() {
-            taskUploadedBase64 = '';
-            const fileInput = document.getElementById('taskModalProofFile');
-            if (fileInput) fileInput.value = '';
-            const prevWrap = document.getElementById('taskProofPreviewWrap');
-            const promptBox = document.getElementById('taskUploadPrompt');
-            if (prevWrap) prevWrap.style.display = 'none';
-            if (promptBox) promptBox.style.display = 'block';
-        }
-
-        function openTaskProofModal(id, title, instructions, reward) {
-            clearTaskProofFile();
-            const uInput = document.getElementById('taskModalProofUrl');
-            if (uInput) uInput.value = '';
-            const nInput = document.getElementById('taskModalNotes');
-            if (nInput) nInput.value = '';
-
-            document.getElementById('taskModalId').value = id;
-            document.getElementById('taskModalReward').value = reward;
-            document.getElementById('taskModalTitle').textContent = `Submit Proof: ${title}`;
-            document.getElementById('taskModalInstructions').textContent = instructions || 'Submit screenshot proof or URL to claim your reward.';
-            document.getElementById('taskSubmitModal').classList.add('open');
-        }
-
-        async function handleTaskProofSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitTaskProof');
-            const taskId = document.getElementById('taskModalId').value;
-            const proofUrl = document.getElementById('taskModalProofUrl').value.trim();
-            const notes = document.getElementById('taskModalNotes').value.trim();
-            const taskTitle = document.getElementById('taskModalTitle').textContent.replace('Submit Proof: ', '').trim();
-            const rewardPoints = parseInt(document.getElementById('taskModalReward').value) || 150;
-
-            const finalProof = taskUploadedBase64 || proofUrl;
-            if (!finalProof) {
-                showToast('Please upload a screenshot or enter a proof URL', false);
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = 'Submitting Proof...';
-
-            try {
-                const res = await fetch('/api/tasks.php?action=submit_task_proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        task_id: taskId, 
-                        task_title: taskTitle,
-                        username: CURRENT_USER, 
-                        proof_url: finalProof, 
-                        notes: notes,
-                        reward_points: rewardPoints
-                    })
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    showToast(data.message || 'Task proof submitted! Our review team will verify shortly.');
-                    closeTaskSubmitModal();
-                } else {
-                    showToast(data.message || 'Submission failed', false);
-                }
-            } catch(err) {
-                showToast('Server submission error', false);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Submit for Immediate Review';
-            }
-        }
-
-        // VTU Field Toggling & Dispatch
-        function toggleVtuFields() {
-            const type = document.getElementById('vtuServiceType').value;
-            document.getElementById('vtuDataPlanGroup').style.display = type === 'data' ? 'block' : 'none';
-            document.getElementById('vtuAirtimeAmountGroup').style.display = type === 'airtime' ? 'block' : 'none';
-        }
-
-        async function handleVtuOrder(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnVtuSubmit');
-            btn.disabled = true;
-            btn.textContent = 'Contacting Telecoms Gateway...';
-
-            const type = document.getElementById('vtuServiceType').value;
-            const network = document.getElementById('vtuNetwork').value;
-            const phone = document.getElementById('vtuPhone').value.trim();
-            const paySource = document.getElementById('vtuPaySource').value;
-            const plan = document.getElementById('vtuDataPlan').value;
-            const amount = document.getElementById('vtuAmount').value;
-
-            const action = type === 'airtime' ? 'buy_airtime' : 'buy_data';
-            const payload = {
-                action: action,
-                phone: phone,
-                network: network,
-                pay_source: paySource,
-                plan: plan,
-                amount: amount,
-                username: CURRENT_USER
-            };
-
-            try {
-                const res = await fetch(`/api/vtu.php?action=${action}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    showToast(data.message);
-                    syncLiveUserData();
-                } else {
-                    showToast(data.message || 'VTU order failed', false);
-                }
-            } catch(err) {
-                showToast('Telecoms gateway error', false);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Dispatch VTU Order Now';
-            }
-        }
-
-        // Lucky Spin Wheel Engine
-        const wheelPrizes = ['50 PTS', '100 PTS', '250 PTS', '500 PTS', '₦100 Cash', 'Free Spin', '750 PTS', '1,000 PTS'];
-        const wheelColors = ['#0284C7', '#1E293B', '#10B981', '#1E293B', '#F59E0B', '#1E293B', '#8B5CF6', '#1E293B'];
-        let wheelAngle = 0;
-        let isSpinning = false;
-
-        function drawWheel() {
-            const canvas = document.getElementById('spinCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const numSectors = wheelPrizes.length;
-            const arc = (2 * Math.PI) / numSectors;
-            const radius = canvas.width / 2;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < numSectors; i++) {
-                const angle = wheelAngle + i * arc;
-                ctx.beginPath();
-                ctx.fillStyle = wheelColors[i];
-                ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius - 4, angle, angle + arc);
-                ctx.lineTo(radius, radius);
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.save();
-                ctx.translate(radius, radius);
-                ctx.rotate(angle + arc / 2);
-                ctx.textAlign = 'right';
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
-                ctx.fillText(wheelPrizes[i], radius - 20, 5);
-                ctx.restore();
-            }
-        }
-
-        function spinWheel() {
-            if (isSpinning) return;
-            isSpinning = true;
-            const btn = document.getElementById('btnSpinWheel');
-            btn.disabled = true;
-
-            const extraRotations = 5 + Math.random() * 3;
-            const targetPrizeIndex = Math.floor(Math.random() * wheelPrizes.length);
-            const totalAngle = extraRotations * 2 * Math.PI + (targetPrizeIndex * (2 * Math.PI / wheelPrizes.length));
-            const duration = 4000;
-            const startTime = performance.now();
-
-            function animate(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                wheelAngle = totalAngle * easeOut;
-                drawWheel();
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    isSpinning = false;
-                    btn.disabled = false;
-                    const won = wheelPrizes[targetPrizeIndex];
-                    showToast(`Congratulations! You won ${won}!`);
-                    userPointsBalance += 100;
-                    updateUIBalances();
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        // OTC Tokens Market
-        async function loadTokensMarket() {
-            const container = document.getElementById('tokensMarketList');
-            container.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Fetching live OTC prices...</div>';
-            try {
-                const res = await fetch('/api/tokens.php?action=get_tokens');
-                const data = await res.json();
-                const tokens = data.tokens || [
-                    { symbol: 'IXT', name: 'InnovationX Utility', price_ngn: 25.50, change_24h: '+12.4%' },
-                    { symbol: 'GRVT', name: 'Gravity Pre-Seed', price_ngn: 110.00, change_24h: '+5.2%' },
-                    { symbol: 'SFLF', name: 'SoftLife Token', price_ngn: 45.00, change_24h: '-1.8%' }
-                ];
-
-                container.innerHTML = tokens.map(t => `
-                    <div class="shortcut-item" style="text-align:left;align-items:flex-start">
-                        <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px">
-                            <span class="role-pill" style="font-size:0.7rem">${escapeHtml(t.symbol)}</span>
-                            <span style="color:#10B981;font-weight:700;font-size:0.75rem">${t.change_24h || '+0.0%'}</span>
-                        </div>
-                        <div style="font-weight:800;font-size:1.05rem;color:#FFFFFF">${escapeHtml(t.name)}</div>
-                        <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:#38BDF8;margin-top:6px">₦${Number(t.price_ngn || 0).toLocaleString()}</div>
-                    </div>
-                `).join('');
-            } catch(e) {
-                container.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center">Tokens loaded</div>';
-            }
-        }
-
-        // Update Balances in DOM
-        function updateUIBalances() {
-            const ptsInNaira = userPointsBalance * pointsConversionRate;
-            const totalLiquid = userCashBalance + ptsInNaira;
-
-            document.getElementById('dispCashBalance').textContent = Number(userCashBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('dispPointsBalance').textContent = Number(userPointsBalance).toLocaleString();
-            document.getElementById('dispPointsValNaira').textContent = '₦' + Number(ptsInNaira).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('dispTotalLiquid').textContent = '₦' + Number(totalLiquid).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('dispPointsRate').textContent = pointsConversionRate.toFixed(2);
-            document.getElementById('dispMinWd').textContent = Number(minCashWithdrawal).toLocaleString();
-        }
-
-        // ═══════════════════════════════════════════════════════
-        // REAL-TIME SYNCHRONIZATION ENGINE WITH ADMIN HQ
-        // ═══════════════════════════════════════════════════════
-        async function syncLiveUserData() {
-            try {
-                // 1. Fetch live user balances & role
-                const uRes = await fetch(`/api/users.php?action=get_profile&username=${encodeURIComponent(CURRENT_USER)}`);
-                if (uRes.ok) {
-                    const uData = await uRes.json();
-                    if (uData.success) {
-                        userPointsBalance = uData.points_balance !== undefined ? uData.points_balance : userPointsBalance;
-                        userCashBalance = uData.cash_balance !== undefined ? uData.cash_balance : userCashBalance;
-                        if (uData.role) document.getElementById('hudUserRole').textContent = uData.role.toUpperCase();
-                        if (uData.bank_name) document.getElementById('dispCardBankName').textContent = uData.bank_name;
-                        if (uData.account_number) document.getElementById('dispCardAccountNo').textContent = uData.account_number;
-                        if (uData.account_name) document.getElementById('dispCardAccountName').textContent = uData.account_name;
-                        if (uData.streak_count) {
-                            currentStreak = uData.streak_count;
-                            document.getElementById('dispStreakCount').textContent = currentStreak;
-                        }
-                        if (uData.user && uData.user.is_activated !== undefined) {
-                            isUserActivated = Boolean(uData.user.is_activated || uData.user.coupon_activated || ['admin', 'super_admin', 'uploader', 'vendor'].includes(uData.role));
-                            updateFreeBannerDisplay();
-                        }
-                    }
-                }
-
-                // 2. Fetch live Admin Pricing & Rates
-                const pRes = await fetch('/api/pricing.php?action=get_pricing');
-                if (pRes.ok) {
-                    const pData = await pRes.json();
-                    if (pData.pricing) {
-                        if (pData.pricing.points_rate) pointsConversionRate = parseFloat(pData.pricing.points_rate);
-                        if (pData.pricing.ref_commission) {
-                            document.getElementById('dispRefCommission').textContent = Number(pData.pricing.ref_commission).toLocaleString();
-                            document.getElementById('dispRefBonusVal').textContent = Number(pData.pricing.ref_commission).toLocaleString();
-                        }
-                    }
-                }
-
-                // 3. Fetch live Withdrawal Settings
-                const wRes = await fetch('/api/withdrawals.php?action=get_settings');
-                if (wRes.ok) {
-                    const wData = await wRes.json();
-                    if (wData.settings) {
-                        if (wData.settings.affiliate && wData.settings.affiliate.min_amount) {
-                            minCashWithdrawal = parseFloat(wData.settings.affiliate.min_amount);
-                        }
-                        if (wData.settings.task && wData.settings.task.min_amount) {
-                            minTaskWithdrawal = parseFloat(wData.settings.task.min_amount);
-                        }
-                    }
-                }
-
-                // 4. Fetch live Coupon Gating Rules from Admin
-                try {
-                    const cRes = await fetch('/api/features.php?action=get_coupon_rules');
-                    if (cRes.ok) {
-                        const cData = await cRes.json();
-                        if (cData.rules) {
-                            couponGatingRules = cData.rules;
-                            if (couponGatingRules.modal_content) {
-                                if (couponGatingRules.modal_content.title && document.getElementById('actModalTitle')) {
-                                    document.getElementById('actModalTitle').textContent = couponGatingRules.modal_content.title;
-                                }
-                                if (couponGatingRules.modal_content.subtitle && document.getElementById('actModalSub')) {
-                                    document.getElementById('actModalSub').textContent = couponGatingRules.modal_content.subtitle;
-                                }
-                                if (couponGatingRules.modal_content.notice && document.getElementById('actModalNotice')) {
-                                    document.getElementById('actModalNotice').innerHTML = couponGatingRules.modal_content.notice;
-                                }
-                            }
-                            applyStrictModalLockUI();
-                            updateFreeBannerDisplay();
-                        }
-                    }
-                } catch(e) {}
-
-                updateUIBalances();
-            } catch(e) {}
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
-        }
-
-        // Initialize on page load & schedule 10-second live sync pulse
-        document.addEventListener('DOMContentLoaded', () => {
-            syncLiveUserData();
-            setInterval(syncLiveUserData, 10000);
-            window.addEventListener('focus', syncLiveUserData);
-            drawWheel();
-
-            // Onboarding Sequenced Popups
-            const urlParams = new URLSearchParams(window.location.search);
-            const isNewReg = urlParams.get('new_reg') === '1';
-            const welcomeStored = localStorage.getItem('ix_welcome_seen_' + CURRENT_USER);
-
-            if (!welcomeAlreadyShown && (!welcomeStored || isNewReg)) {
-                // Show Welcome Modal First
-                const wModal = document.getElementById('welcomeModal');
-                if (wModal) wModal.classList.add('open');
-            } else if (!isUserActivated) {
-                // Welcome was already seen, prompt activation
-                promptActivationModal();
-            }
-
-            updateFreeBannerDisplay();
-            loadUserWithdrawalReceipts();
-        });
-    </script>
+    <div class="modal-body">
+      <input type="hidden" id="taskProofId">
+      <input type="hidden" id="taskProofPts">
+      <div id="taskProofInstr" style="font-size:13px;color:var(--txt-2);margin-bottom:14px;padding:10px;background:var(--surface);border-radius:8px;line-height:1.5;"></div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Screenshot</label>
+        <div class="upload-zone" id="proofDropzone" onclick="document.getElementById('proofFileInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px;color:var(--txt-3);margin:0 auto;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="upload-zone-text">Click to choose screenshot</div>
+          <div class="upload-zone-sub">PNG, JPG, WEBP — max 5MB</div>
+          <input type="file" id="proofFileInput" accept="image/*" style="display:none" onchange="handleProofFile(event)">
+        </div>
+        <div class="proof-preview" id="proofPreview" style="display:none;">
+          <img id="proofPreviewImg" src="" alt="Preview">
+          <div class="proof-preview-actions">
+            <button class="btn btn-sm btn-ghost" onclick="clearProofFile()">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Or Proof URL / Handle</label>
+        <input type="text" class="form-input" id="taskProofUrl" placeholder="https://... or @yourusername">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input type="text" class="form-input" id="taskProofNotes" placeholder="Any additional info">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalTaskProof')">Cancel</button>
+      <button class="btn btn-primary" id="btnSubmitProof" onclick="submitTaskProof()">Submit Proof</button>
+    </div>
+  </div>
+</div>
+
+<!-- Survey Modal -->
+<div class="modal-backdrop" id="modalSurvey">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div class="modal-title" id="surveyModalTitle">Survey</div>
+      <button class="modal-close" onclick="closeSurveyModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="surveyModalBody">
+      <!-- populated by JS -->
+    </div>
+    <div class="modal-footer" id="surveyModalFooter">
+      <button class="btn btn-ghost" onclick="closeSurveyModal()">Cancel</button>
+      <button class="btn btn-primary" id="btnSurveyAction">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- Withdrawal Modal -->
+<div class="modal-backdrop" id="modalWithdraw">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Request Withdrawal</div>
+      <button class="modal-close" onclick="closeModal('modalWithdraw')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Wallet Type</label>
+        <select class="form-select" id="wdType">
+          <option value="task">Task Points Wallet (min ₦<?= number_format($minTaskWd) ?>)</option>
+          <option value="cash">Cash Wallet — Referral (min ₦<?= number_format($minCashWd) ?>)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₦)</label>
+        <input type="number" class="form-input" id="wdAmount" placeholder="e.g. 5000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bank Name</label>
+        <input type="text" class="form-input" id="wdBank" placeholder="e.g. Opay" value="<?= htmlspecialchars($bankName) ?>">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Account Number</label>
+        <input type="text" class="form-input" id="wdAccNum" placeholder="10-digit account number" value="<?= htmlspecialchars($accountNumber) ?>">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Account Name</label>
+        <input type="text" class="form-input" id="wdAccName" placeholder="Account name" value="<?= htmlspecialchars($accountName) ?>">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalWithdraw')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitWithdrawal()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════
+const CURRENT_USER = <?= json_encode($username) ?>;
+const REFERRAL_LINK = <?= json_encode($referralLink) ?>;
+const MIN_CASH_WD   = <?= $minCashWd ?>;
+const MIN_TASK_WD   = <?= $minTaskWd ?>;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+const PAGES = ['overview','tasks','surveys','referral','wallet'];
+
+function switchPage(page, clickedEl) {
+  PAGES.forEach(p => {
+    const panel = document.getElementById('page-' + p);
+    if (panel) panel.classList.toggle('active', p === page);
+  });
+
+  // Sidebar nav items
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (clickedEl && clickedEl.classList.contains('nav-item')) {
+    clickedEl.classList.add('active');
+  } else {
+    // find by data or text
+    document.querySelectorAll('.nav-item').forEach(el => {
+      if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`'${page}'`)) {
+        el.classList.add('active');
+      }
+    });
+  }
+
+  // Bottom nav
+  document.querySelectorAll('.bnav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.bnav === page);
+  });
+
+  // Topbar title
+  const titles = {overview:'Dashboard',tasks:'Tasks',surveys:'Surveys',referral:'Referrals',wallet:'Wallet'};
+  const el = document.getElementById('topbarTitle');
+  if (el) el.textContent = titles[page] || page;
+
+  // Lazy load
+  if (page === 'tasks')   loadTasks();
+  if (page === 'surveys') loadSurveys();
+
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════════════════════════
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('iconSun').style.display  = t === 'dark' ? 'block' : 'none';
+  document.getElementById('iconMoon').style.display = t === 'light' ? 'block' : 'none';
+}
+function toggleTheme() {
+  const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('ix_theme', next);
+  applyTheme(next);
+}
+(function(){ applyTheme(localStorage.getItem('ix_theme') || 'dark'); })();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const stack = document.getElementById('toast-stack');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span class="toast-dot"></span><span>${msg}</span>`;
+  stack.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REFERRAL COPY
+// ═══════════════════════════════════════════════════════════════════════════
+function copyRef() {
+  navigator.clipboard.writeText(REFERRAL_LINK).then(() => toast('Referral link copied!', 'success')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = REFERRAL_LINK; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    toast('Referral link copied!', 'success');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TASKS
+// ═══════════════════════════════════════════════════════════════════════════
+let completedTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
+let currentTasks     = [];
+
+async function loadTasks() {
+  const grid = document.getElementById('tasksGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading...</div>';
+  try {
+    const r    = await fetch('/api/tasks.php?action=get_tasks');
+    const data = await r.json();
+    currentTasks = data.tasks || [];
+    renderTasks(currentTasks);
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Unable to load tasks right now.</div>';
+  }
+}
+
+function renderTasks(tasks) {
+  const grid = document.getElementById('tasksGrid');
+  if (!tasks.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;" class="empty"><div class="empty-title">No tasks available</div><div class="empty-desc">Check back soon for new earning opportunities.</div></div>';
+    return;
+  }
+  const now = Date.now();
+  grid.innerHTML = tasks.map(t => {
+    const done     = completedTaskIds.includes(t.id);
+    const expiry   = t.expires_at ? new Date(t.expires_at).getTime() : null;
+    const expired  = expiry && expiry < now;
+    const msLeft   = expiry ? expiry - now : null;
+    const timerStr = msLeft > 0 ? formatDuration(msLeft) : '';
+    const slots    = t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots;
+
+    return `<div class="task-card">
+      <div class="task-card-head">
+        <div class="task-card-title">${esc(t.title)}</div>
+        <div class="task-pts">+${t.reward_points} PTS</div>
+      </div>
+      <div class="task-meta">
+        <span class="tag">${esc(t.category || 'General')}</span>
+        <span class="tag">${esc(t.proof_type || 'proof')}</span>
+        ${expired ? `<span class="task-expired-badge">Expired</span>` : ''}
+      </div>
+      ${t.description ? `<div class="task-instructions">${esc(t.description)}</div>` : ''}
+      ${t.instructions ? `<div class="task-instructions">${esc(t.instructions)}</div>` : ''}
+      ${timerStr && !expired ? `<div class="task-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerStr}</div>` : ''}
+      <div class="task-footer">
+        <div class="task-slots">${slots !== undefined ? `${slots} slot${slots !== 1 ? 's' : ''} left` : ''}</div>
+        ${done ? `<div class="task-done-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="20 6 9 17 4 12"/></svg>Submitted</div>`
+               : (expired ? `<button class="btn btn-sm btn-ghost" disabled>Closed</button>`
+               : `<button class="btn btn-sm btn-primary" onclick="openTaskProof(${JSON.stringify(t).replace(/"/g,'&quot;')})">Start Task</button>`)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatDuration(ms) {
+  const s  = Math.floor(ms / 1000);
+  const m  = Math.floor(s / 60);
+  const h  = Math.floor(m / 60);
+  const d  = Math.floor(h / 24);
+  if (d > 0)  return `${d}d ${h % 24}h`;
+  if (h > 0)  return `${h}h ${m % 60}m`;
+  if (m > 0)  return `${m}m`;
+  return `${s}s`;
+}
+
+// ── Task proof modal ─────────────────────────────────────────────────────
+let currentTaskId  = '';
+let currentTaskPts = 0;
+let proofBase64    = '';
+
+function openTaskProof(task) {
+  currentTaskId  = task.id;
+  currentTaskPts = task.reward_points;
+  proofBase64    = '';
+  clearProofFile();
+  document.getElementById('taskProofId').value      = task.id;
+  document.getElementById('taskProofPts').value     = task.reward_points;
+  document.getElementById('taskProofTitle').textContent = task.title;
+  document.getElementById('taskProofInstr').textContent = task.instructions || task.description || 'Complete the task and submit your proof.';
+  document.getElementById('taskProofUrl').value   = '';
+  document.getElementById('taskProofNotes').value = '';
+  openModal('modalTaskProof');
+}
+
+function handleProofFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File too large (max 5MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    proofBase64 = ev.target.result;
+    document.getElementById('proofPreviewImg').src = proofBase64;
+    document.getElementById('proofPreview').style.display = 'block';
+    document.getElementById('proofDropzone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearProofFile() {
+  proofBase64 = '';
+  document.getElementById('proofFileInput').value  = '';
+  document.getElementById('proofPreview').style.display  = 'none';
+  document.getElementById('proofDropzone').style.display = 'block';
+  const img = document.getElementById('proofPreviewImg'); if(img) img.src = '';
+}
+
+async function submitTaskProof() {
+  const proofUrl = document.getElementById('taskProofUrl').value.trim();
+  const notes    = document.getElementById('taskProofNotes').value.trim();
+  const finalProof = proofBase64 || proofUrl;
+  if (!finalProof) { toast('Please upload a screenshot or enter a proof URL.', 'warn'); return; }
+  const btn = document.getElementById('btnSubmitProof');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    const task = currentTasks.find(t => t.id === currentTaskId) || {};
+    const r = await fetch('/api/tasks.php?action=submit_task_proof', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ task_id: currentTaskId, task_title: task.title, username: CURRENT_USER,
+        proof_url: finalProof, notes, reward_points: currentTaskPts })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      completedTaskIds.push(currentTaskId);
+      localStorage.setItem('ix_done_tasks', JSON.stringify(completedTaskIds));
+      toast(d.message, 'success');
+      closeModal('modalTaskProof');
+      renderTasks(currentTasks);
+    } else { toast(d.message || 'Submission failed', 'error'); }
+  } catch(e) { toast('Server error. Please try again.', 'error'); }
+  btn.disabled = false; btn.textContent = 'Submit Proof';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SURVEYS
+// ═══════════════════════════════════════════════════════════════════════════
+let currentSurveys   = [];
+let completedSurveys = JSON.parse(localStorage.getItem('ix_done_surveys') || '[]');
+let activeSurvey     = null;
+let surveyAnswers    = {};
+let surveyStep       = 0; // 0=intro, 1..N=question, N+1=result
+
+async function loadSurveys() {
+  const grid = document.getElementById('surveysGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading...</div>';
+  try {
+    // Also fetch completed surveys for this user from server
+    const [r1, r2] = await Promise.all([
+      fetch('/api/surveys.php?action=get_surveys'),
+      fetch('/api/surveys.php?action=get_user_completed', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username: CURRENT_USER })
+      })
+    ]);
+    const d1 = await r1.json();
+    const d2 = await r2.json();
+    currentSurveys = d1.surveys || [];
+    const serverCompleted = d2.completed_surveys || [];
+    // Merge local + server completed
+    completedSurveys = [...new Set([...completedSurveys, ...serverCompleted])];
+    localStorage.setItem('ix_done_surveys', JSON.stringify(completedSurveys));
+    renderSurveys(currentSurveys);
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">Unable to load surveys.</div>';
+  }
+}
+
+function renderSurveys(surveys) {
+  const grid = document.getElementById('surveysGrid');
+  if (!surveys.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;" class="empty"><div class="empty-title">No surveys available</div><div class="empty-desc">The admin will post surveys here. Check back soon.</div></div>';
+    return;
+  }
+  const now = Date.now();
+  grid.innerHTML = surveys.map(s => {
+    const done     = completedSurveys.includes(s.id);
+    const expiry   = s.expires_at ? new Date(s.expires_at).getTime() : null;
+    const expired  = expiry && expiry < now;
+    const msLeft   = expiry ? expiry - now : null;
+    const timerStr = msLeft > 0 ? formatDuration(msLeft) : '';
+    const qCount   = (s.questions || []).length;
+
+    return `<div class="survey-card">
+      <div class="task-card-head">
+        <div class="task-card-title">${esc(s.title)}</div>
+        <div class="survey-pts">+${s.reward_points} PTS</div>
+      </div>
+      <div class="task-meta">
+        <span class="tag">${esc(s.category || 'General')}</span>
+        ${qCount ? `<span class="tag">${qCount} question${qCount !== 1 ? 's' : ''}</span>` : ''}
+        ${expired ? `<span class="task-expired-badge">Expired</span>` : ''}
+      </div>
+      ${s.description ? `<div class="task-instructions">${esc(s.description)}</div>` : ''}
+      ${s.video_url ? `<div class="task-instructions" style="color:var(--accent);font-size:12px;font-weight:500;">Video included — watch before answering.</div>` : ''}
+      ${timerStr && !expired ? `<div class="task-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerStr}</div>` : ''}
+      <div class="task-footer">
+        <div class="task-slots">${s.remaining_slots !== undefined ? `${s.remaining_slots} spots left` : ''}</div>
+        ${done ? `<div class="task-done-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="20 6 9 17 4 12"/></svg>Completed</div>`
+               : (expired ? `<button class="btn btn-sm btn-ghost" disabled>Closed</button>`
+               : `<button class="btn btn-sm btn-primary" onclick="openSurvey('${esc(s.id)}')">Start Survey</button>`)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openSurvey(surveyId) {
+  const sv = currentSurveys.find(s => s.id === surveyId);
+  if (!sv) return;
+  activeSurvey  = sv;
+  surveyAnswers = {};
+  surveyStep    = 0;
+  renderSurveyStep();
+  openModal('modalSurvey');
+}
+
+function closeSurveyModal() {
+  closeModal('modalSurvey');
+  activeSurvey = null;
+}
+
+function renderSurveyStep() {
+  if (!activeSurvey) return;
+  const questions = activeSurvey.questions || [];
+  const totalSteps = (activeSurvey.video_url ? 1 : 0) + questions.length;
+  let videoStep = activeSurvey.video_url ? 0 : -1;
+  let questionOffset = activeSurvey.video_url ? 1 : 0;
+
+  const title   = document.getElementById('surveyModalTitle');
+  const body    = document.getElementById('surveyModalBody');
+  const footer  = document.getElementById('surveyModalFooter');
+  const actionBtn = document.getElementById('btnSurveyAction');
+
+  title.textContent = activeSurvey.title;
+
+  // Intro / video step
+  if (surveyStep === 0) {
+    let html = '';
+    if (activeSurvey.description) {
+      html += `<div style="font-size:13px;color:var(--txt-2);line-height:1.6;margin-bottom:16px;">${esc(activeSurvey.description)}</div>`;
+    }
+    if (activeSurvey.video_url) {
+      html += `<div style="margin-bottom:14px;"><div class="form-label" style="margin-bottom:8px;">Watch this video before answering</div>`;
+      const vid = activeSurvey.video_url;
+      // Detect YouTube
+      const ytMatch = vid.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+      if (ytMatch) {
+        html += `<div class="video-container"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
+      } else {
+        html += `<div class="video-container"><video src="${esc(vid)}" controls></video></div>`;
+      }
+      html += `</div>`;
+    }
+    html += `<div style="background:var(--surface);border-radius:8px;padding:12px;font-size:12px;color:var(--txt-2);">`;
+    html += `<strong style="color:var(--txt);font-size:13px;">${questions.length} question${questions.length !== 1 ? 's' : ''}</strong> — Earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong> for passing.`;
+    html += `</div>`;
+    body.innerHTML = html;
+    actionBtn.textContent = questions.length ? 'Begin' : 'Submit';
+    actionBtn.onclick = () => {
+      if (!questions.length) submitSurvey();
+      else { surveyStep = 1; renderSurveyStep(); }
+    };
+    return;
+  }
+
+  // Question steps
+  const qIdx = surveyStep - 1;
+  if (qIdx < questions.length) {
+    const q = questions[qIdx];
+    const selected = surveyAnswers[q.id];
+    body.innerHTML = `
+      <div class="q-progress">Question ${surveyStep} of ${questions.length}
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${(surveyStep/questions.length)*100}%"></div></div>
+      </div>
+      <div class="survey-question">
+        <div class="question-text">${esc(q.question)}</div>
+        <div class="option-list">
+          ${(q.options || []).map((opt, i) => `
+            <button class="option-btn ${selected === i ? 'selected' : ''}" onclick="selectOption('${esc(q.id)}', ${i})">
+              <span class="option-dot"><span class="option-dot-fill"></span></span>
+              ${esc(opt)}
+            </button>`).join('')}
+        </div>
+      </div>`;
+    const isLast = qIdx === questions.length - 1;
+    actionBtn.textContent = isLast ? 'Submit Survey' : 'Next';
+    actionBtn.onclick = () => {
+      if (surveyAnswers[q.id] === undefined) { toast('Please select an answer.', 'warn'); return; }
+      if (isLast) submitSurvey();
+      else { surveyStep++; renderSurveyStep(); }
+    };
+  }
+}
+
+function selectOption(questionId, idx) {
+  surveyAnswers[questionId] = idx;
+  // Re-render options
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+  });
+}
+
+async function submitSurvey() {
+  const actionBtn = document.getElementById('btnSurveyAction');
+  actionBtn.disabled = true; actionBtn.textContent = 'Submitting...';
+  try {
+    const r = await fetch('/api/surveys.php?action=submit_survey', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ survey_id: activeSurvey.id, username: CURRENT_USER, answers: surveyAnswers })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      completedSurveys.push(activeSurvey.id);
+      localStorage.setItem('ix_done_surveys', JSON.stringify(completedSurveys));
+      showSurveyResult(d);
+    } else {
+      toast(d.message || 'Submission failed', 'error');
+      actionBtn.disabled = false; actionBtn.textContent = 'Submit Survey';
+    }
+  } catch(e) {
+    toast('Server error. Try again.', 'error');
+    actionBtn.disabled = false; actionBtn.textContent = 'Submit Survey';
+  }
+}
+
+function showSurveyResult(result) {
+  const body   = document.getElementById('surveyModalBody');
+  const footer = document.getElementById('surveyModalFooter');
+  const passed = result.passed;
+  body.innerHTML = `
+    <div style="text-align:center;padding:10px 0 20px;">
+      <div class="result-circle ${passed ? 'result-pass' : 'result-fail'}">${result.score}%</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px;">${passed ? 'Survey Passed' : 'Survey Complete'}</div>
+      <div style="font-size:13px;color:var(--txt-2);margin-bottom:16px;">${esc(result.message)}</div>
+      ${passed ? `<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px;font-size:13px;font-weight:600;color:var(--green);">+${result.reward_points} points credited to your account</div>` : ''}
+    </div>
+    ${result.graded && result.graded.length ? `
+    <div style="margin-top:16px;">
+      <div class="form-label" style="margin-bottom:8px;">Answer Review</div>
+      ${result.graded.map(g => `
+        <div style="background:var(--surface);border-radius:8px;padding:10px;margin-bottom:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--txt-2);margin-bottom:6px;">${esc(g.question)}</div>
+          <div style="font-size:12px;color:${g.is_correct ? 'var(--green)' : 'var(--red)'};">
+            ${g.is_correct ? 'Correct' : 'Incorrect'}
+          </div>
+        </div>`).join('')}
+    </div>` : ''}`;
+  footer.innerHTML = `<button class="btn btn-primary" onclick="closeSurveyModal();renderSurveys(currentSurveys);">Close</button>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WITHDRAWAL
+// ═══════════════════════════════════════════════════════════════════════════
+async function submitWithdrawal() {
+  const type   = document.getElementById('wdType').value;
+  const amount = parseFloat(document.getElementById('wdAmount').value);
+  const bank   = document.getElementById('wdBank').value.trim();
+  const accNum = document.getElementById('wdAccNum').value.trim();
+  const accNam = document.getElementById('wdAccName').value.trim();
+  const minReq = type === 'cash' ? MIN_CASH_WD : MIN_TASK_WD;
+  if (!amount || amount < minReq) { toast(`Minimum withdrawal is ₦${minReq.toLocaleString()}`, 'warn'); return; }
+  if (!bank || !accNum || !accNam) { toast('Please fill in all bank details.', 'warn'); return; }
+  try {
+    const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username: CURRENT_USER, amount, wallet_type: type, bank_name: bank, account_number: accNum, account_name: accNam })
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('Withdrawal request submitted!', 'success');
+      closeModal('modalWithdraw');
+    } else { toast(d.message || 'Request failed', 'error'); }
+  } catch(e) { toast('Server error. Try again.', 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadTasks();
+});
+</script>
 </body>
 </html>

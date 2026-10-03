@@ -1031,56 +1031,76 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'publish_task' || action === 'delete_task' || action === 'toggle_status') {
+            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions') {
                 const tasksFile = path.join(PUBLIC_DIR, 'data', 'tasks.json');
                 let tasks = [];
                 if (fs.existsSync(tasksFile)) {
                     try { tasks = JSON.parse(fs.readFileSync(tasksFile, 'utf8')); } catch(e){}
                 }
 
+                const subsFile = path.join(PUBLIC_DIR, 'data', 'task_submissions.json');
+                let subs = [];
+                if (fs.existsSync(subsFile)) {
+                    try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
+                }
+
                 if (req.method === 'POST') {
                     if (action === 'publish_task' || action === 'create_task') {
+                        let expiresAt = parsed.expires_at || '';
+                        const durSec = parseInt(parsed.duration_seconds) || 0;
+                        if (durSec > 0 && !expiresAt) {
+                            expiresAt = new Date(Date.now() + durSec * 1000).toISOString();
+                        }
+                        const totalSlots = parseInt(parsed.total_slots) || 100;
                         const newTask = {
                             id: 'TASK-' + Math.floor(Math.random() * 900000 + 100000),
                             title: parsed.title || 'New Task',
                             category: parsed.category || 'General',
+                            description: parsed.description || '',
                             reward_points: parseInt(parsed.reward_points) || 150,
-                            total_slots: parseInt(parsed.total_slots) || 100,
-                            remaining_slots: parseInt(parsed.total_slots) || 100,
+                            total_slots: totalSlots,
+                            remaining_slots: totalSlots,
                             completions: 0,
                             action_url: parsed.action_url || '',
-                            proof_type: parsed.proof_type || 'instant',
+                            proof_type: parsed.proof_type || 'screenshot',
                             instructions: parsed.instructions || '',
+                            expires_at: expiresAt,
+                            duration_seconds: durSec,
                             status: 'active',
                             created_at: new Date().toISOString()
                         };
                         tasks.unshift(newTask);
+                        fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Task published!', task: newTask, tasks: tasks }));
+                        return;
                     } else if (action === 'delete_task') {
                         const id = parsed.id;
                         const idx = parsed.index;
                         if (idx !== undefined && idx >= 0) tasks.splice(idx, 1);
                         else if (id) tasks = tasks.filter(t => t.id !== id);
+                        fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Task removed', tasks: tasks }));
+                        return;
                     } else if (action === 'toggle_status') {
                         const id = parsed.id;
                         tasks.forEach(t => { if (t.id === id) t.status = t.status === 'active' ? 'paused' : 'active'; });
-                    }
-                    const dataDir = path.dirname(tasksFile);
-                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-                    fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
-
-                    // Task proof submissions
-                    const subsFile = path.join(PUBLIC_DIR, 'data', 'task_submissions.json');
-                    let subs = [];
-                    if (fs.existsSync(subsFile)) {
-                        try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
-                    }
-
-                    if (action === 'submit_task_proof') {
+                        fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Status updated', tasks: tasks }));
+                        return;
+                    } else if (action === 'submit_task_proof') {
+                        const taskId = parsed.task_id || '';
+                        const username = parsed.username || 'Member';
+                        // Prevent duplicate
+                        const existing = subs.find(s => s.task_id === taskId && (s.username || '').toLowerCase() === username.toLowerCase());
+                        if (existing) {
+                            res.end(JSON.stringify({ status: 'error', message: 'You have already submitted proof for this task.' }));
+                            return;
+                        }
                         const newSub = {
                             id: 'SUB-' + Math.floor(Math.random() * 900000 + 100000),
-                            task_id: parsed.task_id || '',
+                            task_id: taskId,
                             task_title: parsed.task_title || 'Sponsored Task',
-                            username: parsed.username || 'Member',
+                            username: username,
                             proof_url: parsed.proof_url || parsed.proof || '',
                             notes: parsed.notes || '',
                             reward_points: parseInt(parsed.reward_points) || 150,
@@ -1091,9 +1111,7 @@ const server = http.createServer((req, res) => {
                         fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
                         res.end(JSON.stringify({ status: 'success', message: 'Task proof submitted! Our review team or uploader will verify shortly.', submission: newSub }));
                         return;
-                    }
-
-                    if (action === 'approve_task_proof') {
+                    } else if (action === 'approve_task_proof') {
                         const subId = parsed.submission_id;
                         let targetSub = null;
                         subs.forEach(s => {
@@ -1106,11 +1124,21 @@ const server = http.createServer((req, res) => {
                         fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
 
                         if (targetSub) {
+                            // Decrement slot in task
+                            tasks.forEach(t => {
+                                if (t.id === targetSub.task_id) {
+                                    t.remaining_slots = Math.max(0, (t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots) - 1);
+                                    t.completions = (t.completions || 0) + 1;
+                                }
+                            });
+                            fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+
                             const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                             if (fs.existsSync(usersFile)) {
                                 try {
                                     const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
-                                    uData.users.forEach(u => {
+                                    const uList = uData.users || uData;
+                                    uList.forEach(u => {
                                         if ((u.username || '').toLowerCase() === (targetSub.username || '').toLowerCase()) {
                                             u.remaining_pts = (parseInt(u.remaining_pts) || 100) + (parseInt(targetSub.reward_points) || 150);
                                             u.pointsBalance = u.remaining_pts;
@@ -1132,9 +1160,7 @@ const server = http.createServer((req, res) => {
 
                         res.end(JSON.stringify({ status: 'success', message: 'Submission approved and points credited!' }));
                         return;
-                    }
-
-                    if (action === 'reject_task_proof') {
+                    } else if (action === 'reject_task_proof') {
                         const subId = parsed.submission_id;
                         subs.forEach(s => {
                             if (s.id === subId) {
@@ -1146,22 +1172,258 @@ const server = http.createServer((req, res) => {
                         res.end(JSON.stringify({ status: 'success', message: 'Submission rejected' }));
                         return;
                     }
-
-                    res.end(JSON.stringify({ status: 'success', message: 'Task updated', tasks: tasks }));
-                    return;
                 }
 
                 if (action === 'get_submissions') {
-                    const subsFile = path.join(PUBLIC_DIR, 'data', 'task_submissions.json');
-                    let subs = [];
-                    if (fs.existsSync(subsFile)) {
-                        try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
-                    }
                     res.end(JSON.stringify({ status: 'success', submissions: subs }));
                     return;
                 }
 
-                res.end(JSON.stringify({ status: 'success', tasks: tasks }));
+                if (action === 'get_all_tasks') {
+                    res.end(JSON.stringify({ status: 'success', tasks: tasks }));
+                    return;
+                }
+
+                // Default get_tasks filters active and non-expired
+                const now = Date.now();
+                const activeTasks = tasks.filter(t => {
+                    if ((t.status || 'active') !== 'active') return false;
+                    if (t.expires_at && new Date(t.expires_at).getTime() < now) return false;
+                    if (t.remaining_slots !== undefined && t.remaining_slots <= 0) return false;
+                    return true;
+                });
+                res.end(JSON.stringify({ status: 'success', tasks: activeTasks }));
+                return;
+            }
+
+            if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed') {
+                const surveysFile = path.join(PUBLIC_DIR, 'data', 'surveys.json');
+                let surveys = [];
+                if (fs.existsSync(surveysFile)) {
+                    try { surveys = JSON.parse(fs.readFileSync(surveysFile, 'utf8')); } catch(e){}
+                }
+
+                const sSubsFile = path.join(PUBLIC_DIR, 'data', 'survey_submissions.json');
+                let sSubs = [];
+                if (fs.existsSync(sSubsFile)) {
+                    try { sSubs = JSON.parse(fs.readFileSync(sSubsFile, 'utf8')); } catch(e){}
+                }
+
+                if (req.method === 'POST') {
+                    if (action === 'create_survey') {
+                        const title = (parsed.title || '').trim();
+                        if (!title) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Survey title is required' }));
+                            return;
+                        }
+                        const totalSlots = parseInt(parsed.total_slots) || 500;
+                        const cleanQuestions = (parsed.questions || []).map((q, idx) => {
+                            const opts = (q.options || []).map(o => String(o).trim()).filter(Boolean);
+                            const cIdx = parseInt(q.correct_index) || 0;
+                            return {
+                                id: 'Q-' + Math.floor(Math.random() * 90000 + 10000),
+                                question: (q.question || '').trim(),
+                                options: opts,
+                                correct_index: cIdx,
+                                correct_answer: opts[cIdx] || opts[0] || ''
+                            };
+                        }).filter(q => q.question && q.options.length >= 2);
+
+                        const newSurvey = {
+                            id: 'SRV-' + Math.floor(Math.random() * 900000 + 100000),
+                            title: title,
+                            description: (parsed.description || '').trim(),
+                            category: (parsed.category || 'General').trim(),
+                            reward_points: parseInt(parsed.reward_points) || 100,
+                            total_slots: totalSlots,
+                            remaining_slots: totalSlots,
+                            completions: 0,
+                            video_url: (parsed.video_url || '').trim(),
+                            questions: cleanQuestions,
+                            expires_at: (parsed.expires_at || '').trim(),
+                            status: 'active',
+                            created_at: new Date().toISOString()
+                        };
+                        surveys.unshift(newSurvey);
+                        fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Survey created successfully!', survey: newSurvey }));
+                        return;
+                    } else if (action === 'update_survey') {
+                        const id = (parsed.id || '').trim();
+                        surveys.forEach(sv => {
+                            if (sv.id === id) {
+                                if (parsed.title !== undefined) sv.title = parsed.title.trim();
+                                if (parsed.description !== undefined) sv.description = parsed.description.trim();
+                                if (parsed.reward_points !== undefined) sv.reward_points = parseInt(parsed.reward_points) || 100;
+                                if (parsed.total_slots !== undefined) sv.total_slots = parseInt(parsed.total_slots) || 500;
+                                if (parsed.video_url !== undefined) sv.video_url = parsed.video_url.trim();
+                                if (parsed.expires_at !== undefined) sv.expires_at = parsed.expires_at.trim();
+                                if (parsed.status !== undefined) sv.status = parsed.status.trim();
+                                sv.updated_at = new Date().toISOString();
+                            }
+                        });
+                        fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Survey updated' }));
+                        return;
+                    } else if (action === 'delete_survey') {
+                        const id = (parsed.id || '').trim();
+                        surveys = surveys.filter(sv => sv.id !== id);
+                        fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Survey deleted' }));
+                        return;
+                    } else if (action === 'toggle_survey_status') {
+                        const id = (parsed.id || '').trim();
+                        surveys.forEach(sv => {
+                            if (sv.id === id) {
+                                sv.status = sv.status === 'active' ? 'paused' : 'active';
+                            }
+                        });
+                        fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Status updated' }));
+                        return;
+                    } else if (action === 'submit_survey') {
+                        const surveyId = (parsed.survey_id || '').trim();
+                        const username = (parsed.username || '').trim();
+                        const userAnswers = parsed.answers || {};
+
+                        const targetSurvey = surveys.find(s => s.id === surveyId);
+                        if (!targetSurvey) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Survey not found' }));
+                            return;
+                        }
+                        if (targetSurvey.expires_at && new Date(targetSurvey.expires_at).getTime() < Date.now()) {
+                            res.end(JSON.stringify({ status: 'error', message: 'This survey has expired.' }));
+                            return;
+                        }
+                        if ((targetSurvey.status || 'active') !== 'active') {
+                            res.end(JSON.stringify({ status: 'error', message: 'This survey is not currently active.' }));
+                            return;
+                        }
+                        if (targetSurvey.remaining_slots !== undefined && targetSurvey.remaining_slots <= 0) {
+                            res.end(JSON.stringify({ status: 'error', message: 'This survey has reached maximum participants.' }));
+                            return;
+                        }
+                        const alreadyDone = sSubs.find(s => s.survey_id === surveyId && (s.username || '').toLowerCase() === username.toLowerCase());
+                        if (alreadyDone) {
+                            res.end(JSON.stringify({ status: 'error', message: 'You have already completed this survey.' }));
+                            return;
+                        }
+
+                        // Grade questions
+                        const questions = targetSurvey.questions || [];
+                        let correctCount = 0;
+                        const graded = questions.map(q => {
+                            const uAns = userAnswers[q.id] !== undefined ? parseInt(userAnswers[q.id]) : -1;
+                            const isCorr = uAns === (parseInt(q.correct_index) || 0);
+                            if (isCorr) correctCount++;
+                            return {
+                                question_id: q.id,
+                                question: q.question,
+                                user_index: uAns,
+                                correct_index: q.correct_index,
+                                is_correct: isCorr
+                            };
+                        });
+                        const totalQ = questions.length;
+                        const scorePercent = totalQ > 0 ? Math.round((correctCount / totalQ) * 100) : 100;
+                        const passed = scorePercent >= 50;
+                        const rewardPts = passed ? (parseInt(targetSurvey.reward_points) || 100) : 0;
+
+                        const subRecord = {
+                            id: 'SSUB-' + Math.floor(Math.random() * 900000 + 100000),
+                            survey_id: surveyId,
+                            survey_title: targetSurvey.title,
+                            username: username,
+                            answers: graded,
+                            score: scorePercent,
+                            correct: correctCount,
+                            total: totalQ,
+                            passed: passed,
+                            reward_points: rewardPts,
+                            status: passed ? 'credited' : 'failed',
+                            submitted_at: new Date().toISOString()
+                        };
+                        sSubs.unshift(subRecord);
+                        fs.writeFileSync(sSubsFile, JSON.stringify(sSubs, null, 2));
+
+                        targetSurvey.remaining_slots = Math.max(0, (targetSurvey.remaining_slots !== undefined ? targetSurvey.remaining_slots : targetSurvey.total_slots) - 1);
+                        targetSurvey.completions = (targetSurvey.completions || 0) + 1;
+                        fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+
+                        if (passed && rewardPts > 0) {
+                            const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                            if (fs.existsSync(usersFile)) {
+                                try {
+                                    const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                                    const uList = uData.users || uData;
+                                    uList.forEach(u => {
+                                        if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                                            u.remaining_pts = (parseInt(u.remaining_pts) || 100) + rewardPts;
+                                            u.pointsBalance = u.remaining_pts;
+                                            u.surveys_completed = (parseInt(u.surveys_completed) || 0) + 1;
+                                            u.activity_ledger = u.activity_ledger || [];
+                                            u.activity_ledger.unshift({
+                                                time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                                                type: 'Survey Reward',
+                                                desc: `Earned ${rewardPts} PTS — ${targetSurvey.title}`,
+                                                reward_type: 'points',
+                                                reward_value: rewardPts
+                                            });
+                                        }
+                                    });
+                                    fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                                } catch(e){}
+                            }
+                        }
+
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            passed: passed,
+                            score: scorePercent,
+                            correct: correctCount,
+                            total: totalQ,
+                            reward_points: rewardPts,
+                            graded: graded,
+                            message: passed
+                                ? `Well done! You scored ${scorePercent}% and earned +${rewardPts} points.`
+                                : `You scored ${scorePercent}%. A score of 50% or higher is required to earn points.`
+                        }));
+                        return;
+                    } else if (action === 'get_user_completed') {
+                        const username = (parsed.username || '').toLowerCase();
+                        const completedIds = sSubs.filter(s => (s.username || '').toLowerCase() === username).map(s => s.survey_id);
+                        res.end(JSON.stringify({ status: 'success', completed_surveys: [...new Set(completedIds)] }));
+                        return;
+                    }
+                }
+
+                if (action === 'get_all_surveys') {
+                    res.end(JSON.stringify({ status: 'success', surveys: surveys }));
+                    return;
+                }
+
+                if (action === 'get_submissions') {
+                    res.end(JSON.stringify({ status: 'success', submissions: sSubs }));
+                    return;
+                }
+
+                // Default get_surveys
+                const now = Date.now();
+                const activeSurveys = surveys.filter(s => {
+                    if ((s.status || 'active') !== 'active') return false;
+                    if (s.expires_at && new Date(s.expires_at).getTime() < now) return false;
+                    return true;
+                }).map(s => {
+                    const copy = JSON.parse(JSON.stringify(s));
+                    if (copy.questions) {
+                        copy.questions.forEach(q => {
+                            delete q.correct_index;
+                            delete q.correct_answer;
+                        });
+                    }
+                    return copy;
+                });
+                res.end(JSON.stringify({ status: 'success', surveys: activeSurveys }));
                 return;
             }
 
