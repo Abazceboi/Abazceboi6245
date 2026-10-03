@@ -1413,7 +1413,7 @@ const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-ME
 
 function getReferralLink() {
   const raw = document.getElementById('dataRefLink')?.dataset.link;
-  if (raw && raw.length > 5 && !raw.includes('<?=')) return raw;
+  if (raw && (raw.startsWith('http://') || raw.startsWith('https://'))) return raw;
   return window.location.origin + '/register.php?ref=' + encodeURIComponent(REF_CODE);
 }
 
