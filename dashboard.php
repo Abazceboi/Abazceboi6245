@@ -346,11 +346,51 @@ input,textarea,select{font-family:var(--ff);}
 .toast-error   .toast-dot{background:var(--red);}
 .toast-info    .toast-dot{background:var(--accent);}
 
+/* Notification Dropdown */
+.notif-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 320px;
+  max-height: 380px;
+  background: var(--card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: none;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: hidden;
+}
+.notif-dropdown.open { display: flex; }
+.notif-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notif-list { overflow-y: auto; max-height: 320px; }
+.notif-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: background var(--trans);
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--card-hover); }
+.notif-item-title { font-size: 12.5px; font-weight: 600; color: var(--txt); }
+.notif-item-msg { font-size: 11.5px; color: var(--txt-2); line-height: 1.4; }
+.notif-item-time { font-size: 10px; color: var(--txt-3); margin-top: 2px; }
+
 @media(max-width:600px){
   .dock-item span{display:none;}
   .dock-item{padding:10px 14px;}
   .floating-dock{bottom:14px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
+  .notif-dropdown{right:-40px;width:290px;}
 }
 </style>
 </head>
@@ -375,6 +415,25 @@ input,textarea,select{font-family:var(--ff);}
     <?php if ($isAdmin): ?>
     <a href="secure_hq_panel.php" class="btn btn-secondary btn-sm" title="Admin Panel">Admin</a>
     <?php endif; ?>
+    <!-- Notification Bell -->
+    <div style="position:relative;">
+      <button class="icon-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" style="position:relative;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="notifBadge" style="position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent);display:none;"></span>
+      </button>
+
+      <!-- Notification Dropdown -->
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-header">
+          <span style="font-weight:700;font-size:13px;">Notifications</span>
+          <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
+        </div>
+        <div id="notifList" class="notif-list">
+          <div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">Loading notifications...</div>
+        </div>
+      </div>
+    </div>
+
     <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
     </button>
@@ -698,7 +757,7 @@ function getReferralLink() {
 
 const FINAL_REF_LINK = getReferralLink();
 
-// Populate referral inputs
+// Populate referral inputs and initial data
 document.addEventListener('DOMContentLoaded', () => {
   const hInput = document.getElementById('homeRefInput');
   const pInput = document.getElementById('pageRefInput');
@@ -706,6 +765,54 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pInput) pInput.value = FINAL_REF_LINK;
   loadTasks();
   loadSurveys();
+  loadNotifications();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadNotifications() {
+  try {
+    const r = await fetch('/api/notifications.php?action=get');
+    const d = await r.json();
+    const list = d.notifications || d.data || [];
+    const countEl = document.getElementById('notifCountText');
+    const badge = document.getElementById('notifBadge');
+    const listEl = document.getElementById('notifList');
+
+    if (list && list.length > 0) {
+      if (badge) badge.style.display = 'block';
+      if (countEl) countEl.textContent = `${list.length} update${list.length > 1 ? 's' : ''}`;
+      if (listEl) {
+        listEl.innerHTML = list.map(n => `
+          <div class="notif-item">
+            <div class="notif-item-title">${esc(n.title || 'Platform Notice')}</div>
+            <div class="notif-item-msg">${esc(n.msg || n.message || '')}</div>
+            <div class="notif-item-time">${esc(n.time || 'Recent')}</div>
+          </div>
+        `).join('');
+      }
+    } else {
+      if (badge) badge.style.display = 'none';
+      if (countEl) countEl.textContent = '0 updates';
+      if (listEl) {
+        listEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">No notifications right now.</div>';
+      }
+    }
+  } catch(e) {}
+}
+
+function toggleNotifications() {
+  const d = document.getElementById('notifDropdown');
+  if (d) d.classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const bell = document.getElementById('notifBellBtn');
+  const d = document.getElementById('notifDropdown');
+  if (d && bell && !bell.contains(e.target) && !d.contains(e.target)) {
+    d.classList.remove('open');
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
