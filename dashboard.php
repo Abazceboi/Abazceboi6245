@@ -863,23 +863,37 @@ input,textarea,select{font-family:var(--ff);}
 
 /* Modals */
 .modal-backdrop{
-  position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
-  z-index:950;display:flex;align-items:center;justify-content:center;padding:16px;
-  opacity:0;pointer-events:none;transition:opacity 0.2s;
+  position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.modal-backdrop.open{opacity:1;pointer-events:auto;}
+.modal-backdrop.open, .modal-backdrop.active{opacity:1;pointer-events:auto;}
 .modal{
   background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
   width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
+  transform:scale(0.96) translateY(12px);
+  transition:transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.65), 0 0 35px rgba(56,189,248,0.1);
+}
+.modal-backdrop.open .modal, .modal-backdrop.active .modal{
+  transform:scale(1) translateY(0);
 }
 .modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:15px;font-weight:700;}
-.modal-close{background:none;border:none;color:var(--txt-3);font-size:18px;cursor:pointer;}
+.modal-close{
+  background:rgba(255,255,255,0.06);border:1px solid var(--border);
+  color:var(--txt-2);width:32px;height:32px;border-radius:50%;
+  font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.15s ease;
+}
+.modal-close:hover{
+  background:rgba(239,68,68,0.18);color:#EF4444;border-color:rgba(239,68,68,0.3);transform:scale(1.05);
+}
 .modal-body{padding:20px;}
 .modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
 
 /* Toast */
-#toast-stack{position:fixed;bottom:80px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+#toast-stack{position:fixed;bottom:85px;right:20px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
 .toast{
   background:var(--card);border:1px solid var(--border);border-radius:8px;
   padding:10px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;
@@ -2491,10 +2505,40 @@ function toast(msg, type = 'info') {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 3200);
 }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { 
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  el.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) { 
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.classList.remove('active');
+  const anyOpen = document.querySelector('.modal-backdrop.open, .modal-backdrop.active');
+  if (!anyOpen) {
+    document.body.style.overflow = '';
+  }
+}
+
+// Click backdrop to close (except modalActivationGate)
 document.querySelectorAll('.modal-backdrop').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  m.addEventListener('click', e => { 
+    if (e.target === m && m.id !== 'modalActivationGate') {
+      closeModal(m.id);
+    } 
+  });
+});
+
+// ESC key closes any open modal (except modalActivationGate)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const openModals = document.querySelectorAll('.modal-backdrop.open:not(#modalActivationGate), .modal-backdrop.active:not(#modalActivationGate)');
+    openModals.forEach(m => closeModal(m.id));
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -175,6 +175,10 @@ if ($action === 'activate' || $action === 'activate_coupon') {
     $wrapped = isset($uData['users']);
     $userUpdated = false;
 
+    // Award Referral Commission ONLY now that downline has activated with a coupon
+    $downlineReferrer = '';
+    $alreadyAwarded = false;
+
     foreach ($users as &$u) {
         if ($username && strtolower($u['username'] ?? '') === strtolower($username)) {
             $u['is_activated'] = true;
@@ -183,11 +187,74 @@ if ($action === 'activate' || $action === 'activate_coupon') {
             $u['role_label'] = 'Active Member';
             $u['remaining_pts'] = intval($u['remaining_pts'] ?? 0) + 100;
             $u['pointsBalance'] = $u['remaining_pts'];
+            $downlineReferrer = trim($u['referred_by'] ?? '');
+            $alreadyAwarded = !empty($u['referral_commission_awarded']);
             $userUpdated = true;
             break;
         }
     }
     unset($u);
+
+    // Credit referrer if applicable and not previously awarded
+    if (!empty($downlineReferrer) && !$alreadyAwarded) {
+        $pricing = readStorageJson('config/app_pricing.json', []);
+        $commAmount = floatval($pricing['ref_commission'] ?? 500);
+        if ($commAmount <= 0) $commAmount = 500;
+
+        $refTargetLower = strtolower($downlineReferrer);
+        $refTargetUpper = strtoupper($downlineReferrer);
+
+        foreach ($users as &$refUser) {
+            $rUser = strtolower($refUser['username'] ?? '');
+            $rCode = strtoupper(trim($refUser['referral_code'] ?? ''));
+
+            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper)) {
+                $refUser['remaining_cash'] = floatval($refUser['remaining_cash'] ?? 0) + $commAmount;
+                $refUser['cashBalance'] = $refUser['remaining_cash'];
+                $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;
+                $refUser['referral_count'] = intval($refUser['referral_count'] ?? 0) + 1;
+                $refUser['total_earned'] = floatval($refUser['total_earned'] ?? 0) + $commAmount;
+
+                if (!isset($refUser['activity_ledger']) || !is_array($refUser['activity_ledger'])) {
+                    $refUser['activity_ledger'] = [];
+                }
+                array_unshift($refUser['activity_ledger'], [
+                    'time' => date('d/m/Y, H:i'),
+                    'type' => 'Referral Commission',
+                    'desc' => "Earned ₦" . number_format($commAmount, 2) . " affiliate commission: downline @{$username} purchased and activated coupon PIN",
+                    'reward_type' => 'cash',
+                    'reward_value' => $commAmount
+                ]);
+
+                // Also create an in-app notification for the referrer
+                $allNotifs = readStorageJson('data/notifications.json', []);
+                if (!is_array($allNotifs)) $allNotifs = [];
+                array_unshift($allNotifs, [
+                    'id' => 'notif-' . uniqid(),
+                    'title' => 'Referral Bonus Credited',
+                    'msg' => "You earned ₦" . number_format($commAmount, 2) . " referral commission! Your downline @{$username} has verified and activated their coupon code.",
+                    'message' => "You earned ₦" . number_format($commAmount, 2) . " referral commission! Your downline @{$username} has verified and activated their coupon code.",
+                    'target' => $refUser['username'],
+                    'time' => date('d M Y, H:i'),
+                    'created_at' => date('c')
+                ]);
+                writeStorageJson('data/notifications.json', $allNotifs);
+                break;
+            }
+        }
+        unset($refUser);
+
+        // Mark downline user as commission awarded
+        foreach ($users as &$u) {
+            if ($username && strtolower($u['username'] ?? '') === strtolower($username)) {
+                $u['referral_commission_awarded'] = true;
+                $u['referral_commission_amount'] = $commAmount;
+                $u['referral_commission_at'] = date('c');
+                break;
+            }
+        }
+        unset($u);
+    }
 
     if ($userUpdated) {
         writeStorageJson('data/users.json', $wrapped ? array_merge($uData, ['users' => $users]) : $users);

@@ -695,6 +695,58 @@ const server = http.createServer((req, res) => {
                         userRecord.role_label = 'Active Member';
                         userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
                         userRecord.pointsBalance = userRecord.remaining_pts;
+
+                        // Award Referral Commission ONLY now that downline has activated with a coupon
+                        if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
+                            const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                            let commAmount = 500;
+                            if (fs.existsSync(pricingFile)) {
+                                try {
+                                    const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
+                                    commAmount = parseFloat(pData.ref_commission || 500);
+                                } catch(e){}
+                            }
+                            const refTarget = (userRecord.referred_by || '').trim().toLowerCase();
+                            const refTargetUpper = (userRecord.referred_by || '').trim().toUpperCase();
+                            const refUser = (usersData.users || []).find(x => (x.username || '').toLowerCase() === refTarget || (x.referral_code || '').toUpperCase() === refTargetUpper);
+                            if (refUser) {
+                                refUser.remaining_cash = (parseFloat(refUser.remaining_cash) || 0) + commAmount;
+                                refUser.cashBalance = refUser.remaining_cash;
+                                refUser.referral_earnings = (parseFloat(refUser.referral_earnings) || 0) + commAmount;
+                                refUser.referral_count = (parseInt(refUser.referral_count) || 0) + 1;
+                                refUser.total_earned = (parseFloat(refUser.total_earned) || 0) + commAmount;
+                                if (!refUser.activity_ledger) refUser.activity_ledger = [];
+                                refUser.activity_ledger.unshift({
+                                    time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                                    type: 'Referral Commission',
+                                    desc: `Earned ₦${commAmount.toFixed(2)} affiliate commission: downline @${username} purchased and activated coupon PIN`,
+                                    reward_type: 'cash',
+                                    reward_value: commAmount
+                                });
+
+                                const notifsFile = path.join(PUBLIC_DIR, 'data', 'notifications.json');
+                                let notifs = [];
+                                if (fs.existsSync(notifsFile)) {
+                                    try { notifs = JSON.parse(fs.readFileSync(notifsFile, 'utf8')); } catch(e){}
+                                }
+                                if (!Array.isArray(notifs)) notifs = [];
+                                notifs.unshift({
+                                    id: 'notif-' + Date.now(),
+                                    title: 'Referral Bonus Credited',
+                                    msg: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                    message: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                    target: refUser.username,
+                                    time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                                    created_at: new Date().toISOString()
+                                });
+                                fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                            }
+
+                            userRecord.referral_commission_awarded = true;
+                            userRecord.referral_commission_amount = commAmount;
+                            userRecord.referral_commission_at = new Date().toISOString();
+                        }
+
                         fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
                     }
 
@@ -880,6 +932,58 @@ const server = http.createServer((req, res) => {
                                 userRecord.role_label = 'Active Member';
                                 userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
                                 userRecord.pointsBalance = userRecord.remaining_pts;
+
+                                // Award Referral Commission ONLY now that downline has activated with a coupon
+                                if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
+                                    const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                                    let commAmount = 500;
+                                    if (fs.existsSync(pricingFile)) {
+                                        try {
+                                            const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
+                                            commAmount = parseFloat(pData.ref_commission || 500);
+                                        } catch(e){}
+                                    }
+                                    const refTarget = (userRecord.referred_by || '').trim().toLowerCase();
+                                    const refTargetUpper = (userRecord.referred_by || '').trim().toUpperCase();
+                                    const refUser = users.find(x => (x.username || '').toLowerCase() === refTarget || (x.referral_code || '').toUpperCase() === refTargetUpper);
+                                    if (refUser) {
+                                        refUser.remaining_cash = (parseFloat(refUser.remaining_cash) || 0) + commAmount;
+                                        refUser.cashBalance = refUser.remaining_cash;
+                                        refUser.referral_earnings = (parseFloat(refUser.referral_earnings) || 0) + commAmount;
+                                        refUser.referral_count = (parseInt(refUser.referral_count) || 0) + 1;
+                                        refUser.total_earned = (parseFloat(refUser.total_earned) || 0) + commAmount;
+                                        if (!refUser.activity_ledger) refUser.activity_ledger = [];
+                                        refUser.activity_ledger.unshift({
+                                            time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                                            type: 'Referral Commission',
+                                            desc: `Earned ₦${commAmount.toFixed(2)} affiliate commission: downline @${username} purchased and activated coupon PIN`,
+                                            reward_type: 'cash',
+                                            reward_value: commAmount
+                                        });
+
+                                        const notifsFile = path.join(PUBLIC_DIR, 'data', 'notifications.json');
+                                        let notifs = [];
+                                        if (fs.existsSync(notifsFile)) {
+                                            try { notifs = JSON.parse(fs.readFileSync(notifsFile, 'utf8')); } catch(e){}
+                                        }
+                                        if (!Array.isArray(notifs)) notifs = [];
+                                        notifs.unshift({
+                                            id: 'notif-' + Date.now(),
+                                            title: 'Referral Bonus Credited',
+                                            msg: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                            message: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                            target: refUser.username,
+                                            time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                                            created_at: new Date().toISOString()
+                                        });
+                                        fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                                    }
+
+                                    userRecord.referral_commission_awarded = true;
+                                    userRecord.referral_commission_amount = commAmount;
+                                    userRecord.referral_commission_at = new Date().toISOString();
+                                }
+
                                 fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
                             }
                         } catch(e) {}
