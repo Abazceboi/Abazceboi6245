@@ -227,25 +227,97 @@ input,textarea,select{font-family:var(--ff);}
 }
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
 
-/* ═══════════════════════════ FLOATING BOTTOM DOCK ═════════════════════ */
-.floating-dock{
-  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:rgba(13, 17, 23, 0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border:1px solid var(--border-mid);border-radius:9999px;padding:6px 10px;
-  box-shadow:var(--shadow);z-index:900;display:flex;align-items:center;gap:4px;
+/* ═══════════════════════════ LUXURY FLOATING DOCK ═════════════════════ */
+@keyframes dockReveal {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
-[data-theme="light"] .floating-dock{
-  background:rgba(255, 255, 255, 0.94);border-color:rgba(0,0,0,0.12);
+
+.floating-dock {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.76) 0%, rgba(10, 14, 23, 0.88) 100%);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 6px 10px;
+  box-shadow: 
+    0 24px 50px -10px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0 rgba(255, 255, 255, 0.22) inset;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: dockReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-.dock-item{
-  display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:9999px;
-  border:none;background:transparent;color:var(--txt-2);font-size:12.5px;font-weight:600;
-  cursor:pointer;transition:all var(--trans);white-space:nowrap;
+
+[data-theme="light"] .floating-dock {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(244, 246, 251, 0.94) 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 20px 48px -8px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.85) inset;
 }
-.dock-item svg{width:16px;height:16px;}
-.dock-item:hover{color:var(--txt);background:rgba(255,255,255,0.05);}
-.dock-item.active{
-  background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(59,130,246,0.35);
+
+.dock-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--txt-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.dock-item svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.22s ease, filter 0.22s ease;
+}
+
+.dock-item:hover {
+  color: var(--txt);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .dock-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dock-item.active {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  box-shadow: 
+    0 6px 20px rgba(37, 99, 235, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.dock-item.active svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  transform: scale(1.08);
+}
+
+.dock-item:active {
+  transform: scale(0.97);
 }
 
 /* ═══════════════════════════ REFERRAL BOX ═════════════════════════════ */
@@ -385,12 +457,32 @@ input,textarea,select{font-family:var(--ff);}
 .notif-item-msg { font-size: 11.5px; color: var(--txt-2); line-height: 1.4; }
 .notif-item-time { font-size: 10px; color: var(--txt-3); margin-top: 2px; }
 
-@media(max-width:600px){
-  .dock-item span{display:none;}
-  .dock-item{padding:10px 14px;}
-  .floating-dock{bottom:14px;}
+@media(max-width:640px){
+  .floating-dock{
+    bottom:14px;
+    padding:5px 8px;
+    gap:2px;
+    max-width:calc(100vw - 24px);
+    width:auto;
+  }
+  .dock-item{
+    padding:8px 10px;
+    gap:3px;
+    flex-direction:column;
+    border-radius:12px;
+  }
+  .dock-item span{
+    display:block;
+    font-size:9.5px;
+    font-weight:600;
+    line-height:1;
+  }
+  .dock-item svg{
+    width:15px;
+    height:15px;
+  }
   .stats-grid{grid-template-columns:1fr 1fr;}
-  .notif-dropdown{right:-40px;width:290px;}
+  .notif-dropdown{right:-30px;width:290px;}
 }
 </style>
 </head>
