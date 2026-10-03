@@ -24,6 +24,11 @@ const MIME_TYPES = {
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
     '.ttf': 'font/ttf',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.ogg': 'video/ogg',
+    '.mov': 'video/quicktime',
+    '.mp3': 'audio/mpeg'
 };
 
 // Robust recursive PHP template processor for local Node server
@@ -829,6 +834,85 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
+                if (effAction === 'generate_pins' && (req.method === 'POST' || Object.keys(parsed).length > 0)) {
+                    const pinType = (parsed.pin_type || parsed.type || 'AFF').trim().toUpperCase();
+                    let quantity = parseInt(parsed.quantity || parsed.count || parsed.qty) || 5;
+                    if (quantity < 1) quantity = 1;
+                    if (quantity > 500) quantity = 500;
+
+                    let prefix = 'INX-AFF-';
+                    let channel = 'AFFILIATE';
+                    let typeLabel = 'Affiliate Membership PIN';
+                    let amount = 1000;
+                    let wholesalePrice = 800;
+
+                    if (pinType.includes('UPL')) {
+                        prefix = 'INX-UPL-';
+                        channel = 'UPLOADER';
+                        typeLabel = 'Uploader License PIN';
+                        amount = 2000;
+                        wholesalePrice = 1600;
+                    } else if (pinType.includes('VIP')) {
+                        prefix = 'INX-VIP-';
+                        channel = 'AFFILIATE';
+                        typeLabel = 'VIP Access PIN';
+                        amount = 5000;
+                        wholesalePrice = 4000;
+                    }
+
+                    const existingCodes = new Set(coupons.map(c => (c.code || '').toUpperCase()));
+                    const newCoupons = [];
+
+                    for (let i = 0; i < quantity; i++) {
+                        let code = '';
+                        do {
+                            const p1 = crypto.randomBytes(2).toString('hex').toUpperCase();
+                            const p2 = crypto.randomBytes(2).toString('hex').toUpperCase();
+                            code = `${prefix}${p1}-${p2}`;
+                        } while (existingCodes.has(code));
+
+                        existingCodes.add(code);
+                        const pinObj = {
+                            code: code,
+                            channel: channel,
+                            type: pinType,
+                            type_label: typeLabel,
+                            typeLabel: typeLabel,
+                            vendor_id: parsed.vendor_id || '',
+                            vendorId: parsed.vendor_id || '',
+                            vendor_name: parsed.vendor_name || 'General Pool',
+                            vendorName: parsed.vendor_name || 'General Pool',
+                            wholesale_price: wholesalePrice,
+                            wholesalePrice: wholesalePrice,
+                            amount: amount,
+                            is_used: false,
+                            isUsed: false,
+                            used_by: null,
+                            usedBy: null,
+                            used_at: null,
+                            created_at: new Date().toISOString()
+                        };
+                        newCoupons.push(pinObj);
+                        coupons.unshift(pinObj);
+                    }
+
+                    const dataDir = path.dirname(couponsFile);
+                    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+                    fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        message: `Successfully generated ${quantity} ${typeLabel}s.`,
+                        count: coupons.length,
+                        generated_count: quantity,
+                        new_pins: newCoupons,
+                        pins: coupons,
+                        coupons: coupons
+                    }));
+                    return;
+                }
+
                 if (effAction === 'save_pins' && (req.method === 'POST' || Object.keys(parsed).length > 0)) {
                     const incoming = parsed.pins || parsed.coupons || [];
                     if (Array.isArray(incoming)) {
@@ -1205,6 +1289,44 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
+            // Direct Video Upload API
+            if (cleanUrl.includes('upload_video') || action === 'upload_video') {
+                const targetDir = path.join(PUBLIC_DIR, 'uploads', 'videos');
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, { recursive: true });
+                }
+
+                let base64Data = parsed.video_base64 || parsed.base64 || '';
+                const filename = parsed.filename || 'video.mp4';
+                let ext = path.extname(filename).toLowerCase().replace('.', '') || 'mp4';
+                if (!['mp4', 'webm', 'ogg', 'mov', 'm4v'].includes(ext)) {
+                    ext = 'mp4';
+                }
+
+                if (base64Data) {
+                    if (base64Data.startsWith('data:video/')) {
+                        base64Data = base64Data.split(',')[1] || '';
+                    }
+                    const safeName = 'vid_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex') + '.' + ext;
+                    const filePath = path.join(targetDir, safeName);
+                    fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+                    const videoUrl = '/uploads/videos/' + safeName;
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=UTF-8' });
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        success: true,
+                        video_url: videoUrl,
+                        filename: safeName,
+                        message: 'Video uploaded successfully.'
+                    }));
+                    return;
+                } else {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=UTF-8' });
+                    res.end(JSON.stringify({ status: 'error', success: false, message: 'No video payload received.' }));
+                    return;
+                }
+            }
+
             if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions') {
                 const tasksFile = path.join(PUBLIC_DIR, 'data', 'tasks.json');
                 let tasks = [];
@@ -1231,6 +1353,7 @@ const server = http.createServer((req, res) => {
                             title: parsed.title || 'New Task',
                             category: parsed.category || 'General',
                             description: parsed.description || '',
+                            video_url: parsed.video_url || parsed.video_file || '',
                             reward_points: parseInt(parsed.reward_points) || 150,
                             total_slots: totalSlots,
                             remaining_slots: totalSlots,

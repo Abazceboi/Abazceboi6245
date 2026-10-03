@@ -113,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'title'            => $title ?: 'New Task',
             'category'         => trim($input['category'] ?? 'General'),
             'description'      => trim($input['description'] ?? ''),
+            'video_url'        => trim($input['video_url'] ?? $input['video_file'] ?? ''),
             'reward_points'    => intval($input['reward_points'] ?? 150),
             'total_slots'      => $slots,
             'remaining_slots'  => $slots,

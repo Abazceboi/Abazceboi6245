@@ -145,6 +145,7 @@ switch ($action) {
                         'role' => $role,
                         'mode' => ($role === 'uploader') ? 'uploader' : 'active',
                         'status_label' => $GLOBALS['ROLE_LABELS'][$role] ?? 'Active Member',
+                        'created_at' => $r['createdAt'] ?? $r['createdat'] ?? ($usersMap[$unLower]['created_at'] ?? date('c')),
                         'join_date_formatted' => !empty($r['createdAt'] ?? $r['createdat']) ? date('d M Y, H:i', strtotime($r['createdAt'] ?? $r['createdat'])) : date('d M Y, H:i'),
                         'recent_activity' => 'Platform Member (Active)',
                         'recent_activity_time' => 'Online',

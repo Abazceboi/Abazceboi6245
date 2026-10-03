@@ -1913,9 +1913,20 @@ input,textarea,select{font-family:var(--ff);}
     <div class="modal-body">
       <input type="hidden" id="proofTaskId">
       <input type="hidden" id="proofTaskPts">
+
+      <!-- Attached Video Section (On-Site Player) -->
+      <div id="proofTaskVideoContainer" style="display:none;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--accent);display:flex;align-items:center;gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Watch Video on Site:
+        </div>
+        <div id="proofTaskVideoPlayer" style="border-radius:8px;overflow:hidden;background:#000;"></div>
+        <div id="proofTaskVideoDesc" style="font-size:12.5px;color:var(--txt-1);margin-top:10px;line-height:1.5;"></div>
+      </div>
+
       <div id="proofTaskInstr" style="font-size:12.5px;color:var(--txt-2);padding:10px;background:var(--surface);border-radius:8px;margin-bottom:14px;line-height:1.5;"></div>
 
-      <div class="form-group">
+      <div class="form-group" id="proofUploadGroup">
         <label class="form-label">Upload Proof Screenshot</label>
         <input type="file" id="proofFile" accept="image/*" class="form-input" onchange="handleProofImage(event)">
         <div id="proofPreviewBox" style="margin-top:8px;display:none;">
@@ -2633,6 +2644,24 @@ function renderTasks(list) {
     const isExp = expTime && expTime < now;
     const diff = expTime ? expTime - now : null;
     const timerText = diff > 0 ? formatMs(diff) : '';
+    const vidSrc = (t.video_url || t.video_file || '').trim();
+    const hasVideo = !!vidSrc;
+    const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+
+    let videoEmbedHtml = '';
+    if (hasVideo) {
+      if (ytMatch) {
+        videoEmbedHtml = `
+          <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000;margin:10px 0;">
+            <iframe src="https://www.youtube.com/embed/${ytMatch[1]}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+          </div>`;
+      } else {
+        videoEmbedHtml = `
+          <div style="margin:10px 0;border-radius:10px;overflow:hidden;background:#000;">
+            <video src="${esc(vidSrc)}" controls playsinline preload="metadata" style="width:100%;max-height:220px;display:block;border-radius:10px;outline:none;"></video>
+          </div>`;
+      }
+    }
 
     return `
       <div class="grid-item-card">
@@ -2642,16 +2671,22 @@ function renderTasks(list) {
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <span class="item-tag">${esc(t.category || 'General')}</span>
+          ${hasVideo ? '<span class="item-tag" style="color:var(--accent);font-weight:600;">Watch on Site</span>' : ''}
           <span class="item-tag">${esc(t.proof_type || 'Proof')}</span>
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
-        ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;">${esc(t.instructions)}</div>` : ''}
+
+        ${videoEmbedHtml}
+
+        ${t.description ? `<div style="font-size:12.5px;color:var(--txt-1);line-height:1.5;margin:8px 0;padding:9px 12px;background:var(--surface);border-radius:8px;border-left:3px solid var(--accent);">${esc(t.description)}</div>` : ''}
+
+        ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-bottom:8px;">${esc(t.instructions)}</div>` : ''}
         ${timerText && !isExp ? `<div class="item-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
         <div class="item-footer">
           <span style="font-size:11px;color:var(--txt-3);">${t.remaining_slots || t.total_slots || 0} slots left</span>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
                    : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
-                   : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">Start Task</button>`)}
+                   : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">${hasVideo ? 'Watch & Complete' : 'Start Task'}</button>`)}
         </div>
       </div>
     `;
@@ -2664,12 +2699,44 @@ function openTaskSubmission(id) {
   document.getElementById('proofTaskId').value = t.id;
   document.getElementById('proofTaskPts').value = t.reward_points;
   document.getElementById('proofTaskTitle').textContent = t.title;
-  document.getElementById('proofTaskInstr').textContent = t.instructions || 'Follow the task link, complete the requirements, and upload verification proof.';
+  document.getElementById('proofTaskInstr').textContent = t.instructions || 'Follow the task details, complete the requirements, and submit verification proof.';
   document.getElementById('proofUrl').value = '';
   document.getElementById('proofNotes').value = '';
   document.getElementById('proofFile').value = '';
   document.getElementById('proofPreviewBox').style.display = 'none';
   proofBase64 = '';
+
+  const vidContainer = document.getElementById('proofTaskVideoContainer');
+  const vidPlayer = document.getElementById('proofTaskVideoPlayer');
+  const vidDesc = document.getElementById('proofTaskVideoDesc');
+  const btnSend = document.getElementById('btnSendProof');
+  const vidSrc = (t.video_url || t.video_file || '').trim();
+
+  if (vidSrc) {
+    const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) {
+      vidPlayer.innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;">
+        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>
+      </div>`;
+    } else {
+      vidPlayer.innerHTML = `<video src="${esc(vidSrc)}" controls playsinline preload="metadata" style="width:100%;max-height:260px;display:block;border-radius:8px;outline:none;"></video>`;
+    }
+    vidDesc.textContent = t.description || '';
+    vidDesc.style.display = t.description ? 'block' : 'none';
+    vidContainer.style.display = 'block';
+
+    if (t.proof_type === 'video_watch') {
+      document.getElementById('proofUrl').value = 'Watched on-site video';
+      btnSend.textContent = 'Confirm Watched & Claim Reward';
+    } else {
+      btnSend.textContent = 'Submit Proof';
+    }
+  } else {
+    vidPlayer.innerHTML = '';
+    vidContainer.style.display = 'none';
+    btnSend.textContent = 'Submit Proof';
+  }
+
   openModal('modalTaskProof');
 }
 

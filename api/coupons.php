@@ -35,6 +35,89 @@ if ($action === 'get_pins' || ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($ac
     exit;
 }
 
+// 1b. GENERATE PIN CODES (ADMIN ACTION)
+if ($action === 'generate_pins' && ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($input))) {
+    $pinType = strtoupper(trim($input['pin_type'] ?? $input['type'] ?? 'AFF'));
+    $quantity = intval($input['quantity'] ?? $input['count'] ?? $input['qty'] ?? 5);
+    if ($quantity < 1) $quantity = 1;
+    if ($quantity > 500) $quantity = 500;
+
+    $vendorId = trim($input['vendor_id'] ?? '');
+    $vendorName = trim($input['vendor_name'] ?? 'General Pool');
+
+    $prefix = 'INX-AFF-';
+    $channel = 'AFFILIATE';
+    $typeLabel = 'Affiliate Membership PIN';
+    $amount = 1000.0;
+    $wholesalePrice = 800.0;
+
+    if ($pinType === 'UPL' || strpos($pinType, 'UPL') !== false) {
+        $prefix = 'INX-UPL-';
+        $channel = 'UPLOADER';
+        $typeLabel = 'Uploader License PIN';
+        $amount = 2000.0;
+        $wholesalePrice = 1600.0;
+    } elseif ($pinType === 'VIP' || strpos($pinType, 'VIP') !== false) {
+        $prefix = 'INX-VIP-';
+        $channel = 'AFFILIATE';
+        $typeLabel = 'VIP Access PIN';
+        $amount = 5000.0;
+        $wholesalePrice = 4000.0;
+    }
+
+    $existingCodes = [];
+    $allExisting = loadAllCoupons($pdo);
+    foreach ($allExisting as $ec) {
+        $existingCodes[strtoupper(trim($ec['code'] ?? ''))] = true;
+    }
+
+    $newCoupons = [];
+    for ($i = 0; $i < $quantity; $i++) {
+        do {
+            $part1 = strtoupper(bin2hex(random_bytes(2)));
+            $part2 = strtoupper(bin2hex(random_bytes(2)));
+            $code = "{$prefix}{$part1}-{$part2}";
+        } while (isset($existingCodes[$code]));
+
+        $existingCodes[$code] = true;
+        $newCoupons[] = [
+            'code' => $code,
+            'channel' => $channel,
+            'type' => $pinType,
+            'type_label' => $typeLabel,
+            'typeLabel' => $typeLabel,
+            'vendor_id' => $vendorId,
+            'vendorId' => $vendorId,
+            'vendor_name' => $vendorName,
+            'vendorName' => $vendorName,
+            'wholesale_price' => $wholesalePrice,
+            'wholesalePrice' => $wholesalePrice,
+            'amount' => $amount,
+            'is_used' => false,
+            'isUsed' => false,
+            'used_by' => null,
+            'usedBy' => null,
+            'used_at' => null,
+            'created_at' => date('c')
+        ];
+    }
+
+    $inserted = saveCouponsBatch($newCoupons, $pdo);
+    $allUpdated = loadAllCoupons($pdo);
+
+    echo json_encode([
+        'success' => true,
+        'status' => 'success',
+        'message' => "Successfully generated {$quantity} {$typeLabel}s.",
+        'count' => count($allUpdated),
+        'generated_count' => $quantity,
+        'new_pins' => $newCoupons,
+        'pins' => $allUpdated,
+        'coupons' => $allUpdated
+    ]);
+    exit;
+}
+
 // 2. SAVE GENERATED BATCH OF COUPONS
 if ($action === 'save_pins' && ($_SERVER['REQUEST_METHOD'] === 'POST' || !empty($input))) {
     $newCoupons = $input['coupons'] ?? $input['pins'] ?? [];

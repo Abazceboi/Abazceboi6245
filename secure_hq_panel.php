@@ -589,21 +589,59 @@ body.sidebar-retracted .main{
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Publish New Task</div>
-            <div class="card-sub">Create member earning tasks with timer, countdown expiry, and verification requirements.</div>
+            <div class="card-title">Publish New Task & Direct Video</div>
+            <div class="card-sub">Upload video tasks directly with descriptions for on-site watching, or create standard earning gigs.</div>
           </div>
         </div>
 
         <form id="createTaskForm" onsubmit="handleCreateTask(event)">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Task Title</label>
-              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. Follow Official Twitter Channel">
+              <label class="form-label">Task / Video Title</label>
+              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. Platform Features Video Walkthrough">
             </div>
             <div class="form-group">
               <label class="form-label">Category</label>
-              <input type="text" class="form-input" id="taskCategory" value="Social Media" placeholder="Category">
+              <select class="form-select" id="taskCategory">
+                <option value="Sponsored Video">Sponsored Video</option>
+                <option value="Video Watch">Watch & Earn Video</option>
+                <option value="Social Media">Social Media</option>
+                <option value="App Review">App Review</option>
+                <option value="General">General Earning</option>
+              </select>
             </div>
+          </div>
+
+          <!-- Direct Video Upload Section -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <span class="form-label" style="font-size:13px;font-weight:700;color:var(--accent);margin:0;">Direct Video Upload (On-Site Player)</span>
+              <span id="videoUploadBadge" style="font-size:11px;color:var(--txt-3);">MP4, WebM, OGG, MOV</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Choose Video File to Upload</label>
+                <input type="file" class="form-input" id="taskVideoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime" onchange="handleAdminVideoFile(event)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Or Video Stream URL</label>
+                <input type="text" class="form-input" id="taskVideoUrl" placeholder="/uploads/videos/... or https://..." oninput="updateAdminVideoPreview()">
+              </div>
+            </div>
+            <div id="videoUploadProgress" style="display:none;margin-top:8px;">
+              <div style="font-size:12px;color:var(--accent);margin-bottom:4px;" id="videoUploadStatusText">Uploading video to server...</div>
+              <div style="width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+                <div id="videoUploadProgressBar" style="width:0%;height:100%;background:var(--accent);transition:width 0.3s;"></div>
+              </div>
+            </div>
+            <div id="adminVideoPreviewBox" style="display:none;margin-top:12px;border-radius:8px;overflow:hidden;background:#000;">
+              <video id="adminVideoPreviewEl" controls style="width:100%;max-height:220px;display:block;"></video>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Video / Task Description</label>
+            <textarea class="form-textarea" id="taskDescription" rows="3" placeholder="Enter detailed description. Users will read this description and watch the video directly on the website."></textarea>
           </div>
 
           <div class="form-row">
@@ -618,6 +656,7 @@ body.sidebar-retracted .main{
             <div class="form-group">
               <label class="form-label">Proof Requirement</label>
               <select class="form-select" id="taskProofType">
+                <option value="video_watch">Video Watch Completion</option>
                 <option value="screenshot">Screenshot Upload</option>
                 <option value="url">URL / Handle Link</option>
                 <option value="username">Username Confirmation</option>
@@ -627,21 +666,21 @@ body.sidebar-retracted .main{
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Action URL</label>
+              <label class="form-label">Action URL (Optional if Video attached)</label>
               <input type="url" class="form-input" id="taskActionUrl" placeholder="https://...">
             </div>
             <div class="form-group">
-              <label class="form-label">Task Expiry (Countdown Timer or Date)</label>
+              <label class="form-label">Task Expiry (Optional)</label>
               <input type="datetime-local" class="form-input" id="taskExpiresAt">
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Instructions for Earner</label>
-            <textarea class="form-textarea" id="taskInstructions" required placeholder="Describe clear steps the member must follow before uploading proof."></textarea>
+            <textarea class="form-textarea" id="taskInstructions" required placeholder="Describe clear steps the member must follow before uploading proof or claiming points."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="btnPublishTask">Publish Task</button>
+          <button type="submit" class="btn btn-primary" id="btnPublishTask">Publish Task & Video</button>
         </form>
       </div>
 
@@ -721,14 +760,16 @@ body.sidebar-retracted .main{
                 <th>Username</th>
                 <th>Full Name</th>
                 <th>Email / Phone</th>
+                <th>Registered Date</th>
                 <th>Role</th>
                 <th>Points</th>
                 <th>Cash Balance</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="usersTableBody">
-              <tr><td colspan="7" style="text-align:center;padding:20px;">Loading users...</td></tr>
+              <tr><td colspan="9" style="text-align:center;padding:20px;">Loading users...</td></tr>
             </tbody>
           </table>
         </div>
@@ -858,30 +899,88 @@ body.sidebar-retracted .main{
 
 <!-- Edit User Modal -->
 <div class="modal-backdrop" id="modalEditUser">
-  <div class="modal">
+  <div class="modal" style="max-width:580px;">
     <div class="modal-header">
-      <div class="modal-title">Edit Member Account</div>
+      <div class="modal-title">Edit Member Account Details</div>
       <button class="modal-close" onclick="closeModal('modalEditUser')">&times;</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="editUsername">
-      <div class="form-group">
-        <label class="form-label">Role</label>
-        <select class="form-select" id="editRole">
-          <option value="member">Active Member</option>
-          <option value="uploader">Verified Uploader</option>
-          <option value="vendor">Verified Vendor</option>
-          <option value="moderator">Moderator</option>
-          <option value="admin">Admin</option>
-        </select>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" id="editUsernameDisplay" readonly style="opacity:0.75;cursor:not-allowed;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="editFullName" placeholder="e.g. John Doe">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="editEmail" placeholder="user@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="form-input" id="editPhone" placeholder="08012345678">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Account Role</label>
+          <select class="form-select" id="editRole">
+            <option value="member">Active Member</option>
+            <option value="uploader">Verified Uploader</option>
+            <option value="vendor">Verified Vendor</option>
+            <option value="moderator">Moderator</option>
+            <option value="sub_admin">Sub Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Status</label>
+          <select class="form-select" id="editStatus">
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Points Balance (PTS)</label>
+          <input type="number" class="form-input" id="editPoints">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cash Balance (₦)</label>
+          <input type="number" step="0.01" class="form-input" id="editCash">
+        </div>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin:12px 0 6px;">Bank Settlement Details</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Bank Name</label>
+          <input type="text" class="form-input" id="editBankName" placeholder="e.g. OPay, Moniepoint, PalmPay">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account Number</label>
+          <input type="text" class="form-input" id="editAccountNo" placeholder="10-digit NUBAN">
+        </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Points Balance</label>
-        <input type="number" class="form-input" id="editPoints">
+        <label class="form-label">Account Name (Beneficiary)</label>
+        <input type="text" class="form-input" id="editAccountName" placeholder="Account beneficiary name">
       </div>
+
       <div class="form-group">
-        <label class="form-label">Cash Balance (₦)</label>
-        <input type="number" step="0.01" class="form-input" id="editCash">
+        <label class="form-label">Reset Password (Optional)</label>
+        <input type="text" class="form-input" id="editPassword" placeholder="Leave empty to keep existing password">
       </div>
     </div>
     <div class="modal-footer">
@@ -1213,11 +1312,120 @@ async function loadSurveySubmissions() {
 // ═══════════════════════════════════════════════════════════════════════════
 // TASKS LOGIC (CREATE, TIMER/EXPIRY, PROOF SUBMISSIONS REVIEW)
 // ═══════════════════════════════════════════════════════════════════════════
+let adminUploadedVideoUrl = '';
+
+function updateAdminVideoPreview() {
+  const url = document.getElementById('taskVideoUrl').value.trim() || adminUploadedVideoUrl;
+  const previewBox = document.getElementById('adminVideoPreviewBox');
+  const previewEl = document.getElementById('adminVideoPreviewEl');
+  if (url) {
+    previewEl.src = url;
+    previewBox.style.display = 'block';
+  } else {
+    previewBox.style.display = 'none';
+  }
+}
+
+async function handleAdminVideoFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const progressBox = document.getElementById('videoUploadProgress');
+  const progressBar = document.getElementById('videoUploadProgressBar');
+  const statusText = document.getElementById('videoUploadStatusText');
+  progressBox.style.display = 'block';
+  progressBar.style.width = '20%';
+  statusText.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
+
+  try {
+    const formData = new FormData();
+    formData.append('video', file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload_video.php', true);
+
+    xhr.upload.onprogress = (ev) => {
+      if (ev.lengthComputable) {
+        const percent = Math.round((ev.loaded / ev.total) * 90);
+        progressBar.style.width = percent + '%';
+        statusText.textContent = `Uploading video: ${percent}%...`;
+      }
+    };
+
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (resp.video_url || resp.url) {
+            const finalUrl = resp.video_url || resp.url;
+            adminUploadedVideoUrl = finalUrl;
+            document.getElementById('taskVideoUrl').value = finalUrl;
+            progressBar.style.width = '100%';
+            statusText.textContent = 'Upload complete! Video ready for on-site playback.';
+            updateAdminVideoPreview();
+            toast('Video uploaded successfully!', 'success');
+            return;
+          }
+        } catch(err) {}
+      }
+      fallbackBase64VideoUpload(file);
+    };
+
+    xhr.onerror = () => {
+      fallbackBase64VideoUpload(file);
+    };
+
+    xhr.send(formData);
+  } catch(err) {
+    fallbackBase64VideoUpload(file);
+  }
+}
+
+function fallbackBase64VideoUpload(file) {
+  const progressBar = document.getElementById('videoUploadProgressBar');
+  const statusText = document.getElementById('videoUploadStatusText');
+  statusText.textContent = 'Encoding video stream...';
+  progressBar.style.width = '60%';
+
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    const b64 = ev.target.result;
+    try {
+      const r = await fetch('/api/upload_video.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_base64: b64, filename: file.name })
+      });
+      const d = await r.json();
+      if (d.video_url || d.success) {
+        adminUploadedVideoUrl = d.video_url;
+        document.getElementById('taskVideoUrl').value = d.video_url;
+        progressBar.style.width = '100%';
+        statusText.textContent = 'Upload complete! Video ready for on-site playback.';
+        updateAdminVideoPreview();
+        toast('Video uploaded successfully!', 'success');
+      } else {
+        statusText.textContent = 'Upload error: ' + (d.message || 'Server error');
+        toast(d.message || 'Upload error', 'error');
+      }
+    } catch(e) {
+      statusText.textContent = 'Upload network error';
+      toast('Network error uploading video', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 async function handleCreateTask(e) {
   e.preventDefault();
+  const videoUrlVal = document.getElementById('taskVideoUrl').value.trim() || adminUploadedVideoUrl;
+  const descriptionVal = document.getElementById('taskDescription').value.trim();
+
   const payload = {
     title: document.getElementById('taskTitle').value.trim(),
     category: document.getElementById('taskCategory').value.trim(),
+    video_url: videoUrlVal,
+    description: descriptionVal,
     reward_points: parseInt(document.getElementById('taskReward').value) || 150,
     total_slots: parseInt(document.getElementById('taskSlots').value) || 250,
     proof_type: document.getElementById('taskProofType').value,
@@ -1236,8 +1444,11 @@ async function handleCreateTask(e) {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Task published successfully!', 'success');
+      toast('Task & Video published successfully!', 'success');
       document.getElementById('createTaskForm').reset();
+      adminUploadedVideoUrl = '';
+      document.getElementById('adminVideoPreviewBox').style.display = 'none';
+      document.getElementById('videoUploadProgress').style.display = 'none';
       loadTasksData();
     } else {
       toast(d.message || 'Error publishing task', 'error');
@@ -1245,7 +1456,7 @@ async function handleCreateTask(e) {
   } catch(e) {
     toast('Network error publishing task', 'error');
   }
-  btn.disabled = false; btn.textContent = 'Publish Task';
+  btn.disabled = false; btn.textContent = 'Publish Task & Video';
 }
 
 async function loadTasksData() {
@@ -1263,8 +1474,9 @@ async function loadTasksData() {
     tbody.innerHTML = tasks.map(t => {
       const left = t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots;
       const isExp = t.expires_at && new Date(t.expires_at).getTime() < Date.now();
+      const hasVid = !!(t.video_url || t.video_file);
       return `<tr>
-        <td><strong>${esc(t.title)}</strong></td>
+        <td><strong>${esc(t.title)}</strong>${hasVid ? '<br><span style="font-size:11px;color:var(--accent);">Video attached</span>' : ''}</td>
         <td>${esc(t.category)}</td>
         <td>+${t.reward_points} PTS</td>
         <td>${left} / ${t.total_slots}</td>
@@ -1402,25 +1614,46 @@ async function loadUsersData() {
     document.getElementById('kpiUsers').textContent = allUsersList.length;
     renderUsers(allUsersList);
   } catch(e){
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
   }
 }
 
 function renderUsers(list) {
   const tbody = document.getElementById('usersTableBody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--txt-3);">No members found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--txt-3);">No members found.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(u => {
     const isProtected = ['admin','abas6245','abazceboi'].includes((u.username||'').toLowerCase());
+    const regRaw = u.created_at || u.createdAt || u.join_date_formatted || u.role_updated_at || u.updated_at || '';
+    let regFormatted = '-';
+    if (regRaw) {
+      try {
+        const d = new Date(regRaw);
+        if (!isNaN(d.getTime())) {
+          regFormatted = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+          regFormatted = regRaw;
+        }
+      } catch(e) {
+        regFormatted = regRaw;
+      }
+    }
+    const statusVal = u.status || 'active';
+    const statusBadge = (statusVal === 'suspended')
+      ? '<span class="badge badge-rejected">Suspended</span>'
+      : (statusVal === 'pending' ? '<span class="badge badge-paused">Pending</span>' : '<span class="badge badge-active">Active</span>');
+
     return `<tr id="user-row-${esc(u.username)}">
       <td><strong>${esc(u.username)}</strong></td>
       <td>${esc(u.full_name || u.fullName || '-')}</td>
       <td>${esc(u.email || '')}<br><span style="font-size:11px;color:var(--txt-3);">${esc(u.phone || '')}</span></td>
+      <td><span style="font-size:12px;color:var(--txt-2);">${esc(regFormatted)}</span></td>
       <td><span class="badge badge-active">${esc(u.role || 'member')}</span></td>
       <td>${Number(u.remaining_pts || u.pointsBalance || 0).toLocaleString()} PTS</td>
       <td>₦${Number(u.remaining_cash || u.cashBalance || 0).toLocaleString()}</td>
+      <td>${statusBadge}</td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="openEditUser('${esc(u.username)}')">Edit</button>
         ${!isProtected ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteUser('${esc(u.username)}')">Delete</button>` : ''}
@@ -1445,38 +1678,66 @@ function openEditUser(username) {
   const u = allUsersList.find(x => x.username.toLowerCase() === username.toLowerCase());
   if (!u) return;
   document.getElementById('editUsername').value = u.username;
+  document.getElementById('editUsernameDisplay').value = u.username;
+  document.getElementById('editFullName').value = u.full_name || u.fullName || '';
+  document.getElementById('editEmail').value = u.email || '';
+  document.getElementById('editPhone').value = u.phone || '';
   document.getElementById('editRole').value = u.role || 'member';
+  document.getElementById('editStatus').value = u.status || 'active';
   document.getElementById('editPoints').value = u.remaining_pts !== undefined ? u.remaining_pts : (u.pointsBalance || 0);
   document.getElementById('editCash').value = u.remaining_cash !== undefined ? u.remaining_cash : (u.cashBalance || 0);
+  document.getElementById('editBankName').value = u.bank_name || '';
+  document.getElementById('editAccountNo').value = u.account_number || '';
+  document.getElementById('editAccountName').value = u.account_name || '';
+  document.getElementById('editPassword').value = '';
   openModal('modalEditUser');
 }
 
 async function saveUserChanges() {
   const username = document.getElementById('editUsername').value;
+  const fullName = document.getElementById('editFullName').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+  const phone = document.getElementById('editPhone').value.trim();
   const newRole = document.getElementById('editRole').value;
+  const status = document.getElementById('editStatus').value;
   const newPoints = parseInt(document.getElementById('editPoints').value) || 0;
   const newCash = parseFloat(document.getElementById('editCash').value) || 0;
+  const bankName = document.getElementById('editBankName').value.trim();
+  const accountNo = document.getElementById('editAccountNo').value.trim();
+  const accountName = document.getElementById('editAccountName').value.trim();
+  const newPassword = document.getElementById('editPassword').value.trim();
 
   try {
     const r = await fetch('/api/users.php?action=update_user_details', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        target_username: username,
         username,
+        full_name: fullName,
+        email,
+        phone,
         role: newRole,
+        status,
         pointsBalance: newPoints,
         cashBalance: newCash,
         remaining_pts: newPoints,
-        remaining_cash: newCash
+        remaining_cash: newCash,
+        points_balance: newPoints,
+        cash_balance: newCash,
+        bank_name: bankName,
+        account_number: accountNo,
+        account_name: accountName,
+        new_password: newPassword
       })
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
-      toast('Member account updated!', 'success');
+      toast('Member account updated successfully!', 'success');
       closeModal('modalEditUser');
       loadUsersData();
     } else {
-      toast(d.error || 'Failed to update account', 'error');
+      toast(d.error || d.message || 'Failed to update account', 'error');
     }
   } catch(e){
     toast('Network error updating member', 'error');
