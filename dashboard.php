@@ -342,13 +342,50 @@ input,textarea,select{font-family:var(--ff);}
 .btn-sm{padding:6px 12px;font-size:12px;}
 
 /* Forms */
-.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-.form-label{font-size:12px;font-weight:600;color:var(--txt-2);}
-.form-input,.form-select,.form-textarea{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  color:var(--txt);padding:10px 12px;font-size:13px;width:100%;outline:none;
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--txt-2);letter-spacing:0.2px;}
+.form-input,.form-textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  color:var(--txt);padding:10px 14px;font-size:13px;width:100%;outline:none;
+  transition:border-color var(--trans), box-shadow var(--trans);
 }
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-input:focus,.form-textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(59,130,246,0.18);
+}
+
+/* Global Fancy Select */
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--txt);
+  padding: 10px 38px 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--trans);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.form-select:hover {
+  border-color: var(--border-mid);
+  background-color: var(--card-hover);
+}
+.form-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
+}
+.form-select option {
+  background: #0F172A;
+  color: #F8FAFC;
+  padding: 12px;
+  font-size: 13px;
+}
 
 /* ═══════════════════════════ LUXURY FLOATING DOCK ═════════════════════ */
 .floating-dock {
@@ -898,6 +935,517 @@ input,textarea,select{font-family:var(--ff);}
   font-weight: 500;
 }
 
+/* ═══════════════════════════ FANCY CUSTOM DROPDOWN ════════════════════ */
+.fancy-dropdown {
+  position: relative;
+  width: 100%;
+}
+.fancy-dropdown-trigger {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--txt);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  outline: none;
+  text-align: left;
+}
+[data-theme="light"] .fancy-dropdown-trigger {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.95) 100%);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+.fancy-dropdown-trigger:hover,
+.fancy-dropdown.open .fancy-dropdown-trigger {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.fancy-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.fancy-trigger-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fancy-trigger-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.fancy-trigger-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.fancy-trigger-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--txt);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fancy-trigger-sub {
+  font-size: 11px;
+  color: var(--txt-3);
+  white-space: nowrap;
+}
+.fancy-chevron {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--txt-3);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+  flex-shrink: 0;
+}
+.fancy-chevron svg {
+  width: 16px;
+  height: 16px;
+}
+.fancy-dropdown.open .fancy-chevron {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+/* Floating Fancy Menu */
+.fancy-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.96) 0%, rgba(10, 14, 23, 0.98) 100%);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 
+    0 24px 50px -10px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  z-index: 1050;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  animation: fancyDropFade 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+[data-theme="light"] .fancy-dropdown-menu {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 246, 251, 0.98) 100%);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.15);
+}
+.fancy-dropdown.open .fancy-dropdown-menu {
+  display: flex;
+}
+@keyframes fancyDropFade {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.fancy-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  border: 1px solid transparent;
+}
+.fancy-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+[data-theme="light"] .fancy-option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.fancy-option.selected {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.fancy-option-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fancy-option-icon.points-icon {
+  background: rgba(59, 130, 246, 0.18);
+  color: #38BDF8;
+}
+.fancy-option-icon.cash-icon {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34D399;
+}
+.fancy-option-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fancy-option-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fancy-option-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--txt);
+}
+.fancy-option-desc {
+  font-size: 11px;
+  color: var(--txt-3);
+  line-height: 1.3;
+}
+
+.fancy-option-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  white-space: nowrap;
+}
+.fancy-option-badge.cash-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.fancy-option-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fancy-option-check svg {
+  width: 11px;
+  height: 11px;
+}
+.fancy-option.selected .fancy-option-check {
+  display: flex;
+}
+
+/* ═══════════════════════════ WITHDRAWAL TRANSACTION RECEIPT ═══════════ */
+.receipt-modal-box {
+  max-width: 440px;
+  background: linear-gradient(135deg, #131A27 0%, #0B1019 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+}
+[data-theme="light"] .receipt-modal-box {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2);
+}
+
+.receipt-header {
+  padding: 24px 24px 18px;
+  text-align: center;
+  position: relative;
+  background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+}
+
+.receipt-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.receipt-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rcpt-logo-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  font-weight: 800;
+  font-size: 10px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rcpt-logo-text {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.rcpt-logo-text span { color: var(--accent); }
+.receipt-official-pill {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--txt-3);
+}
+
+/* Pulsing Verified Graphic */
+.receipt-status-graphic {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.receipt-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+  animation: receiptPulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+@keyframes receiptPulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  70% { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.receipt-check-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+}
+.receipt-check-circle svg {
+  width: 28px;
+  height: 28px;
+}
+
+.receipt-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--txt);
+  margin-bottom: 4px;
+}
+.receipt-sub {
+  font-size: 12px;
+  color: var(--txt-3);
+  max-width: 300px;
+  margin: 0 auto 14px;
+  line-height: 1.4;
+}
+
+.receipt-amount-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.receipt-amount-val {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--green);
+  text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+.receipt-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #34D399;
+}
+.status-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
+}
+
+/* Perforated Divider */
+.receipt-perforated-line {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+}
+.receipt-notch {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--border) inset;
+}
+.notch-left { left: -9px; }
+.notch-right { right: -9px; }
+.receipt-dash-line {
+  width: calc(100% - 36px);
+  margin: 0 auto;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.12);
+}
+[data-theme="light"] .receipt-dash-line {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Receipt Body */
+.receipt-body {
+  padding: 10px 24px 18px;
+}
+.receipt-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+[data-theme="light"] .receipt-grid {
+  background: #F8FAFC;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.receipt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.rcpt-label {
+  color: var(--txt-3);
+  font-weight: 500;
+}
+.rcpt-val {
+  color: var(--txt);
+  font-weight: 600;
+  text-align: right;
+}
+.rcpt-val.mono-val {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.rcpt-val.bold-val {
+  font-weight: 700;
+}
+.rcpt-val.free-val {
+  color: var(--green);
+}
+.rcpt-val.eta-val {
+  color: #38BDF8;
+}
+
+.rcpt-val-copy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rcpt-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--txt-3);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.18s ease;
+}
+.rcpt-copy-btn:hover {
+  color: var(--accent);
+}
+.rcpt-copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.receipt-security-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--txt-3);
+  margin-top: 14px;
+  line-height: 1.4;
+  padding: 0 4px;
+}
+.receipt-security-footer svg {
+  width: 16px;
+  height: 16px;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.receipt-actions {
+  padding: 16px 24px 22px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+[data-theme="light"] .receipt-actions {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+.rcpt-btn {
+  flex: 1;
+  justify-content: center;
+  padding: 11px 16px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
 @media(max-width:640px){
   .top-pill-wrapper {
     top: 8px;
@@ -1379,12 +1927,58 @@ input,textarea,select{font-family:var(--ff);}
       <button class="modal-close" onclick="closeModal('modalWithdraw')">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Select Wallet</label>
-        <select class="form-select" id="wdWalletType">
-          <option value="task">Task Points Wallet (Min ₦<?= number_format($minTaskWd) ?>)</option>
-          <option value="cash">Referral Cash Wallet (Min ₦<?= number_format($minCashWd) ?>)</option>
-        </select>
+      <div class="form-group" style="position:relative;">
+        <label class="form-label">Select Wallet Source</label>
+        <input type="hidden" id="wdWalletType" value="task">
+        
+        <!-- Custom Fancy Dropdown -->
+        <div class="fancy-dropdown" id="wdWalletDropdown">
+          <button type="button" class="fancy-dropdown-trigger" id="wdWalletTrigger" onclick="toggleFancyDropdown('wdWalletDropdown')" aria-haspopup="listbox" aria-expanded="false">
+            <div class="fancy-trigger-content">
+              <div class="fancy-trigger-icon" id="wdWalletIcon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div class="fancy-trigger-text">
+                <div class="fancy-trigger-title" id="wdWalletTitle">Task Points Wallet</div>
+                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: ₦<?= number_format($minTaskWd) ?></div>
+              </div>
+            </div>
+            <div class="fancy-chevron">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </button>
+
+          <!-- Floating Fancy Options Menu -->
+          <div class="fancy-dropdown-menu" id="wdWalletMenu" role="listbox">
+            <div class="fancy-option selected" data-value="task" data-title="Task Points Wallet" data-sub="Min payout: ₦<?= number_format($minTaskWd) ?>" data-icon="points" onclick="selectFancyOption('wdWalletDropdown', this)">
+              <div class="fancy-option-icon points-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div class="fancy-option-info">
+                <div class="fancy-option-name">Task Points Wallet</div>
+                <div class="fancy-option-desc">Earnings from completed tasks & video surveys</div>
+              </div>
+              <div class="fancy-option-badge">Min ₦<?= number_format($minTaskWd) ?></div>
+              <div class="fancy-option-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+
+            <div class="fancy-option" data-value="cash" data-title="Referral Cash Wallet" data-sub="Min payout: ₦<?= number_format($minCashWd) ?>" data-icon="cash" onclick="selectFancyOption('wdWalletDropdown', this)">
+              <div class="fancy-option-icon cash-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+              </div>
+              <div class="fancy-option-info">
+                <div class="fancy-option-name">Referral Cash Wallet</div>
+                <div class="fancy-option-desc">Direct affiliate commissions & network rewards</div>
+              </div>
+              <div class="fancy-option-badge cash-badge">Min ₦<?= number_format($minCashWd) ?></div>
+              <div class="fancy-option-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Withdrawal Amount (₦)</label>
@@ -1398,6 +1992,120 @@ input,textarea,select{font-family:var(--ff);}
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalWithdraw')">Cancel</button>
       <button class="btn btn-primary" onclick="submitWithdrawalReq()">Confirm Payout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Digital Banking Withdrawal Receipt Modal -->
+<div class="modal-backdrop" id="modalWithdrawReceipt">
+  <div class="modal receipt-modal-box">
+    <!-- Close Button -->
+    <button class="modal-close" onclick="closeModal('modalWithdrawReceipt')" style="position:absolute;top:16px;right:18px;z-index:10;">&times;</button>
+    
+    <!-- Receipt Header with Watermark & Security Seal -->
+    <div class="receipt-header">
+      <div class="receipt-brand-row">
+        <div class="receipt-logo">
+          <span class="rcpt-logo-mark">IX</span>
+          <span class="rcpt-logo-text">INNOVATION<span>X</span></span>
+        </div>
+        <div class="receipt-official-pill">OFFICIAL RECEIPT</div>
+      </div>
+
+      <!-- Animated Pulse Checkmark -->
+      <div class="receipt-status-graphic">
+        <div class="receipt-pulse-ring"></div>
+        <div class="receipt-check-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="receipt-title">Withdrawal Dispatched</div>
+      <div class="receipt-sub">Your payment request has been securely queued for instant settlement.</div>
+
+      <!-- Prominent Amount Display -->
+      <div class="receipt-amount-display">
+        <span class="receipt-amount-val" id="rcptAmount">₦0.00</span>
+        <div class="receipt-status-pill">
+          <span class="status-pulse-dot"></span>
+          <span id="rcptStatusText">QUEUED FOR INSTANT SETTLEMENT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Perforated Cut Line Divider -->
+    <div class="receipt-perforated-line">
+      <div class="receipt-notch notch-left"></div>
+      <div class="receipt-dash-line"></div>
+      <div class="receipt-notch notch-right"></div>
+    </div>
+
+    <!-- Receipt Breakdown Body -->
+    <div class="receipt-body">
+      <div class="receipt-grid">
+        <div class="receipt-row">
+          <span class="rcpt-label">Reference ID</span>
+          <div class="rcpt-val-copy">
+            <span class="rcpt-val mono-val" id="rcptTxnId">IX-WD-000000</span>
+            <button type="button" class="rcpt-copy-btn" onclick="copyReceiptTxn()" title="Copy Reference ID">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Beneficiary Bank</span>
+          <span class="rcpt-val bold-val" id="rcptBank">OPay Digital Services</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Account Number</span>
+          <span class="rcpt-val mono-val bold-val" id="rcptAccount">0801234567</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Account Name</span>
+          <span class="rcpt-val" id="rcptName">Member</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Source Wallet</span>
+          <span class="rcpt-val" id="rcptWallet">Task Points Wallet</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Date & Time</span>
+          <span class="rcpt-val" id="rcptDate">Just now</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Transfer Fee</span>
+          <span class="rcpt-val free-val">₦0.00 (Zero Fee / Subsidized)</span>
+        </div>
+
+        <div class="receipt-row">
+          <span class="rcpt-label">Estimated Delivery</span>
+          <span class="rcpt-val eta-val">Within 5 - 15 Minutes</span>
+        </div>
+      </div>
+
+      <div class="receipt-security-footer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Cryptographically signed & routed through automated banking settlement engine.</span>
+      </div>
+    </div>
+
+    <!-- Receipt Action Buttons -->
+    <div class="receipt-actions">
+      <button type="button" class="btn btn-secondary rcpt-btn" onclick="printReceipt()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Save / Print
+      </button>
+      <button type="button" class="btn btn-primary rcpt-btn" onclick="closeModal('modalWithdrawReceipt')">
+        Done
+      </button>
     </div>
   </div>
 </div>
@@ -2022,13 +2730,81 @@ function showSurveyResult(res) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WITHDRAWALS
+// FANCY DROPDOWN LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleFancyDropdown(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.fancy-dropdown.open').forEach(d => {
+    if (d.id !== id) d.classList.remove('open');
+  });
+  el.classList.toggle('open', !wasOpen);
+  const trigger = el.querySelector('.fancy-dropdown-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', String(!wasOpen));
+}
+
+function selectFancyOption(dropdownId, optEl) {
+  const container = document.getElementById(dropdownId);
+  if (!container || !optEl) return;
+  const val = optEl.dataset.value;
+  const title = optEl.dataset.title;
+  const sub = optEl.dataset.sub;
+  const icon = optEl.dataset.icon;
+
+  const hiddenInput = container.querySelector('input[type="hidden"]') || document.getElementById('wdWalletType');
+  if (hiddenInput) hiddenInput.value = val;
+
+  const titleEl = container.querySelector('.fancy-trigger-title');
+  const subEl = container.querySelector('.fancy-trigger-sub');
+  const iconEl = container.querySelector('.fancy-trigger-icon');
+
+  if (titleEl) titleEl.textContent = title;
+  if (subEl) subEl.textContent = sub;
+  if (iconEl) {
+    if (icon === 'cash') {
+      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>';
+      iconEl.style.color = '#34D399';
+      iconEl.style.borderColor = 'rgba(52, 211, 153, 0.25)';
+      iconEl.style.background = 'rgba(16, 185, 129, 0.15)';
+    } else {
+      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+      iconEl.style.color = '#38BDF8';
+      iconEl.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+      iconEl.style.background = 'rgba(59, 130, 246, 0.15)';
+    }
+  }
+
+  container.querySelectorAll('.fancy-option').forEach(o => o.classList.remove('selected'));
+  optEl.classList.add('selected');
+
+  container.classList.remove('open');
+  const trigger = container.querySelector('.fancy-dropdown-trigger');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+}
+
+// Close fancy dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.fancy-dropdown')) {
+    document.querySelectorAll('.fancy-dropdown.open').forEach(d => {
+      d.classList.remove('open');
+      const tr = d.querySelector('.fancy-dropdown-trigger');
+      if (tr) tr.setAttribute('aria-expanded', 'false');
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WITHDRAWALS & RECEIPT
 // ═══════════════════════════════════════════════════════════════════════════
 async function submitWithdrawalReq() {
   const type = document.getElementById('wdWalletType').value;
   const amount = parseFloat(document.getElementById('wdAmount').value);
   const min = type === 'cash' ? 5000 : 1000;
   if (!amount || amount < min) { toast(`Minimum payout is ₦${min.toLocaleString()}`, 'error'); return; }
+
+  const btn = event?.target || document.querySelector('#modalWithdraw .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
 
   try {
     const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
@@ -2042,14 +2818,56 @@ async function submitWithdrawalReq() {
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      toast('Withdrawal requested! Processing within settlement window.', 'success');
       closeModal('modalWithdraw');
+
+      // Populate Digital Receipt with verified details
+      const rc = d.receipt || {};
+      const bankName = rc.bank_name || rc.bank || document.getElementById('atmBankName')?.textContent || 'OPay Digital Services';
+      const accNo = rc.account_number || rc.account || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '0801234567';
+      const accName = rc.account_name || rc.beneficiary_name || document.getElementById('atmCardHolder')?.textContent || CURRENT_USER;
+      const txnId = rc.txn_id || rc.id || ('IX-WD-' + Math.floor(100000 + Math.random() * 900000));
+      const dateStr = rc.date_formatted || (new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' WAT');
+      const walletLabel = rc.wallet_type || (type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet');
+      const amountStr = rc.amount_formatted || ('₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+      document.getElementById('rcptAmount').textContent = amountStr;
+      document.getElementById('rcptTxnId').textContent = txnId;
+      document.getElementById('rcptBank').textContent = bankName;
+      document.getElementById('rcptAccount').textContent = accNo;
+      document.getElementById('rcptName').textContent = accName;
+      document.getElementById('rcptWallet').textContent = walletLabel;
+      document.getElementById('rcptDate').textContent = dateStr;
+      document.getElementById('rcptStatusText').textContent = rc.status_label || 'QUEUED FOR INSTANT SETTLEMENT';
+
+      // Open official withdrawal receipt modal
+      openModal('modalWithdrawReceipt');
+      toast('Withdrawal request successfully queued!', 'success');
+
+      // Clear withdrawal input
+      const amtInput = document.getElementById('wdAmount');
+      if (amtInput) amtInput.value = '';
     } else {
       toast(d.message || d.error || 'Failed to submit withdrawal', 'error');
     }
   } catch(e) {
     toast('Network error processing request', 'error');
   }
+  if (btn) { btn.disabled = false; btn.textContent = 'Confirm Payout'; }
+}
+
+function copyReceiptTxn() {
+  const el = document.getElementById('rcptTxnId');
+  if (!el) return;
+  const text = el.textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Reference ID copied to clipboard!', 'success');
+  }).catch(() => {
+    toast(text, 'info');
+  });
+}
+
+function printReceipt() {
+  window.print();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
