@@ -1,42 +1,29 @@
 [
   {
-    "id": "notif_welcome",
-    "title": "Welcome to INNOVATIONX",
-    "msg": "Your luxury earning account is officially active. Explore daily sponsored tasks, instant referral commissions, and automated bank settlements to maximize your daily income.",
+    "id": "notif_welcome_1",
+    "title": "Welcome to InnovationX",
+    "msg": "Your dashboard is fully set up. Complete tasks and surveys to start earning rewards.",
     "time": "Just now",
-    "timestamp": 1727128800,
-    "category": "system",
-    "link": "javascript:switchDashTab('overview')",
-    "linkText": "View Overview"
+    "timestamp": 1727980000,
+    "icon": "reward",
+    "category": "system"
   },
   {
-    "id": "notif_tasks_live",
-    "title": "3 Jobbers Tasks & Gigs Live",
-    "msg": "New sponsored video review tasks and social engagement gigs have been uploaded. Complete micro-tasks today to claim your direct PTS rewards and cash conversion.",
-    "time": "15m ago",
-    "timestamp": 1727127900,
-    "category": "task",
-    "link": "javascript:switchDashTab('tasks')",
-    "linkText": "Go to Tasks Hub"
+    "id": "notif_tasks_2",
+    "title": "New Sponsored Tasks Available",
+    "msg": "High-reward daily tasks and community gigs have been posted. Check the Tasks tab.",
+    "time": "25 mins ago",
+    "timestamp": 1727982000,
+    "icon": "alert",
+    "category": "tasks"
   },
   {
-    "id": "notif_nuban_ready",
-    "title": "Dedicated Settlement NUBAN Ready",
-    "msg": "Your unique virtual settlement account is active. You can receive automated bank transfers directly from OPay, Moniepoint, PalmPay, or any commercial Nigerian bank for instant liquidity.",
-    "time": "1h ago",
-    "timestamp": 1727125200,
-    "category": "wallet",
-    "link": "javascript:switchDashTab('overview')",
-    "linkText": "Check Settlement Card"
-  },
-  {
-    "id": "notif_security",
-    "title": "Account Protection & Immutable PIN",
-    "msg": "Your registered details (Username, Email, Phone) have been securely anchored to your account ledger. To ensure maximum safety, always keep your 4-digit withdrawal PIN confidential.",
-    "time": "3h ago",
-    "timestamp": 1727118000,
-    "category": "security",
-    "link": "javascript:switchDashTab('settings')",
-    "linkText": "Security Settings"
+    "id": "notif_wallet_3",
+    "title": "ATM Settlement Card Enabled",
+    "msg": "You can view and update your registered bank payout details directly on your virtual ATM card.",
+    "time": "1 hour ago",
+    "timestamp": 1727984000,
+    "icon": "credit",
+    "category": "wallet"
   }
 ]

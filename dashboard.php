@@ -153,35 +153,158 @@ a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
 input,textarea,select{font-family:var(--ff);}
 
-/* ═══════════════════════════ TOPBAR ═══════════════════════════════════ */
-.topbar{
-  position:sticky;top:0;z-index:100;background:var(--surface);
-  border-bottom:1px solid var(--border);padding:0 24px;
-  display:flex;align-items:center;justify-content:space-between;height:60px;
+/* ═══════════════════════════ TOP FLOATING PILL BAR ════════════════════ */
+.top-pill-wrapper {
+  position: sticky;
+  top: 14px;
+  z-index: 950;
+  max-width: 960px;
+  margin: 14px auto 0;
+  padding: 0 20px;
 }
-.brand{display:flex;align-items:center;gap:10px;}
-.brand-mark{
-  width:32px;height:32px;border-radius:8px;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13px;color:#fff;
+.top-pill-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.84) 0%, rgba(10, 14, 23, 0.94) 100%);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    0 16px 36px -6px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(255, 255, 255, 0.18) inset;
+  transition: all 0.25s ease;
 }
-.brand-text{font-size:15px;font-weight:700;letter-spacing:-0.3px;}
-.brand-text span{color:var(--accent);}
 
-.topbar-actions{display:flex;align-items:center;gap:10px;}
-.user-pill{
-  display:flex;align-items:center;gap:8px;padding:5px 12px;
-  border-radius:20px;background:var(--card);border:1px solid var(--border);
-  font-size:12.5px;font-weight:600;
+[data-theme="light"] .top-pill-bar {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 246, 251, 0.98) 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 14px 32px -6px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.9) inset;
 }
-.user-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
-.icon-btn{
-  width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background var(--trans);color:var(--txt-2);
+
+.brand-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
 }
-.icon-btn:hover{background:var(--card-hover);color:var(--txt);}
-.icon-btn svg{width:16px;height:16px;}
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.35);
+  flex-shrink: 0;
+}
+.brand-text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+.brand-text span {
+  color: var(--accent);
+}
+
+.top-pill-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+[data-theme="light"] .user-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+.top-pill-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.top-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--txt-2);
+  position: relative;
+  flex-shrink: 0;
+  outline: none;
+}
+[data-theme="light"] .top-action-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.top-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--txt);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+[data-theme="light"] .top-action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+.top-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.top-action-btn.logout-btn:hover {
+  color: var(--red);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.notif-badge-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  display: none;
+}
 
 /* ═══════════════════════════ MAIN CONTENT ═════════════════════════════ */
 .app-container{max-width:960px;margin:0 auto;padding:24px 20px;}
@@ -228,50 +351,47 @@ input,textarea,select{font-family:var(--ff);}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
 
 /* ═══════════════════════════ LUXURY FLOATING DOCK ═════════════════════ */
-@keyframes dockReveal {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
-}
-
 .floating-dock {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, rgba(17, 24, 39, 0.76) 0%, rgba(10, 14, 23, 0.88) 100%);
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.84) 0%, rgba(10, 14, 23, 0.94) 100%);
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
-  padding: 6px 10px;
+  height: 58px;
+  padding: 0 10px;
   box-shadow: 
-    0 24px 50px -10px rgba(0, 0, 0, 0.7),
+    0 20px 48px -8px rgba(0, 0, 0, 0.75),
     0 0 0 1px rgba(255, 255, 255, 0.06) inset,
     0 1px 0 rgba(255, 255, 255, 0.22) inset;
   z-index: 900;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  animation: dockReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 [data-theme="light"] .floating-dock {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(244, 246, 251, 0.94) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 246, 251, 0.98) 100%);
   border-color: rgba(0, 0, 0, 0.08);
   box-shadow: 
-    0 20px 48px -8px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.85) inset;
+    0 16px 40px -8px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.9) inset;
 }
 
 .dock-item {
   width: 44px;
   height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 44px;
+  max-height: 44px;
+  flex-shrink: 0;
   border-radius: 50%;
   border: none;
   background: transparent;
@@ -280,41 +400,44 @@ input,textarea,select{font-family:var(--ff);}
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  padding: 0;
+  margin: 0;
+  outline: none;
 }
 
 .dock-item svg {
   width: 20px;
   height: 20px;
-  transition: transform 0.22s ease, filter 0.22s ease;
+  display: block;
+  pointer-events: none;
+  transition: color 0.2s ease;
 }
 
 .dock-item:hover {
   color: var(--txt);
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px) scale(1.06);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 [data-theme="light"] .dock-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .dock-item.active {
   background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
   color: #FFFFFF;
   box-shadow: 
-    0 6px 20px rgba(37, 99, 235, 0.45),
+    0 4px 14px rgba(37, 99, 235, 0.45),
     0 0 0 1px rgba(255, 255, 255, 0.25) inset;
-  transform: translateY(-2px) scale(1.08);
 }
 
 .dock-item.active svg {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 .dock-item:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
 /* ═══════════════════════════ REFERRAL BOX ═════════════════════════════ */
@@ -428,7 +551,7 @@ input,textarea,select{font-family:var(--ff);}
   box-shadow: var(--shadow);
   display: none;
   flex-direction: column;
-  z-index: 1000;
+  z-index: 1100;
   overflow: hidden;
 }
 .notif-dropdown.open { display: flex; }
@@ -446,32 +569,82 @@ input,textarea,select{font-family:var(--ff);}
   display: flex;
   flex-direction: column;
   gap: 3px;
-  transition: background var(--trans);
+  transition: background var(--trans), opacity var(--trans);
 }
 .notif-item:last-child { border-bottom: none; }
 .notif-item:hover { background: var(--card-hover); }
+.notif-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .notif-item-title { font-size: 12.5px; font-weight: 600; color: var(--txt); }
+.notif-item-unread-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+  flex-shrink: 0;
+}
 .notif-item-msg { font-size: 11.5px; color: var(--txt-2); line-height: 1.4; }
 .notif-item-time { font-size: 10px; color: var(--txt-3); margin-top: 2px; }
 
+/* Read State - items stay visible and gracefully muted */
+.notif-item.read {
+  opacity: 0.72;
+}
+.notif-item.read .notif-item-title {
+  color: var(--txt-2);
+  font-weight: 500;
+}
+
 @media(max-width:640px){
+  .top-pill-wrapper {
+    top: 8px;
+    padding: 0 10px;
+    margin: 8px auto 0;
+  }
+  .top-pill-bar {
+    height: 50px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .brand-text {
+    font-size: 13.5px;
+  }
+  .top-pill-center .user-pill {
+    display: none;
+  }
+  .top-action-btn {
+    width: 32px;
+    height: 32px;
+  }
+  .top-action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
   .floating-dock{
-    bottom:14px;
-    padding:5px 8px;
-    gap:2px;
-    max-width:calc(100vw - 24px);
-    width:auto;
+    bottom: 14px;
+    height: 52px;
+    padding: 0 6px;
+    gap: 4px;
   }
   .dock-item{
-    width:38px;
-    height:38px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
   }
   .dock-item svg{
-    width:17px;
-    height:17px;
+    width: 18px;
+    height: 18px;
   }
   .stats-grid{grid-template-columns:1fr 1fr;}
-  .notif-dropdown{right:-30px;width:290px;}
+  .notif-dropdown{right:-50px;width:290px;}
 }
 </style>
 </head>
@@ -482,50 +655,59 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataRefLink" data-link="<?= htmlspecialchars($referralLink) ?>" style="display:none"></span>
 <span id="dataRefCode" data-code="<?= htmlspecialchars($referralCode) ?>" style="display:none"></span>
 
-<!-- Top Bar (Clean, No hamburger, No notification icon) -->
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark">IX</div>
-    <div class="brand-text">Innovation<span>X</span></div>
-  </div>
-  <div class="topbar-actions">
-    <div class="user-pill">
-      <span class="user-dot"></span>
-      <span><?= htmlspecialchars($username) ?></span>
-    </div>
-    <!-- Notification Bell -->
-    <div style="position:relative;">
-      <button class="icon-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" style="position:relative;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span id="notifBadge" style="position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent);display:none;"></span>
-      </button>
+<!-- Top Floating Pill Bar (Modern island navigation) -->
+<header class="top-pill-wrapper">
+  <div class="top-pill-bar">
+    <a href="dashboard.php" class="brand-pill" title="InnovationX Dashboard">
+      <div class="brand-mark">IX</div>
+      <div class="brand-text">Innovation<span>X</span></div>
+    </a>
 
-      <!-- Notification Dropdown -->
-      <div id="notifDropdown" class="notif-dropdown">
-        <div class="notif-header">
-          <span style="font-weight:700;font-size:13px;">Notifications</span>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
-            <button class="btn btn-ghost btn-sm" onclick="markAllNotificationsRead()" style="font-size:10px;padding:3px 7px;line-height:1;">Mark all read</button>
-          </div>
-        </div>
-        <div id="notifList" class="notif-list">
-          <div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">Loading notifications...</div>
-        </div>
+    <div class="top-pill-center">
+      <div class="user-pill">
+        <span class="user-dot"></span>
+        <span class="user-name"><?= htmlspecialchars($username) ?></span>
       </div>
     </div>
 
-    <!-- Settings Button -->
-    <button class="icon-btn" onclick="openSettingsTab()" title="Settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <div class="top-pill-actions">
+      <!-- Notification Bell -->
+      <div style="position:relative;">
+        <button class="top-action-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="notifBadge" class="notif-badge-dot"></span>
+        </button>
 
-    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
-    <a href="logout.php" class="icon-btn" title="Sign out">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    </a>
+        <!-- Notification Dropdown -->
+        <div id="notifDropdown" class="notif-dropdown">
+          <div class="notif-header">
+            <span style="font-weight:700;font-size:13px;">Notifications</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
+              <button class="btn btn-ghost btn-sm" onclick="markAllNotificationsRead()" style="font-size:10px;padding:3px 7px;line-height:1;border-radius:6px;">Mark all read</button>
+            </div>
+          </div>
+          <div id="notifList" class="notif-list">
+            <div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">Loading notifications...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Button -->
+      <button class="top-action-btn" onclick="openSettingsTab()" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+
+      <!-- Theme Toggle -->
+      <button class="top-action-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+
+      <!-- Sign Out -->
+      <a href="logout.php" class="top-action-btn logout-btn" title="Sign out" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
   </div>
 </header>
 
@@ -910,14 +1092,19 @@ async function loadNotifications() {
     const badge = document.getElementById('notifBadge');
     const listEl = document.getElementById('notifList');
 
+    const isMarkedRead = localStorage.getItem('ix_notifs_marked_read') === 'true';
     const isDismissed = localStorage.getItem('ix_notif_dot_dismissed') === 'true';
+
     if (list && list.length > 0) {
-      if (badge && !isDismissed) badge.style.display = 'block';
-      if (countEl) countEl.textContent = `${list.length} update${list.length > 1 ? 's' : ''}`;
+      if (badge) badge.style.display = (!isDismissed && !isMarkedRead) ? 'block' : 'none';
+      if (countEl) countEl.textContent = isMarkedRead ? '0 unread' : `${list.length} update${list.length > 1 ? 's' : ''}`;
       if (listEl) {
         listEl.innerHTML = list.map(n => `
-          <div class="notif-item">
-            <div class="notif-item-title">${esc(n.title || 'Platform Notice')}</div>
+          <div class="notif-item ${isMarkedRead ? 'read' : ''}">
+            <div class="notif-item-header">
+              <span class="notif-item-title">${esc(n.title || 'Platform Notice')}</span>
+              ${!isMarkedRead ? '<span class="notif-item-unread-dot"></span>' : ''}
+            </div>
             <div class="notif-item-msg">${esc(n.msg || n.message || '')}</div>
             <div class="notif-item-time">${esc(n.time || 'Recent')}</div>
           </div>
@@ -945,16 +1132,17 @@ async function markAllNotificationsRead() {
   const badge = document.getElementById('notifBadge');
   if (badge) badge.style.display = 'none';
   localStorage.setItem('ix_notif_dot_dismissed', 'true');
+  localStorage.setItem('ix_notifs_marked_read', 'true');
   const countEl = document.getElementById('notifCountText');
-  if (countEl) countEl.textContent = '0 updates';
-  const listEl = document.getElementById('notifList');
-  if (listEl) {
-    listEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">No unread notifications.</div>';
-  }
-  try {
-    await fetch('/api/notifications.php?action=clear_all', { method: 'POST' });
-    toast('All notifications marked as read', 'success');
-  } catch(e) {}
+  if (countEl) countEl.textContent = '0 unread';
+
+  // Keep all notifications visible in the list, just style as read
+  const items = document.querySelectorAll('.notif-item');
+  items.forEach(it => it.classList.add('read'));
+  const dots = document.querySelectorAll('.notif-item-unread-dot');
+  dots.forEach(dot => dot.remove());
+
+  toast('All notifications marked as read', 'success');
 }
 
 document.addEventListener('click', (e) => {
