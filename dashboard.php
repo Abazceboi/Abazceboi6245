@@ -450,39 +450,337 @@ input,textarea,select{font-family:var(--ff);}
   font-size:13px;font-family:var(--mono);outline:none;
 }
 
-/* ═══════════════════════════ ATM CARD WIDGET ══════════════════════════ */
-.atm-card-wrapper{display:flex;flex-direction:column;align-items:center;margin:16px 0 24px;}
-.atm-card{
-  width:100%;max-width:380px;height:220px;border-radius:16px;
-  background:linear-gradient(135deg, #1E293B 0%, #0F172A 50%, #07090F 100%);
-  border:1px solid rgba(255,255,255,0.18);box-shadow:0 14px 40px rgba(0,0,0,0.6);
-  padding:22px;display:flex;flex-direction:column;justify-content:space-between;
-  position:relative;overflow:hidden;color:#F8FAFC;font-family:var(--mono);
+/* ═══════════════════════════ ULTRA-REALISTIC FLOATING ATM CARD ═════════ */
+.atm-card-stage {
+  perspective: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0 28px;
+  position: relative;
 }
-.atm-card::before{
-  content:'';position:absolute;top:-40%;right:-20%;width:220px;height:220px;
-  background:radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
-  pointer-events:none;
+
+.atm-card-3d {
+  width: 100%;
+  max-width: 390px;
+  height: 236px;
+  border-radius: 18px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #F8FAFC;
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+  transform: translateY(0) rotateX(2.5deg) rotateY(-1.5deg);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+
+  /* Rich Metallic Obsidian Carbon Material */
+  background: 
+    radial-gradient(circle at 90% 12%, rgba(56, 189, 248, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.16) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.6) 100%),
+    linear-gradient(135deg, #1A2232 0%, #0F1624 50%, #080C14 100%);
+
+  /* Multi-Layered Realism Border & Ambient Elevation Shadows */
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 
+    0 22px 48px -10px rgba(0, 0, 0, 0.75),
+    0 12px 24px -8px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 1px 1px rgba(255, 255, 255, 0.35) inset,
+    0 -1px 2px rgba(0, 0, 0, 0.5) inset;
 }
-.atm-card-top{display:flex;align-items:center;justify-content:space-between;z-index:1;}
-.atm-bank-name{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#38BDF8;}
-.atm-chip-row{display:flex;align-items:center;gap:12px;margin-top:14px;z-index:1;}
-.atm-chip{
-  width:38px;height:28px;border-radius:5px;
-  background:linear-gradient(135deg, #E2B842 0%, #D49B24 100%);
-  border:1px solid rgba(0,0,0,0.2);position:relative;
+
+[data-theme="light"] .atm-card-3d {
+  background: 
+    radial-gradient(circle at 90% 12%, rgba(56, 189, 248, 0.25) 0%, transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(139, 92, 246, 0.18) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(0, 0, 0, 0.45) 100%),
+    linear-gradient(135deg, #242D40 0%, #151D2E 50%, #0B101A 100%);
+  box-shadow: 
+    0 20px 45px -8px rgba(15, 23, 42, 0.35),
+    0 10px 20px -6px rgba(15, 23, 42, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 1px 1px rgba(255, 255, 255, 0.4) inset;
 }
-.atm-chip::after{
-  content:'';position:absolute;inset:4px 6px;border:1px solid rgba(0,0,0,0.25);border-radius:2px;
+
+/* Floating Card Hover Lift & Dynamic Lighting */
+.atm-card-3d:hover {
+  transform: translateY(-8px) rotateX(4deg) rotateY(-2.5deg) scale(1.02);
+  box-shadow: 
+    0 32px 64px -12px rgba(0, 0, 0, 0.85),
+    0 18px 30px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 1px 1px rgba(255, 255, 255, 0.45) inset;
 }
-.atm-contactless{width:18px;height:18px;color:#94A3B8;}
-.atm-card-number{
-  font-size:17px;font-weight:700;letter-spacing:3px;margin-top:14px;
-  color:#FFFFFF;text-shadow:0 2px 4px rgba(0,0,0,0.5);z-index:1;
+
+/* Diagonal Prismatic Holographic Glare */
+.atm-card-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.14) 48%,
+    rgba(255, 255, 255, 0.03) 54%,
+    transparent 80%
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  transition: opacity 0.3s ease;
 }
-.atm-card-bottom{display:flex;align-items:flex-end;justify-content:space-between;z-index:1;}
-.atm-card-holder{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#CBD5E1;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.atm-brand-badge{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#38BDF8;}
+
+/* Realistic Diffuse Floor Shadow */
+.atm-card-ambient-shadow {
+  width: 82%;
+  max-width: 330px;
+  height: 22px;
+  margin: -10px auto 16px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(10px);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+.atm-card-stage:hover .atm-card-ambient-shadow {
+  transform: scale(0.92);
+  opacity: 0.55;
+  filter: blur(14px);
+}
+
+/* Card Header */
+.atm-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: 2;
+}
+.atm-bank-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.atm-bank-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 12px rgba(56, 189, 248, 0.4);
+}
+.atm-card-type {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  color: #94A3B8;
+  text-transform: uppercase;
+}
+
+.atm-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+.atm-brand-logo {
+  font-size: 10px;
+  font-weight: 900;
+  color: #38BDF8;
+  letter-spacing: 0.5px;
+}
+.atm-brand-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #F8FAFC;
+}
+.atm-brand-title span {
+  color: #38BDF8;
+}
+
+/* Chip & Contactless Row */
+.atm-chip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  z-index: 2;
+}
+.atm-chip-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.atm-emv-chip {
+  width: 44px;
+  height: 34px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 0, 0, 0.3) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.atm-emv-chip svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.atm-contactless {
+  width: 20px;
+  height: 20px;
+  color: #CBD5E1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+.atm-hologram-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.6) 0%, rgba(59, 130, 246, 0.6) 50%, rgba(16, 185, 129, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Card Number */
+.atm-card-number-row {
+  margin: 10px 0 6px;
+  z-index: 2;
+}
+.atm-card-number {
+  font-family: 'SF Mono', 'Courier New', monospace;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: #F8FAFC;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 -1px 0 rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+/* Bottom Row */
+.atm-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 2;
+}
+.atm-card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.atm-label {
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #94A3B8;
+  text-transform: uppercase;
+}
+.atm-card-holder {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #F1F5F9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atm-expiry-col {
+  align-items: center;
+}
+.atm-expiry-val {
+  font-family: 'SF Mono', 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #F1F5F9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Payment Network Emblem (Mastercard-inspired interlocking rings) */
+.atm-network-logo {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 44px;
+  height: 28px;
+}
+.network-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  position: absolute;
+}
+.network-circle-1 {
+  left: 0;
+  background: linear-gradient(135deg, #EF4444 0%, #F97316 100%);
+  opacity: 0.92;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+.network-circle-2 {
+  right: 0;
+  background: linear-gradient(135deg, #F59E0B 0%, #EAB308 100%);
+  opacity: 0.88;
+  mix-blend-mode: screen;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+}
+
+.atm-card-actions {
+  margin-top: 14px;
+  z-index: 2;
+}
+
+@media(max-width:640px){
+  .atm-card-3d {
+    max-width: 100%;
+    height: 215px;
+    padding: 18px 20px;
+    border-radius: 16px;
+  }
+  .atm-bank-name {
+    font-size: 13.5px;
+    letter-spacing: 1px;
+  }
+  .atm-card-number {
+    font-size: 16px;
+    letter-spacing: 2.5px;
+  }
+  .atm-card-holder {
+    font-size: 11.5px;
+    max-width: 140px;
+  }
+  .atm-expiry-val {
+    font-size: 11.5px;
+  }
+  .atm-emv-chip {
+    width: 38px;
+    height: 30px;
+  }
+}
 
 /* ═══════════════════════════ TASKS & SURVEYS ══════════════════════════ */
 .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
@@ -654,6 +952,9 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataUser" data-user="<?= htmlspecialchars($username) ?>" style="display:none"></span>
 <span id="dataRefLink" data-link="<?= htmlspecialchars($referralLink) ?>" style="display:none"></span>
 <span id="dataRefCode" data-code="<?= htmlspecialchars($referralCode) ?>" style="display:none"></span>
+<span id="dataBankName" data-bank="<?= htmlspecialchars($bankName) ?>" style="display:none"></span>
+<span id="dataAccountNo" data-acc="<?= htmlspecialchars($accountNumber) ?>" style="display:none"></span>
+<span id="dataAccountName" data-name="<?= htmlspecialchars($accountName) ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
@@ -801,38 +1102,87 @@ input,textarea,select{font-family:var(--ff);}
       <div class="card-title">Settlement Bank Card</div>
       <div class="card-sub">Your registered destination account for bank withdrawals.</div>
 
-      <!-- Realistic ATM Card Display -->
-      <div class="atm-card-wrapper">
-        <div class="atm-card">
+      <!-- Realistic 3D Floating ATM Card Display -->
+      <div class="atm-card-stage">
+        <div class="atm-card-3d" id="atmCardElement" onclick="openModal('modalEditBank')" title="Click to edit bank details">
+          <!-- Holographic Light Beam & Shimmer Overlay -->
+          <div class="atm-card-shimmer"></div>
+          
+          <!-- Card Header: Bank & Card Type -->
           <div class="atm-card-top">
-            <span class="atm-bank-name" id="atmBankName"><?= htmlspecialchars($bankName ?: 'OPAY DIGITAL') ?></span>
-            <span class="atm-brand-badge">INNOVATIONX</span>
-          </div>
-
-          <div class="atm-chip-row">
-            <div class="atm-chip"></div>
-            <svg class="atm-contactless" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8.5 16.5a5 5 0 0 1 0-9M12 19a8.5 8.5 0 0 0 0-14M15.5 21.5a12 12 0 0 0 0-19"/>
-            </svg>
-          </div>
-
-          <div class="atm-card-number" id="atmCardNumber">
-            <?= htmlspecialchars(chunk_split($accountNumber ?: '0801234567', 4, '  ')) ?>
-          </div>
-
-          <div class="atm-card-bottom">
-            <div>
-              <div style="font-size:8px;color:#94A3B8;letter-spacing:1px;margin-bottom:2px;">CARD HOLDER</div>
-              <div class="atm-card-holder" id="atmCardHolder"><?= htmlspecialchars($accountName ?: $username) ?></div>
+            <div class="atm-bank-info">
+              <span class="atm-bank-name" id="atmBankName"><?= htmlspecialchars($bankName) ?></span>
+              <span class="atm-card-type">PLATINUM DEBIT</span>
             </div>
-            <div style="text-align:right;">
-              <div style="font-size:8px;color:#94A3B8;letter-spacing:1px;margin-bottom:2px;">STATUS</div>
-              <div style="font-size:11px;color:#38BDF8;font-weight:700;">VERIFIED</div>
+            <div class="atm-brand-badge">
+              <span class="atm-brand-logo">IX</span>
+              <span class="atm-brand-title">INNOVATION<span>X</span></span>
+            </div>
+          </div>
+
+          <!-- EMV Chip & Contactless Wave + Hologram -->
+          <div class="atm-chip-row">
+            <div class="atm-chip-wrapper">
+              <div class="atm-emv-chip">
+                <svg viewBox="0 0 46 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="46" height="36" rx="6" fill="url(#chipGold)"/>
+                  <rect x="2" y="2" width="42" height="32" rx="4" stroke="rgba(0,0,0,0.35)" stroke-width="1"/>
+                  <path d="M2 13h13c1.5 0 2.5-1 2.5-2.5V2" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <path d="M2 23h13c1.5 0 2.5 1 2.5 2.5V34" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <path d="M44 13H31c-1.5 0-2.5-1-2.5-2.5V2" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <path d="M44 23H31c-1.5 0-2.5 1-2.5 2.5V34" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <path d="M17.5 18h11" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <circle cx="23" cy="18" r="3.5" stroke="rgba(0,0,0,0.4)" stroke-width="1.2"/>
+                  <defs>
+                    <linearGradient id="chipGold" x1="0" y1="0" x2="46" y2="36" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#FCD34D"/>
+                      <stop offset="0.3" stop-color="#F59E0B"/>
+                      <stop offset="0.7" stop-color="#D97706"/>
+                      <stop offset="1" stop-color="#B45309"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <svg class="atm-contactless" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M8.5 16.5a5 5 0 0 1 0-9"/>
+                <path d="M12 19a8.5 8.5 0 0 0 0-14"/>
+                <path d="M15.5 21.5a12 12 0 0 0 0-19"/>
+              </svg>
+            </div>
+            <div class="atm-hologram-pill" title="Security Hologram">
+              <span>SECURE</span>
+            </div>
+          </div>
+
+          <!-- Embossed Card / Account Number -->
+          <div class="atm-card-number-row">
+            <div class="atm-card-number" id="atmCardNumber">
+              <?= htmlspecialchars(chunk_split($accountNumber, 4, '  ')) ?>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Cardholder, Expiry & Payment Network Emblem -->
+          <div class="atm-card-bottom">
+            <div class="atm-card-col">
+              <span class="atm-label">CARDHOLDER</span>
+              <span class="atm-card-holder" id="atmCardHolder"><?= htmlspecialchars($accountName) ?></span>
+            </div>
+            <div class="atm-card-col atm-expiry-col">
+              <span class="atm-label">EXPIRES</span>
+              <span class="atm-expiry-val">12/29</span>
+            </div>
+            <div class="atm-network-logo" title="Verified Settlement Account">
+              <div class="network-circle network-circle-1"></div>
+              <div class="network-circle network-circle-2"></div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:14px;">
+        <!-- Realistic Diffuse Floor Shadow -->
+        <div class="atm-card-ambient-shadow"></div>
+
+        <!-- Action Button -->
+        <div class="atm-card-actions">
           <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditBank')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Edit Bank Card Details
@@ -1075,6 +1425,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const pInput = document.getElementById('pageRefInput');
   if (hInput) hInput.value = FINAL_REF_LINK;
   if (pInput) pInput.value = FINAL_REF_LINK;
+
+  // Initialize ATM card fields with guaranteed fallback
+  const bNameEl = document.getElementById('atmBankName');
+  const accNumEl = document.getElementById('atmCardNumber');
+  const accHolderEl = document.getElementById('atmCardHolder');
+  const dBank = document.getElementById('dataBankName')?.getAttribute('data-bank') || 'OPAY DIGITAL SERVICES';
+  const dAcc = document.getElementById('dataAccountNo')?.getAttribute('data-acc') || '9012345678';
+  const dName = document.getElementById('dataAccountName')?.getAttribute('data-name') || CURRENT_USER;
+
+  if (bNameEl && (!bNameEl.textContent || !bNameEl.textContent.trim())) {
+    bNameEl.textContent = dBank.toUpperCase();
+  }
+  if (accNumEl && (!accNumEl.textContent || !accNumEl.textContent.trim())) {
+    accNumEl.textContent = dAcc.replace(/(\d{4})/g, '$1  ').trim();
+  }
+  if (accHolderEl && (!accHolderEl.textContent || !accHolderEl.textContent.trim())) {
+    accHolderEl.textContent = dName.toUpperCase();
+  }
+
   loadTasks();
   loadSurveys();
   loadNotifications();

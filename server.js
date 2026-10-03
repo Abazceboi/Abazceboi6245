@@ -100,9 +100,10 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(\$userRole\)\s*\?>/g, context.userRole || 'member');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$initials\)\s*\?>/g, (context.username || 'MB').substring(0, 2).toUpperCase());
     content = content.replace(/<\?=\s*htmlspecialchars\(\$userFullName\)\s*\?>/g, context.userFullName || context.username || 'Member');
-    content = content.replace(/<\?=\s*htmlspecialchars\(\$bankName\)\s*\?>/g, context.bankName || 'OPay Digital Services');
-    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountNumber\)\s*\?>/g, context.accountNumber || '0801234567');
-    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountName\)\s*\?>/g, context.accountName || context.userFullName || context.username || 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$bankName[^)]*\)\s*\?>/g, (context.bankName || 'OPay Digital Services').toUpperCase());
+    content = content.replace(/<\?=\s*htmlspecialchars\(chunk_split\(\$accountNumber[^)]*\)\)\s*\?>/g, (context.accountNumber || '0801234567').replace(/(\d{4})/g, '$1  ').trim());
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountNumber[^)]*\)\s*\?>/g, context.accountNumber || '0801234567');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$accountName[^)]*\)\s*\?>/g, (context.accountName || context.userFullName || context.username || 'Member').toUpperCase());
     content = content.replace(/<\?=\s*number_format\(\$userCash,\s*2\)\s*\?>/g, Number(context.userCash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     content = content.replace(/<\?=\s*number_format\(\$userPoints\)\s*\?>/g, Number(context.userPoints || 100).toLocaleString('en-US'));
     content = content.replace(/<\?=\s*number_format\(\$totalLiquidNaira,\s*2\)\s*\?>/g, Number(context.totalLiquidNaira || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
