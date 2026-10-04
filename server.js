@@ -1689,9 +1689,164 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed') {
+function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
+    const tLower = (topic || '').toLowerCase();
+    let category = 'General Research';
+    let points = 150;
+    let cleanTopic = (topic || '').trim().replace(/\b\w/g, c => c.toUpperCase()) || 'Platform Experience';
+    let title = '';
+    let description = '';
+    let pool = [];
+
+    if (/crypto|token|bitcoin|btc|eth|usdt|blockchain|otc|wallet|web3/i.test(tLower)) {
+        category = 'Crypto & Digital Assets';
+        points = 200;
+        title = topic ? 'Market Research: ' + cleanTopic : 'Cryptocurrency Market Insights & Adoption';
+        description = 'This structured survey gathers feedback on your cryptocurrency trading habits, OTC desk preferences, and platform expectations.';
+        pool = [
+            { question: 'What is your primary reason for participating in cryptocurrency transactions?', options: ['Long-term asset holding / investment', 'Daily peer-to-peer / OTC trading', 'Receiving international or cross-border payments', 'Learning about emerging blockchain technology'], correct_index: 0 },
+            { question: 'Which factor is most vital to you when using a token OTC exchange desk?', options: ['Instant fiat settlement to local bank', 'Competitive exchange rates with low slippage', 'Escrow security and fraud protection', 'Availability of diverse token listings'], correct_index: 0 },
+            { question: 'How often do you execute crypto or token transactions weekly?', options: ['Daily (multiple times a day)', 'Several times per week', 'Once or twice a month', 'Rarely / Only during high market volatility'], correct_index: 1 },
+            { question: 'What security measure gives you the highest confidence when trading digital assets?', options: ['Platform escrow protection with automated release', 'Two-factor authentication (2FA) on all withdrawals', 'Direct peer-to-peer bank account verification', 'Transparent transaction receipts and audit trail'], correct_index: 0 },
+            { question: 'Which blockchain network do you prefer for lowest transaction fees?', options: ['Tron (TRC-20)', 'Binance Smart Chain (BEP-20)', 'Polygon / Layer 2 Solutions', 'Ethereum Mainnet (ERC-20)'], correct_index: 0 },
+            { question: 'What additional feature would most enhance your token trading experience on our platform?', options: ['Instant price alerts and trend forecasts', 'Direct wallet-to-wallet decentralized settlement', 'Automated recurring buy orders', 'Zero fee bonus hours on verified tokens'], correct_index: 0 },
+            { question: 'How do you rate your overall knowledge of managing non-custodial crypto wallets?', options: ['Advanced / Highly experienced with private keys', 'Intermediate / Comfortable with common apps', 'Beginner / Still learning wallet security', 'Novice / Prefer custodial platform storage'], correct_index: 1 }
+        ];
+    } else if (/vtu|airtime|data|telecom|network|mtn|airtel|glo|9mobile|recharge/i.test(tLower)) {
+        category = 'Telecom & VTU Services';
+        points = 120;
+        title = topic ? 'Telecom Survey: ' + cleanTopic : 'VTU Airtime & Mobile Data Habits';
+        description = 'Help us improve automated VTU delivery by sharing your mobile network provider preferences and data recharge frequency.';
+        pool = [
+            { question: 'Which mobile telecommunications carrier is your primary daily network?', options: ['MTN Nigeria', 'Airtel Nigeria', 'Globacom (Glo)', '9mobile'], correct_index: 0 },
+            { question: 'What average monthly mobile data volume do you typically consume?', options: ['10GB to 25GB per month', '5GB to 10GB per month', 'Over 30GB per month', 'Under 5GB per month'], correct_index: 0 },
+            { question: 'How quickly do you expect your VTU data top-up to deliver after payment?', options: ['Instant delivery (within 30 seconds)', 'Under 2 minutes', 'Under 5 minutes', 'Timing is secondary if price is heavily discounted'], correct_index: 0 },
+            { question: 'What motivates you most to purchase VTU bundles on a platform instead of USSD?', options: ['Discounted pricing and cashback points', 'Convenience of one-click wallet funding', 'Zero USSD network timeout errors', 'Ability to recharge for friends and family'], correct_index: 0 },
+            { question: 'Which mobile data bundle duration do you purchase most regularly?', options: ['30-Day Monthly Plan', 'Weekly High-Volume Plan', '24-Hour Daily Plan', 'Night / Weekend Special Bundle'], correct_index: 0 },
+            { question: 'How often do you encounter carrier network downtime in your location?', options: ['Rarely / Steady high-speed connection', 'Occasionally during peak evening hours', 'Frequently / Often have to switch SIM cards', 'Severe during bad weather conditions'], correct_index: 0 },
+            { question: 'Would you use an automated auto-renew feature when your data balance is low?', options: ['Yes, if notified 1 hour prior to auto-debit', 'Yes, with instant toggle control', 'No, I prefer manual top-up every time', 'Only for emergency 1GB plans'], correct_index: 0 }
+        ];
+    } else if (/feedback|platform|experience|dashboard|earn|referral|satisfaction|member|innovation/i.test(tLower)) {
+        category = 'Platform Satisfaction';
+        points = 150;
+        title = topic ? 'Member Insights: ' + cleanTopic : 'Platform Experience & Community Feedback';
+        description = 'Share your direct experience with platform tools, withdrawal speed, task diversity, and interface usability.';
+        pool = [
+            { question: 'What is your favorite earning activity on the platform?', options: ['Completing daily tasks and micro-gigs', 'Inviting peers via the referral affiliate system', 'Participating in written & video surveys', 'Trading token pairs on the OTC desk'], correct_index: 0 },
+            { question: 'How would you rate the speed and clarity of your dashboard wallet balances?', options: ['Fast, real-time and clear', 'Adequate with minor delays', 'Needs faster refresh on mobile', 'Satisfactory overall'], correct_index: 0 },
+            { question: 'What is your primary motivation for staying active on the platform daily?', options: ['Accumulating points for cash withdrawal', 'Redeeming discounted airtime and data', 'Networking and building affiliate commissions', 'Discovering sponsored content and opportunities'], correct_index: 0 },
+            { question: 'How satisfied are you with the bank withdrawal settlement process?', options: ['Extremely satisfied with fast settlement', 'Satisfied with automated bank transfer', 'Neutral / Would prefer lower minimum limits', 'Looking forward to additional payout gateways'], correct_index: 0 },
+            { question: 'Which new feature would provide the greatest value to your membership?', options: ['More high-reward sponsored video surveys', 'Instant mobile wallet peer-to-peer transfers', 'Expanded vendor distribution network', 'Daily streak loyalty cash bonuses'], correct_index: 0 },
+            { question: 'How easy was it for you to complete your account registration and onboarding?', options: ['Seamless and straightforward', 'Fast with clear instructions', 'Moderate effort required', 'Very simple on modern smartphones'], correct_index: 0 },
+            { question: 'Would you recommend INNOVATIONX to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
+        ];
+    } else if (/fintech|bank|payment|money|transfer|opay|palmpay|moniepoint|savings|loan/i.test(tLower)) {
+        category = 'Fintech & Digital Banking';
+        points = 150;
+        title = topic ? 'Fintech Survey: ' + cleanTopic : 'Digital Banking & Mobile Money Adoption';
+        description = 'Investigate digital wallet preferences, payment failure rates, and consumer trust across mobile banking solutions.';
+        pool = [
+            { question: 'Which digital banking or payment platform do you rely on most for daily transfers?', options: ['Neobanks (OPay, PalmPay, Moniepoint, Kuda)', 'Traditional commercial banks (GTBank, Access, Zenith)', 'Fintech virtual cards & wallets', 'Direct POS merchant agents'], correct_index: 0 },
+            { question: 'What is the single most frustrating issue you encounter with mobile banking apps?', options: ['Delayed transfer reversed without notification', 'Excessive stamp duty and hidden maintenance fees', 'Network server downtime during urgent payments', 'Complicated customer support ticket systems'], correct_index: 0 },
+            { question: 'How important is zero transfer fees when choosing your daily payment service?', options: ['Critical / Prefer apps with unlimited free transfers', 'Important, but reliability is higher priority', 'Moderately important for small sums', 'Secondary to security and speed'], correct_index: 0 },
+            { question: 'Do you utilize automated daily or weekly digital savings lockboxes?', options: ['Yes, actively earning high-yield interest', 'Occasionally for emergency backup funds', 'Planning to start in the coming weeks', 'No, I keep full funds liquid in main balance'], correct_index: 0 },
+            { question: 'What verification method do you feel safest using for authorising outgoing transfers?', options: ['Biometric fingerprint / Face ID scan', 'Secure 4-digit transaction PIN', 'SMS / Email One-Time Password (OTP)', 'Hardware authenticator app'], correct_index: 0 },
+            { question: 'How often do you utilize Dedicated Virtual Accounts (DVA) for receiving payments?', options: ['Daily for automated account funding', 'A few times a week', 'Only when requested by specific platforms', 'Rarely / Prefer direct account numbers'], correct_index: 0 }
+        ];
+    } else if (/shop|e-commerce|ecommerce|order|delivery|product|goods|store/i.test(tLower)) {
+        category = 'E-Commerce & Retail';
+        points = 140;
+        title = topic ? 'Market Study: ' + cleanTopic : 'E-Commerce Shopping Trends & Delivery Expectations';
+        description = 'Evaluating shopping frequency, preferred checkout methods, delivery timelines, and trust factors.';
+        pool = [
+            { question: 'What is your preferred payment arrangement when buying goods online?', options: ['Direct bank transfer via secure checkout', 'Payment on Delivery (Cash / POS on arrival)', 'Debit card payment via gateway', 'Platform escrow funding'], correct_index: 0 },
+            { question: 'What acceptable delivery window do you expect for interstate online orders?', options: ['24 to 48 hours max', '3 to 5 business days', 'Same day delivery within city limits', 'Within 1 week if tracking is transparent'], correct_index: 0 },
+            { question: 'What factor most heavily influences your decision to purchase a product online?', options: ['Verified buyer reviews with photo evidence', 'Competitive price discounts and free shipping', 'Brand reputation and verified vendor badge', 'Easy return and refund policy'], correct_index: 0 },
+            { question: 'Have you ever abandoned an online shopping cart before final checkout?', options: ['Yes, due to unexpected high delivery fees', 'Yes, due to complicated checkout steps', 'Yes, when preferred payment gateway was unavailable', 'Rarely / Only if product was out of stock'], correct_index: 0 },
+            { question: 'Which product category do you buy online most regularly?', options: ['Smartphones, electronics and accessories', 'Fashion, clothing and footwear', 'Beauty, health and personal care', 'Digital courses, tokens and gift vouchers'], correct_index: 0 }
+        ];
+    } else if (/social|media|tiktok|instagram|youtube|video|content|whatsapp/i.test(tLower)) {
+        category = 'Social Media & Trends';
+        points = 130;
+        title = topic ? 'Digital Habits: ' + cleanTopic : 'Social Media Engagement & Content Preferences';
+        description = 'Discovering user interaction patterns, screen time distribution, and responsiveness to sponsored media.';
+        pool = [
+            { question: 'Which platform occupies the highest portion of your daily social screen time?', options: ['WhatsApp (Messaging & Status updates)', 'TikTok (Short-form video stream)', 'YouTube (Long-form educational & entertainment)', 'Instagram / X (Twitter) Feed'], correct_index: 0 },
+            { question: 'What format of online content do you find most engaging and persuasive?', options: ['Short engaging video clips (30-60 seconds)', 'Live interactive broadcasts and webinars', 'Detailed written guides with infographics', 'Audio podcasts and voice discussions'], correct_index: 0 },
+            { question: 'How often do you click through sponsored links or ads on social media?', options: ['Often, if it offers genuine value or discount', 'Only if endorsed by a creator I trust', 'Occasionally when the headline matches my need', 'Rarely / Prefer organic search'], correct_index: 0 },
+            { question: 'Do you share promotional offers or referral opportunities on your WhatsApp Status?', options: ['Yes, regularly for verified earning programs', 'Occasionally to help friends find good deals', 'Only when special incentive rewards are active', 'Rarely / Keep status strictly personal'], correct_index: 0 },
+            { question: 'What time of day do you most actively browse social media content?', options: ['Evening hours (7:00 PM - 10:00 PM)', 'Late afternoon break (2:00 PM - 5:00 PM)', 'Early morning hours (6:00 AM - 9:00 AM)', 'Consistently distributed across the full day'], correct_index: 0 }
+        ];
+    } else {
+        category = 'Special Topic Survey';
+        points = 150;
+        title = 'Research Survey: ' + cleanTopic;
+        description = 'This survey evaluates member perspectives, awareness, priorities, and preferences regarding ' + cleanTopic + '.';
+        pool = [
+            { question: `How familiar or experienced are you with ${cleanTopic} in your daily life or work?`, options: ['Highly experienced / Engage with it regularly', 'Moderately familiar / Basic understanding of key concepts', 'Beginner / Interested in learning more details', 'Just discovering it recently'], correct_index: 0 },
+            { question: `What do you consider the most significant benefit or opportunity associated with ${cleanTopic}?`, options: ['Improved efficiency, productivity and convenience', 'Financial growth and cost savings potential', 'Greater accessibility and modern innovation', 'Better connection with industry standards'], correct_index: 0 },
+            { question: `What is the primary obstacle or challenge you observe concerning ${cleanTopic}?`, options: ['High initial cost or lack of affordable options', 'Limited reliable information and verified guidance', 'Technical complexity and learning curve', 'Inconsistent infrastructure or service reliability'], correct_index: 1 },
+            { question: `How do you foresee ${cleanTopic} impacting the local market over the next 12 to 24 months?`, options: ['Rapid growth and widespread mainstream adoption', 'Steady gradual improvement across key sectors', 'Niche growth focused among tech-forward users', 'Uncertain until clear regulations or standards emerge'], correct_index: 0 },
+            { question: `What improvement or feature would most increase your trust and participation in ${cleanTopic}?`, options: ['Transparent reporting, clear proof and verifiable security', 'Lower fees and stronger financial incentives', 'Simplified step-by-step user onboarding', 'Responsive 24/7 localized community support'], correct_index: 0 },
+            { question: `Through which medium would you prefer to receive news and updates about ${cleanTopic}?`, options: ['Direct in-app dashboard notifications', 'Dedicated Telegram / WhatsApp announcement channel', 'Concise weekly email digest', 'Interactive short video summaries'], correct_index: 0 },
+            { question: `Overall, how would you rate the current importance of ${cleanTopic} to your goals?`, options: ['Very high priority / Essential focus', 'Important secondary consideration', 'Moderate interest depending on market conditions', 'Exploratory for now'], correct_index: 0 }
+        ];
+    }
+
+    const selected = pool.slice(0, count);
+    while (selected.length < count) {
+        const qNum = selected.length + 1;
+        selected.push({
+            question: `Question ${qNum}: What best describes your long-term expectation regarding ${cleanTopic}?`,
+            options: [
+                'Expect significant expansion and sustained value',
+                'Expect moderate adoption with incremental upgrades',
+                'Will evaluate based on performance and user feedback',
+                'Open to adapting as new opportunities develop'
+            ],
+            correct_index: 0
+        });
+    }
+
+    const finalQuestions = selected.map((q, idx) => {
+        const cIdx = parseInt(q.correct_index) || 0;
+        return {
+            id: 'Q-' + (idx + 1) + '-' + Math.floor(Math.random() * 90000 + 10000),
+            question: q.question,
+            options: q.options,
+            correct_index: cIdx,
+            correct_answer: q.options[cIdx] || q.options[0]
+        };
+    });
+
+    return {
+        title: title,
+        category: category,
+        description: description,
+        reward_points: points,
+        total_slots: 500,
+        format_type: 'word',
+        questions: finalQuestions
+    };
+}
+
+            if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed' || action === 'generate_survey_questions') {
                 res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                 res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
+                if (action === 'generate_survey_questions') {
+                    const topic = (parsed.topic || (new URL(req.url, 'http://localhost')).searchParams.get('topic') || 'Platform User Experience & Features').trim();
+                    const count = Math.max(2, Math.min(15, parseInt(parsed.count || (new URL(req.url, 'http://localhost')).searchParams.get('count') || 5)));
+                    const style = (parsed.style || (new URL(req.url, 'http://localhost')).searchParams.get('style') || 'feedback').trim();
+                    const plan = generateTopicQuestionsJs(topic, count, style);
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        topic: topic,
+                        count: plan.questions.length,
+                        plan: plan
+                    }));
+                    return;
+                }
 
                 const surveysFile = path.join(PUBLIC_DIR, 'data', 'surveys.json');
                 let surveys = [];

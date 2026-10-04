@@ -490,6 +490,102 @@ body.sidebar-retracted .main{
 
     <!-- ══ TAB: SURVEYS ════════════════════════════════════════════════════ -->
     <div id="tab-surveys" class="tab-content">
+      <!-- Automated Survey Questions Assistant -->
+      <div class="card" style="border: 1px solid rgba(59, 130, 246, 0.35); background: linear-gradient(180deg, rgba(59, 130, 246, 0.06) 0%, var(--card) 100%); margin-bottom: 20px;">
+        <div class="card-header" style="border-bottom: 1px solid var(--border-mid); padding-bottom: 12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(59, 130, 246, 0.15);border:1px solid rgba(59, 130, 246, 0.3);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div>
+              <div class="card-title" style="font-size:15px;font-weight:700;">Automated Survey &amp; Question Generator</div>
+              <div class="card-sub">Provide any topic or keyword to automatically generate complete survey questions with multiple-choice options and answers.</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSurveyGenHelp()">Tips &amp; Guide</button>
+        </div>
+
+        <div style="padding-top:14px;">
+          <div id="surveyGenHelpBox" style="display:none;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--txt-2);line-height:1.55;margin-bottom:14px;">
+            Type any custom topic (e.g. <em>Electric Vehicles, Agricultural Financing, Crypto Staking, Student Data Bundles</em>) or pick a preset below. Select how many questions you need and click <strong>Generate Questions &amp; Survey Plan</strong>. You can review the questions and apply them straight into the publishing form with one click.
+          </div>
+
+          <!-- Topic Generator Form -->
+          <div class="form-row">
+            <div class="form-group" style="flex:2.2;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Survey Topic or Theme</label>
+              <input type="text" class="form-input" id="genSurveyTopic" placeholder="e.g. Cryptocurrency Adoption, Mobile Banking UX, Telecom Network Speeds, E-Commerce Delivery..." value="Platform User Experience &amp; Features">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Question Count</label>
+              <select class="form-input" id="genSurveyCount">
+                <option value="3">3 Questions (Quick Survey)</option>
+                <option value="5" selected>5 Questions (Standard Survey)</option>
+                <option value="7">7 Questions (In-Depth Survey)</option>
+                <option value="10">10 Questions (Comprehensive Survey)</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1.2;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Format Style</label>
+              <select class="form-input" id="genSurveyStyle">
+                <option value="feedback" selected>Feedback Questionnaire</option>
+                <option value="knowledge">Knowledge &amp; Verification Quiz</option>
+                <option value="market">Market Research &amp; Habits</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Suggested Topic Pills -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:600;color:var(--txt-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Quick Topic Presets</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;" id="genTopicPillsContainer">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Platform User Experience &amp; Features')">Platform Feedback</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Cryptocurrency Trading &amp; OTC Token Desk')">Crypto &amp; Tokens</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('VTU Airtime &amp; Mobile Data Habits')">VTU &amp; Data Topup</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Digital Fintech &amp; Mobile Banking Apps')">Mobile Banking &amp; Fintech</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Online Shopping &amp; E-Commerce Reliability')">E-Commerce Shopping</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Social Media Engagement &amp; Screen Time')">Social Media Trends</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="setGenTopic('Remote Work &amp; Daily Micro-Task Earning')">Online Tasks &amp; Micro-Gigs</button>
+            </div>
+          </div>
+
+          <!-- Generate Button -->
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button type="button" class="btn btn-primary" id="btnRunSurveyGen" onclick="generateSurveyFromTopic()" style="background:linear-gradient(135deg, #2563EB, #3B82F6);font-weight:700;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Generate Questions &amp; Survey Plan</span>
+            </button>
+            <span id="genSurveyStatusMsg" style="font-size:12px;color:var(--txt-3);"></span>
+          </div>
+
+          <!-- Generation Results Box -->
+          <div id="genSurveyResultsBox" style="display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border-mid);border-radius:12px;padding:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;">
+              <div>
+                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Survey Plan Ready</span>
+                <h4 id="genResultTitleDisplay" style="font-size:15px;font-weight:700;color:var(--txt);margin-top:2px;">Generated Title</h4>
+                <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Suggested Reward: 150 PTS</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="applyGeneratedSurveyToForm(true)" style="background:var(--green);border-color:var(--green);color:#fff;font-weight:700;">
+                  Apply Directly to Survey Form
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="applyGeneratedSurveyToForm(false)">
+                  Append Questions Only
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="generateSurveyFromTopic()">
+                  Regenerate
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview of Generated Questions -->
+            <div style="font-size:12px;font-weight:600;color:var(--txt-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Question Preview &amp; Designated Answers</div>
+            <div id="genQuestionsPreviewList" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;padding-right:4px;"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div>
@@ -1370,6 +1466,274 @@ function restoreAdminActiveTab() {
 }
 
 window.addEventListener('hashchange', restoreAdminActiveTab);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTOMATED SURVEY & QUESTION GENERATOR
+// ═══════════════════════════════════════════════════════════════════════════
+let lastGeneratedSurveyPlan = null;
+
+function toggleSurveyGenHelp() {
+  const box = document.getElementById('surveyGenHelpBox');
+  if (!box) return;
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function setGenTopic(topic) {
+  const inp = document.getElementById('genSurveyTopic');
+  if (inp) {
+    inp.value = topic;
+    inp.focus();
+  }
+}
+
+async function generateSurveyFromTopic() {
+  const topicInp = document.getElementById('genSurveyTopic');
+  const countInp = document.getElementById('genSurveyCount');
+  const styleInp = document.getElementById('genSurveyStyle');
+  const statusMsg = document.getElementById('genSurveyStatusMsg');
+  const btn = document.getElementById('btnRunSurveyGen');
+
+  const topic = (topicInp ? topicInp.value : '').trim();
+  if (!topic) {
+    toast('Please enter a survey topic or choose a preset.', 'error');
+    if (topicInp) topicInp.focus();
+    return;
+  }
+
+  const count = parseInt(countInp ? countInp.value : 5) || 5;
+  const style = styleInp ? styleInp.value : 'feedback';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Generating Questions...</span>`;
+  }
+  if (statusMsg) statusMsg.textContent = 'Synthesizing topic questions and benchmark answers...';
+
+  try {
+    const res = await fetch('/api/surveys.php?action=generate_survey_questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: topic, count: count, style: style })
+    });
+    const data = await res.json();
+
+    if (data.status === 'success' && data.plan) {
+      lastGeneratedSurveyPlan = data.plan;
+      renderGeneratedSurveyResults(data.plan);
+      toast('Survey questions successfully generated!', 'success');
+    } else {
+      throw new Error(data.message || 'Generation API returned error');
+    }
+  } catch (err) {
+    console.warn('API generator notice, using dynamic local synthesis fallback...', err);
+    const localPlan = generateTopicQuestionsClient(topic, count, style);
+    lastGeneratedSurveyPlan = localPlan;
+    renderGeneratedSurveyResults(localPlan);
+    toast('Survey questions generated from topic!', 'success');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Generate Questions &amp; Survey Plan</span>`;
+    }
+    if (statusMsg) statusMsg.textContent = '';
+  }
+}
+
+function generateTopicQuestionsClient(topic, count, style) {
+  const tLower = (topic || '').toLowerCase();
+  let category = 'Special Topic Survey';
+  let points = 150;
+  const cleanTopic = (topic || '').trim().replace(/\b\w/g, c => c.toUpperCase()) || 'Platform Experience';
+  let title = 'Research Survey: ' + cleanTopic;
+  let description = 'This survey evaluates member perspectives, awareness, priorities, and preferences regarding ' + cleanTopic + '.';
+  let pool = [];
+
+  if (/crypto|token|bitcoin|btc|eth|usdt|blockchain|otc|wallet|web3/i.test(tLower)) {
+    category = 'Crypto & Digital Assets';
+    points = 200;
+    title = 'Market Research: ' + cleanTopic;
+    description = 'This structured survey gathers feedback on your cryptocurrency trading habits, OTC desk preferences, and platform expectations.';
+    pool = [
+      { question: 'What is your primary reason for participating in cryptocurrency transactions?', options: ['Long-term asset holding / investment', 'Daily peer-to-peer / OTC trading', 'Receiving international or cross-border payments', 'Learning about emerging blockchain technology'], correct_index: 0 },
+      { question: 'Which factor is most vital to you when using a token OTC exchange desk?', options: ['Instant fiat settlement to local bank', 'Competitive exchange rates with low slippage', 'Escrow security and fraud protection', 'Availability of diverse token listings'], correct_index: 0 },
+      { question: 'How often do you execute crypto or token transactions weekly?', options: ['Daily (multiple times a day)', 'Several times per week', 'Once or twice a month', 'Rarely / Only during high market volatility'], correct_index: 1 },
+      { question: 'What security measure gives you the highest confidence when trading digital assets?', options: ['Platform escrow protection with automated release', 'Two-factor authentication (2FA) on all withdrawals', 'Direct peer-to-peer bank account verification', 'Transparent transaction receipts and audit trail'], correct_index: 0 },
+      { question: 'Which blockchain network do you prefer for lowest transaction fees?', options: ['Tron (TRC-20)', 'Binance Smart Chain (BEP-20)', 'Polygon / Layer 2 Solutions', 'Ethereum Mainnet (ERC-20)'], correct_index: 0 },
+      { question: 'What additional feature would most enhance your token trading experience on our platform?', options: ['Instant price alerts and trend forecasts', 'Direct wallet-to-wallet decentralized settlement', 'Automated recurring buy orders', 'Zero fee bonus hours on verified tokens'], correct_index: 0 },
+      { question: 'How do you rate your overall knowledge of managing non-custodial crypto wallets?', options: ['Advanced / Highly experienced with private keys', 'Intermediate / Comfortable with common apps', 'Beginner / Still learning wallet security', 'Novice / Prefer custodial platform storage'], correct_index: 1 }
+    ];
+  } else if (/vtu|airtime|data|telecom|network|mtn|airtel|glo|9mobile|recharge/i.test(tLower)) {
+    category = 'Telecom & VTU Services';
+    points = 120;
+    title = 'Telecom Survey: ' + cleanTopic;
+    description = 'Help us improve automated VTU delivery by sharing your mobile network provider preferences and data recharge frequency.';
+    pool = [
+      { question: 'Which mobile telecommunications carrier is your primary daily network?', options: ['MTN Nigeria', 'Airtel Nigeria', 'Globacom (Glo)', '9mobile'], correct_index: 0 },
+      { question: 'What average monthly mobile data volume do you typically consume?', options: ['10GB to 25GB per month', '5GB to 10GB per month', 'Over 30GB per month', 'Under 5GB per month'], correct_index: 0 },
+      { question: 'How quickly do you expect your VTU data top-up to deliver after payment?', options: ['Instant delivery (within 30 seconds)', 'Under 2 minutes', 'Under 5 minutes', 'Timing is secondary if price is heavily discounted'], correct_index: 0 },
+      { question: 'What motivates you most to purchase VTU bundles on a platform instead of USSD?', options: ['Discounted pricing and cashback points', 'Convenience of one-click wallet funding', 'Zero USSD network timeout errors', 'Ability to recharge for friends and family'], correct_index: 0 },
+      { question: 'Which mobile data bundle duration do you purchase most regularly?', options: ['30-Day Monthly Plan', 'Weekly High-Volume Plan', '24-Hour Daily Plan', 'Night / Weekend Special Bundle'], correct_index: 0 },
+      { question: 'How often do you encounter carrier network downtime in your location?', options: ['Rarely / Steady high-speed connection', 'Occasionally during peak evening hours', 'Frequently / Often have to switch SIM cards', 'Severe during bad weather conditions'], correct_index: 0 },
+      { question: 'Would you use an automated auto-renew feature when your data balance is low?', options: ['Yes, if notified 1 hour prior to auto-debit', 'Yes, with instant toggle control', 'No, I prefer manual top-up every time', 'Only for emergency 1GB plans'], correct_index: 0 }
+    ];
+  } else if (/feedback|platform|experience|dashboard|earn|referral|satisfaction|member|innovation/i.test(tLower)) {
+    category = 'Platform Satisfaction';
+    points = 150;
+    title = 'Member Insights: ' + cleanTopic;
+    description = 'Share your direct experience with platform tools, withdrawal speed, task diversity, and interface usability.';
+    pool = [
+      { question: 'What is your favorite earning activity on the platform?', options: ['Completing daily tasks and micro-gigs', 'Inviting peers via the referral affiliate system', 'Participating in written & video surveys', 'Trading token pairs on the OTC desk'], correct_index: 0 },
+      { question: 'How would you rate the speed and clarity of your dashboard wallet balances?', options: ['Fast, real-time and clear', 'Adequate with minor delays', 'Needs faster refresh on mobile', 'Satisfactory overall'], correct_index: 0 },
+      { question: 'What is your primary motivation for staying active on the platform daily?', options: ['Accumulating points for cash withdrawal', 'Redeeming discounted airtime and data', 'Networking and building affiliate commissions', 'Discovering sponsored content and opportunities'], correct_index: 0 },
+      { question: 'How satisfied are you with the bank withdrawal settlement process?', options: ['Extremely satisfied with fast settlement', 'Satisfied with automated bank transfer', 'Neutral / Would prefer lower minimum limits', 'Looking forward to additional payout gateways'], correct_index: 0 },
+      { question: 'Which new feature would provide the greatest value to your membership?', options: ['More high-reward sponsored video surveys', 'Instant mobile wallet peer-to-peer transfers', 'Expanded vendor distribution network', 'Daily streak loyalty cash bonuses'], correct_index: 0 },
+      { question: 'How easy was it for you to complete your account registration and onboarding?', options: ['Seamless and straightforward', 'Fast with clear instructions', 'Moderate effort required', 'Very simple on modern smartphones'], correct_index: 0 },
+      { question: 'Would you recommend INNOVATIONX to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
+    ];
+  } else if (/fintech|bank|payment|money|transfer|opay|palmpay|moniepoint|savings|loan/i.test(tLower)) {
+    category = 'Fintech & Digital Banking';
+    points = 150;
+    title = 'Fintech Survey: ' + cleanTopic;
+    description = 'Investigate digital wallet preferences, payment failure rates, and consumer trust across mobile banking solutions.';
+    pool = [
+      { question: 'Which digital banking or payment platform do you rely on most for daily transfers?', options: ['Neobanks (OPay, PalmPay, Moniepoint, Kuda)', 'Traditional commercial banks (GTBank, Access, Zenith)', 'Fintech virtual cards & wallets', 'Direct POS merchant agents'], correct_index: 0 },
+      { question: 'What is the single most frustrating issue you encounter with mobile banking apps?', options: ['Delayed transfer reversed without notification', 'Excessive stamp duty and hidden maintenance fees', 'Network server downtime during urgent payments', 'Complicated customer support ticket systems'], correct_index: 0 },
+      { question: 'How important is zero transfer fees when choosing your daily payment service?', options: ['Critical / Prefer apps with unlimited free transfers', 'Important, but reliability is higher priority', 'Moderately important for small sums', 'Secondary to security and speed'], correct_index: 0 },
+      { question: 'Do you utilize automated daily or weekly digital savings lockboxes?', options: ['Yes, actively earning high-yield interest', 'Occasionally for emergency backup funds', 'Planning to start in the coming weeks', 'No, I keep full funds liquid in main balance'], correct_index: 0 },
+      { question: 'What verification method do you feel safest using for authorising outgoing transfers?', options: ['Biometric fingerprint / Face ID scan', 'Secure 4-digit transaction PIN', 'SMS / Email One-Time Password (OTP)', 'Hardware authenticator app'], correct_index: 0 },
+      { question: 'How often do you utilize Dedicated Virtual Accounts (DVA) for receiving payments?', options: ['Daily for automated account funding', 'A few times a week', 'Only when requested by specific platforms', 'Rarely / Prefer direct account numbers'], correct_index: 0 }
+    ];
+  } else if (/shop|e-commerce|ecommerce|order|delivery|product|goods|store/i.test(tLower)) {
+    category = 'E-Commerce & Retail';
+    points = 140;
+    title = 'Market Study: ' + cleanTopic;
+    description = 'Evaluating shopping frequency, preferred checkout methods, delivery timelines, and trust factors.';
+    pool = [
+      { question: 'What is your preferred payment arrangement when buying goods online?', options: ['Direct bank transfer via secure checkout', 'Payment on Delivery (Cash / POS on arrival)', 'Debit card payment via gateway', 'Platform escrow funding'], correct_index: 0 },
+      { question: 'What acceptable delivery window do you expect for interstate online orders?', options: ['24 to 48 hours max', '3 to 5 business days', 'Same day delivery within city limits', 'Within 1 week if tracking is transparent'], correct_index: 0 },
+      { question: 'What factor most heavily influences your decision to purchase a product online?', options: ['Verified buyer reviews with photo evidence', 'Competitive price discounts and free shipping', 'Brand reputation and verified vendor badge', 'Easy return and refund policy'], correct_index: 0 },
+      { question: 'Have you ever abandoned an online shopping cart before final checkout?', options: ['Yes, due to unexpected high delivery fees', 'Yes, due to complicated checkout steps', 'Yes, when preferred payment gateway was unavailable', 'Rarely / Only if product was out of stock'], correct_index: 0 },
+      { question: 'Which product category do you buy online most regularly?', options: ['Smartphones, electronics and accessories', 'Fashion, clothing and footwear', 'Beauty, health and personal care', 'Digital courses, tokens and gift vouchers'], correct_index: 0 }
+    ];
+  } else {
+    pool = [
+      { question: `How familiar or experienced are you with ${cleanTopic} in your daily life or work?`, options: ['Highly experienced / Engage with it regularly', 'Moderately familiar / Basic understanding of key concepts', 'Beginner / Interested in learning more details', 'Just discovering it recently'], correct_index: 0 },
+      { question: `What do you consider the most significant benefit or opportunity associated with ${cleanTopic}?`, options: ['Improved efficiency, productivity and convenience', 'Financial growth and cost savings potential', 'Greater accessibility and modern innovation', 'Better connection with industry standards'], correct_index: 0 },
+      { question: `What is the primary obstacle or challenge you observe concerning ${cleanTopic}?`, options: ['High initial cost or lack of affordable options', 'Limited reliable information and verified guidance', 'Technical complexity and learning curve', 'Inconsistent infrastructure or service reliability'], correct_index: 1 },
+      { question: `How do you foresee ${cleanTopic} impacting the local market over the next 12 to 24 months?`, options: ['Rapid growth and widespread mainstream adoption', 'Steady gradual improvement across key sectors', 'Niche growth focused among tech-forward users', 'Uncertain until clear regulations or standards emerge'], correct_index: 0 },
+      { question: `What improvement or feature would most increase your trust and participation in ${cleanTopic}?`, options: ['Transparent reporting, clear proof and verifiable security', 'Lower fees and stronger financial incentives', 'Simplified step-by-step user onboarding', 'Responsive 24/7 localized community support'], correct_index: 0 },
+      { question: `Through which medium would you prefer to receive news and updates about ${cleanTopic}?`, options: ['Direct in-app dashboard notifications', 'Dedicated Telegram / WhatsApp announcement channel', 'Concise weekly email digest', 'Interactive short video summaries'], correct_index: 0 },
+      { question: `Overall, how would you rate the current importance of ${cleanTopic} to your goals?`, options: ['Very high priority / Essential focus', 'Important secondary consideration', 'Moderate interest depending on market conditions', 'Exploratory for now'], correct_index: 0 }
+    ];
+  }
+
+  const selected = pool.slice(0, count);
+  while (selected.length < count) {
+    const qNum = selected.length + 1;
+    selected.push({
+      question: `Question ${qNum}: What best describes your long-term expectation regarding ${cleanTopic}?`,
+      options: [
+        'Expect significant expansion and sustained value',
+        'Expect moderate adoption with incremental upgrades',
+        'Will evaluate based on performance and user feedback',
+        'Open to adapting as new opportunities develop'
+      ],
+      correct_index: 0
+    });
+  }
+
+  const finalQuestions = selected.map((q, idx) => ({
+    id: 'Q-' + (idx + 1) + '-' + Math.floor(Math.random() * 90000 + 10000),
+    question: q.question,
+    options: q.options,
+    correct_index: q.correct_index,
+    correct_answer: q.options[q.correct_index] || q.options[0]
+  }));
+
+  return {
+    title: title,
+    category: category,
+    description: description,
+    reward_points: points,
+    total_slots: 500,
+    format_type: 'word',
+    questions: finalQuestions
+  };
+}
+
+function renderGeneratedSurveyResults(plan) {
+  const box = document.getElementById('genSurveyResultsBox');
+  const titleDisplay = document.getElementById('genResultTitleDisplay');
+  const metaDisplay = document.getElementById('genResultMetaDisplay');
+  const list = document.getElementById('genQuestionsPreviewList');
+
+  if (!box || !titleDisplay || !list) return;
+
+  titleDisplay.textContent = plan.title || 'Generated Survey';
+  if (metaDisplay) {
+    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Suggested Reward: ${plan.reward_points} PTS | Slots: ${plan.total_slots}`;
+  }
+
+  list.innerHTML = plan.questions.map((q, qIdx) => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;color:var(--accent);">Question ${qIdx + 1}</span>
+        <span style="font-size:10.5px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600;">Answer Verified</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;line-height:1.4;">${esc(q.question)}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:6px;">
+        ${q.options.map((opt, oIdx) => `
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:6px;background:${q.correct_index === oIdx ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)'};border:1px solid ${q.correct_index === oIdx ? 'rgba(16,185,129,0.3)' : 'var(--border)'};color:${q.correct_index === oIdx ? 'var(--green)' : 'var(--txt-2)'};">
+            <span style="width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${q.correct_index === oIdx ? 'var(--green)' : 'var(--border)'};color:#fff;font-size:9px;font-weight:700;">${String.fromCharCode(65 + oIdx)}</span>
+            <span>${esc(opt)}</span>
+            ${q.correct_index === oIdx ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--green);">Correct</span>' : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function applyGeneratedSurveyToForm(fullApply = true) {
+  if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions) {
+    toast('No survey questions generated yet. Click generate above.', 'error');
+    return;
+  }
+
+  if (fullApply) {
+    const titleEl = document.getElementById('svTitle');
+    const catEl = document.getElementById('svCategory');
+    const rewardEl = document.getElementById('svReward');
+    const slotsEl = document.getElementById('svSlots');
+    const descEl = document.getElementById('svDesc');
+
+    if (titleEl) titleEl.value = lastGeneratedSurveyPlan.title;
+    if (catEl) catEl.value = lastGeneratedSurveyPlan.category;
+    if (rewardEl) rewardEl.value = lastGeneratedSurveyPlan.reward_points;
+    if (slotsEl) slotsEl.value = lastGeneratedSurveyPlan.total_slots;
+    if (descEl) descEl.value = lastGeneratedSurveyPlan.description;
+
+    surveyQuestions = JSON.parse(JSON.stringify(lastGeneratedSurveyPlan.questions));
+    renderQuestionsBuilder();
+
+    const formEl = document.getElementById('createSurveyForm');
+    if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    toast('Survey questions and details applied directly to the form!', 'success');
+  } else {
+    const newQs = JSON.parse(JSON.stringify(lastGeneratedSurveyPlan.questions));
+    surveyQuestions = surveyQuestions.concat(newQs);
+    renderQuestionsBuilder();
+
+    const qContainer = document.getElementById('surveyQuestionsContainer');
+    if (qContainer) qContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    toast(`Appended ${newQs.length} generated questions to survey builder!`, 'success');
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SURVEYS LOGIC (BUILDER, LIST, DELETE)
