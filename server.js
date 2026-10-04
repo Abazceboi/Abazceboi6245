@@ -94,14 +94,27 @@ function renderPhpFile(filePath, context = {}) {
         return '';
     });
 
+    let dynPricing = { reg_fee: 1000, ref_commission: 500, min_withdrawal: 5000 };
+    try {
+        const apFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+        if (fs.existsSync(apFile)) {
+            dynPricing = Object.assign(dynPricing, JSON.parse(fs.readFileSync(apFile, 'utf8')));
+        }
+    } catch(e) {}
+
+    const dynRegFee = Number(context.regFee || dynPricing.reg_fee || 1000);
+    const dynRefComm = Number(context.refBonus || dynPricing.ref_commission || 500);
+    const dynMinWd = Number(context.minCashWd || dynPricing.min_withdrawal || 5000);
+
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_NAME\)\s*\?>/g, 'INNOVATIONX');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_TAGLINE\)\s*\?>/g, 'Where SoftLife Meets High-Yield Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_VERSION\)\s*\?>/g, '1.0');
     content = content.replace(/<\?=\s*htmlspecialchars\(SUPPORT_EMAIL\)\s*\?>/g, 'Supportinnovationx@gmail.com');
-    content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, '500');
+    content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, dynRegFee.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*TASK_POINTS_RATE\s*\?>/g, '150');
-    content = content.replace(/<\?=\s*REFERRAL_CASH_BONUS\s*\?>/g, '250');
-    content = content.replace(/<\?=\s*number_format\(MIN_WITHDRAWAL_NAIRA\)\s*\?>/g, '5,000');
+    content = content.replace(/<\?=\s*REFERRAL_CASH_BONUS\s*\?>/g, dynRefComm.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*number_format\(MIN_WITHDRAWAL_NAIRA\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*MIN_WITHDRAWAL_NAIRA\s*\?>/g, String(dynMinWd));
     content = content.replace(/<\?=\s*WHATSAPP_SUPPORT\s*\?>/g, '2347037765714');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
@@ -115,10 +128,10 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(\$accountName[^)]*\)\s*\?>/g, (context.accountName || context.userFullName || context.username || 'Member').toUpperCase());
     content = content.replace(/<\?=\s*number_format\(\$userCash,\s*2\)\s*\?>/g, Number(context.userCash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     content = content.replace(/<\?=\s*number_format\(\$userPoints\)\s*\?>/g, Number(context.userPoints || 100).toLocaleString('en-US'));
-    content = content.replace(/<\?=\s*number_format\(\$totalLiquidNaira,\s*2\)\s*\?>/g, Number(context.totalLiquidNaira || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    content = content.replace(/<\?=\s*number_format\(\$ptsInNaira,\s*2\)\s*\?>/g, Number(context.ptsInNaira || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, Number(context.ptsRate || 1.0).toFixed(2));
-    content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, Number(context.minCashWd || 5000).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*number_format\(\$totalLiquidNaira,\s*2\)\s*\?>/g, Number(context.totalLiquidNaira || context.userCash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    content = content.replace(/<\?=\s*number_format\(\$ptsInNaira,\s*2\)\s*\?>/g, '0.00');
+    content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, '1.00');
+    content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$streakCount\s*\?>/g, String(context.streakCount || 1));
     content = content.replace(/<\?=\s*json_encode\(\$isActivated\)\s*\?>/g, JSON.stringify(Boolean(context.isActivated)));
     content = content.replace(/<\?=\s*json_encode\(\$welcomeShown\)\s*\?>/g, JSON.stringify(Boolean(context.welcomeShown)));
@@ -128,12 +141,12 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(\$referralCode\)\s*\?>/g, context.referralCode || '');
     content = content.replace(/<\?=\s*\$referralCount\s*\?>/g, String(context.referralCount || 0));
     content = content.replace(/<\?=\s*number_format\(\$referralEarnings,\s*2\)\s*\?>/g, Number(context.referralEarnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    content = content.replace(/<\?=\s*number_format\(\$refBonus\)\s*\?>/g, Number(context.refBonus || 500).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*number_format\(\$refBonus\)\s*\?>/g, dynRefComm.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$tasksCompleted\s*\?>/g, String(context.tasksCompleted || 0));
     content = content.replace(/<\?=\s*\$surveysCompleted\s*\?>/g, String(context.surveysCompleted || 0));
-    content = content.replace(/<\?=\s*\$minCashWd\s*\?>/g, String(context.minCashWd || 5000));
-    content = content.replace(/<\?=\s*\$minTaskWd\s*\?>/g, String(context.minTaskWd || 1000));
-    content = content.replace(/<\?=\s*number_format\(\$minTaskWd\)\s*\?>/g, Number(context.minTaskWd || 1000).toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*\$minCashWd\s*\?>/g, String(dynMinWd));
+    content = content.replace(/<\?=\s*\$minTaskWd\s*\?>/g, String(dynMinWd));
+    content = content.replace(/<\?=\s*number_format\(\$minTaskWd\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*json_encode\(\$referralLink\)\s*\?>/g, JSON.stringify(context.referralLink || ''));
     content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
 
@@ -867,11 +880,22 @@ const server = http.createServer((req, res) => {
                     if (quantity < 1) quantity = 1;
                     if (quantity > 500) quantity = 500;
 
+                    let dynRegFee = 1000;
+                    let dynWholesale = 800;
+                    try {
+                        const pFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                        if (fs.existsSync(pFile)) {
+                            const pData = JSON.parse(fs.readFileSync(pFile, 'utf8'));
+                            if (pData.reg_fee) dynRegFee = parseFloat(pData.reg_fee);
+                            if (pData.vendor_wholesale) dynWholesale = parseFloat(pData.vendor_wholesale);
+                        }
+                    } catch(e) {}
+
                     let prefix = 'INX-AFF-';
                     let channel = 'AFFILIATE';
                     let typeLabel = 'Affiliate Membership PIN';
-                    let amount = 1000;
-                    let wholesalePrice = 800;
+                    let amount = dynRegFee;
+                    let wholesalePrice = dynWholesale;
 
                     if (pinType.includes('UPL')) {
                         prefix = 'INX-UPL-';
@@ -1009,6 +1033,14 @@ const server = http.createServer((req, res) => {
                         return;
                     }
                     const isUploader = (code.includes('UPL') || (target.type && target.type.includes('UPL')) || target.channel === 'UPLOADER');
+                    let dynRegFee = 1000;
+                    try {
+                        const pFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+                        if (fs.existsSync(pFile)) {
+                            const pData = JSON.parse(fs.readFileSync(pFile, 'utf8'));
+                            if (pData.reg_fee) dynRegFee = parseFloat(pData.reg_fee);
+                        }
+                    } catch(e) {}
                     res.end(JSON.stringify({
                         success: true,
                         status: 'active',
@@ -1016,7 +1048,7 @@ const server = http.createServer((req, res) => {
                         code: code,
                         code_type: isUploader ? 'uploader_accreditation' : 'member_activation',
                         code_label: isUploader ? 'Official Uploader Accreditation PIN' : 'Member Registration PIN',
-                        amount: target.amount || 1000,
+                        amount: target.amount || (isUploader ? 10000 : dynRegFee),
                         message: 'Status: ACTIVE. Valid and active coupon PIN. Ready for registration!'
                     }));
                     return;
@@ -1273,7 +1305,7 @@ const server = http.createServer((req, res) => {
                     modal_content: {
                         title: 'Activate Full Membership',
                         subtitle: 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
-                        notice: 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.'
+                        notice: 'Input your activation coupon PIN to access all features on the platform. Or close above to operate only Airtime & Data.'
                     },
                     features: {
                         vtu_telecoms: false,
@@ -1819,7 +1851,6 @@ const server = http.createServer((req, res) => {
                     reg_fee: 1000,
                     ref_commission: 500,
                     vendor_wholesale: 800,
-                    points_rate: 1.0,
                     min_withdrawal: 5000,
                     updated_at: new Date().toISOString()
                 };
@@ -1829,10 +1860,24 @@ const server = http.createServer((req, res) => {
 
                 if (req.method === 'POST' || action === 'save_pricing') {
                     pricing = Object.assign(pricing, parsed);
+                    delete pricing.points_rate;
                     pricing.updated_at = new Date().toISOString();
                     const configDir = path.dirname(pricingFile);
                     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
                     fs.writeFileSync(pricingFile, JSON.stringify(pricing, null, 2));
+
+                    // Sync min_withdrawal directly into withdrawal_settings.json
+                    try {
+                        const wdFile = path.join(PUBLIC_DIR, 'config', 'withdrawal_settings.json');
+                        if (fs.existsSync(wdFile)) {
+                            const wdData = JSON.parse(fs.readFileSync(wdFile, 'utf8'));
+                            if (wdData.task) wdData.task.min_amount = parseFloat(pricing.min_withdrawal) || 5000;
+                            if (wdData.affiliate) wdData.affiliate.min_amount = parseFloat(pricing.min_withdrawal) || 5000;
+                            wdData.updated_at = new Date().toISOString();
+                            fs.writeFileSync(wdFile, JSON.stringify(wdData, null, 2));
+                        }
+                    } catch(e) {}
+
                     res.end(JSON.stringify({ status: 'success', message: 'Pricing saved', pricing: pricing }));
                     return;
                 }
@@ -2454,19 +2499,21 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
-                    const minAmount = parseFloat(walletSched.min_amount) || 1000;
-                    if (amount < minAmount) {
-                        res.end(JSON.stringify({ status: 'error', message: `Minimum withdrawal amount for this wallet is ₦${minAmount.toLocaleString()}.` }));
-                        return;
-                    }
-
-                    let pointsRate = 1.0;
+                    let appMinWd = 5000;
                     const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                     if (fs.existsSync(pricingFile)) {
                         try {
                             const pr = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                            if (pr.points_rate) pointsRate = parseFloat(pr.points_rate);
+                            if (pr.min_withdrawal) appMinWd = parseFloat(pr.min_withdrawal);
                         } catch(e){}
+                    }
+
+                    const minAmount = parseFloat(walletSched.min_amount) || appMinWd;
+                    if (amount < minAmount) {
+                        const prefix = targetWallet === 'affiliate' ? '₦' : '';
+                        const suffix = targetWallet === 'affiliate' ? '' : ' PTS';
+                        res.end(JSON.stringify({ status: 'error', message: `Minimum withdrawal amount for this wallet is ${prefix}${minAmount.toLocaleString()}${suffix}.` }));
+                        return;
                     }
 
                     let curCash = parseFloat(user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0));
@@ -2481,7 +2528,7 @@ const server = http.createServer((req, res) => {
                         user.remaining_cash = curCash;
                         user.cashBalance = curCash;
                     } else {
-                        const ptsNeeded = Math.ceil(amount / pointsRate);
+                        const ptsNeeded = Math.ceil(amount);
                         if (curPoints < ptsNeeded) {
                             res.end(JSON.stringify({ status: 'error', message: `Insufficient points balance. Needed: ${ptsNeeded.toLocaleString()} PTS, Available: ${curPoints.toLocaleString()} PTS` }));
                             return;
@@ -4258,20 +4305,22 @@ const server = http.createServer((req, res) => {
                             context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
                         }
                         const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
-                        let ptsRate = 1.0;
+                        let appMinWd = 5000;
+                        let regFee = 1000;
+                        let refBonus = 500;
                         if (fs.existsSync(pricingFile)) {
-                            const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                            ptsRate = parseFloat(pData.points_rate || 1.0);
+                            try {
+                                const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
+                                if (pData.min_withdrawal) appMinWd = parseFloat(pData.min_withdrawal);
+                                if (pData.reg_fee) regFee = parseFloat(pData.reg_fee);
+                                if (pData.ref_commission) refBonus = parseFloat(pData.ref_commission);
+                            } catch(e) {}
                         }
-                        context.ptsRate = ptsRate;
-                        context.ptsInNaira = (context.userPoints || 100) * ptsRate;
-                        context.totalLiquidNaira = (context.userCash || 0) + context.ptsInNaira;
-
-                        const wdFile = path.join(PUBLIC_DIR, 'config', 'withdrawal_settings.json');
-                        if (fs.existsSync(wdFile)) {
-                            const wdData = JSON.parse(fs.readFileSync(wdFile, 'utf8'));
-                            context.minCashWd = parseFloat(wdData.affiliate && wdData.affiliate.min_amount ? wdData.affiliate.min_amount : 5000);
-                        }
+                        context.regFee = regFee;
+                        context.refBonus = refBonus;
+                        context.minCashWd = appMinWd;
+                        context.minTaskWd = appMinWd;
+                        context.totalLiquidNaira = (context.userCash || 0);
                     } catch(e) {}
                 }
 

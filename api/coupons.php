@@ -45,11 +45,20 @@ if ($action === 'generate_pins' && ($_SERVER['REQUEST_METHOD'] === 'POST' || !em
     $vendorId = trim($input['vendor_id'] ?? '');
     $vendorName = trim($input['vendor_name'] ?? 'General Pool');
 
+    $pricingFile = __DIR__ . '/../config/app_pricing.json';
+    $dynRegFee = 1000.0;
+    $dynWholesale = 800.0;
+    if (file_exists($pricingFile)) {
+        $pr = @json_decode(@file_get_contents($pricingFile), true);
+        if (!empty($pr['reg_fee'])) $dynRegFee = floatval($pr['reg_fee']);
+        if (!empty($pr['vendor_wholesale'])) $dynWholesale = floatval($pr['vendor_wholesale']);
+    }
+
     $prefix = 'INX-AFF-';
     $channel = 'AFFILIATE';
     $typeLabel = 'Affiliate Membership PIN';
-    $amount = 1000.0;
-    $wholesalePrice = 800.0;
+    $amount = $dynRegFee;
+    $wholesalePrice = $dynWholesale;
 
     if ($pinType === 'UPL' || strpos($pinType, 'UPL') !== false) {
         $prefix = 'INX-UPL-';

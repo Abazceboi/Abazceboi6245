@@ -297,17 +297,20 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $minAmount = floatval($walletSched['min_amount'] ?? 1000);
-    if ($amount < $minAmount) {
-        echo json_encode(['status' => 'error', 'message' => 'Minimum withdrawal amount for this wallet is ₦' . number_format($minAmount) . '.']);
-        exit;
-    }
-
-    $pointsRate = 1.0;
     $pricingFile = __DIR__ . '/../config/app_pricing.json';
+    $appMinWd = 5000.0;
     if (file_exists($pricingFile)) {
         $pr = @json_decode(@file_get_contents($pricingFile), true);
-        if (!empty($pr['points_rate'])) $pointsRate = floatval($pr['points_rate']);
+        if (!empty($pr['min_withdrawal'])) $appMinWd = floatval($pr['min_withdrawal']);
+    }
+
+    $minAmount = floatval($walletSched['min_amount'] ?? $appMinWd);
+    if ($minAmount <= 0) $minAmount = $appMinWd;
+    if ($amount < $minAmount) {
+        $prefix = ($targetWallet === 'affiliate') ? '₦' : '';
+        $suffix = ($targetWallet === 'affiliate') ? '' : ' PTS';
+        echo json_encode(['status' => 'error', 'message' => 'Minimum withdrawal amount for this wallet is ' . $prefix . number_format($minAmount) . $suffix . '.']);
+        exit;
     }
 
     $curCash = floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0);
@@ -322,7 +325,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $user['remaining_cash'] = $curCash;
         $user['cashBalance'] = $curCash;
     } else {
-        $ptsNeeded = intval(ceil($amount / $pointsRate));
+        $ptsNeeded = intval(ceil($amount));
         if ($curPoints < $ptsNeeded) {
             echo json_encode(['status' => 'error', 'message' => 'Insufficient points balance. Needed: ' . number_format($ptsNeeded) . ' PTS, Available: ' . number_format($curPoints) . ' PTS']);
             exit;

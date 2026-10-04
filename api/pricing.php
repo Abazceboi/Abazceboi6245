@@ -20,7 +20,6 @@ $defaultPricing = [
     'reg_fee' => 1000,
     'ref_commission' => 500,
     'vendor_wholesale' => 800,
-    'points_rate' => 1.0,
     'task_points_reward' => 150,
     'min_withdrawal' => 5000,
     'updated_at' => date('Y-m-d H:i:s')
@@ -47,8 +46,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($input['reg_fee'])) $pricing['reg_fee'] = floatval($input['reg_fee']);
     if (isset($input['ref_commission'])) $pricing['ref_commission'] = floatval($input['ref_commission']);
     if (isset($input['vendor_wholesale'])) $pricing['vendor_wholesale'] = floatval($input['vendor_wholesale']);
-    if (isset($input['points_rate'])) $pricing['points_rate'] = floatval($input['points_rate']);
-    if (isset($input['min_withdrawal'])) $pricing['min_withdrawal'] = floatval($input['min_withdrawal']);
+    if (isset($input['min_withdrawal'])) {
+        $pricing['min_withdrawal'] = floatval($input['min_withdrawal']);
+        // Sync min_amount directly into withdrawal_settings.json
+        $wdSettings = readStorageJson('config/withdrawal_settings.json', []);
+        if (is_array($wdSettings)) {
+            if (isset($wdSettings['task'])) $wdSettings['task']['min_amount'] = $pricing['min_withdrawal'];
+            if (isset($wdSettings['affiliate'])) $wdSettings['affiliate']['min_amount'] = $pricing['min_withdrawal'];
+            $wdSettings['updated_at'] = date('Y-m-d H:i:s');
+            writeStorageJson('config/withdrawal_settings.json', $wdSettings);
+        }
+    }
     $pricing['updated_at'] = date('Y-m-d H:i:s');
 
     writeStorageJson('config/app_pricing.json', $pricing);

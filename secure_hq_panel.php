@@ -1033,10 +1033,6 @@ body.sidebar-retracted .main{
             <input type="number" class="form-input" id="cfgRefComm" value="500">
           </div>
           <div class="form-group">
-            <label class="form-label">Points to Naira Conversion Rate (e.g. 1.0 = 1 PTS: ₦1)</label>
-            <input type="number" step="0.1" class="form-input" id="cfgPointsRate" value="1.0">
-          </div>
-          <div class="form-group">
             <label class="form-label">Minimum Withdrawal (₦)</label>
             <input type="number" class="form-input" id="cfgMinWd" value="5000">
           </div>
@@ -2308,7 +2304,6 @@ async function loadPricingData() {
     const p = d.pricing || {};
     if (p.reg_fee) document.getElementById('cfgRegFee').value = p.reg_fee;
     if (p.ref_commission) document.getElementById('cfgRefComm').value = p.ref_commission;
-    if (p.points_rate) document.getElementById('cfgPointsRate').value = p.points_rate;
     if (p.min_withdrawal) document.getElementById('cfgMinWd').value = p.min_withdrawal;
   } catch(e){}
 }
@@ -2318,7 +2313,6 @@ async function handleSavePricing(e) {
   const payload = {
     reg_fee: parseFloat(document.getElementById('cfgRegFee').value) || 1000,
     ref_commission: parseFloat(document.getElementById('cfgRefComm').value) || 500,
-    points_rate: parseFloat(document.getElementById('cfgPointsRate').value) || 1.0,
     min_withdrawal: parseFloat(document.getElementById('cfgMinWd').value) || 5000
   };
   const btn = document.getElementById('btnSavePricing');

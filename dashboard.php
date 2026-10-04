@@ -111,15 +111,14 @@ if ($isActivated) {
 
 $pricingFile = __DIR__ . '/config/app_pricing.json';
 $pricing     = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
-$ptsRate     = floatval($pricing['points_rate'] ?? 1.0);
 $refBonus    = floatval($pricing['ref_commission'] ?? 500);
+$appMinWd    = floatval($pricing['min_withdrawal'] ?? 5000);
 
 $wdFile      = __DIR__ . '/config/withdrawal_settings.json';
 $wdSettings  = file_exists($wdFile) ? @json_decode(@file_get_contents($wdFile), true) : [];
-$minCashWd   = floatval($wdSettings['affiliate']['min_amount'] ?? 5000);
-$minTaskWd   = floatval($wdSettings['task']['min_amount'] ?? 1000);
+$minCashWd   = floatval($pricing['min_withdrawal'] ?? ($wdSettings['affiliate']['min_amount'] ?? 5000));
+$minTaskWd   = floatval($pricing['min_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 5000));
 
-$ptsInNaira  = $userPoints * $ptsRate;
 $isAdmin     = in_array(strtolower($username), ['admin','abas6245','abazceboi']) || in_array($userRole, ['admin','super_admin']);
 $appUrl      = rtrim(APP_URL, '/');
 $referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
@@ -1540,6 +1539,8 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataAccountName" data-name="<?= htmlspecialchars($accountName) ?>" style="display:none"></span>
 <span id="dataCashBal" data-cash="<?= htmlspecialchars((string)$userCash) ?>" style="display:none"></span>
 <span id="dataPtsBal" data-pts="<?= htmlspecialchars((string)$userPoints) ?>" style="display:none"></span>
+<span id="dataMinCashWd" data-min="<?= $minCashWd ?>" style="display:none"></span>
+<span id="dataMinTaskWd" data-min="<?= $minTaskWd ?>" style="display:none"></span>
 <span id="dataActivated" data-activated="<?= $isActivated ? '1' : '0' ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
@@ -1808,7 +1809,7 @@ input,textarea,select{font-family:var(--ff);}
         <div class="stat-card">
           <div class="stat-label">Task Points Wallet</div>
           <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
-          <div class="stat-sub">Min payout: ₦<?= number_format($minTaskWd) ?></div>
+          <div class="stat-sub">Min payout: <?= number_format($minTaskWd) ?> PTS</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Referral Cash Wallet</div>
@@ -2017,7 +2018,7 @@ input,textarea,select{font-family:var(--ff);}
               </div>
               <div class="fancy-trigger-text">
                 <div class="fancy-trigger-title" id="wdWalletTitle">Task Points Wallet</div>
-                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: ₦<?= number_format($minTaskWd) ?></div>
+                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: <?= number_format($minTaskWd) ?> PTS</div>
               </div>
             </div>
             <div class="fancy-chevron">
@@ -2027,7 +2028,7 @@ input,textarea,select{font-family:var(--ff);}
 
           <!-- Floating Fancy Options Menu -->
           <div class="fancy-dropdown-menu" id="wdWalletMenu" role="listbox">
-            <div class="fancy-option selected" data-value="task" data-title="Task Points Wallet" data-sub="Min payout: ₦<?= number_format($minTaskWd) ?>" data-icon="points" onclick="selectFancyOption('wdWalletDropdown', this)">
+            <div class="fancy-option selected" data-value="task" data-title="Task Points Wallet" data-sub="Min payout: <?= number_format($minTaskWd) ?> PTS" data-icon="points" onclick="selectFancyOption('wdWalletDropdown', this)">
               <div class="fancy-option-icon points-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </div>
@@ -2035,7 +2036,7 @@ input,textarea,select{font-family:var(--ff);}
                 <div class="fancy-option-name">Task Points Wallet</div>
                 <div class="fancy-option-desc">Earnings from completed tasks & video surveys</div>
               </div>
-              <div class="fancy-option-badge">Min ₦<?= number_format($minTaskWd) ?></div>
+              <div class="fancy-option-badge">Min <?= number_format($minTaskWd) ?> PTS</div>
               <div class="fancy-option-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -2058,7 +2059,7 @@ input,textarea,select{font-family:var(--ff);}
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Withdrawal Amount (₦)</label>
+        <label class="form-label">Withdrawal Amount</label>
         <input type="number" class="form-input" id="wdAmount" placeholder="e.g. 5000">
       </div>
       <div style="font-size:12px;color:var(--txt-3);line-height:1.5;">
@@ -3160,10 +3161,14 @@ let pendingWithdrawalData = null;
 function proceedToWithdrawalConfirm() {
   const type = document.getElementById('wdWalletType').value;
   const amount = parseFloat(document.getElementById('wdAmount').value);
-  const min = type === 'cash' ? 5000 : 1000;
+  const minCash = parseFloat(document.getElementById('dataMinCashWd')?.dataset.min || 5000);
+  const minTask = parseFloat(document.getElementById('dataMinTaskWd')?.dataset.min || 5000);
+  const min = type === 'cash' ? minCash : minTask;
+  const prefix = type === 'cash' ? '₦' : '';
+  const suffix = type === 'cash' ? '' : ' PTS';
 
   if (!amount || isNaN(amount) || amount < min) {
-    toast(`Minimum payout is ₦${min.toLocaleString()}`, 'error');
+    toast(`Minimum payout is ${prefix}${min.toLocaleString()}${suffix}`, 'error');
     return;
   }
 
@@ -3172,7 +3177,7 @@ function proceedToWithdrawalConfirm() {
   const ptsBal = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || 0);
 
   if (type === 'cash' && amount > cashBal) {
-    toast(`Insufficient balance in Referral Cash Wallet (₦${cashBal.toLocaleString()})`, 'error');
+    toast(`Insufficient balance in Referral Cash Wallet (₦${cashBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`, 'error');
     return;
   }
   if (type === 'task' && amount > ptsBal) {
@@ -3186,7 +3191,9 @@ function proceedToWithdrawalConfirm() {
   };
 
   const walletLabel = type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet';
-  const amountStr = '₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const amountStr = type === 'cash' 
+    ? ('₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+    : (amount.toLocaleString('en-US') + ' PTS');
   const bankName = document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
   const accNo = document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
   const accName = document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
