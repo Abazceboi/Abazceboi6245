@@ -9,17 +9,19 @@ if (!$authUser) {
     echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Verifying Admin Session...</title><script>'
         . '(function(){'
         . 'try{'
-        . 'var retried = sessionStorage.getItem("ix_auth_retried");'
         . 'var t = localStorage.getItem("ix_session_token");'
-        . 'if(t && !retried){'
-        . 'sessionStorage.setItem("ix_auth_retried", "1");'
+        . 'if(t && t.indexOf(".") !== -1){'
         . 'var s = location.protocol === "https:" ? "; Secure" : "";'
-        . 'document.cookie = "ix_session=" + encodeURIComponent(t) + "; path=/; max-age=2592000; SameSite=Lax" + s;'
+        . 'document.cookie = "ix_session=" + encodeURIComponent(t).replace(/%2E/g, ".") + "; path=/; max-age=2592000; SameSite=Lax" + s;'
+        . 'var last = sessionStorage.getItem("ix_auth_ref_ts");'
+        . 'var now = Date.now();'
+        . 'if(!last || (now - parseInt(last)) > 3000){'
+        . 'sessionStorage.setItem("ix_auth_ref_ts", String(now));'
         . 'location.reload();'
         . 'return;'
         . '}'
+        . '}'
         . '}catch(e){}'
-        . 'sessionStorage.removeItem("ix_auth_retried");'
         . 'location.replace("login.php");'
         . '})();'
         . '</script></head><body style="background:#07090F;color:#64748B;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><p>Verifying secure admin credentials...</p></body></html>';
@@ -41,11 +43,9 @@ if (!$isAuthorizedAdmin) {
     die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
 }
 
-// Secondary Master PIN Challenge
-$MASTER_PIN = getenv('ADMIN_PIN') ?: '9999';
-
 if (isset($_GET['logout_admin'])) {
     unset($_SESSION['admin_auth_step']);
+    unset($_SESSION['is_admin']);
     if (function_exists('clearAuthCookie')) {
         clearAuthCookie();
     }
@@ -53,74 +53,20 @@ if (isset($_GET['logout_admin'])) {
     exit;
 }
 
-$isPinStepPassed = (isset($_SESSION['admin_auth_step']) && $_SESSION['admin_auth_step'] === 2)
-    || (!empty($authUser['admin_auth_step']) && $authUser['admin_auth_step'] === 2);
-
-if (!$isPinStepPassed) {
-    $pinError = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['master_pin'])) {
-        if ($_POST['master_pin'] === $MASTER_PIN) {
-            $_SESSION['admin_auth_step'] = 2;
-            if (function_exists('setAuthCookie')) {
-                setAuthCookie(
-                    $authUser['user_id'] ?? 'admin',
-                    $authUser['username'] ?? 'admin',
-                    true,
-                    $authUser['email'] ?? '',
-                    $authUser['phone'] ?? '',
-                    $authUser['fullName'] ?? '',
-                    $authUser['role'] ?? 'super_admin',
-                    2
-                );
-            }
-            header("Location: secure_hq_panel.php");
-            exit;
-        } else {
-            $pinError = "Invalid security PIN. Access denied.";
-        }
-    }
-
-    echo '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Verification — ' . htmlspecialchars(APP_NAME) . '</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:\'Inter\',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#07090F;color:#F0F4FA}
-        .pin-card{background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:40px 32px;width:100%;max-width:380px;text-align:center}
-        .pin-icon{width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#3B82F6}
-        .pin-card h2{font-size:1.15rem;font-weight:700;margin-bottom:6px}
-        .pin-card p{font-size:.82rem;color:#8B9AB0;margin-bottom:24px;line-height:1.4}
-        .pin-input{width:100%;padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:1.3rem;text-align:center;letter-spacing:6px;outline:none;background:#0D1117;color:#F0F4FA}
-        .pin-input:focus{border-color:#3B82F6}
-        .pin-btn{width:100%;padding:12px;background:#3B82F6;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:16px}
-        .pin-btn:hover{background:#2563EB}
-        .pin-error{color:#EF4444;font-size:.8rem;font-weight:500;margin-bottom:14px;padding:8px;background:rgba(239,68,68,.1);border-radius:6px}
-    </style>
-</head>
-<body>
-    <div class="pin-card">
-        <div class="pin-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        </div>
-        <h2>Admin Authentication</h2>
-        <p>Enter your 4-digit Master Security PIN to access the management panel.</p>
-        ' . ($pinError ? '<div class="pin-error">' . htmlspecialchars($pinError) . '</div>' : '') . '
-        <form method="POST" action="secure_hq_panel.php">
-            <input type="password" name="master_pin" class="pin-input" maxlength="6" autofocus required autocomplete="off" placeholder="••••">
-            <button type="submit" class="pin-btn">Authorize Access</button>
-            <div style="margin-top:16px">
-                <a href="logout.php" style="color:#8B9AB0;font-size:0.8rem;text-decoration:none">Sign out</a>
-            </div>
-        </form>
-    </div>
-</body>
-</html>';
-    exit;
+// Keep admin session permanently active across all reloads
+$_SESSION['is_admin'] = true;
+$_SESSION['admin_auth_step'] = 2;
+if (function_exists('setAuthCookie')) {
+    setAuthCookie(
+        $authUser['user_id'] ?? 'admin',
+        $authUser['username'] ?? 'admin',
+        true,
+        $authUser['email'] ?? '',
+        $authUser['phone'] ?? '',
+        $authUser['fullName'] ?? '',
+        $authUser['role'] ?? 'super_admin',
+        2
+    );
 }
 
 $adminUsername = $authUser['username'] ?? 'Admin';
@@ -186,16 +132,16 @@ input,textarea,select{font-family:var(--ff);}
   transition:transform var(--trans), width var(--trans), min-width var(--trans);
 }
 .sidebar-logo{
-  padding:18px 20px;border-bottom:1px solid var(--border);
+  padding:15px 18px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .sidebar-logo-left{display:flex;align-items:center;gap:10px;}
 .sidebar-logo-mark{
   width:32px;height:32px;border-radius:8px;
-  background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13px;color:#fff;flex-shrink:0;
+  background:linear-gradient(135deg, #2563EB, #1D4ED8);display:flex;align-items:center;justify-content:center;
+  color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,0.28);
 }
-.sidebar-logo-name{font-weight:700;font-size:14px;letter-spacing:-0.3px;}
+.sidebar-logo-name{font-weight:700;font-size:14px;letter-spacing:-0.2px;}
 .sidebar-logo-name span{color:var(--accent);}
 
 .nav-section{padding:12px 10px 0;flex:1;overflow-y:auto;}
@@ -240,6 +186,13 @@ body.sidebar-retracted .main{
 }
 .icon-btn:hover{background:var(--card-hover);color:var(--txt);}
 .icon-btn svg{width:16px;height:16px;}
+.hamburger-btn{
+  width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:all var(--trans);color:var(--txt-2);flex-shrink:0;
+}
+.hamburger-btn:hover{background:var(--card-hover);border-color:var(--accent);color:var(--accent);}
+.hamburger-btn svg{width:18px;height:18px;}
 
 .content{padding:24px;flex:1;}
 
@@ -438,11 +391,15 @@ body.sidebar-retracted .main{
 <aside class="sidebar" id="adminSidebar">
   <div class="sidebar-logo">
     <div class="sidebar-logo-left">
-      <div class="sidebar-logo-mark">IX</div>
+      <div class="sidebar-logo-mark" title="Admin HQ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
       <div class="sidebar-logo-name">Innovation<span>X</span> HQ</div>
     </div>
     <button class="mobile-close-btn" onclick="closeAdminSidebar()" title="Close navigation menu">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
 
@@ -481,10 +438,6 @@ body.sidebar-retracted .main{
   </nav>
 
   <div class="sidebar-footer">
-    <a href="dashboard.php" class="nav-item" target="_blank" style="color:var(--accent);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Open User Dashboard
-    </a>
     <a href="secure_hq_panel.php?logout_admin=1" class="nav-item" style="color:var(--red);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Exit Admin Panel
@@ -495,16 +448,15 @@ body.sidebar-retracted .main{
 <!-- ── MAIN CONTENT AREA ──────────────────────────────────────────────── -->
 <div class="main">
   <div class="topbar">
-    <!-- Retractable Hamburger Button for Full Screen / Expanded Width -->
-    <button class="icon-btn" id="sidebarToggleBtn" onclick="toggleSidebarFull()" title="Toggle Full Screen View">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <!-- Redesigned sleek compact hamburger button -->
+    <button class="hamburger-btn" id="sidebarToggleBtn" onclick="toggleSidebarFull()" title="Toggle Navigation Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="15" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
     <span class="topbar-title" id="adminTopbarTitle">Dashboard Overview</span>
     <div class="topbar-actions">
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <a href="dashboard.php" class="btn btn-secondary btn-sm" target="_blank">View Website</a>
     </div>
   </div>
 
@@ -1273,6 +1225,20 @@ body.sidebar-retracted .main{
 <div id="toast-stack"></div>
 
 <script>
+// Keep admin session active in localStorage across all reloads
+(function(){
+  try {
+    var match = document.cookie.match(/ix_session=([^;]+)/);
+    if (match) {
+      var tok = decodeURIComponent(match[1]).trim();
+      if (tok && tok.indexOf('.') !== -1) {
+        localStorage.setItem('ix_session_token', tok);
+        localStorage.setItem('ix_admin_auth', '1');
+      }
+    }
+  } catch(e){}
+})();
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TOAST & CONFIRM DIALOG
 // ═══════════════════════════════════════════════════════════════════════════
