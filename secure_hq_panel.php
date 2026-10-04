@@ -485,6 +485,7 @@ body.sidebar-retracted .main{
           <div class="stat-value" id="kpiPayouts" style="color:var(--amber);">0</div>
           <div class="stat-sub">Withdrawals awaiting review</div>
         </div>
+      </div>
     </div>
 
     <!-- ══ TAB: SURVEYS ════════════════════════════════════════════════════ -->
