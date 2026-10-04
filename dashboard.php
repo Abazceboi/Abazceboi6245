@@ -1629,6 +1629,34 @@ input,textarea,select{font-family:var(--ff);}
         <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
       </div>
     </div>
+
+    <!-- Live Available Tasks & Video Gigs on Home Feed -->
+    <div style="margin-top:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <h2 style="font-size:16px;font-weight:700;">Available Earning Gigs & Videos</h2>
+          <p style="font-size:12px;color:var(--txt-3);">Watch video streams or complete written tasks for instant point credits.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('tasks')">View All Tasks</button>
+      </div>
+      <div id="homeTasksContainer" class="items-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt-3);">Loading tasks...</div>
+      </div>
+    </div>
+
+    <!-- Live Available Surveys (Word & Video) on Home Feed -->
+    <div style="margin-top:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <h2 style="font-size:16px;font-weight:700;">Available Surveys (Written & Video)</h2>
+          <p style="font-size:12px;color:var(--txt-3);">Participate in written questionnaires and video feedback sessions.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('surveys')">View All Surveys</button>
+      </div>
+      <div id="homeSurveysContainer" class="items-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt-3);">Loading surveys...</div>
+      </div>
+    </div>
   </div>
 
   <!-- ══ TAB: TASKS ═══════════════════════════════════════════════════════ -->
@@ -2336,8 +2364,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   setInterval(() => {
     loadTasks();
+    loadSurveys();
     loadNotifications();
-  }, 20000);
+  }, 15000);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2634,7 +2663,15 @@ let doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
 let proofBase64 = '';
 
 async function loadTasks() {
+  const cached = localStorage.getItem('ix_cached_tasks');
+  if (cached && (!allTasksList || !allTasksList.length)) {
+    try {
+      allTasksList = JSON.parse(cached);
+      renderTasks(allTasksList);
+    } catch(e) {}
+  }
   const container = document.getElementById('tasksContainer');
+  const homeContainer = document.getElementById('homeTasksContainer');
   try {
     const r = await fetch(`/api/tasks.php?action=get_tasks&_t=${Date.now()}`, {
       cache: 'no-store',
@@ -2642,31 +2679,39 @@ async function loadTasks() {
     });
     const d = await r.json();
     allTasksList = d.tasks || [];
+    localStorage.setItem('ix_cached_tasks', JSON.stringify(allTasksList));
     renderTasks(allTasksList);
   } catch(e) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load tasks right now.</div>';
+    if (!allTasksList.length) {
+      const errHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load tasks right now.</div>';
+      if (container) container.innerHTML = errHtml;
+      if (homeContainer) homeContainer.innerHTML = errHtml;
+    }
   }
 }
 
 function renderTasks(list) {
   const container = document.getElementById('tasksContainer');
+  const homeContainer = document.getElementById('homeTasksContainer');
   if (!list.length) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">No earning tasks available right now. Check back soon.</div>';
+    const emptyHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">No earning tasks available right now. Check back soon.</div>';
+    if (container) container.innerHTML = emptyHtml;
+    if (homeContainer) homeContainer.innerHTML = emptyHtml;
     return;
   }
   const now = Date.now();
-  container.innerHTML = list.map(t => {
+  const html = list.map(t => {
     const isDone = doneTaskIds.includes(t.id);
     const expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
     const isExp = expTime && expTime < now;
     const diff = expTime ? expTime - now : null;
     const timerText = diff > 0 ? formatMs(diff) : '';
     const vidSrc = (t.video_url || t.video_file || '').trim();
-    const hasVideo = !!vidSrc;
+    const isVideo = (t.format_type === 'video') || (!!vidSrc);
     const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
 
     let videoEmbedHtml = '';
-    if (hasVideo) {
+    if (isVideo && vidSrc) {
       if (ytMatch) {
         videoEmbedHtml = `
           <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000;margin:10px 0;">
@@ -2680,6 +2725,10 @@ function renderTasks(list) {
       }
     }
 
+    const formatBadge = isVideo
+      ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Video Task</span>'
+      : '<span class="item-tag" style="color:var(--green);font-weight:700;">Written Task</span>';
+
     return `
       <div class="grid-item-card">
         <div class="item-head">
@@ -2687,15 +2736,15 @@ function renderTasks(list) {
           <div class="item-pts">+${t.reward_points} PTS</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <span class="item-tag">${esc(t.category || 'General')}</span>
-          ${hasVideo ? '<span class="item-tag" style="color:var(--accent);font-weight:600;">Watch on Site</span>' : ''}
-          <span class="item-tag">${esc(t.proof_type || 'Proof')}</span>
+          <span class="item-tag">${esc(t.category || (isVideo ? 'Sponsored Video' : 'General'))}</span>
+          ${formatBadge}
+          <span class="item-tag">${esc(t.proof_type || (isVideo ? 'Watch on Site' : 'Verification Proof'))}</span>
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
 
         ${videoEmbedHtml}
 
-        ${t.description ? `<div style="font-size:12.5px;color:var(--txt-1);line-height:1.5;margin:8px 0;padding:9px 12px;background:var(--surface);border-radius:8px;border-left:3px solid var(--accent);">${esc(t.description)}</div>` : ''}
+        ${t.description ? `<div style="font-size:12.5px;color:var(--txt-1);line-height:1.5;margin:8px 0;padding:9px 12px;background:var(--surface);border-radius:8px;border-left:3px solid ${isVideo ? 'var(--accent)' : 'var(--green)'};">${esc(t.description)}</div>` : ''}
 
         ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-bottom:8px;">${esc(t.instructions)}</div>` : ''}
         ${timerText && !isExp ? `<div class="item-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
@@ -2703,11 +2752,14 @@ function renderTasks(list) {
           <span style="font-size:11px;color:var(--txt-3);">${t.remaining_slots || t.total_slots || 0} slots left</span>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
                    : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
-                   : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">${hasVideo ? 'Watch & Complete' : 'Start Task'}</button>`)}
+                   : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">${isVideo ? 'Watch & Complete' : 'Start Task'}</button>`)}
         </div>
       </div>
     `;
   }).join('');
+
+  if (container) container.innerHTML = html;
+  if (homeContainer) homeContainer.innerHTML = html;
 }
 
 function openTaskSubmission(id) {
@@ -2824,7 +2876,15 @@ let surveyAnswers = {};
 let surveyStep = 0;
 
 async function loadSurveys() {
+  const cached = localStorage.getItem('ix_cached_surveys');
+  if (cached && (!allSurveysList || !allSurveysList.length)) {
+    try {
+      allSurveysList = JSON.parse(cached);
+      renderSurveys(allSurveysList);
+    } catch(e) {}
+  }
   const container = document.getElementById('surveysContainer');
+  const homeContainer = document.getElementById('homeSurveysContainer');
   try {
     const [r1, r2] = await Promise.all([
       fetch(`/api/surveys.php?action=get_surveys&_t=${Date.now()}`, {
@@ -2840,27 +2900,40 @@ async function loadSurveys() {
     const d1 = await r1.json();
     const d2 = await r2.json();
     allSurveysList = d1.surveys || [];
+    localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
     const serverDone = d2.completed_surveys || [];
     doneSurveyIds = [...new Set([...doneSurveyIds, ...serverDone])];
     localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
     renderSurveys(allSurveysList);
   } catch(e) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load surveys right now.</div>';
+    if (!allSurveysList.length) {
+      const errHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load surveys right now.</div>';
+      if (container) container.innerHTML = errHtml;
+      if (homeContainer) homeContainer.innerHTML = errHtml;
+    }
   }
 }
 
 function renderSurveys(list) {
   const container = document.getElementById('surveysContainer');
+  const homeContainer = document.getElementById('homeSurveysContainer');
   if (!list.length) {
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);">No active surveys right now. Check back soon.</div>';
+    const emptyHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">No active surveys right now. Check back soon.</div>';
+    if (container) container.innerHTML = emptyHtml;
+    if (homeContainer) homeContainer.innerHTML = emptyHtml;
     return;
   }
   const now = Date.now();
-  container.innerHTML = list.map(s => {
+  const html = list.map(s => {
     const isDone = doneSurveyIds.includes(s.id);
     const expTime = s.expires_at ? new Date(s.expires_at).getTime() : null;
     const isExp = expTime && expTime < now;
     const qCount = (s.questions || []).length;
+    const isVideo = (s.format_type === 'video') || (!!s.video_url);
+
+    const formatBadge = isVideo
+      ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Video Survey</span>'
+      : '<span class="item-tag" style="color:var(--purple);font-weight:700;">Written Survey</span>';
 
     return `
       <div class="grid-item-card">
@@ -2869,21 +2942,24 @@ function renderSurveys(list) {
           <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} PTS</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <span class="item-tag">${esc(s.category || 'Survey')}</span>
-          ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : ''}
-          ${s.video_url ? '<span class="item-tag" style="color:var(--accent);">Video</span>' : ''}
+          <span class="item-tag">${esc(s.category || (isVideo ? 'Video Survey' : 'Written Survey'))}</span>
+          ${formatBadge}
+          ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : '<span class="item-tag">Direct Words Survey</span>'}
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
-        ${s.description ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;">${esc(s.description)}</div>` : ''}
+        ${s.description ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-top:8px;">${esc(s.description)}</div>` : ''}
         <div class="item-footer">
           <span style="font-size:11px;color:var(--txt-3);">${s.remaining_slots || s.total_slots || 0} spots</span>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Completed</span>'
                    : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
-                   : `<button class="btn btn-primary btn-sm" onclick="startSurvey('${esc(s.id)}')">Start Survey</button>`)}
+                   : `<button class="btn btn-primary btn-sm" onclick="startSurvey('${esc(s.id)}')">${isVideo ? 'Watch & Start' : 'Start Written Survey'}</button>`)}
         </div>
       </div>
     `;
   }).join('');
+
+  if (container) container.innerHTML = html;
+  if (homeContainer) homeContainer.innerHTML = html;
 }
 
 function startSurvey(id) {
@@ -2902,31 +2978,35 @@ function renderSurveyStep() {
   const footer = document.getElementById('surveyRunnerFooter');
   const nextBtn = document.getElementById('btnSurveyNext');
   const questions = activeSurvey.questions || [];
+  const isVideo = (activeSurvey.format_type === 'video') || (!!activeSurvey.video_url);
 
-  document.getElementById('surveyRunnerTitle').textContent = activeSurvey.title;
+  document.getElementById('surveyRunnerTitle').textContent = (isVideo ? 'Video Survey: ' : 'Written Survey: ') + activeSurvey.title;
 
   // Step 0: Video & Overview
   if (surveyStep === 0) {
     let html = '';
-    if (activeSurvey.description) {
-      html += `<div style="font-size:13px;color:var(--txt-2);margin-bottom:14px;line-height:1.5;">${esc(activeSurvey.description)}</div>`;
-    }
-    if (activeSurvey.video_url) {
+    if (isVideo && activeSurvey.video_url) {
       const vid = activeSurvey.video_url;
       const yt = vid.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
       html += `<div style="margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--accent);">Watch Video:</div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--accent);">Watch Video on Site:</div>
         <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;background:#000;">
           ${yt ? `<iframe src="https://www.youtube.com/embed/${yt[1]}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe>`
-               : `<video src="${esc(vid)}" controls style="position:absolute;top:0;left:0;width:100%;height:100%;"></video>`}
+               : `<video src="${esc(vid)}" controls playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;"></video>`}
         </div>
       </div>`;
     }
+    if (activeSurvey.description) {
+      html += `<div style="margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--txt-1);">${isVideo ? 'Instructions' : 'Written Survey Content & Details'}:</div>
+        <div style="font-size:13px;color:var(--txt-2);line-height:1.6;padding:12px;background:var(--surface);border-radius:8px;border-left:3px solid ${isVideo ? 'var(--accent)' : 'var(--purple)'};white-space:pre-wrap;">${esc(activeSurvey.description)}</div>
+      </div>`;
+    }
     html += `<div style="font-size:12px;color:var(--txt-3);background:var(--surface);padding:10px;border-radius:8px;">
-      Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.
+      ${questions.length ? `Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.` : `Review and submit to claim <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.`}
     </div>`;
     body.innerHTML = html;
-    nextBtn.textContent = questions.length ? 'Begin Quiz' : 'Submit';
+    nextBtn.textContent = questions.length ? (isVideo ? 'Begin Quiz' : 'Answer Questions') : 'Complete & Earn';
     nextBtn.onclick = () => {
       if (!questions.length) submitSurveyAnswers();
       else { surveyStep = 1; renderSurveyStep(); }

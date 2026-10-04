@@ -98,10 +98,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ── Admin: Create Task ──────────────────────────────────────────────────
     if ($action === 'create_task' || $action === 'publish_task') {
-        $title      = trim($input['title'] ?? '');
-        $slots      = max(1, intval($input['total_slots'] ?? 100));
-        $expiresAt  = trim($input['expires_at'] ?? '');
+        $title       = trim($input['title'] ?? '');
+        $slots       = max(1, intval($input['total_slots'] ?? 100));
+        $expiresAt   = trim($input['expires_at'] ?? '');
         $durationSec = intval($input['duration_seconds'] ?? 0); // timer in seconds
+        $formatType  = trim($input['format_type'] ?? '');
+        $videoUrl    = trim($input['video_url'] ?? $input['video_file'] ?? '');
+
+        if (!$formatType) {
+            $formatType = !empty($videoUrl) ? 'video' : 'word';
+        }
+        if ($formatType === 'word') {
+            $videoUrl = '';
+        }
 
         // If duration given but no explicit expires_at, compute it
         if ($durationSec > 0 && !$expiresAt) {
@@ -112,8 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id'               => 'TASK-' . strtoupper(substr(uniqid(), -6)),
             'title'            => $title ?: 'New Task',
             'category'         => trim($input['category'] ?? 'General'),
+            'format_type'      => $formatType,
             'description'      => trim($input['description'] ?? ''),
-            'video_url'        => trim($input['video_url'] ?? $input['video_file'] ?? ''),
+            'video_url'        => $videoUrl,
             'reward_points'    => intval($input['reward_points'] ?? 150),
             'total_slots'      => $slots,
             'remaining_slots'  => $slots,

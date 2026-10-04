@@ -1394,6 +1394,9 @@ const server = http.createServer((req, res) => {
             }
 
             if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions') {
+                res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+                res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
                 const tasksFile = path.join(PUBLIC_DIR, 'data', 'tasks.json');
                 let tasks = [];
                 if (fs.existsSync(tasksFile)) {
@@ -1414,12 +1417,15 @@ const server = http.createServer((req, res) => {
                             expiresAt = new Date(Date.now() + durSec * 1000).toISOString();
                         }
                         const totalSlots = parseInt(parsed.total_slots) || 100;
+                        const formatType = parsed.format_type || (parsed.video_url || parsed.video_file ? 'video' : 'word');
+                        const videoUrl = formatType === 'word' ? '' : (parsed.video_url || parsed.video_file || '');
                         const newTask = {
                             id: 'TASK-' + Math.floor(Math.random() * 900000 + 100000),
                             title: parsed.title || 'New Task',
                             category: parsed.category || 'General',
+                            format_type: formatType,
                             description: parsed.description || '',
-                            video_url: parsed.video_url || parsed.video_file || '',
+                            video_url: videoUrl,
                             reward_points: parseInt(parsed.reward_points) || 150,
                             total_slots: totalSlots,
                             remaining_slots: totalSlots,
@@ -1560,6 +1566,9 @@ const server = http.createServer((req, res) => {
             }
 
             if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed') {
+                res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+                res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
                 const surveysFile = path.join(PUBLIC_DIR, 'data', 'surveys.json');
                 let surveys = [];
                 if (fs.existsSync(surveysFile)) {
@@ -1580,7 +1589,9 @@ const server = http.createServer((req, res) => {
                             return;
                         }
                         const totalSlots = parseInt(parsed.total_slots) || 500;
-                        const cleanQuestions = (parsed.questions || []).map((q, idx) => {
+                        const formatType = parsed.format_type || (parsed.video_url ? 'video' : 'word');
+                        const videoUrl = formatType === 'word' ? '' : (parsed.video_url || '').trim();
+                        let cleanQuestions = (parsed.questions || []).map((q, idx) => {
                             const opts = (q.options || []).map(o => String(o).trim()).filter(Boolean);
                             const cIdx = parseInt(q.correct_index) || 0;
                             return {
@@ -1592,16 +1603,27 @@ const server = http.createServer((req, res) => {
                             };
                         }).filter(q => q.question && q.options.length >= 2);
 
+                        if (cleanQuestions.length === 0) {
+                            cleanQuestions.push({
+                                id: 'Q-' + Math.floor(Math.random() * 90000 + 10000),
+                                question: formatType === 'video' ? 'Confirm you have watched this video and fulfilled all instructions:' : 'Confirm you have read this written survey and completed all requirements:',
+                                options: ['I have completely reviewed and fulfilled this survey', 'Review completed'],
+                                correct_index: 0,
+                                correct_answer: 'I have completely reviewed and fulfilled this survey'
+                            });
+                        }
+
                         const newSurvey = {
                             id: 'SRV-' + Math.floor(Math.random() * 900000 + 100000),
                             title: title,
+                            format_type: formatType,
                             description: (parsed.description || '').trim(),
                             category: (parsed.category || 'General').trim(),
                             reward_points: parseInt(parsed.reward_points) || 100,
                             total_slots: totalSlots,
                             remaining_slots: totalSlots,
                             completions: 0,
-                            video_url: (parsed.video_url || '').trim(),
+                            video_url: videoUrl,
                             questions: cleanQuestions,
                             expires_at: (parsed.expires_at || '').trim(),
                             status: 'active',
@@ -1616,6 +1638,7 @@ const server = http.createServer((req, res) => {
                         surveys.forEach(sv => {
                             if (sv.id === id) {
                                 if (parsed.title !== undefined) sv.title = parsed.title.trim();
+                                if (parsed.format_type !== undefined) sv.format_type = parsed.format_type.trim();
                                 if (parsed.description !== undefined) sv.description = parsed.description.trim();
                                 if (parsed.reward_points !== undefined) sv.reward_points = parseInt(parsed.reward_points) || 100;
                                 if (parsed.total_slots !== undefined) sv.total_slots = parseInt(parsed.total_slots) || 500;

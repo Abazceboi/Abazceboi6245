@@ -138,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rewardPts   = intval($input['reward_points'] ?? 100);
         $totalSlots  = intval($input['total_slots'] ?? 500);
         $expiresAt   = trim($input['expires_at'] ?? '');
+        $formatType  = trim($input['format_type'] ?? '');
         $videoUrl    = trim($input['video_url'] ?? '');
         $questions   = $input['questions'] ?? [];
         $category    = trim($input['category'] ?? 'General');
@@ -145,6 +146,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$title) {
             echo json_encode(['status' => 'error', 'message' => 'Survey title is required']);
             exit;
+        }
+
+        if (!$formatType) {
+            $formatType = !empty($videoUrl) ? 'video' : 'word';
+        }
+        if ($formatType === 'word') {
+            $videoUrl = '';
         }
 
         // Validate questions
@@ -163,10 +171,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
 
+        // If no questions are provided, generate a default completion question so survey is immediately usable
+        if (empty($cleanQuestions)) {
+            $cleanQuestions[] = [
+                'id'             => 'Q-' . strtoupper(substr(uniqid(), -5)),
+                'question'       => $formatType === 'video' ? 'Confirm you have watched this video and fulfilled all instructions:' : 'Confirm you have read this written survey and completed all requirements:',
+                'options'        => ['I have completely reviewed and fulfilled this survey', 'Review completed'],
+                'correct_index'  => 0,
+                'correct_answer' => 'I have completely reviewed and fulfilled this survey',
+            ];
+        }
+
         $surveys = getSurveys();
         $newSurvey = [
             'id'               => 'SRV-' . strtoupper(substr(uniqid(), -6)),
             'title'            => $title,
+            'format_type'      => $formatType,
             'description'      => $description,
             'category'         => $category,
             'reward_points'    => $rewardPts,
@@ -193,6 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($surveys as &$sv) {
             if ($sv['id'] === $id) {
                 if (isset($input['title']))        $sv['title']       = trim($input['title']);
+                if (isset($input['format_type']))  $sv['format_type'] = trim($input['format_type']);
                 if (isset($input['description']))  $sv['description'] = trim($input['description']);
                 if (isset($input['reward_points'])) $sv['reward_points'] = intval($input['reward_points']);
                 if (isset($input['total_slots']))  $sv['total_slots'] = intval($input['total_slots']);

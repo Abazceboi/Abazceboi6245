@@ -336,6 +336,17 @@ body.sidebar-retracted .main{
 .question-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .opt-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
 
+/* Format Selector (Word vs Video) */
+.format-selector{display:flex;gap:12px;margin-bottom:16px;}
+.format-btn{
+  flex:1;display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--txt);text-align:left;cursor:pointer;transition:all var(--trans);
+}
+.format-btn:hover{border-color:var(--border-mid);background:var(--card-hover);}
+.format-btn.active{border-color:var(--accent);background:rgba(59,130,246,0.09);box-shadow:0 0 0 1px var(--accent);}
+.format-btn svg{width:20px;height:20px;color:var(--accent);flex-shrink:0;}
+
 /* Tabs */
 .tab-content{display:none;}
 .tab-content.active{display:block;}
@@ -529,24 +540,42 @@ body.sidebar-retracted .main{
         <div class="card-header">
           <div>
             <div class="card-title">Publish New Survey</div>
-            <div class="card-sub">Upload video surveys with questions. Users who answer correctly earn points automatically.</div>
+            <div class="card-sub">Choose between a Written (Words) Survey or a Video Survey with on-site playback and questions.</div>
           </div>
+        </div>
+
+        <!-- Format Selector: Written (Words) vs Video -->
+        <div class="format-selector">
+          <button type="button" class="format-btn active" id="btnSurveyFormatWord" onclick="setSurveyFormat('word')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <div>
+              <div style="font-weight:700;font-size:13px;">Written Survey (Words)</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Text questionnaire, written feedback & word prompts</div>
+            </div>
+          </button>
+          <button type="button" class="format-btn" id="btnSurveyFormatVideo" onclick="setSurveyFormat('video')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <div>
+              <div style="font-weight:700;font-size:13px;">Video Survey</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Direct MP4 upload or stream for on-site watching</div>
+            </div>
+          </button>
         </div>
 
         <form id="createSurveyForm" onsubmit="handleCreateSurvey(event)">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Survey Title</label>
-              <input type="text" class="form-input" id="svTitle" required placeholder="e.g. Platform Overview Video & Quiz">
+              <input type="text" class="form-input" id="svTitle" required placeholder="e.g. Platform Feedback & Member Survey">
             </div>
             <div class="form-group">
               <label class="form-label">Category</label>
-              <input type="text" class="form-input" id="svCategory" value="Sponsored Video" placeholder="Category name">
+              <input type="text" class="form-input" id="svCategory" value="Feedback & Insights" placeholder="Category name">
             </div>
           </div>
 
-          <!-- Direct Video Upload Section for Survey -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+          <!-- Direct Video Upload Section for Survey (Shown only in Video mode) -->
+          <div id="svVideoUploadBox" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
               <span class="form-label" style="font-size:13px;font-weight:700;color:var(--accent);margin:0;">Direct Survey Video Upload (On-Site Player)</span>
               <span style="font-size:11px;color:var(--txt-3);">MP4, WebM, OGG, MOV</span>
@@ -588,20 +617,20 @@ body.sidebar-retracted .main{
           </div>
 
           <div class="form-group">
-            <label class="form-label">Survey Instructions</label>
-            <textarea class="form-textarea" id="svDesc" placeholder="Explain what the user must watch and understand before answering the questions."></textarea>
+            <label class="form-label" id="svDescLabel">Written Survey Content & Instructions (Words)</label>
+            <textarea class="form-textarea" id="svDesc" rows="4" placeholder="Enter survey questions, text details, or instructions for members to read and respond to."></textarea>
           </div>
 
-          <!-- Questions Builder -->
+          <!-- Questions Builder (Optional) -->
           <div style="margin:16px 0;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <span class="form-label" style="font-size:13px;">Survey Questions & Correct Answers</span>
+              <span class="form-label" style="font-size:13px;">Structured Questions & Answers (Optional)</span>
               <button type="button" class="btn btn-secondary btn-sm" onclick="addSurveyQuestion()">+ Add Question</button>
             </div>
             <div id="surveyQuestionsContainer"></div>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="btnPublishSurvey">Publish Survey</button>
+          <button type="submit" class="btn btn-primary" id="btnPublishSurvey">Publish Written Survey</button>
         </form>
       </div>
 
@@ -662,16 +691,34 @@ body.sidebar-retracted .main{
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Publish New Task & Direct Video</div>
-            <div class="card-sub">Upload video tasks directly with descriptions for on-site watching, or create standard earning gigs.</div>
+            <div class="card-title">Publish New Task</div>
+            <div class="card-sub">Choose between a Written (Words) Task or a Video Task with on-site playback and verification.</div>
           </div>
+        </div>
+
+        <!-- Format Selector: Written (Words) vs Video -->
+        <div class="format-selector">
+          <button type="button" class="format-btn active" id="btnTaskFormatWord" onclick="setTaskFormat('word')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <div>
+              <div style="font-weight:700;font-size:13px;">Written Task (Words)</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Text-based instructions, article reading, or micro-gig</div>
+            </div>
+          </button>
+          <button type="button" class="format-btn" id="btnTaskFormatVideo" onclick="setTaskFormat('video')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <div>
+              <div style="font-weight:700;font-size:13px;">Video Task</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Direct MP4 upload or stream for on-site watching</div>
+            </div>
+          </button>
         </div>
 
         <form id="createTaskForm" onsubmit="handleCreateTask(event)">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Task / Video Title</label>
-              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. Platform Features Video Walkthrough">
+              <label class="form-label">Task Title</label>
+              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. InnovationX Features Guide & Review">
             </div>
             <div class="form-group">
               <label class="form-label">
@@ -679,17 +726,17 @@ body.sidebar-retracted .main{
                 <span class="label-hint">Opportunity Type</span>
               </label>
               <select class="form-select" id="taskCategory">
+                <option value="General">General Earning</option>
+                <option value="Article Reading">Article & Written Review</option>
                 <option value="Sponsored Video">Sponsored Video</option>
-                <option value="Video Watch">Watch & Earn Video</option>
                 <option value="Social Media">Social Media</option>
                 <option value="App Review">App Review</option>
-                <option value="General">General Earning</option>
               </select>
             </div>
           </div>
 
-          <!-- Direct Video Upload Section -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+          <!-- Direct Video Upload Section (Shown only in Video mode) -->
+          <div id="taskVideoUploadBox" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
               <span class="form-label" style="font-size:13px;font-weight:700;color:var(--accent);margin:0;">Direct Video Upload (On-Site Player)</span>
               <span id="videoUploadBadge" style="font-size:11px;color:var(--txt-3);">MP4, WebM, OGG, MOV</span>
@@ -716,8 +763,8 @@ body.sidebar-retracted .main{
           </div>
 
           <div class="form-group">
-            <label class="form-label">Video / Task Description</label>
-            <textarea class="form-textarea" id="taskDescription" rows="3" placeholder="Enter detailed description. Users will read this description and watch the video directly on the website."></textarea>
+            <label class="form-label" id="taskDescriptionLabel">Task Description & Details</label>
+            <textarea class="form-textarea" id="taskDescription" rows="3" placeholder="Enter detailed description. Users will read this description on the website."></textarea>
           </div>
 
           <div class="form-row">
@@ -735,8 +782,8 @@ body.sidebar-retracted .main{
                 <span class="label-hint">Verification Mode</span>
               </label>
               <select class="form-select" id="taskProofType">
-                <option value="video_watch">Video Watch Completion</option>
                 <option value="screenshot">Screenshot Upload</option>
+                <option value="video_watch">Video Watch Completion</option>
                 <option value="url">URL / Handle Link</option>
                 <option value="username">Username Confirmation</option>
               </select>
@@ -745,7 +792,7 @@ body.sidebar-retracted .main{
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Action URL (Optional if Video attached)</label>
+              <label class="form-label">Action URL (Optional)</label>
               <input type="url" class="form-input" id="taskActionUrl" placeholder="https://...">
             </div>
             <div class="form-group">
@@ -759,7 +806,7 @@ body.sidebar-retracted .main{
             <textarea class="form-textarea" id="taskInstructions" required placeholder="Describe clear steps the member must follow before uploading proof or claiming points."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary" id="btnPublishTask">Publish Task & Video</button>
+          <button type="submit" class="btn btn-primary" id="btnPublishTask">Publish Written Task</button>
         </form>
       </div>
 
@@ -1446,22 +1493,56 @@ async function handleSurveyVideoFile(e) {
   }
 }
 
+let currentSurveyFormat = 'word';
+
+function setSurveyFormat(fmt) {
+  currentSurveyFormat = fmt;
+  const btnWord = document.getElementById('btnSurveyFormatWord');
+  const btnVideo = document.getElementById('btnSurveyFormatVideo');
+  const vidBox = document.getElementById('svVideoUploadBox');
+  const btnPublish = document.getElementById('btnPublishSurvey');
+  const descLabel = document.getElementById('svDescLabel');
+
+  if (fmt === 'video') {
+    btnVideo.classList.add('active');
+    btnWord.classList.remove('active');
+    if (vidBox) vidBox.style.display = 'block';
+    if (descLabel) descLabel.textContent = 'Video Description & Instructions';
+    if (btnPublish) btnPublish.textContent = 'Publish Video Survey';
+  } else {
+    btnWord.classList.add('active');
+    btnVideo.classList.remove('active');
+    if (vidBox) vidBox.style.display = 'none';
+    if (descLabel) descLabel.textContent = 'Written Survey Content & Instructions (Words)';
+    if (btnPublish) btnPublish.textContent = 'Publish Written Survey';
+  }
+}
+
 async function handleCreateSurvey(e) {
   e.preventDefault();
-  if (!surveyQuestions.length) {
-    toast('Please add at least one question to the survey.', 'error');
-    return;
+  let finalQuestions = [...surveyQuestions];
+  if (!finalQuestions.length) {
+    finalQuestions = [{
+      id: 'Q-' + Date.now(),
+      question: currentSurveyFormat === 'video'
+        ? 'Confirm you have watched this video and fulfilled all instructions:'
+        : 'Confirm you have reviewed this written survey and completed all requirements:',
+      options: ['I have completely reviewed and fulfilled this survey', 'Review completed'],
+      correct_index: 0,
+      correct_answer: 'I have completely reviewed and fulfilled this survey'
+    }];
   }
 
   const payload = {
     title: document.getElementById('svTitle').value.trim(),
     category: document.getElementById('svCategory').value.trim(),
-    video_url: document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl,
+    format_type: currentSurveyFormat,
+    video_url: currentSurveyFormat === 'video' ? (document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl) : '',
     reward_points: parseInt(document.getElementById('svReward').value) || 150,
     total_slots: parseInt(document.getElementById('svSlots').value) || 500,
     expires_at: document.getElementById('svExpiresAt').value,
     description: document.getElementById('svDesc').value.trim(),
-    questions: surveyQuestions
+    questions: finalQuestions
   };
 
   const btn = document.getElementById('btnPublishSurvey');
@@ -1477,8 +1558,8 @@ async function handleCreateSurvey(e) {
       toast('Survey published successfully!', 'success');
       document.getElementById('createSurveyForm').reset();
       svUploadedVideoUrl = '';
-      document.getElementById('svVideoPreviewBox').style.display = 'none';
-      document.getElementById('svVideoUploadProgress').style.display = 'none';
+      if (document.getElementById('svVideoPreviewBox')) document.getElementById('svVideoPreviewBox').style.display = 'none';
+      if (document.getElementById('svVideoUploadProgress')) document.getElementById('svVideoUploadProgress').style.display = 'none';
       surveyQuestions = [];
       renderQuestionsBuilder();
       loadSurveysData();
@@ -1488,7 +1569,8 @@ async function handleCreateSurvey(e) {
   } catch(err) {
     toast('Network error saving survey', 'error');
   }
-  btn.disabled = false; btn.textContent = 'Publish Survey';
+  btn.disabled = false;
+  btn.textContent = currentSurveyFormat === 'video' ? 'Publish Video Survey' : 'Publish Written Survey';
 }
 
 async function loadSurveysData() {
@@ -1506,8 +1588,9 @@ async function loadSurveysData() {
     tbody.innerHTML = list.map(s => {
       const left = s.remaining_slots !== undefined ? s.remaining_slots : s.total_slots;
       const isExp = s.expires_at && new Date(s.expires_at).getTime() < Date.now();
+      const isVid = (s.format_type === 'video') || (!!s.video_url);
       return `<tr>
-        <td><strong>${esc(s.title)}</strong>${s.video_url ? '<br><span style="font-size:11px;color:var(--accent);">Video attached</span>' : ''}</td>
+        <td><strong>${esc(s.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Survey' : 'Written Survey'}</span></td>
         <td>+${s.reward_points} PTS</td>
         <td>${left} / ${s.total_slots}</td>
         <td>${s.completions || 0}</td>
@@ -1626,14 +1709,44 @@ async function handleAdminVideoFile(e) {
   }
 }
 
+let currentTaskFormat = 'word';
+
+function setTaskFormat(fmt) {
+  currentTaskFormat = fmt;
+  const btnWord = document.getElementById('btnTaskFormatWord');
+  const btnVideo = document.getElementById('btnTaskFormatVideo');
+  const vidBox = document.getElementById('taskVideoUploadBox');
+  const btnPublish = document.getElementById('btnPublishTask');
+  const proofSelect = document.getElementById('taskProofType');
+  const descLabel = document.getElementById('taskDescriptionLabel');
+
+  if (fmt === 'video') {
+    btnVideo.classList.add('active');
+    btnWord.classList.remove('active');
+    if (vidBox) vidBox.style.display = 'block';
+    if (descLabel) descLabel.textContent = 'Video Description & Stream Details';
+    if (btnPublish) btnPublish.textContent = 'Publish Video Task';
+    if (proofSelect && proofSelect.value === 'screenshot') proofSelect.value = 'video_watch';
+  } else {
+    btnWord.classList.add('active');
+    btnVideo.classList.remove('active');
+    if (vidBox) vidBox.style.display = 'none';
+    if (descLabel) descLabel.textContent = 'Task Description & Details (Words)';
+    if (btnPublish) btnPublish.textContent = 'Publish Written Task';
+    if (proofSelect && proofSelect.value === 'video_watch') proofSelect.value = 'screenshot';
+  }
+}
+
 async function handleCreateTask(e) {
   e.preventDefault();
-  const videoUrlVal = document.getElementById('taskVideoUrl').value.trim() || adminUploadedVideoUrl;
+  const isVideo = currentTaskFormat === 'video';
+  const videoUrlVal = isVideo ? (document.getElementById('taskVideoUrl').value.trim() || adminUploadedVideoUrl) : '';
   const descriptionVal = document.getElementById('taskDescription').value.trim();
 
   const payload = {
     title: document.getElementById('taskTitle').value.trim(),
     category: document.getElementById('taskCategory').value.trim(),
+    format_type: currentTaskFormat,
     video_url: videoUrlVal,
     description: descriptionVal,
     reward_points: parseInt(document.getElementById('taskReward').value) || 150,
@@ -1654,11 +1767,11 @@ async function handleCreateTask(e) {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Task & Video published successfully!', 'success');
+      toast('Task published successfully!', 'success');
       document.getElementById('createTaskForm').reset();
       adminUploadedVideoUrl = '';
-      document.getElementById('adminVideoPreviewBox').style.display = 'none';
-      document.getElementById('videoUploadProgress').style.display = 'none';
+      if (document.getElementById('adminVideoPreviewBox')) document.getElementById('adminVideoPreviewBox').style.display = 'none';
+      if (document.getElementById('videoUploadProgress')) document.getElementById('videoUploadProgress').style.display = 'none';
       loadTasksData();
     } else {
       toast(d.message || 'Error publishing task', 'error');
@@ -1666,7 +1779,8 @@ async function handleCreateTask(e) {
   } catch(e) {
     toast('Network error publishing task', 'error');
   }
-  btn.disabled = false; btn.textContent = 'Publish Task & Video';
+  btn.disabled = false;
+  btn.textContent = currentTaskFormat === 'video' ? 'Publish Video Task' : 'Publish Written Task';
 }
 
 async function loadTasksData() {
@@ -1684,9 +1798,9 @@ async function loadTasksData() {
     tbody.innerHTML = tasks.map(t => {
       const left = t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots;
       const isExp = t.expires_at && new Date(t.expires_at).getTime() < Date.now();
-      const hasVid = !!(t.video_url || t.video_file);
+      const isVid = (t.format_type === 'video') || (!!(t.video_url || t.video_file));
       return `<tr>
-        <td><strong>${esc(t.title)}</strong>${hasVid ? '<br><span style="font-size:11px;color:var(--accent);">Video attached</span>' : ''}</td>
+        <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
         <td>${esc(t.category)}</td>
         <td>+${t.reward_points} PTS</td>
         <td>${left} / ${t.total_slots}</td>
