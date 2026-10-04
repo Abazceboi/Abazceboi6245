@@ -26,14 +26,26 @@ if ($action === 'register') {
     
     $fullName = trim($data['fullName'] ?? '');
     $username = trim($data['username'] ?? '');
-    $email = trim($data['email'] ?? '');
+    $email = strtolower(trim($data['email'] ?? ''));
     $phone = trim($data['phone'] ?? '');
+    $country = strtoupper(trim($data['country'] ?? 'NG'));
     $password = $data['password'] ?? '';
     $referredBy = trim($data['ref'] ?? '');
     $pin = strtoupper(trim($data['pin'] ?? ''));
     
     if (strlen($username) < 3 || strlen($password) < 6) {
         echo json_encode(['status' => 'error', 'message' => 'Invalid username or password length.']);
+        exit;
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/i', $email)) {
+        echo json_encode(['status' => 'error', 'message' => 'Registration requires a valid @gmail.com email address.']);
+        exit;
+    }
+
+    $cleanPhone = preg_replace('/[\s\-\(\)\+]/', '', $phone);
+    if (strlen($cleanPhone) < 7 || strlen($cleanPhone) > 16 || !ctype_digit($cleanPhone)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please enter a valid phone number (7 to 16 digits).']);
         exit;
     }
 
@@ -99,6 +111,7 @@ if ($action === 'register') {
         'full_name' => $fullName,
         'email' => $email,
         'phone' => $phone,
+        'country' => $country,
         'password' => $passwordHash,
         'role' => 'member',
         'role_label' => $isActivated ? 'Active Member' : 'Free Member',
@@ -125,6 +138,7 @@ if ($action === 'register') {
     $_SESSION['username'] = $username;
     $_SESSION['email'] = $email;
     $_SESSION['phone'] = $phone;
+    $_SESSION['country'] = $country;
     $_SESSION['fullName'] = $fullName;
     $_SESSION['role'] = 'member';
     $_SESSION['is_admin'] = false;

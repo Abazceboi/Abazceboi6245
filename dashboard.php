@@ -2373,6 +2373,27 @@ document.addEventListener('DOMContentLoaded', () => {
     accHolderEl.textContent = dName.toUpperCase();
   }
 
+  // Restore custom bank card details if saved in localStorage
+  const cachedBank = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name');
+  const cachedAcc = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc');
+  const cachedHolder = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder');
+
+  if (cachedBank) {
+    if (bNameEl) bNameEl.textContent = cachedBank.toUpperCase();
+    const editB = document.getElementById('editBankName');
+    if (editB) editB.value = cachedBank;
+  }
+  if (cachedAcc) {
+    if (accNumEl) accNumEl.textContent = cachedAcc.replace(/(\d{4})/g, '$1  ').trim();
+    const editA = document.getElementById('editAccountNumber');
+    if (editA) editA.value = cachedAcc;
+  }
+  if (cachedHolder) {
+    if (accHolderEl) accHolderEl.textContent = cachedHolder.toUpperCase();
+    const editH = document.getElementById('editAccountName');
+    if (editH) editH.value = cachedHolder;
+  }
+
   // Synchronize profile inputs with localStorage cache so refresh never reverts to default
   const cachedPhone = localStorage.getItem('ix_user_phone_' + CURRENT_USER) || localStorage.getItem('ix_user_phone');
   const cachedEmail = localStorage.getItem('ix_user_email_' + CURRENT_USER) || localStorage.getItem('ix_user_email');
@@ -2725,22 +2746,44 @@ async function handleUpdateBank(e) {
 
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    const r = await fetch('/api/users.php?action=update_bank_details', {
+    const payload = {
+      username: CURRENT_USER,
+      bank_name: bankName,
+      account_number: accNum,
+      account_name: accName
+    };
+    const r = await fetch(`api/users.php?action=update_bank_details&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: CURRENT_USER,
-        bank_name: bankName,
-        account_number: accNum,
-        account_name: accName
-      })
+      body: JSON.stringify(payload)
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
       toast('Bank card updated successfully!', 'success');
-      document.getElementById('atmBankName').textContent = bankName.toUpperCase();
-      document.getElementById('atmCardNumber').textContent = accNum.replace(/(\d{4})/g, '$1  ').trim();
-      document.getElementById('atmCardHolder').textContent = (accName || CURRENT_USER).toUpperCase();
+      const upperBank = bankName.toUpperCase();
+      const formattedAcc = accNum.replace(/(\d{4})/g, '$1  ').trim();
+      const finalHolder = (accName || CURRENT_USER).toUpperCase();
+
+      document.getElementById('atmBankName').textContent = upperBank;
+      document.getElementById('atmCardNumber').textContent = formattedAcc;
+      document.getElementById('atmCardHolder').textContent = finalHolder;
+
+      const editB = document.getElementById('editBankName');
+      const editA = document.getElementById('editAccountNumber');
+      const editH = document.getElementById('editAccountName');
+      if (editB) editB.value = bankName;
+      if (editA) editA.value = accNum;
+      if (editH) editH.value = accName || finalHolder;
+
+      localStorage.setItem('ix_bank_name_' + CURRENT_USER, bankName);
+      localStorage.setItem('ix_bank_acc_' + CURRENT_USER, accNum);
+      localStorage.setItem('ix_bank_name', bankName);
+      localStorage.setItem('ix_bank_acc', accNum);
+      if (accName) {
+        localStorage.setItem('ix_bank_holder_' + CURRENT_USER, accName);
+        localStorage.setItem('ix_bank_holder', accName);
+      }
+
       closeModal('modalEditBank');
     } else {
       toast(d.error || d.message || 'Failed to update bank details', 'error');

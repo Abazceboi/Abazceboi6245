@@ -602,12 +602,24 @@ const server = http.createServer((req, res) => {
                     const username = (parsed.username || '').trim();
                     const email = (parsed.email || '').trim().toLowerCase();
                     const phone = (parsed.phone || '').trim();
+                    const country = (parsed.country || 'NG').trim().toUpperCase();
                     const password = parsed.password || '';
                     const pin = (parsed.pin || '').trim().toUpperCase();
                     const ref = (parsed.ref || '').trim();
 
                     if (username.length < 3 || password.length < 6) {
                         res.end(JSON.stringify({ status: 'error', message: 'Invalid username or password length.' }));
+                        return;
+                    }
+
+                    if (!email || !email.endsWith('@gmail.com') || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(email)) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Registration requires a valid @gmail.com email address.' }));
+                        return;
+                    }
+
+                    const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
+                    if (cleanPhone.length < 7 || cleanPhone.length > 16 || !/^\d+$/.test(cleanPhone)) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Please enter a valid phone number (accepts Nigerian numbers starting with 07, 08, 09 or international numbers starting with 1).' }));
                         return;
                     }
 
@@ -657,6 +669,7 @@ const server = http.createServer((req, res) => {
                         full_name: fullName || username,
                         email: email,
                         phone: phone,
+                        country: country,
                         password: password,
                         role: 'member',
                         role_label: isActivated ? 'Active Member' : 'Free Member',
@@ -3235,7 +3248,9 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    if (!usersData.users) usersData.users = [];
                     let found = false;
+                    let targetUser = null;
                     usersData.users.forEach(u => {
                         if ((u.username || '').toLowerCase() === username.toLowerCase()) {
                             u.bank_name = bankName;
@@ -3243,21 +3258,51 @@ const server = http.createServer((req, res) => {
                             u.account_name = accName || u.full_name || u.username;
                             u.bank_updated_at = new Date().toISOString();
                             found = true;
+                            targetUser = u;
                         }
                     });
 
-                    if (found) {
-                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
-                        res.end(JSON.stringify({
-                            success: true,
-                            message: 'Settlement bank details successfully updated!',
+                    if (!found) {
+                        const newUser = {
+                            id: 'usr-' + username.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                            username: username,
+                            full_name: accName || username,
+                            email: username.toLowerCase() + '@gmail.com',
+                            phone: '',
+                            password: '',
                             bank_name: bankName,
                             account_number: accNum,
-                            account_name: accName
-                        }));
-                    } else {
-                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                            account_name: accName || username,
+                            bank_updated_at: new Date().toISOString(),
+                            role: 'member',
+                            role_label: 'Active Member',
+                            remaining_cash: 0,
+                            remaining_pts: 100,
+                            total_earned: 0,
+                            status: 'active',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        };
+                        usersData.users.push(newUser);
+                        targetUser = newUser;
                     }
+
+                    try {
+                        const uDir = path.dirname(usersFile);
+                        if (!fs.existsSync(uDir)) fs.mkdirSync(uDir, { recursive: true });
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    } catch(e) {}
+
+                    res.writeHead(200, {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    });
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: 'Settlement bank details successfully updated!',
+                        bank_name: bankName,
+                        account_number: accNum,
+                        account_name: accName || targetUser.account_name || username
+                    }));
                     return;
                 }
 

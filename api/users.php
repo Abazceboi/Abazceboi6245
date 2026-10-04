@@ -906,8 +906,8 @@ switch ($action) {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-        $username = trim($input['username'] ?? '');
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_SESSION['username'] ?? ''));
         $bankName = trim($input['bank_name'] ?? '');
         $accNum   = trim($input['account_number'] ?? $input['account_no'] ?? '');
         $accName  = trim($input['account_name'] ?? '');
@@ -918,27 +918,61 @@ switch ($action) {
         }
 
         $data = loadUsers();
+        if (!isset($data['users']) || !is_array($data['users'])) {
+            $data = ['users' => []];
+        }
         $found = false;
+        $targetUser = null;
         foreach ($data['users'] as &$u) {
-            if (strtolower($u['username']) === strtolower($username)) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
                 $u['bank_name'] = $bankName;
                 $u['account_number'] = $accNum;
                 $u['account_name'] = $accName ?: ($u['full_name'] ?? $u['username']);
                 $u['bank_updated_at'] = date('c');
                 $found = true;
+                $targetUser = $u;
                 break;
             }
         }
         unset($u);
 
-        if ($found) {
-            saveUsers($data);
+        if (!$found) {
+            $targetUser = [
+                'id' => 'usr-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)),
+                'username' => $username,
+                'full_name' => $accName ?: $username,
+                'email' => strtolower($username) . '@gmail.com',
+                'phone' => '',
+                'password' => '',
+                'bank_name' => $bankName,
+                'account_number' => $accNum,
+                'account_name' => $accName ?: $username,
+                'bank_updated_at' => date('c'),
+                'role' => $_SESSION['role'] ?? 'member',
+                'role_label' => 'Active Member',
+                'remaining_cash' => 0.0,
+                'remaining_pts' => 100,
+                'total_earned' => 0.0,
+                'status' => 'active',
+                'created_at' => date('c'),
+                'updated_at' => date('c')
+            ];
+            $data['users'][] = $targetUser;
         }
+
+        saveUsers($data);
+
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        $_SESSION['bank_name'] = $bankName;
+        $_SESSION['account_number'] = $accNum;
+        $_SESSION['account_name'] = $accName ?: ($targetUser['account_name'] ?? $username);
 
         if ($pdo) {
             try {
                 $stmt = $pdo->prepare('UPDATE users SET "bankName" = ?, "accountNumber" = ?, "accountName" = ? WHERE LOWER(username) = LOWER(?)');
-                $stmt->execute([$bankName, $accNum, $accName, $username]);
+                $stmt->execute([$bankName, $accNum, $accName ?: ($targetUser['account_name'] ?? $username), $username]);
             } catch (Exception $e) {}
         }
 
@@ -947,7 +981,7 @@ switch ($action) {
             'message' => 'Settlement bank details successfully updated!',
             'bank_name' => $bankName,
             'account_number' => $accNum,
-            'account_name' => $accName
+            'account_name' => $accName ?: ($targetUser['account_name'] ?? $username)
         ]);
         break;
 

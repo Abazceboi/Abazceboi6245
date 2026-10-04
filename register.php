@@ -137,6 +137,10 @@ $refFromQuery = $_GET['ref'] ?? '';
             background: rgba(255, 255, 255, 0.07);
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
         }
+        select.form-input option {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
         .pass-toggle-btn {
             position: absolute;
             right: 12px;
@@ -290,13 +294,33 @@ $refFromQuery = $_GET['ref'] ?? '';
                     </div>
 
                     <div class="form-group">
-                        <label for="regEmail">Email Address</label>
+                        <label for="regEmail">Email Address (@gmail.com only)</label>
                         <input type="email" id="regEmail" name="email" class="form-input" placeholder="name@gmail.com" required autocomplete="email">
                     </div>
 
                     <div class="form-group">
-                        <label for="regPhone">WhatsApp Phone Number</label>
-                        <input type="tel" id="regPhone" name="phone" class="form-input" placeholder="08012345678" required autocomplete="tel">
+                        <label for="regCountry">Country</label>
+                        <select id="regCountry" name="country" class="form-input" onchange="updateCountryPrefix(this)" style="cursor:pointer">
+                            <option value="NG" data-prefix="+234" selected>Nigeria (+234)</option>
+                            <option value="GH" data-prefix="+233">Ghana (+233)</option>
+                            <option value="KE" data-prefix="+254">Kenya (+254)</option>
+                            <option value="ZA" data-prefix="+27">South Africa (+27)</option>
+                            <option value="UG" data-prefix="+256">Uganda (+256)</option>
+                            <option value="CM" data-prefix="+237">Cameroon (+237)</option>
+                            <option value="US" data-prefix="+1">United States (+1)</option>
+                            <option value="GB" data-prefix="+44">United Kingdom (+44)</option>
+                            <option value="CA" data-prefix="+1">Canada (+1)</option>
+                            <option value="OTHER" data-prefix="">Other Country</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="regPhone">WhatsApp / Phone Number</label>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span id="countryDialCode" style="display:inline-flex;align-items:center;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-size:0.88rem;font-weight:700;color:#38BDF8;min-width:64px;justify-content:center">+234</span>
+                            <input type="tel" id="regPhone" name="phone" class="form-input" placeholder="e.g. 08012345678, 09012345678, or 1234567890" required autocomplete="tel" style="flex:1">
+                        </div>
+                        <div style="font-size:0.75rem;color:#64748B;margin-top:4px">Accepts Nigerian numbers starting with 07, 08, 09 or international numbers starting with 1 or country code.</div>
                     </div>
 
                     <div class="form-group">
@@ -345,6 +369,15 @@ $refFromQuery = $_GET['ref'] ?? '';
     </div>
 
     <script>
+    function updateCountryPrefix(sel) {
+        const opt = sel.options[sel.selectedIndex];
+        const prefix = opt ? opt.getAttribute('data-prefix') : '';
+        const dialEl = document.getElementById('countryDialCode');
+        if (dialEl) {
+            dialEl.textContent = prefix || 'Code';
+        }
+    }
+
     function togglePassVisibility(inputId, btn) {
         const inp = document.getElementById(inputId);
         if (!inp) return;
@@ -365,6 +398,7 @@ $refFromQuery = $_GET['ref'] ?? '';
         const username = document.getElementById('regUsername').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
+        const country = document.getElementById('regCountry') ? document.getElementById('regCountry').value : 'NG';
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value;
         
@@ -373,8 +407,16 @@ $refFromQuery = $_GET['ref'] ?? '';
             return;
         }
 
-        if (!/^0[789][01]\d{8}$/.test(phone)) {
-            alert('Please enter a valid 11-digit Nigerian phone number (e.g. 08012345678).');
+        // Strict @gmail.com requirement
+        if (!email.endsWith('@gmail.com') || email.length <= 10 || !/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email)) {
+            alert('Registration requires a valid @gmail.com email address.');
+            return;
+        }
+
+        // Flexible phone number validation: allows Nigerian (07, 08, 09) and international (1 or country codes)
+        const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
+        if (cleanPhone.length < 7 || cleanPhone.length > 16 || !/^\d+$/.test(cleanPhone)) {
+            alert('Please enter a valid phone number (accepts Nigerian numbers starting with 07, 08, 09 or international numbers starting with 1).');
             return;
         }
 
@@ -394,7 +436,6 @@ $refFromQuery = $_GET['ref'] ?? '';
         const fullName = document.getElementById('fullName').value.trim();
         const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
 
-        // Register without requiring coupon PIN
         fetch('api/auth.php?action=register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -403,6 +444,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                 username: username,
                 email: email,
                 phone: phone,
+                country: country,
                 password: password,
                 pin: '',
                 ref: refCode
@@ -423,13 +465,13 @@ $refFromQuery = $_GET['ref'] ?? '';
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Create Member Account</span>`;
+                btn.innerHTML = `<span>Create Free Account</span>`;
             }
         })
         .catch(err => {
             alert('A network error occurred. Please try again.');
             btn.disabled = false;
-            btn.innerHTML = `<span>Create Member Account</span>`;
+            btn.innerHTML = `<span>Create Free Account</span>`;
         });
     }
     </script>
