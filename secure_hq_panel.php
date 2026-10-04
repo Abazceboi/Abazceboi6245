@@ -485,20 +485,6 @@ body.sidebar-retracted .main{
           <div class="stat-value" id="kpiPayouts" style="color:var(--amber);">0</div>
           <div class="stat-sub">Withdrawals awaiting review</div>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Quick Navigation</div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="switchAdminTab('surveys')">Create New Survey</button>
-          <button class="btn btn-secondary" onclick="switchAdminTab('tasks')">Create New Task</button>
-          <button class="btn btn-secondary" onclick="switchAdminTab('users')">Manage Users</button>
-          <button class="btn btn-secondary" onclick="switchAdminTab('coupons')">Generate PINs</button>
-          <button class="btn btn-secondary" onclick="switchAdminTab('withdrawals')">Review Payouts</button>
-        </div>
-      </div>
     </div>
 
     <!-- ══ TAB: SURVEYS ════════════════════════════════════════════════════ -->
