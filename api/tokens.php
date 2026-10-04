@@ -271,7 +271,7 @@ if ($action === 'admin_add_token' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $symbol = strtoupper(trim($input['symbol'] ?? ''));
     $name = trim($input['name'] ?? '');
     $network = trim($input['network'] ?? 'Mainnet');
-    $icon = trim($input['icon'] ?? '🪙');
+    $icon = trim($input['icon'] ?? '');
     $buyRate = (float)($input['buy_rate'] ?? 0);
     $sellRate = (float)($input['sell_rate'] ?? 0);
     $minTrade = (float)($input['min_trade'] ?? 1);
@@ -299,7 +299,7 @@ if ($action === 'admin_add_token' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'symbol' => $symbol,
         'name' => $name,
         'network' => $network,
-        'icon' => $icon ?: '🪙',
+        'icon' => $icon ?: '',
         'buy_rate' => $buyRate,
         'sell_rate' => $sellRate,
         'min_trade' => $minTrade,

@@ -41,7 +41,7 @@ if (!$isUploader) {
     </head>
     <body>
         <div class="card">
-            <div class="icon">🚀</div>
+            <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
             <h1>Uploader Studio Access</h1>
             <p>The Uploader Publishing Hub is reserved for accredited sponsors and creators to post sponsored tasks, review submissions, and manage marketing campaigns.</p>
             <a href="dashboard.php" class="btn-primary">Return to Member Dashboard</a>
@@ -358,8 +358,8 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
                             <td><a href="${escapeHtml(s.proof_url)}" target="_blank" rel="noopener" style="color:#38BDF8;text-decoration:none">View Proof URL ↗</a></td>
                             <td style="color:#94A3B8;font-size:0.78rem">${escapeHtml(s.submitted_at || 'Recently')}</td>
                             <td>
-                                ${s.status === 'approved' ? '<span style="color:#10B981;font-weight:700">✓ Approved</span>' :
-                                  s.status === 'rejected' ? '<span style="color:#F43F5E;font-weight:700">✗ Rejected</span>' : `
+                                ${s.status === 'approved' ? '<span style="color:#10B981;font-weight:700">Approved</span>' :
+                                  s.status === 'rejected' ? '<span style="color:#F43F5E;font-weight:700">Rejected</span>' : `
                                     <button type="button" class="btn-sm-approve" onclick="approveProof('${s.id}')">Approve &amp; Pay</button>
                                     <button type="button" class="btn-sm-reject" onclick="rejectProof('${s.id}')">Reject</button>
                                   `}

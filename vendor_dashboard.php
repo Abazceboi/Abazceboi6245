@@ -41,7 +41,7 @@ if (!$isVendor) {
     </head>
     <body>
         <div class="card">
-            <div class="icon">💎</div>
+            <div class="icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg></div>
             <h1>Vendor Portal Access</h1>
             <p>The Vendor Terminal is reserved for accredited wholesale distributors to purchase wholesale coupon PINs, manage inventory stock, and track sales dispatches.</p>
             <a href="dashboard.php" class="btn-primary">Return to Member Dashboard</a>
@@ -228,7 +228,7 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
                         </div>
                         <input type="file" id="vendorPhotoFile" accept="image/*" style="display:none" onchange="handleVendorPhotoSelect(this)">
                         <button type="button" class="btn-copy" onclick="document.getElementById('vendorPhotoFile').click()" style="padding:6px 12px; font-size:0.78rem;">
-                            📷 Upload Picture
+                            Upload Picture
                         </button>
                         <span style="font-size:0.7rem; color:#94A3B8; margin-top:4px;">JPG, PNG, WebP (Max 2MB)</span>
                     </div>
@@ -256,7 +256,7 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
 
                 <div style="margin-top:18px; display:flex; justify-content:flex-end;">
                     <button type="submit" id="btnSaveVendorProfile" class="btn-action-primary">
-                        💾 Save Profile & Update Handles
+                        Save Profile & Update Handles
                     </button>
                 </div>
             </form>
@@ -388,7 +388,7 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
                 });
                 const data = await res.json();
                 if (data && data.success) {
-                    statusEl.textContent = '✓ Profile & Handles Saved!';
+                    statusEl.textContent = 'Profile & Handles Saved!';
                     setTimeout(() => { statusEl.textContent = ''; }, 4000);
                     alert('Your vendor handles, WhatsApp, and picture have been updated successfully!');
                 } else {
@@ -398,7 +398,7 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
                 alert('Failed to save profile: ' + (err.message || 'Server error'));
             } finally {
                 btn.disabled = false;
-                btn.textContent = '💾 Save Profile & Update Handles';
+                btn.textContent = 'Save Profile & Update Handles';
             }
         }
 
@@ -505,7 +505,7 @@ $pageTitle = 'Vendor Wholesale PIN Terminal | ' . APP_NAME;
                 alert('Please select an available PIN code from the dropdown first.');
                 return null;
             }
-            return `Hello ${name}! Here is your official INNOVATIONX Registration Activation PIN:\n\n🔑 PIN: ${pin}\n\n👉 Register and activate your account immediately at:\nhttps://innovationx.ng/register.php?pin=${pin}\n\nWelcome to high-yield daily earnings!`;
+            return `Hello ${name}! Here is your official INNOVATIONX Registration Activation PIN:\n\nPIN: ${pin}\n\nRegister and activate your account immediately at:\nhttps://innovationx.ng/register.php?pin=${pin}\n\nWelcome to high-yield daily earnings!`;
         }
 
         function copyDispatchMessage() {

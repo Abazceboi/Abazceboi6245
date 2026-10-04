@@ -50,7 +50,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
                         <div style="display:flex;align-items:center;gap:10px">
                             <div style="width:42px;height:42px;border-radius:12px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem">
-                                <?= htmlspecialchars($tok['icon'] ?? '🪙') ?>
+                                <?= htmlspecialchars($tok['icon'] ?? '') ?>
                             </div>
                             <div>
                                 <div class="token-title-sym" style="font-size:1.05rem;font-weight:900"><?= htmlspecialchars($tok['symbol']) ?></div>
@@ -163,7 +163,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                 <span class="marketplace-offer-badge marketplace-badge-escrow">Verified #1</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                <span style="color:#7DD3FC;font-weight:700">⚡ 3–8 Mins</span>
+                                <span style="color:#7DD3FC;font-weight:700">3–8 Mins</span>
                                 <span style="color:#34D399;font-weight:700">⭐ 5.0 (4,920+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
@@ -176,7 +176,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         <div class="marketplace-offer-card" id="offer_apex" onclick="selectMarketplaceOffer('apex', 'Apex P2P Express Desk')">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="font-size:1.3rem">⚡</span>
+                                    <span style="font-size:1.3rem"></span>
                                     <div>
                                         <strong style="font-size:0.88rem;color:#FFFFFF;display:block">Apex P2P Express</strong>
                                         <span style="font-size:0.68rem;color:#94A3B8">Fast-Track OTC Trader</span>
@@ -185,7 +185,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                 <span class="marketplace-offer-badge marketplace-badge-express">Speedy</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                <span style="color:#7DD3FC;font-weight:700">⚡ 5–15 Mins</span>
+                                <span style="color:#7DD3FC;font-weight:700">5–15 Mins</span>
                                 <span style="color:#34D399;font-weight:700">⭐ 4.9 (2,180+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
@@ -198,7 +198,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         <div class="marketplace-offer-card" id="offer_whales" onclick="selectMarketplaceOffer('whales', 'Prime OTC Whales Desk')">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px">
-                                    <span style="font-size:1.3rem">💎</span>
+                                    <span style="font-size:1.3rem"></span>
                                     <div>
                                         <strong style="font-size:0.88rem;color:#FFFFFF;display:block">Prime Whales Desk</strong>
                                         <span style="font-size:0.68rem;color:#94A3B8">High Volume Liquidity</span>
@@ -207,7 +207,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                 <span class="marketplace-offer-badge marketplace-badge-bulk">Bulk OTC</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
-                                <span style="color:#7DD3FC;font-weight:700">⚡ 10–25 Mins</span>
+                                <span style="color:#7DD3FC;font-weight:700">10–25 Mins</span>
                                 <span style="color:#34D399;font-weight:700">⭐ 4.95 (1,450+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
@@ -225,7 +225,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         <div class="fancy-token-selector-wrap" id="fancyTokenPickerWrap">
                             <button type="button" class="fancy-token-trigger" id="tokenSelectTrigger" onclick="toggleTokenPicker(event)">
                                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
-                                    <div class="fancy-token-icon" id="triggerIcon"><?= htmlspecialchars($tokensList[0]['icon'] ?? '🪙') ?></div>
+                                    <div class="fancy-token-icon" id="triggerIcon"><?= htmlspecialchars($tokensList[0]['icon'] ?? '') ?></div>
                                     <div style="text-align:left;min-width:0">
                                         <div style="display:flex;align-items:center;gap:6px">
                                             <span class="fancy-token-sym" id="triggerSym"><?= htmlspecialchars($tokensList[0]['symbol'] ?? 'VERY') ?></span>
@@ -247,13 +247,13 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                         <div class="fancy-picker-title">Select Token Asset</div>
                                         <div class="fancy-picker-sub">Instant rate sync &amp; escrow settlement</div>
                                     </div>
-                                    <button type="button" onclick="closeTokenPicker(event)" class="btn-dash-action" style="height:26px;padding:0 8px;font-size:0.7rem">✕</button>
+                                    <button type="button" onclick="closeTokenPicker(event)" class="btn-dash-action" style="height:26px;padding:0 8px;font-size:0.7rem">&times;</button>
                                 </div>
                                 <div class="fancy-token-grid-list">
                                     <?php foreach ($tokensList as $idx => $tok): ?>
                                     <div class="fancy-token-option-card <?= ($idx === 0) ? 'active' : '' ?>" id="tokOpt_<?= htmlspecialchars($tok['symbol']) ?>" onclick="pickToken('<?= htmlspecialchars($tok['symbol']) ?>')">
                                         <div style="display:flex;align-items:center;gap:10px">
-                                            <div class="fancy-token-icon" style="width:34px;height:34px;font-size:1.15rem"><?= htmlspecialchars($tok['icon'] ?? '🪙') ?></div>
+                                            <div class="fancy-token-icon" style="width:34px;height:34px;font-size:1.15rem"><?= htmlspecialchars($tok['icon'] ?? '') ?></div>
                                             <div>
                                                 <div style="display:flex;align-items:center;gap:5px">
                                                     <span class="fancy-token-sym" style="font-size:0.92rem"><?= htmlspecialchars($tok['symbol']) ?></span>
@@ -274,7 +274,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                             <!-- Hidden Select for native bindings and form submits -->
                             <select id="tradeTokenSelect" style="display:none" onchange="handleTokenSelectChange(this.value)">
                                 <?php foreach ($tokensList as $tok): ?>
-                                <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>" data-icon="<?= htmlspecialchars($tok['icon'] ?? '🪙') ?>" data-name="<?= htmlspecialchars($tok['name']) ?>">
+                                <option value="<?= htmlspecialchars($tok['symbol']) ?>" data-buy="<?= htmlspecialchars($tok['buy_rate']) ?>" data-sell="<?= htmlspecialchars($tok['sell_rate']) ?>" data-min="<?= htmlspecialchars($tok['min_trade']) ?>" data-max="<?= htmlspecialchars($tok['max_trade']) ?>" data-network="<?= htmlspecialchars($tok['network']) ?>" data-wallet="<?= htmlspecialchars($tok['platform_deposit_address']) ?>" data-memo="<?= htmlspecialchars($tok['deposit_memo']) ?>" data-icon="<?= htmlspecialchars($tok['icon'] ?? '') ?>" data-name="<?= htmlspecialchars($tok['name']) ?>">
                                     <?= htmlspecialchars($tok['symbol']) ?> — <?= htmlspecialchars($tok['name']) ?> (<?= htmlspecialchars($tok['network']) ?>)
                                 </option>
                                 <?php endforeach; ?>
@@ -560,7 +560,7 @@ function handleTokenSelectChange(symbol) {
     const memo = opt.getAttribute('data-memo') || '';
     const net = opt.getAttribute('data-network') || '';
     const name = opt.getAttribute('data-name') || '';
-    const icon = opt.getAttribute('data-icon') || '🪙';
+    const icon = opt.getAttribute('data-icon') || '';
 
     // Update Fancy Selector Button Elements
     const tIcon = document.getElementById('triggerIcon');
@@ -647,7 +647,7 @@ function clearTokenProofUpload(e) {
 function copyText(txt, btn) {
     navigator.clipboard.writeText(txt).then(() => {
         const orig = btn.innerHTML;
-        btn.innerHTML = `✓ Copied`;
+        btn.innerHTML = `Copied`;
         setTimeout(() => btn.innerHTML = orig, 1800);
     }).catch(() => {
         alert('Copied: ' + txt);

@@ -40,7 +40,7 @@ $defaultAccessRules = [
     'modal_content' => [
         'title' => 'Activate Full Membership',
         'subtitle' => 'Unlock tasks, spin wheel, OTC tokens & cash withdrawals',
-        'notice' => 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark ✓ above to operate only Airtime & Data.'
+        'notice' => 'Input your activation coupon PIN to access all features on the platform. Or click the checkmark above to operate only Airtime & Data.'
     ],
     'features' => [
         'vtu_telecoms' => false,
