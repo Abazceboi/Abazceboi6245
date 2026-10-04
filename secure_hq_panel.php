@@ -1317,11 +1317,18 @@ applyTheme(localStorage.getItem('ix_theme') || 'dark');
 const TABS = ['overview','surveys','tasks','users','coupons','withdrawals','pricing'];
 
 function switchAdminTab(tab, btn) {
+  if (!TABS.includes(tab)) tab = 'overview';
   TABS.forEach(t => {
     const el = document.getElementById('tab-' + t);
     if (el) el.classList.toggle('active', t === tab);
   });
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.remove('active');
+    const onclickStr = b.getAttribute('onclick') || '';
+    if (onclickStr.includes(`'${tab}'`)) {
+      b.classList.add('active');
+    }
+  });
   if (btn && btn.classList.contains('nav-item')) btn.classList.add('active');
   const titles = {
     overview: 'Dashboard Overview',
@@ -1332,7 +1339,16 @@ function switchAdminTab(tab, btn) {
     withdrawals: 'Payout Approvals',
     pricing: 'Rates & Settings'
   };
-  document.getElementById('adminTopbarTitle').textContent = titles[tab] || 'Admin Panel';
+  const titleEl = document.getElementById('adminTopbarTitle');
+  if (titleEl) titleEl.textContent = titles[tab] || 'Admin Panel';
+
+  try {
+    sessionStorage.setItem('ix_admin_active_tab', tab);
+    localStorage.setItem('ix_admin_active_tab', tab);
+    if (window.location.hash !== '#' + tab) {
+      history.replaceState(null, '', '#' + tab);
+    }
+  } catch(e) {}
 
   if (tab === 'surveys') { loadSurveysData(); loadSurveySubmissions(); }
   if (tab === 'tasks') { loadTasksData(); loadTaskSubmissions(); }
@@ -1342,6 +1358,18 @@ function switchAdminTab(tab, btn) {
   if (tab === 'pricing') loadPricingData();
   closeAdminSidebar();
 }
+
+function restoreAdminActiveTab() {
+  const hash = window.location.hash.replace('#', '').trim();
+  const savedTab = (hash && TABS.includes(hash))
+    ? hash
+    : (sessionStorage.getItem('ix_admin_active_tab') || localStorage.getItem('ix_admin_active_tab'));
+  if (savedTab && TABS.includes(savedTab)) {
+    switchAdminTab(savedTab);
+  }
+}
+
+window.addEventListener('hashchange', restoreAdminActiveTab);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SURVEYS LOGIC (BUILDER, LIST, DELETE)
@@ -2559,6 +2587,7 @@ function esc(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  restoreAdminActiveTab();
   loadPricingData();
   loadSurveysData();
   loadTasksData();

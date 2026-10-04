@@ -2391,6 +2391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fEl.value = cachedFullName;
   }
 
+  restoreMemberActiveTab();
   loadTasks();
   loadSurveys();
   loadNotifications();
@@ -2505,17 +2506,44 @@ document.addEventListener('click', (e) => {
 const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'settings'];
 
 function switchTab(tab, btn) {
+  if (!TABS.includes(tab)) tab = 'home';
   TABS.forEach(t => {
     const el = document.getElementById('tab-' + t);
     if (el) el.classList.toggle('active', t === tab);
   });
-  document.querySelectorAll('.dock-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dock-item').forEach(b => {
+    b.classList.remove('active');
+    const onclickStr = b.getAttribute('onclick') || '';
+    if (onclickStr.includes(`'${tab}'`)) {
+      b.classList.add('active');
+    }
+  });
   if (btn) btn.classList.add('active');
+
+  try {
+    sessionStorage.setItem('ix_member_active_tab', tab);
+    localStorage.setItem('ix_member_active_tab', tab);
+    if (window.location.hash !== '#' + tab) {
+      history.replaceState(null, '', '#' + tab);
+    }
+  } catch(e) {}
 
   if (tab === 'tasks') loadTasks();
   if (tab === 'surveys') loadSurveys();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+function restoreMemberActiveTab() {
+  const hash = window.location.hash.replace('#', '').trim();
+  const savedTab = (hash && TABS.includes(hash))
+    ? hash
+    : (sessionStorage.getItem('ix_member_active_tab') || localStorage.getItem('ix_member_active_tab'));
+  if (savedTab && TABS.includes(savedTab)) {
+    switchTab(savedTab);
+  }
+}
+
+window.addEventListener('hashchange', restoreMemberActiveTab);
 
 function openSettingsTab() {
   const btn = document.getElementById('dockBtnSettings');
