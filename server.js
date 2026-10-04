@@ -1558,6 +1558,13 @@ const server = http.createServer((req, res) => {
                             return;
                         }
 
+                        // Enforce link visit verification if task has a link or requires visit
+                        const taskHasLink = Boolean(targetTask.action_url) || targetTask.proof_type === 'url' || Boolean(targetTask.require_link_visit);
+                        if (taskHasLink && !parsed.link_visited) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Action required: You must click the task link, visit the destination website, and return before submitting proof.' }));
+                            return;
+                        }
+
                         // Prevent duplicate
                         const existing = subs.find(s => s.task_id === taskId && (s.username || '').toLowerCase() === username.toLowerCase());
                         if (existing) {
@@ -1567,11 +1574,13 @@ const server = http.createServer((req, res) => {
                         const newSub = {
                             id: 'SUB-' + Math.floor(Math.random() * 900000 + 100000),
                             task_id: taskId,
-                            task_title: parsed.task_title || 'Sponsored Task',
+                            task_title: parsed.task_title || targetTask.title || 'Sponsored Task',
                             username: username,
                             proof_url: parsed.proof_url || parsed.proof || '',
                             notes: parsed.notes || '',
-                            reward_points: parseInt(parsed.reward_points) || 150,
+                            reward_points: parseInt(parsed.reward_points) || targetTask.reward_points || 150,
+                            link_visited: Boolean(parsed.link_visited),
+                            time_spent: parseInt(parsed.time_spent) || 0,
                             status: 'pending',
                             submitted_at: new Date().toISOString()
                         };

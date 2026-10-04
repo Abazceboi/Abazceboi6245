@@ -253,6 +253,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        // Enforce link visit verification if task has a link or requires visit
+        $taskHasLink = !empty($task['action_url']) || ($task['proof_type'] ?? '') === 'url' || !empty($task['require_link_visit']);
+        if ($taskHasLink && empty($input['link_visited'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Action required: You must click the task link, visit the destination website, and return before submitting proof.']);
+            exit;
+        }
+
         // Check already submitted
         $subs = getSubmissions();
         foreach ($subs as $s) {
@@ -270,6 +277,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'proof_url'    => $proofUrl,
             'notes'        => $notes,
             'reward_points'=> $task ? intval($task['reward_points']) : $rewardPts,
+            'link_visited' => !empty($input['link_visited']),
+            'time_spent'   => intval($input['time_spent'] ?? 0),
             'status'       => 'pending',
             'submitted_at' => date('Y-m-d H:i:s'),
         ];

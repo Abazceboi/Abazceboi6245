@@ -756,8 +756,12 @@ body.sidebar-retracted .main{
           </div>
 
           <div class="form-group">
-            <label class="form-label">Action URL (Optional)</label>
+            <label class="form-label">
+              <span>Action URL (Optional)</span>
+              <span class="label-hint">Leave & Return Tracked</span>
+            </label>
             <input type="url" class="form-input" id="taskActionUrl" placeholder="https://...">
+            <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">When set, users are required to click the link, leave the website to visit the destination, and return before points can be credited.</div>
           </div>
 
           <!-- Publishing Schedule: Immediate vs Auto-Upload Later -->

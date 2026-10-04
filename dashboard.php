@@ -1954,6 +1954,25 @@ input,textarea,select{font-family:var(--ff);}
         <div id="proofTaskVideoDesc" style="font-size:12.5px;color:var(--txt-1);margin-top:10px;line-height:1.5;"></div>
       </div>
 
+      <!-- Mandatory External Link Section (Users must click, leave site, and return) -->
+      <div id="proofTaskLinkBox" style="display:none;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Mandatory Action Link:
+          </span>
+          <span id="proofTaskLinkBadge" class="item-tag" style="color:var(--amber);background:rgba(234,179,8,0.12);font-weight:700;">Visit Required</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--txt-2);line-height:1.45;margin-bottom:10px;">
+          You must click the button below to leave this website, visit the destination page, and return here before points can be credited.
+        </div>
+        <a id="proofTaskLinkBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="handleTaskLinkClick(event)" class="btn btn-secondary" style="width:100%;justify-content:center;font-weight:700;padding:10px 14px;gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span id="proofTaskLinkBtnText">Click Link to Leave &amp; Visit Page</span>
+        </a>
+        <div id="proofTaskLinkStatus" style="font-size:11.5px;font-weight:600;margin-top:10px;padding:8px 12px;border-radius:8px;display:none;line-height:1.4;"></div>
+      </div>
+
       <div id="proofTaskInstr" style="font-size:12.5px;color:var(--txt-2);padding:10px;background:var(--surface);border-radius:8px;margin-bottom:14px;line-height:1.5;"></div>
 
       <div class="form-group" id="proofUploadGroup">
@@ -2769,6 +2788,7 @@ function renderTasks(list) {
           <span class="item-tag">${esc(t.category || (isVideo ? 'Sponsored Video' : 'General'))}</span>
           ${formatBadge}
           <span class="item-tag">${esc(t.proof_type || (isVideo ? 'Watch on Site' : 'Verification Proof'))}</span>
+          ${t.action_url ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Link Visit Required</span>' : ''}
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
 
@@ -2791,6 +2811,91 @@ function renderTasks(list) {
   if (container) container.innerHTML = html;
   if (homeContainer) homeContainer.innerHTML = html;
 }
+
+let currentTaskRequiresLink = false;
+let currentTaskActionUrl = '';
+let taskLinkClicked = false;
+let taskUserLeftWebsite = false;
+let taskUserReturned = false;
+let taskLinkLeaveTime = 0;
+let taskLinkReturnTime = 0;
+
+function handleTaskLinkClick(e) {
+  taskLinkClicked = true;
+  taskUserLeftWebsite = false;
+  taskUserReturned = false;
+  taskLinkLeaveTime = Date.now();
+
+  const linkStatus = document.getElementById('proofTaskLinkStatus');
+  const linkBadge = document.getElementById('proofTaskLinkBadge');
+  if (linkStatus) {
+    linkStatus.style.display = 'block';
+    linkStatus.style.background = 'rgba(234,179,8,0.12)';
+    linkStatus.style.color = 'var(--amber)';
+    linkStatus.style.border = '1px solid rgba(234,179,8,0.25)';
+    linkStatus.textContent = 'Link opened. Please visit the external page and return to this dashboard tab when done.';
+  }
+  if (linkBadge) {
+    linkBadge.textContent = 'Visiting Page...';
+    linkBadge.style.color = 'var(--amber)';
+  }
+
+  const onLeave = () => {
+    taskUserLeftWebsite = true;
+  };
+  window.addEventListener('blur', onLeave, { once: true });
+}
+
+function checkTaskLinkReturn() {
+  if (currentTaskRequiresLink && taskLinkClicked && !taskUserReturned) {
+    const elapsed = Date.now() - taskLinkLeaveTime;
+    if (taskUserLeftWebsite || elapsed >= 1200) {
+      taskUserLeftWebsite = true;
+      taskUserReturned = true;
+      taskLinkReturnTime = Date.now();
+
+      const linkStatus = document.getElementById('proofTaskLinkStatus');
+      const linkBadge = document.getElementById('proofTaskLinkBadge');
+      const linkBtnText = document.getElementById('proofTaskLinkBtnText');
+      const btnSend = document.getElementById('btnSendProof');
+
+      if (linkStatus) {
+        linkStatus.style.display = 'block';
+        linkStatus.style.background = 'rgba(16,185,129,0.12)';
+        linkStatus.style.color = 'var(--green)';
+        linkStatus.style.border = '1px solid rgba(16,185,129,0.25)';
+        linkStatus.textContent = 'External visit verified. You have returned to the dashboard. You may now complete your submission.';
+      }
+      if (linkBadge) {
+        linkBadge.textContent = 'Verified Visited';
+        linkBadge.style.color = 'var(--green)';
+        linkBadge.style.background = 'rgba(16,185,129,0.12)';
+      }
+      if (linkBtnText) {
+        linkBtnText.textContent = 'Link Visited (Click to Re-open)';
+      }
+      if (btnSend) {
+        btnSend.disabled = false;
+        btnSend.classList.remove('btn-secondary');
+        btnSend.classList.add('btn-primary');
+        const t = allTasksList.find(x => x.id === document.getElementById('proofTaskId').value);
+        const isVideo = t && t.format_type === 'video';
+        btnSend.textContent = (isVideo && t.proof_type === 'video_watch') ? 'Confirm Watched & Claim Reward' : 'Submit Proof';
+      }
+    }
+  }
+}
+
+window.addEventListener('focus', checkTaskLinkReturn);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (taskLinkClicked) {
+      taskUserLeftWebsite = true;
+    }
+  } else if (document.visibilityState === 'visible') {
+    checkTaskLinkReturn();
+  }
+});
 
 function openTaskSubmission(id) {
   const t = allTasksList.find(x => x.id === id);
@@ -2820,6 +2925,43 @@ function openTaskSubmission(id) {
   const vidSrc = (t.video_url || t.video_file || '').trim();
   const isVideo = (t.format_type === 'video') && Boolean(vidSrc);
 
+  const taskActionUrl = (t.action_url || '').trim();
+  const requiresLink = Boolean(taskActionUrl || t.proof_type === 'url' || t.require_link_visit);
+  currentTaskRequiresLink = requiresLink;
+  currentTaskActionUrl = taskActionUrl;
+  taskLinkClicked = false;
+  taskUserLeftWebsite = false;
+  taskUserReturned = false;
+  taskLinkLeaveTime = 0;
+  taskLinkReturnTime = 0;
+
+  const linkBox = document.getElementById('proofTaskLinkBox');
+  const linkBtn = document.getElementById('proofTaskLinkBtn');
+  const linkBadge = document.getElementById('proofTaskLinkBadge');
+  const linkStatus = document.getElementById('proofTaskLinkStatus');
+  const linkBtnText = document.getElementById('proofTaskLinkBtnText');
+
+  if (linkBox) {
+    if (requiresLink && taskActionUrl) {
+      linkBox.style.display = 'block';
+      linkBtn.href = taskActionUrl;
+      linkBtnText.textContent = 'Click Link to Leave & Visit Page';
+      linkBadge.textContent = 'Visit Required';
+      linkBadge.style.color = 'var(--amber)';
+      linkBadge.style.background = 'rgba(234,179,8,0.12)';
+      linkStatus.style.display = 'none';
+      btnSend.disabled = true;
+      btnSend.textContent = 'Visit Link First to Unlock';
+      btnSend.classList.add('btn-secondary');
+      btnSend.classList.remove('btn-primary');
+    } else {
+      linkBox.style.display = 'none';
+      btnSend.disabled = false;
+      btnSend.classList.remove('btn-secondary');
+      btnSend.classList.add('btn-primary');
+    }
+  }
+
   if (isVideo) {
     const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
     if (ytMatch) {
@@ -2835,14 +2977,14 @@ function openTaskSubmission(id) {
 
     if (t.proof_type === 'video_watch') {
       document.getElementById('proofUrl').value = 'Watched on-site video';
-      btnSend.textContent = 'Confirm Watched & Claim Reward';
+      if (!requiresLink) btnSend.textContent = 'Confirm Watched & Claim Reward';
     } else {
-      btnSend.textContent = 'Submit Proof';
+      if (!requiresLink) btnSend.textContent = 'Submit Proof';
     }
   } else {
     vidPlayer.innerHTML = '';
     vidContainer.style.display = 'none';
-    btnSend.textContent = 'Submit Proof';
+    if (!requiresLink) btnSend.textContent = 'Submit Proof';
   }
 
   // Handle proof screenshot upload requirement toggle
@@ -2877,6 +3019,21 @@ async function sendTaskProof() {
   const needsScreenshot = t ? ((t.require_screenshot !== false) && (t.proof_type !== 'video_watch')) : true;
   const finalProof = proofBase64 || proofUrl;
 
+  if (currentTaskRequiresLink && currentTaskActionUrl) {
+    if (!taskLinkClicked || !taskUserLeftWebsite || !taskUserReturned) {
+      toast('You must click the task link, leave the website to visit the destination page, and return before points can be credited.', 'error');
+      const linkStatus = document.getElementById('proofTaskLinkStatus');
+      if (linkStatus) {
+        linkStatus.style.display = 'block';
+        linkStatus.style.background = 'rgba(239,68,68,0.12)';
+        linkStatus.style.color = 'var(--red)';
+        linkStatus.style.border = '1px solid rgba(239,68,68,0.25)';
+        linkStatus.textContent = 'Action Required: Click the button above to visit the destination link and return before points can be credited.';
+      }
+      return;
+    }
+  }
+
   if (needsScreenshot && !finalProof) {
     toast('Please upload a screenshot or enter a proof URL.', 'error');
     return;
@@ -2894,7 +3051,9 @@ async function sendTaskProof() {
         username: CURRENT_USER,
         proof_url: finalProof || 'Completed directly',
         notes: notes,
-        reward_points: pts
+        reward_points: pts,
+        link_visited: Boolean(taskLinkClicked && taskUserReturned),
+        time_spent: Math.max(1, Math.round((taskLinkReturnTime - taskLinkLeaveTime) / 1000))
       })
     });
     const d = await r.json();
