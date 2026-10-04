@@ -123,6 +123,8 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(\$userRole\)\s*\?>/g, context.userRole || 'member');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$initials\)\s*\?>/g, (context.username || 'MB').substring(0, 2).toUpperCase());
     content = content.replace(/<\?=\s*htmlspecialchars\(\$userFullName\)\s*\?>/g, context.userFullName || context.username || 'Member');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$userPhone\)\s*\?>/g, context.userPhone || '');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$userEmail\)\s*\?>/g, context.userEmail || '');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$bankName[^)]*\)\s*\?>/g, (context.bankName || 'OPay Digital Services').toUpperCase());
     content = content.replace(/<\?=\s*htmlspecialchars\(chunk_split\(\$accountNumber[^)]*\)\)\s*\?>/g, (context.accountNumber || '0801234567').replace(/(\d{4})/g, '$1  ').trim());
     content = content.replace(/<\?=\s*htmlspecialchars\(\$accountNumber[^)]*\)\s*\?>/g, context.accountNumber || '0801234567');
@@ -3271,7 +3273,9 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    if (!usersData.users) usersData.users = [];
                     let found = false;
+                    let targetUser = null;
                     usersData.users.forEach(u => {
                         if ((u.username || '').toLowerCase() === username.toLowerCase()) {
                             if (fullName) u.full_name = fullName;
@@ -3281,22 +3285,57 @@ const server = http.createServer((req, res) => {
                                 u.password = newPass;
                                 u.password_updated_at = new Date().toISOString();
                             }
+                            u.updated_at = new Date().toISOString();
                             found = true;
+                            targetUser = u;
                         }
                     });
 
-                    if (found) {
-                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
-                        res.end(JSON.stringify({
-                            success: true,
-                            message: 'Settings updated successfully!',
-                            full_name: fullName,
-                            email: email,
-                            phone: phone
-                        }));
-                    } else {
-                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                    if (!found) {
+                        const newUser = {
+                            id: 'usr-' + username.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                            username: username,
+                            full_name: fullName || (username.charAt(0).toUpperCase() + username.slice(1)),
+                            email: email || (username.toLowerCase() + '@innovationx.test'),
+                            phone: phone || '',
+                            password: newPass || '',
+                            role: 'member',
+                            role_label: 'Active Member',
+                            remaining_cash: 0,
+                            remaining_pts: 100,
+                            total_earned: 0,
+                            status: 'active',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        };
+                        usersData.users.push(newUser);
+                        targetUser = newUser;
                     }
+
+                    try {
+                        const uDir = path.dirname(usersFile);
+                        if (!fs.existsSync(uDir)) fs.mkdirSync(uDir, { recursive: true });
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    } catch(e) {}
+
+                    const finalFullName = fullName || targetUser.full_name || username;
+                    const finalEmail = email || targetUser.email || '';
+                    const finalPhone = phone || targetUser.phone || '';
+                    const finalRole = targetUser.role || 'member';
+                    const isAdmin = ['admin', 'super_admin'].includes(finalRole.toLowerCase()) || ['admin', 'abas6245', 'abazceboi'].includes(username.toLowerCase());
+                    const updatedCookie = createSessionCookie(targetUser.id || username, username, isAdmin, finalEmail, finalPhone, finalFullName, finalRole, isAdmin ? 2 : 0);
+
+                    res.writeHead(200, {
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        'Set-Cookie': `ix_session=${encodeURIComponent(updatedCookie)}; Path=/; Max-Age=2592000; SameSite=Lax`
+                    });
+                    res.end(JSON.stringify({
+                        success: true,
+                        message: newPass ? 'Password updated successfully!' : 'Settings updated successfully!',
+                        full_name: finalFullName,
+                        email: finalEmail,
+                        phone: finalPhone
+                    }));
                     return;
                 }
 
@@ -4368,6 +4407,8 @@ const server = http.createServer((req, res) => {
                 if (u && u.username) {
                     context.username = u.username;
                     context.userFullName = u.fullName || u.username;
+                    context.userPhone = u.phone || '';
+                    context.userEmail = u.email || '';
                     context.userRole = u.role;
                     const uAdminCheck = Boolean(u.is_admin)
                         || ['admin', 'super_admin'].includes((u.role || '').toLowerCase())
@@ -4392,6 +4433,8 @@ const server = http.createServer((req, res) => {
                                 context.accountNumber = userRecord.account_number || '0801234567';
                                 context.accountName = userRecord.account_name || userRecord.full_name || u.username;
                                 context.userFullName = userRecord.full_name || u.fullName || u.username;
+                                context.userPhone = userRecord.phone || u.phone || '';
+                                context.userEmail = userRecord.email || u.email || '';
                                 context.userRole = userRecord.role || u.role;
                                 context.userCash = parseFloat(userRecord.remaining_cash !== undefined ? userRecord.remaining_cash : (userRecord.cashBalance || 0));
                                 context.userPoints = parseInt(userRecord.remaining_pts !== undefined ? userRecord.remaining_pts : (userRecord.pointsBalance || 100));

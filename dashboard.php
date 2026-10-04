@@ -94,6 +94,8 @@ if ($pdo) {
             if (!empty($row['accountNumber'])) $accountNumber= $row['accountNumber'];
             if (!empty($row['accountName']))   $accountName  = $row['accountName'];
             if (!empty($row['fullName']))      $userFullName = $row['fullName'];
+            if (!empty($row['phone']))         $userPhone    = $row['phone'];
+            if (!empty($row['email']))         $userEmail    = $row['email'];
             if (!empty($row['referralCode']))  $referralCode = $row['referralCode'];
             if (!empty($row['is_activated']) || !empty($row['couponPinUsed'])) {
                 $isActivated = true;
@@ -2371,6 +2373,24 @@ document.addEventListener('DOMContentLoaded', () => {
     accHolderEl.textContent = dName.toUpperCase();
   }
 
+  // Synchronize profile inputs with localStorage cache so refresh never reverts to default
+  const cachedPhone = localStorage.getItem('ix_user_phone_' + CURRENT_USER) || localStorage.getItem('ix_user_phone');
+  const cachedEmail = localStorage.getItem('ix_user_email_' + CURRENT_USER) || localStorage.getItem('ix_user_email');
+  const cachedFullName = localStorage.getItem('ix_user_fullname_' + CURRENT_USER) || localStorage.getItem('ix_user_fullname');
+
+  const pEl = document.getElementById('setPhone');
+  if (pEl && cachedPhone && (!pEl.value || pEl.value === '08012345678')) {
+    pEl.value = cachedPhone;
+  }
+  const eEl = document.getElementById('setEmail');
+  if (eEl && cachedEmail && (!eEl.value || eEl.value.includes('@innovationx.test'))) {
+    eEl.value = cachedEmail;
+  }
+  const fEl = document.getElementById('setFullName');
+  if (fEl && cachedFullName && (!fEl.value || fEl.value === CURRENT_USER)) {
+    fEl.value = cachedFullName;
+  }
+
   loadTasks();
   loadSurveys();
   loadNotifications();
@@ -2513,21 +2533,34 @@ async function handleSaveProfile(e) {
   const btn = document.getElementById('btnSaveProfile');
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    const r = await fetch('/api/users.php?action=update_profile', {
+    const payload = {
+      username: CURRENT_USER,
+      full_name: fullName,
+      email: email,
+      phone: phone
+    };
+    const r = await fetch(`api/users.php?action=update_profile&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: CURRENT_USER,
-        full_name: fullName,
-        email: email,
-        phone: phone
-      })
+      body: JSON.stringify(payload)
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
       toast('Profile updated successfully!', 'success');
+      if (phone) {
+        localStorage.setItem('ix_user_phone_' + CURRENT_USER, phone);
+        localStorage.setItem('ix_user_phone', phone);
+      }
+      if (email) {
+        localStorage.setItem('ix_user_email_' + CURRENT_USER, email);
+        localStorage.setItem('ix_user_email', email);
+      }
+      if (fullName) {
+        localStorage.setItem('ix_user_fullname_' + CURRENT_USER, fullName);
+        localStorage.setItem('ix_user_fullname', fullName);
+      }
     } else {
-      toast(d.error || 'Failed to update profile', 'error');
+      toast(d.error || d.message || 'Failed to update profile', 'error');
     }
   } catch(err) {
     toast('Network error updating profile', 'error');
@@ -2552,13 +2585,14 @@ async function handleSavePassword(e) {
 
   btn.disabled = true; btn.textContent = 'Updating...';
   try {
-    const r = await fetch('/api/users.php?action=update_profile', {
+    const payload = {
+      username: CURRENT_USER,
+      new_password: newPass
+    };
+    const r = await fetch(`api/users.php?action=update_profile&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: CURRENT_USER,
-        new_password: newPass
-      })
+      body: JSON.stringify(payload)
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
@@ -2566,7 +2600,7 @@ async function handleSavePassword(e) {
       document.getElementById('setNewPassword').value = '';
       document.getElementById('setConfirmPassword').value = '';
     } else {
-      toast(d.error || 'Failed to update password', 'error');
+      toast(d.error || d.message || 'Failed to update password', 'error');
     }
   } catch(err) {
     toast('Network error updating password', 'error');

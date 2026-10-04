@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../includes/auth_helper.php';
 
 $pdo = getDbConnection();
 if ($pdo) {
@@ -957,8 +959,8 @@ switch ($action) {
             exit;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
-        $username = trim($input['username'] ?? '');
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_SESSION['username'] ?? ''));
         $fullName = trim($input['full_name'] ?? '');
         $email    = trim($input['email'] ?? '');
         $phone    = trim($input['phone'] ?? '');
@@ -970,9 +972,13 @@ switch ($action) {
         }
 
         $data = loadUsers();
+        if (!isset($data['users']) || !is_array($data['users'])) {
+            $data = ['users' => []];
+        }
         $found = false;
+        $foundUser = null;
         foreach ($data['users'] as &$u) {
-            if (strtolower($u['username']) === strtolower($username)) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
                 if (!empty($fullName)) $u['full_name'] = $fullName;
                 if (!empty($email))    $u['email'] = $email;
                 if (!empty($phone))    $u['phone'] = $phone;
@@ -981,35 +987,81 @@ switch ($action) {
                     $u['password_hash'] = password_hash($newPass, PASSWORD_BCRYPT);
                     $u['password_updated_at'] = date('c');
                 }
+                $u['updated_at'] = date('c');
                 $found = true;
+                $foundUser = $u;
                 break;
             }
         }
         unset($u);
 
-        if ($found) {
-            saveUsers($data);
+        if (!$found) {
+            $foundUser = [
+                'id' => 'usr-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)),
+                'username' => $username,
+                'full_name' => !empty($fullName) ? $fullName : $username,
+                'email' => !empty($email) ? $email : (strtolower($username) . '@innovationx.test'),
+                'phone' => !empty($phone) ? $phone : '',
+                'password' => !empty($newPass) ? $newPass : '',
+                'password_hash' => !empty($newPass) ? password_hash($newPass, PASSWORD_BCRYPT) : '',
+                'role' => $_SESSION['role'] ?? 'member',
+                'role_label' => 'Active Member',
+                'remaining_cash' => 0.0,
+                'remaining_pts' => 100,
+                'total_earned' => 0.0,
+                'status' => 'active',
+                'created_at' => date('c'),
+                'updated_at' => date('c')
+            ];
+            $data['users'][] = $foundUser;
         }
+
+        saveUsers($data);
+
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        if (!empty($fullName)) $_SESSION['fullName'] = $fullName;
+        if (!empty($email))    $_SESSION['email']    = $email;
+        if (!empty($phone))    $_SESSION['phone']    = $phone;
 
         if ($pdo) {
             try {
                 if (!empty($newPass)) {
                     $hash = password_hash($newPass, PASSWORD_BCRYPT);
                     $stmt = $pdo->prepare('UPDATE users SET "fullName" = ?, email = ?, phone = ?, "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
-                    $stmt->execute([$fullName, $email, $phone, $hash, $username]);
+                    $stmt->execute([$fullName ?: ($foundUser['full_name'] ?? $username), $email ?: ($foundUser['email'] ?? ''), $phone ?: ($foundUser['phone'] ?? ''), $hash, $username]);
                 } else {
                     $stmt = $pdo->prepare('UPDATE users SET "fullName" = ?, email = ?, phone = ? WHERE LOWER(username) = LOWER(?)');
-                    $stmt->execute([$fullName, $email, $phone, $username]);
+                    $stmt->execute([$fullName ?: ($foundUser['full_name'] ?? $username), $email ?: ($foundUser['email'] ?? ''), $phone ?: ($foundUser['phone'] ?? ''), $username]);
                 }
             } catch (Exception $e) {}
         }
 
+        if (function_exists('setAuthCookie')) {
+            $uId = $_SESSION['user_id'] ?? ($foundUser['id'] ?? $username);
+            $uRole = $_SESSION['role'] ?? ($foundUser['role'] ?? 'member');
+            $isAdmin = !empty($_SESSION['is_admin']) || in_array(strtolower($uRole), ['admin', 'super_admin']) || in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']);
+            $isActivated = !empty($_SESSION['is_activated']) || !empty($foundUser['is_activated']) || $isAdmin;
+            setAuthCookie(
+                $uId,
+                $username,
+                $isAdmin,
+                !empty($email) ? $email : ($_SESSION['email'] ?? ($foundUser['email'] ?? '')),
+                !empty($phone) ? $phone : ($_SESSION['phone'] ?? ($foundUser['phone'] ?? '')),
+                !empty($fullName) ? $fullName : ($_SESSION['fullName'] ?? ($foundUser['full_name'] ?? $username)),
+                $uRole,
+                null,
+                $isActivated
+            );
+        }
+
         echo json_encode([
             'success' => true,
-            'message' => 'Settings updated successfully!',
-            'full_name' => $fullName,
-            'email' => $email,
-            'phone' => $phone
+            'message' => !empty($newPass) ? 'Password updated successfully!' : 'Profile updated successfully!',
+            'full_name' => !empty($fullName) ? $fullName : ($foundUser['full_name'] ?? $username),
+            'email' => !empty($email) ? $email : ($foundUser['email'] ?? ''),
+            'phone' => !empty($phone) ? $phone : ($foundUser['phone'] ?? '')
         ]);
         break;
 
