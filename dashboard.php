@@ -44,39 +44,38 @@ $surveysCompleted = 0;
 
 $isActivated    = false;
 
-// Read user record from users.json
-$usersJsonFile = __DIR__ . '/data/users.json';
-if (file_exists($usersJsonFile)) {
-    $uData    = @json_decode(@file_get_contents($usersJsonFile), true);
-    $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
-    foreach ($allUsers as $ju) {
-        if (strtolower($ju['username'] ?? '') === strtolower($username)) {
-            $userPoints       = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
-            $userCash         = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
-            if (!empty($ju['role']))           $userRole         = $ju['role'];
-            if (!empty($ju['phone']))          $userPhone        = $ju['phone'];
-            if (!empty($ju['email']))          $userEmail        = $ju['email'];
-            if (!empty($ju['full_name']))      $userFullName     = $ju['full_name'];
-            if (!empty($ju['bank_name']))      $bankName         = $ju['bank_name'];
-            if (!empty($ju['account_number'])) $accountNumber    = $ju['account_number'];
-            if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
-            if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
-            if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
-            if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
-            if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
-            if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
-            if (!empty($ju['is_activated']) || !empty($ju['coupon_activated'])) {
-                $isActivated = true;
-            }
-            break;
+require_once __DIR__ . '/includes/storage_helper.php';
+
+// Safe persistent check across local server, session, and Vercel
+$uData = readStorageJson('data/users.json', ['users' => []]);
+$allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
+foreach ($allUsers as $ju) {
+    if (strtolower($ju['username'] ?? '') === strtolower($username)) {
+        $userPoints       = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
+        $userCash         = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
+        if (!empty($ju['role']))           $userRole         = $ju['role'];
+        if (!empty($ju['phone']))          $userPhone        = $ju['phone'];
+        if (!empty($ju['email']))          $userEmail        = $ju['email'];
+        if (!empty($ju['full_name']))      $userFullName     = $ju['full_name'];
+        if (!empty($ju['bank_name']))      $bankName         = $ju['bank_name'];
+        if (!empty($ju['account_number'])) $accountNumber    = $ju['account_number'];
+        if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
+        if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
+        if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
+        if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
+        if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
+        if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
+        if (!empty($ju['is_activated']) || !empty($ju['coupon_activated']) || !empty($ju['coupon_pin_used'])) {
+            $isActivated = true;
         }
+        break;
     }
 }
 
 if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
     $isActivated = true;
 }
-if (!empty($_SESSION['is_activated'])) {
+if (!empty($_SESSION['is_activated']) || (!empty($_COOKIE['ix_account_activated']) && $_COOKIE['ix_account_activated'] === '1')) {
     $isActivated = true;
 }
 
@@ -105,6 +104,9 @@ if ($pdo) {
 
 if ($isActivated) {
     $_SESSION['is_activated'] = true;
+    if (!headers_sent()) {
+        @setcookie('ix_account_activated', '1', time() + 86400 * 365, '/', '', false, false);
+    }
 }
 
 $pricingFile = __DIR__ . '/config/app_pricing.json';
@@ -2274,6 +2276,21 @@ input,textarea,select{font-family:var(--ff);}
 const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
 const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
 
+// Instantly dismiss activation gate if account was already activated
+(function dismissActivationGateIfActive() {
+  const isAct = localStorage.getItem('ix_is_activated') === '1' ||
+                (CURRENT_USER && localStorage.getItem('ix_activated_' + CURRENT_USER) === '1') ||
+                document.cookie.includes('ix_account_activated=1');
+  if (isAct) {
+    const gate = document.getElementById('modalActivationGate');
+    if (gate) {
+      gate.classList.remove('active');
+      gate.style.display = 'none';
+      gate.remove();
+    }
+  }
+})();
+
 function getReferralLink() {
   const raw = document.getElementById('dataRefLink')?.dataset.link;
   if (raw && (raw.startsWith('http://') || raw.startsWith('https://'))) return raw;
@@ -3196,11 +3213,21 @@ async function submitAccountActivation() {
     if (d.success || d.status === 'success') {
       try {
         localStorage.setItem('ix_is_activated', '1');
+        if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
+          localStorage.setItem('ix_activated_' + CURRENT_USER, '1');
+        }
+        document.cookie = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax";
       } catch(e) {}
-      toast('Account activated successfully! Unlocking platform...', 'success');
+      const gate = document.getElementById('modalActivationGate');
+      if (gate) {
+        gate.classList.remove('active');
+        gate.style.display = 'none';
+        gate.remove();
+      }
+      toast('Account activated successfully! All platform features unlocked.', 'success');
       setTimeout(() => {
         window.location.reload();
-      }, 800);
+      }, 500);
     } else {
       if (errBox) {
         errBox.textContent = d.message || 'Invalid or already used coupon code.';

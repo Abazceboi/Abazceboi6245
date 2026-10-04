@@ -80,6 +80,15 @@ function loadAllCoupons(?PDO $pdo = null): array {
         }
     }
 
+    $usedCoupons = readStorageJson('data/used_coupons.json', []);
+    $usedMap = [];
+    if (is_array($usedCoupons)) {
+        foreach ($usedCoupons as $uc) {
+            $uCode = strtoupper(trim(is_string($uc) ? $uc : ($uc['code'] ?? '')));
+            if (!empty($uCode)) $usedMap[$uCode] = true;
+        }
+    }
+
     $jsonCoupons = loadCouponsFromJson();
     $couponsByCode = [];
 
@@ -87,6 +96,7 @@ function loadAllCoupons(?PDO $pdo = null): array {
     foreach ($jsonCoupons as $c) {
         $code = strtoupper(trim($c['code'] ?? ''));
         if (!empty($code) && !isset($deletedMap[$code])) {
+            $isUsed = !empty($c['isUsed']) || !empty($c['is_used']) || (($c['status'] ?? '') === 'used') || !empty($c['used_by']) || isset($usedMap[$code]);
             $couponsByCode[$code] = [
                 'code' => $code,
                 'channel' => $c['channel'] ?? 'AFFILIATE',
@@ -96,8 +106,9 @@ function loadAllCoupons(?PDO $pdo = null): array {
                 'vendor_name' => $c['vendorName'] ?? $c['vendor_name'] ?? 'General Pool',
                 'wholesale_price' => (float)($c['wholesalePrice'] ?? $c['wholesale_price'] ?? 1000),
                 'amount' => (float)($c['amount'] ?? 1000),
-                'is_used' => !empty($c['isUsed']) || !empty($c['is_used']),
-                'used_by' => $c['usedBy'] ?? $c['used_by'] ?? null,
+                'is_used' => $isUsed,
+                'status' => $isUsed ? 'used' : 'active',
+                'used_by' => $c['usedBy'] ?? $c['used_by'] ?? ($isUsed ? 'Member' : null),
                 'used_at' => $c['usedAt'] ?? $c['used_at'] ?? null,
                 'created_at' => $c['created_at'] ?? date('c')
             ];
@@ -123,7 +134,7 @@ function loadAllCoupons(?PDO $pdo = null): array {
                 }
 
                 $usedBy = $r['used_by'] ?? $r['usedby'] ?? null;
-                if (!empty($usedBy)) {
+                if (!empty($usedBy) || isset($usedMap[$code])) {
                     $isUsed = true;
                 }
 
@@ -145,6 +156,7 @@ function loadAllCoupons(?PDO $pdo = null): array {
                     'wholesale_price' => $couponsByCode[$code]['wholesale_price'] ?? 1000,
                     'amount' => $amount,
                     'is_used' => $isUsed,
+                    'status' => $isUsed ? 'used' : 'active',
                     'used_by' => $usedBy,
                     'used_at' => $usedAt,
                     'created_at' => $createdAt
@@ -161,6 +173,15 @@ function loadAllCoupons(?PDO $pdo = null): array {
 function findCouponByCode(string $code, ?PDO $pdo = null): ?array {
     $code = strtoupper(trim($code));
     if (empty($code)) return null;
+
+    $usedCoupons = readStorageJson('data/used_coupons.json', []);
+    $usedMap = [];
+    if (is_array($usedCoupons)) {
+        foreach ($usedCoupons as $uc) {
+            $uCode = strtoupper(trim(is_string($uc) ? $uc : ($uc['code'] ?? '')));
+            if (!empty($uCode)) $usedMap[$uCode] = true;
+        }
+    }
 
     if (!$pdo) {
         $pdo = getDbConnection();
@@ -181,7 +202,7 @@ function findCouponByCode(string $code, ?PDO $pdo = null): ?array {
                     $isUsed = filter_var($r['isused'], FILTER_VALIDATE_BOOLEAN);
                 }
                 $usedBy = $r['used_by'] ?? $r['usedby'] ?? null;
-                if (!empty($usedBy)) {
+                if (!empty($usedBy) || isset($usedMap[$code])) {
                     $isUsed = true;
                 }
 
@@ -194,6 +215,7 @@ function findCouponByCode(string $code, ?PDO $pdo = null): ?array {
                     'vendor_name' => $r['vendor_name'] ?? $r['vendorname'] ?? 'General Pool',
                     'amount' => (float)($r['amount'] ?? 1000),
                     'is_used' => $isUsed,
+                    'status' => $isUsed ? 'used' : 'active',
                     'used_by' => $usedBy,
                     'used_at' => $r['used_at'] ?? $r['usedat'] ?? null,
                     'created_at' => $r['created_at'] ?? $r['createdat'] ?? date('c')
@@ -208,6 +230,7 @@ function findCouponByCode(string $code, ?PDO $pdo = null): ?array {
     $jsonCoupons = loadCouponsFromJson();
     foreach ($jsonCoupons as $c) {
         if (strtoupper(trim($c['code'] ?? '')) === $code) {
+            $isUsed = !empty($c['isUsed']) || !empty($c['is_used']) || (($c['status'] ?? '') === 'used') || !empty($c['used_by']) || isset($usedMap[$code]);
             return [
                 'code' => $code,
                 'channel' => $c['channel'] ?? 'AFFILIATE',
@@ -216,8 +239,9 @@ function findCouponByCode(string $code, ?PDO $pdo = null): ?array {
                 'vendor_id' => $c['vendorId'] ?? $c['vendor_id'] ?? '',
                 'vendor_name' => $c['vendorName'] ?? $c['vendor_name'] ?? 'General Pool',
                 'amount' => (float)($c['amount'] ?? 1000),
-                'is_used' => !empty($c['isUsed']) || !empty($c['is_used']),
-                'used_by' => $c['usedBy'] ?? $c['used_by'] ?? null,
+                'is_used' => $isUsed,
+                'status' => $isUsed ? 'used' : 'active',
+                'used_by' => $c['usedBy'] ?? $c['used_by'] ?? ($isUsed ? 'Member' : null),
                 'used_at' => $c['usedAt'] ?? $c['used_at'] ?? null,
                 'created_at' => $c['created_at'] ?? date('c')
             ];
@@ -258,18 +282,31 @@ function validateCouponForRegistration(string $code, ?PDO $pdo = null): array {
         ];
     }
 
-    if ($coupon['is_used'] || !empty($coupon['used_by'])) {
+    $usedCoupons = readStorageJson('data/used_coupons.json', []);
+    $isBlacklisted = false;
+    if (is_array($usedCoupons)) {
+        foreach ($usedCoupons as $uc) {
+            $uCode = strtoupper(trim(is_string($uc) ? $uc : ($uc['code'] ?? '')));
+            if ($uCode === $code) { $isBlacklisted = true; break; }
+        }
+    }
+
+    if ($coupon['is_used'] || !empty($coupon['used_by']) || ($coupon['status'] ?? '') === 'used' || $isBlacklisted) {
         $usedByInfo = !empty($coupon['used_by']) ? " by user @{$coupon['used_by']}" : "";
         $usedAtInfo = !empty($coupon['used_at']) ? " on " . date('M j, Y, g:i a', strtotime($coupon['used_at'])) : "";
         return [
             'valid' => false,
-            'message' => "This coupon code (\"{$code}\") has already been used to activate an account{$usedByInfo}{$usedAtInfo}. Each coupon code is strictly single-use only."
+            'status' => 'used',
+            'is_used' => true,
+            'message' => "Status: USED. This coupon code (\"{$code}\") has already been used and cannot be redeemed again. Each coupon code is strictly single-use only."
         ];
     }
 
     return [
         'valid' => true,
-        'message' => "Valid and unused coupon PIN.",
+        'status' => 'active',
+        'is_used' => false,
+        'message' => "Status: ACTIVE. Valid and active coupon PIN.",
         'coupon' => $coupon
     ];
 }
@@ -371,6 +408,24 @@ function consumeCouponForRegistration(string $code, string $username, ?PDO $pdo 
     }
 
     saveCouponsToJson($jsonCoupons);
+
+    // 3. Persist to dedicated used_coupons.json blacklist
+    $usedList = readStorageJson('data/used_coupons.json', []);
+    if (!is_array($usedList)) $usedList = [];
+    $alreadyLogged = false;
+    foreach ($usedList as $item) {
+        $existingCode = strtoupper(trim(is_string($item) ? $item : ($item['code'] ?? '')));
+        if ($existingCode === $code) { $alreadyLogged = true; break; }
+    }
+    if (!$alreadyLogged) {
+        $usedList[] = [
+            'code' => $code,
+            'used_by' => $username,
+            'used_at' => $now
+        ];
+        writeStorageJson('data/used_coupons.json', $usedList);
+    }
+
     return true;
 }
 

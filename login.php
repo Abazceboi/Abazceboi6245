@@ -469,6 +469,13 @@ if (!empty($_GET['error'])) {
                 localStorage.setItem('ix_is_admin', data.isAdmin ? 'true' : 'false');
 
                 const u = (data.username || '').toLowerCase();
+                const isAct = Boolean(data.is_activated || data.isActivated || localStorage.getItem('ix_activated_' + u) === '1');
+                if (isAct) {
+                    const isSecure = location.protocol === 'https:' ? '; Secure' : '';
+                    document.cookie = 'ix_account_activated=1; path=/; max-age=31536000; SameSite=Lax' + isSecure;
+                    localStorage.setItem('ix_activated_' + u, '1');
+                    localStorage.setItem('ix_is_activated', '1');
+                }
                 const isAdmin = Boolean(data.isAdmin || u === 'admin' || u === 'superadmin' || u === 'abas6245' || u === 'abazceboi');
                 const targetUrl = isAdmin ? 'secure_hq_panel.php' : 'dashboard.php';
 

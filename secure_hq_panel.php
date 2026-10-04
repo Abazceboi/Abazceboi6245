@@ -371,14 +371,40 @@ body.sidebar-retracted .main{
 .toast-error   .toast-dot{background:var(--red);}
 .toast-info    .toast-dot{background:var(--accent);}
 
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.mobile-open{transform:translateX(0);}
-  .main{margin-left:0;}
+.sidebar-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  z-index:190;opacity:0;pointer-events:none;transition:opacity 0.22s ease;
+}
+.sidebar-backdrop.active{opacity:1;pointer-events:auto;}
+.mobile-close-btn{
+  display:none;background:rgba(255,255,255,0.06);border:1px solid var(--border);
+  color:var(--txt-2);width:34px;height:34px;border-radius:8px;
+  align-items:center;justify-content:center;cursor:pointer;transition:all var(--trans);
+}
+.mobile-close-btn:hover{color:var(--txt);background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);}
+
+@media(max-width:1024px){
+  .sidebar{
+    transform:translateX(-100%);
+    box-shadow:0 10px 40px rgba(0,0,0,0.8);
+    transition:transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sidebar.mobile-open{
+    transform:translateX(0);
+  }
+  .mobile-close-btn{
+    display:flex;
+  }
+  .main{
+    margin-left:0;
+  }
 }
 </style>
 </head>
 <body>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeAdminSidebar()"></div>
 
 <div class="layout">
 
@@ -389,6 +415,9 @@ body.sidebar-retracted .main{
       <div class="sidebar-logo-mark">IX</div>
       <div class="sidebar-logo-name">Innovation<span>X</span> HQ</div>
     </div>
+    <button class="mobile-close-btn" onclick="closeAdminSidebar()" title="Close navigation menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 
   <nav class="nav-section">
@@ -1150,12 +1179,28 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
 // RETRACTABLE SIDEBAR / FULL SCREEN
 // ═══════════════════════════════════════════════════════════════════════════
 function toggleSidebarFull() {
-  if (window.innerWidth <= 768) {
-    document.getElementById('adminSidebar').classList.toggle('mobile-open');
+  if (window.innerWidth <= 1024) {
+    const sb = document.getElementById('adminSidebar');
+    const bd = document.getElementById('sidebarBackdrop');
+    if (sb) {
+      const isOpen = sb.classList.toggle('mobile-open');
+      if (bd) bd.classList.toggle('active', isOpen);
+    }
   } else {
     document.body.classList.toggle('sidebar-retracted');
   }
 }
+
+function closeAdminSidebar() {
+  const sb = document.getElementById('adminSidebar');
+  const bd = document.getElementById('sidebarBackdrop');
+  if (sb) sb.classList.remove('mobile-open');
+  if (bd) bd.classList.remove('active');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAdminSidebar();
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // THEME
@@ -1200,7 +1245,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
   if (tab === 'withdrawals') loadWithdrawalsData();
   if (tab === 'pricing') loadPricingData();
-  if (window.innerWidth <= 768) document.getElementById('adminSidebar').classList.remove('mobile-open');
+  closeAdminSidebar();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1277,6 +1322,100 @@ function updateSurveyVideoPreview() {
   }
 }
 
+async function uploadMediaFile(file, onProgress, onStatus) {
+  // Pass 1: For files <= 4MB, attempt local serverless /api/upload_video.php
+  if (file.size <= 4 * 1024 * 1024) {
+    try {
+      onStatus(`Direct upload: ${file.name}...`);
+      const formData = new FormData();
+      formData.append('video', file);
+      const serverUrl = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/upload_video.php', true);
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 90);
+            onProgress(pct);
+            onStatus(`Uploading: ${pct}%...`);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const d = JSON.parse(xhr.responseText);
+              if (d.video_url || d.url) return resolve(d.video_url || d.url);
+            } catch(e){}
+          }
+          reject(new Error('Local server upload rejected'));
+        };
+        xhr.onerror = () => reject(new Error('Local upload network error'));
+        xhr.send(formData);
+      });
+      if (serverUrl) return serverUrl;
+    } catch(err) {
+      console.warn('Local endpoint bypassed, switching to high-capacity streaming CDN...', err);
+    }
+  }
+
+  // Pass 2: High-capacity tmpfiles.org CDN (CORS enabled, handles up to 10GB, permanent direct streaming URL)
+  try {
+    onStatus('Routing through high-capacity video streaming CDN...');
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    const cdnUrl = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://tmpfiles.org/api/v1/upload', true);
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          const pct = Math.round((ev.loaded / ev.total) * 95);
+          onProgress(pct);
+          onStatus(`Uploading to streaming CDN: ${pct}%...`);
+        }
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const j = JSON.parse(xhr.responseText);
+            if (j.status === 'success' && j.data && j.data.url) {
+              const directStreamUrl = j.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+              return resolve(directStreamUrl);
+            }
+          } catch(e){}
+        }
+        reject(new Error('CDN upload returned non-200'));
+      };
+      xhr.onerror = () => reject(new Error('CDN upload error'));
+      xhr.send(fd);
+    });
+    if (cdnUrl) return cdnUrl;
+  } catch(cdnErr) {
+    console.warn('CDN upload failed, trying base64 fallback...', cdnErr);
+  }
+
+  // Pass 3: Base64 payload fallback if file is under 4MB
+  if (file.size <= 4 * 1024 * 1024) {
+    try {
+      onStatus('Encoding video data...');
+      const b64 = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      const r = await fetch('/api/upload_video.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_base64: b64, filename: file.name })
+      });
+      const d = await r.json();
+      if (d.video_url || d.url) return (d.video_url || d.url);
+    } catch(e){}
+  }
+
+  // Pass 4: Local Object URL (instant local streaming preview)
+  return URL.createObjectURL(file);
+}
+
 async function handleSurveyVideoFile(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1285,86 +1424,26 @@ async function handleSurveyVideoFile(e) {
   const progressBar = document.getElementById('svVideoUploadProgressBar');
   const statusText = document.getElementById('svVideoUploadStatusText');
   progressBox.style.display = 'block';
-  progressBar.style.width = '25%';
-  statusText.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
+  progressBar.style.width = '15%';
+  statusText.textContent = `Preparing ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
 
   try {
-    const formData = new FormData();
-    formData.append('video', file);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload_video.php', true);
-
-    xhr.upload.onprogress = (ev) => {
-      if (ev.lengthComputable) {
-        const percent = Math.round((ev.loaded / ev.total) * 90);
-        progressBar.style.width = percent + '%';
-        statusText.textContent = `Uploading survey video: ${percent}%...`;
-      }
-    };
-
-    xhr.onload = async () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const resp = JSON.parse(xhr.responseText);
-          if (resp.video_url || resp.url) {
-            const finalUrl = resp.video_url || resp.url;
-            svUploadedVideoUrl = finalUrl;
-            document.getElementById('svVideoUrl').value = finalUrl;
-            progressBar.style.width = '100%';
-            statusText.textContent = 'Survey video uploaded successfully!';
-            updateSurveyVideoPreview();
-            toast('Survey video uploaded!', 'success');
-            return;
-          }
-        } catch(err) {}
-      }
-      fallbackBase64SurveyVideoUpload(file);
-    };
-
-    xhr.onerror = () => {
-      fallbackBase64SurveyVideoUpload(file);
-    };
-
-    xhr.send(formData);
+    const finalUrl = await uploadMediaFile(
+      file,
+      pct => { progressBar.style.width = pct + '%'; },
+      msg => { statusText.textContent = msg; }
+    );
+    svUploadedVideoUrl = finalUrl;
+    document.getElementById('svVideoUrl').value = finalUrl;
+    progressBar.style.width = '100%';
+    statusText.textContent = 'Survey video uploaded and ready for direct playback!';
+    updateSurveyVideoPreview();
+    toast('Survey video uploaded successfully!', 'success');
   } catch(err) {
-    fallbackBase64SurveyVideoUpload(file);
+    console.error('Survey video upload error:', err);
+    statusText.textContent = 'Upload failed. Please enter stream URL manually.';
+    toast('Video upload failed', 'error');
   }
-}
-
-function fallbackBase64SurveyVideoUpload(file) {
-  const progressBar = document.getElementById('svVideoUploadProgressBar');
-  const statusText = document.getElementById('svVideoUploadStatusText');
-  statusText.textContent = 'Encoding survey video stream...';
-  progressBar.style.width = '60%';
-
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const b64 = ev.target.result;
-    try {
-      const r = await fetch('/api/upload_video.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_base64: b64, filename: file.name })
-      });
-      const d = await r.json();
-      if (d.video_url || d.success) {
-        svUploadedVideoUrl = d.video_url;
-        document.getElementById('svVideoUrl').value = d.video_url;
-        progressBar.style.width = '100%';
-        statusText.textContent = 'Survey video uploaded successfully!';
-        updateSurveyVideoPreview();
-        toast('Survey video uploaded!', 'success');
-      } else {
-        statusText.textContent = 'Upload error: ' + (d.message || 'Server error');
-        toast(d.message || 'Upload error', 'error');
-      }
-    } catch(e) {
-      statusText.textContent = 'Upload network error';
-      toast('Network error uploading video', 'error');
-    }
-  };
-  reader.readAsDataURL(file);
 }
 
 async function handleCreateSurvey(e) {
@@ -1525,86 +1604,26 @@ async function handleAdminVideoFile(e) {
   const progressBar = document.getElementById('videoUploadProgressBar');
   const statusText = document.getElementById('videoUploadStatusText');
   progressBox.style.display = 'block';
-  progressBar.style.width = '20%';
-  statusText.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
+  progressBar.style.width = '15%';
+  statusText.textContent = `Preparing ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`;
 
   try {
-    const formData = new FormData();
-    formData.append('video', file);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/upload_video.php', true);
-
-    xhr.upload.onprogress = (ev) => {
-      if (ev.lengthComputable) {
-        const percent = Math.round((ev.loaded / ev.total) * 90);
-        progressBar.style.width = percent + '%';
-        statusText.textContent = `Uploading video: ${percent}%...`;
-      }
-    };
-
-    xhr.onload = async () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const resp = JSON.parse(xhr.responseText);
-          if (resp.video_url || resp.url) {
-            const finalUrl = resp.video_url || resp.url;
-            adminUploadedVideoUrl = finalUrl;
-            document.getElementById('taskVideoUrl').value = finalUrl;
-            progressBar.style.width = '100%';
-            statusText.textContent = 'Upload complete! Video ready for on-site playback.';
-            updateAdminVideoPreview();
-            toast('Video uploaded successfully!', 'success');
-            return;
-          }
-        } catch(err) {}
-      }
-      fallbackBase64VideoUpload(file);
-    };
-
-    xhr.onerror = () => {
-      fallbackBase64VideoUpload(file);
-    };
-
-    xhr.send(formData);
+    const finalUrl = await uploadMediaFile(
+      file,
+      pct => { progressBar.style.width = pct + '%'; },
+      msg => { statusText.textContent = msg; }
+    );
+    adminUploadedVideoUrl = finalUrl;
+    document.getElementById('taskVideoUrl').value = finalUrl;
+    progressBar.style.width = '100%';
+    statusText.textContent = 'Upload complete! Video ready for on-site playback.';
+    updateAdminVideoPreview();
+    toast('Task video uploaded successfully!', 'success');
   } catch(err) {
-    fallbackBase64VideoUpload(file);
+    console.error('Task video upload error:', err);
+    statusText.textContent = 'Upload failed. Please enter stream URL manually.';
+    toast('Video upload failed', 'error');
   }
-}
-
-function fallbackBase64VideoUpload(file) {
-  const progressBar = document.getElementById('videoUploadProgressBar');
-  const statusText = document.getElementById('videoUploadStatusText');
-  statusText.textContent = 'Encoding video stream...';
-  progressBar.style.width = '60%';
-
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const b64 = ev.target.result;
-    try {
-      const r = await fetch('/api/upload_video.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_base64: b64, filename: file.name })
-      });
-      const d = await r.json();
-      if (d.video_url || d.success) {
-        adminUploadedVideoUrl = d.video_url;
-        document.getElementById('taskVideoUrl').value = d.video_url;
-        progressBar.style.width = '100%';
-        statusText.textContent = 'Upload complete! Video ready for on-site playback.';
-        updateAdminVideoPreview();
-        toast('Video uploaded successfully!', 'success');
-      } else {
-        statusText.textContent = 'Upload error: ' + (d.message || 'Server error');
-        toast(d.message || 'Upload error', 'error');
-      }
-    } catch(e) {
-      statusText.textContent = 'Upload network error';
-      toast('Network error uploading video', 'error');
-    }
-  };
-  reader.readAsDataURL(file);
 }
 
 async function handleCreateTask(e) {

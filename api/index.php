@@ -28,22 +28,36 @@ if (file_exists($pageFile)) {
 
 // 3. Direct file check
 $directFile = $rootDir . '/' . $uri;
+if (!file_exists($directFile) || is_dir($directFile)) {
+    $tmpCandidate = sys_get_temp_dir() . '/innovationx_store/' . $uri;
+    if (file_exists($tmpCandidate) && !is_dir($tmpCandidate)) {
+        $directFile = $tmpCandidate;
+    }
+}
+
 if (file_exists($directFile) && !is_dir($directFile)) {
     if (substr($directFile, -4) === '.php') {
         require $directFile;
     } else {
-        $ext = pathinfo($directFile, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($directFile, PATHINFO_EXTENSION));
         $mimes = [
             'css' => 'text/css',
             'js' => 'application/javascript',
             'json' => 'application/json',
             'png' => 'image/png',
             'jpg' => 'image/jpeg',
-            'svg' => 'image/svg+xml'
+            'jpeg' => 'image/jpeg',
+            'svg' => 'image/svg+xml',
+            'mp4' => 'video/mp4',
+            'webm' => 'video/webm',
+            'ogg' => 'video/ogg',
+            'mov' => 'video/quicktime',
+            'm4v' => 'video/mp4'
         ];
         if (isset($mimes[$ext])) {
             header('Content-Type: ' . $mimes[$ext]);
         }
+        header('Accept-Ranges: bytes');
         readfile($directFile);
     }
     exit;

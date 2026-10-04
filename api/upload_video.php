@@ -19,9 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$targetDir = __DIR__ . '/../uploads/videos/';
+require_once __DIR__ . '/../includes/storage_helper.php';
+
+$targetDir = getStorageFilePath('uploads/videos/');
 if (!is_dir($targetDir)) {
-    @mkdir($targetDir, 0755, true);
+    @mkdir($targetDir, 0777, true);
+}
+
+$localDir = __DIR__ . '/../uploads/videos/';
+if (!is_dir($localDir)) {
+    @mkdir($localDir, 0777, true);
 }
 
 $allowedExtensions = ['mp4', 'webm', 'ogg', 'mov', 'm4v'];
@@ -45,9 +52,17 @@ if (!empty($_FILES['video']) || !empty($_FILES['file'])) {
     }
 
     $safeName = 'vid_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-    $targetPath = $targetDir . $safeName;
+    $targetPath = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
+    $localPath = rtrim($localDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
 
-    if (move_uploaded_file($fileObj['tmp_name'], $targetPath)) {
+    $saved = @move_uploaded_file($fileObj['tmp_name'], $targetPath);
+    if (!$saved) {
+        $saved = @move_uploaded_file($fileObj['tmp_name'], $localPath);
+    } else {
+        @copy($targetPath, $localPath);
+    }
+
+    if ($saved) {
         $videoUrl = '/uploads/videos/' . $safeName;
         echo json_encode([
             'status' => 'success',
@@ -88,9 +103,17 @@ if (!empty($input['video_base64']) || !empty($input['base64'])) {
     }
 
     $safeName = 'vid_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-    $targetPath = $targetDir . $safeName;
+    $targetPath = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
+    $localPath = rtrim($localDir, '/\\') . DIRECTORY_SEPARATOR . $safeName;
 
-    if (file_put_contents($targetPath, $decoded) !== false) {
+    $wrote = @file_put_contents($targetPath, $decoded);
+    if ($wrote === false) {
+        $wrote = @file_put_contents($localPath, $decoded);
+    } else {
+        @copy($targetPath, $localPath);
+    }
+
+    if ($wrote !== false) {
         $videoUrl = '/uploads/videos/' . $safeName;
         echo json_encode([
             'status' => 'success',

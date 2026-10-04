@@ -353,10 +353,24 @@ if ($action === 'activate' || $action === 'activate_coupon') {
 
     $_SESSION['is_activated'] = true;
 
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+
+    header("Set-Cookie: ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax" . ($isHttps ? "; Secure" : ""), false);
+    @setcookie('ix_account_activated', '1', [
+        'expires' => time() + 31536000,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => false,
+        'samesite' => 'Lax'
+    ]);
+
     echo json_encode([
         'success' => true,
         'status' => 'success',
         'is_activated' => true,
+        'isActivated' => true,
         'message' => 'Account successfully activated! All features are now unlocked.'
     ]);
     exit;

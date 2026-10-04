@@ -20,11 +20,14 @@ function isRequestHttps(): bool {
         || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 }
 
-function generateSessionToken($userId, $username, $isAdmin = false, $email = '', $phone = '', $fullName = '', $role = 'member', $adminAuthStep = null): string {
+function generateSessionToken($userId, $username, $isAdmin = false, $email = '', $phone = '', $fullName = '', $role = 'member', $adminAuthStep = null, $isActivated = null): string {
     $secret = getSessionSecret();
     $role = $role ?: ($isAdmin ? 'super_admin' : 'member');
     if ($adminAuthStep === null) {
         $adminAuthStep = $isAdmin ? 1 : 0;
+    }
+    if ($isActivated === null) {
+        $isActivated = $isAdmin || in_array($role, ['admin', 'super_admin', 'uploader', 'vendor']);
     }
     $payload = base64_encode(json_encode([
         'user_id' => $userId,
@@ -35,14 +38,15 @@ function generateSessionToken($userId, $username, $isAdmin = false, $email = '',
         'role' => $role,
         'is_admin' => (bool)$isAdmin,
         'admin_auth_step' => (int)$adminAuthStep,
+        'is_activated' => (bool)$isActivated,
         'time' => time()
     ]));
     $sig = hash_hmac('sha256', $payload, $secret);
     return $payload . '.' . $sig;
 }
 
-function setAuthCookie($userId, $username, $isAdmin = false, $email = '', $phone = '', $fullName = '', $role = 'member', $adminAuthStep = null): string {
-    $cookieVal = generateSessionToken($userId, $username, $isAdmin, $email, $phone, $fullName, $role, $adminAuthStep);
+function setAuthCookie($userId, $username, $isAdmin = false, $email = '', $phone = '', $fullName = '', $role = 'member', $adminAuthStep = null, $isActivated = null): string {
+    $cookieVal = generateSessionToken($userId, $username, $isAdmin, $email, $phone, $fullName, $role, $adminAuthStep, $isActivated);
     $isHttps = isRequestHttps();
     $expires = time() + 86400 * 30; // 30 days persistent
 
@@ -56,6 +60,18 @@ function setAuthCookie($userId, $username, $isAdmin = false, $email = '', $phone
             'httponly' => false, // Non-HttpOnly allows client-side JS recovery from localStorage/cookie
             'samesite' => 'Lax'
         ]);
+
+        if ($isActivated) {
+            $actHeader = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax" . ($isHttps ? "; Secure" : "");
+            header("Set-Cookie: " . $actHeader, false);
+            setcookie('ix_account_activated', '1', [
+                'expires' => time() + 31536000,
+                'path' => '/',
+                'secure' => $isHttps,
+                'httponly' => false,
+                'samesite' => 'Lax'
+            ]);
+        }
     }
     return $cookieVal;
 }
@@ -145,9 +161,15 @@ function getAuthenticatedUser(): ?array {
                         $_SESSION['is_admin'] = true;
                         $_SESSION['admin_auth_step'] = $adminAuthStep;
                     }
+                    $isActivated = !empty($data['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']);
+                    if (!$isActivated && !empty($_COOKIE['ix_account_activated']) && $_COOKIE['ix_account_activated'] === '1') {
+                        $isActivated = true;
+                    }
+                    $_SESSION['is_activated'] = $isActivated;
                     $data['role'] = $uRole;
                     $data['is_admin'] = $isAdmin;
                     $data['admin_auth_step'] = $adminAuthStep;
+                    $data['is_activated'] = $isActivated;
                     return $data;
                 }
             }
@@ -360,12 +382,13 @@ function authenticateUserCredentials(string $username, string $password): array 
         $_SESSION['fullName'] = $matchedUser['fullName'];
         $_SESSION['role'] = $uRole;
         $_SESSION['is_admin'] = $isAdmin;
-        $_SESSION['is_activated'] = !empty($matchedUser['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']);
+        $isUserActivated = !empty($matchedUser['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']);
+        $_SESSION['is_activated'] = $isUserActivated;
         if ($isAdmin) {
             $_SESSION['admin_auth_step'] = 1; // Step 1 complete: password verified, awaiting 2-step PIN
         }
 
-        $token = setAuthCookie($matchedUser['id'], $matchedUser['username'], $isAdmin, $matchedUser['email'], $matchedUser['phone'], $matchedUser['fullName'], $uRole, $isAdmin ? 1 : 0);
+        $token = setAuthCookie($matchedUser['id'], $matchedUser['username'], $isAdmin, $matchedUser['email'], $matchedUser['phone'], $matchedUser['fullName'], $uRole, $isAdmin ? 1 : 0, $isUserActivated);
 
         return [
             'success' => true,

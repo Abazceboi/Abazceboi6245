@@ -60,6 +60,10 @@ function renderPhpFile(filePath, context = {}) {
         content = content.replace(/<\?php\s+if\s*\(\s*empty\(\$hideFooter\)\s*\)\s*:\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
     }
 
+    if (context.isActivated) {
+        content = content.replace(/<\?php\s+if\s*\(\s*!\$isActivated\s*\)\s*:\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
+    }
+
     content = content.replace(/(?:require_once|require|include_once|include)\s+__DIR__\s*\.\s*['"]([^'"]+)['"];?/g, (match, relPath) => {
         // Backend config / logic / session files contain no HTML layout - do not inline them
         if (relPath.includes('config/') || relPath.includes('auth_helper') || relPath.includes('db.php')) {
@@ -525,17 +529,23 @@ const server = http.createServer((req, res) => {
                             initialAuthStep
                         );
 
+                        const isActivated = Boolean(matched.is_activated || matched.coupon_activated || matched.coupon_pin_used || isAdmin || ['admin', 'super_admin', 'uploader', 'vendor'].includes(userRole));
+                        const cookies = [`ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`];
+                        if (isActivated) {
+                            cookies.push(`ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000`);
+                        }
+
                         if (isHtmlFormPost) {
                             res.writeHead(302, {
                                 'Location': isAdmin ? '/secure_hq_panel.php' : '/dashboard.php',
-                                'Set-Cookie': `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`
+                                'Set-Cookie': cookies
                             });
                             res.end();
                             return;
                         }
 
                         res.setHeader('Content-Type', 'application/json; charset=UTF-8');
-                        res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`);
+                        res.setHeader('Set-Cookie', cookies);
                         res.end(JSON.stringify({
                             status: 'success',
                             token: cookieVal,
@@ -546,6 +556,8 @@ const server = http.createServer((req, res) => {
                             fullName: matched.full_name || matched.fullName || matched.username,
                             role: userRole,
                             isAdmin: isAdmin,
+                            is_activated: isActivated,
+                            isActivated: isActivated,
                             admin_auth_step: initialAuthStep
                         }));
                         return;
@@ -755,10 +767,25 @@ const server = http.createServer((req, res) => {
                         fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
                     }
 
+                    // Blacklist coupon in used_coupons.json
+                    try {
+                        const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
+                        let usedList = [];
+                        if (fs.existsSync(usedFile)) {
+                            try { usedList = JSON.parse(fs.readFileSync(usedFile, 'utf8')); } catch(e){}
+                        }
+                        if (!usedList.some(u => (typeof u === 'string' ? u : (u.code || '')).toUpperCase() === pin)) {
+                            usedList.unshift({ code: pin, used_by: username, used_at: new Date().toISOString() });
+                            fs.writeFileSync(usedFile, JSON.stringify(usedList, null, 2));
+                        }
+                    } catch(e){}
+
+                    res.setHeader('Set-Cookie', 'ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000');
                     res.end(JSON.stringify({
                         status: 'success',
                         message: 'Account successfully activated! All features are now unlocked.',
-                        is_activated: true
+                        is_activated: true,
+                        isActivated: true
                     }));
                     return;
                 }
@@ -810,8 +837,8 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            // Coupon PINs Inventory API
-            if (cleanUrl.includes('coupons.php')) {
+            // Coupon PINs Inventory & Verification API
+            if (cleanUrl.includes('coupons.php') || cleanUrl.includes('verify-code')) {
                 const couponsFile = path.join(PUBLIC_DIR, 'data', 'coupons.json');
                 const deletedFile = path.join(PUBLIC_DIR, 'data', 'deleted_coupons.json');
                 let coupons = [];
@@ -957,18 +984,41 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                if (action === 'verify_pin') {
-                    const code = ((parsed.code || urlObj.searchParams.get('code') || '')).trim().toUpperCase();
+                if (action === 'verify_pin' || cleanUrl.includes('verify-code')) {
+                    const code = ((parsed.code || parsed.pin || urlObj.searchParams.get('code') || urlObj.searchParams.get('pin') || '')).trim().toUpperCase();
+                    if (!code) {
+                        res.end(JSON.stringify({ success: false, status: 'used', is_used: true, message: 'Please enter a coupon code to verify.' }));
+                        return;
+                    }
+                    const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
+                    let usedList = [];
+                    if (fs.existsSync(usedFile)) {
+                        try { usedList = JSON.parse(fs.readFileSync(usedFile, 'utf8')); } catch(e){}
+                    }
+                    const isBlacklisted = usedList.some(u => (typeof u === 'string' ? u : (u.code || '')).toUpperCase() === code);
+
                     const target = coupons.find(c => (c.code || '').toUpperCase() === code);
-                    if (!target) {
-                        res.end(JSON.stringify({ success: false, valid: false, message: `Coupon '${code}' not found.` }));
+                    if (!target || isBlacklisted || target.is_used || target.isUsed || target.used_by || target.usedBy) {
+                        res.end(JSON.stringify({
+                            success: false,
+                            status: 'used',
+                            is_used: true,
+                            code: code,
+                            message: 'Status: USED. This coupon PIN is already redeemed or unavailable. Each code is strictly single-use only.'
+                        }));
                         return;
                     }
-                    if (target.is_used || target.isUsed || target.used_by || target.usedBy) {
-                        res.end(JSON.stringify({ success: false, valid: false, message: `Coupon '${code}' has already been used.` }));
-                        return;
-                    }
-                    res.end(JSON.stringify({ success: true, valid: true, coupon: target, message: 'Valid unused coupon PIN.' }));
+                    const isUploader = (code.includes('UPL') || (target.type && target.type.includes('UPL')) || target.channel === 'UPLOADER');
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'active',
+                        is_used: false,
+                        code: code,
+                        code_type: isUploader ? 'uploader_accreditation' : 'member_activation',
+                        code_label: isUploader ? 'Official Uploader Accreditation PIN' : 'Member Registration PIN',
+                        amount: target.amount || 1000,
+                        message: 'Status: ACTIVE. Valid and active coupon PIN. Ready for registration!'
+                    }));
                     return;
                 }
 
@@ -982,6 +1032,13 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
+                    let usedList = [];
+                    if (fs.existsSync(usedFile)) {
+                        try { usedList = JSON.parse(fs.readFileSync(usedFile, 'utf8')); } catch(e){}
+                    }
+                    const isBlacklisted = usedList.some(u => (typeof u === 'string' ? u : (u.code || '')).toUpperCase() === pin);
+
                     const targetPin = coupons.find(c => (c.code || '').toUpperCase() === pin);
                     if (!targetPin) {
                         res.end(JSON.stringify({ success: false, status: 'error', message: `Activation PIN '${pin}' was not found. Please obtain a genuine code from our verified vendors.` }));
@@ -991,17 +1048,24 @@ const server = http.createServer((req, res) => {
                         res.end(JSON.stringify({ success: false, status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration.` }));
                         return;
                     }
-                    if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                    if (isBlacklisted || targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
                         res.end(JSON.stringify({ success: false, status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                         return;
                     }
 
                     targetPin.is_used = true;
                     targetPin.isUsed = true;
+                    targetPin.status = 'used';
                     targetPin.used_by = username || 'Member';
                     targetPin.usedBy = username || 'Member';
                     targetPin.used_at = new Date().toISOString();
                     fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                    // Add to used_coupons.json blacklist
+                    if (!isBlacklisted) {
+                        usedList.unshift({ code: pin, used_by: username || 'Member', used_at: new Date().toISOString() });
+                        fs.writeFileSync(usedFile, JSON.stringify(usedList, null, 2));
+                    }
 
                     const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                     if (fs.existsSync(usersFile)) {
@@ -1073,11 +1137,13 @@ const server = http.createServer((req, res) => {
                         } catch(e) {}
                     }
 
+                    res.setHeader('Set-Cookie', 'ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000');
                     res.end(JSON.stringify({
                         success: true,
                         status: 'success',
                         message: 'Account successfully activated! All features are now unlocked.',
-                        is_activated: true
+                        is_activated: true,
+                        isActivated: true
                     }));
                     return;
                 }
@@ -4032,11 +4098,51 @@ const server = http.createServer((req, res) => {
         }
 
         if (req.method === 'POST') {
-            let body = '';
-            req.on('data', chunk => { body += chunk; });
+            const chunks = [];
+            req.on('data', chunk => { chunks.push(chunk); });
             req.on('end', () => {
+                const rawBuffer = Buffer.concat(chunks);
+                const contentType = req.headers['content-type'] || '';
                 let parsed = {};
+
+                // Handle multipart file upload for direct video uploads
+                if (contentType.includes('multipart/form-data') && (cleanUrl.includes('upload_video') || action === 'upload_video')) {
+                    try {
+                        const targetDir = path.join(PUBLIC_DIR, 'uploads', 'videos');
+                        if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+                        const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+                        if (boundaryMatch) {
+                            const boundary = boundaryMatch[1] || boundaryMatch[2];
+                            const boundaryBuf = Buffer.from('--' + boundary);
+                            const start = rawBuffer.indexOf(boundaryBuf);
+                            if (start !== -1) {
+                                const headerEnd = rawBuffer.indexOf(Buffer.from('\r\n\r\n'), start);
+                                if (headerEnd !== -1) {
+                                    const nextBoundary = rawBuffer.indexOf(boundaryBuf, headerEnd);
+                                    if (nextBoundary !== -1) {
+                                        const fileData = rawBuffer.subarray(headerEnd + 4, nextBoundary - 2);
+                                        const safeName = 'vid_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex') + '.mp4';
+                                        fs.writeFileSync(path.join(targetDir, safeName), fileData);
+                                        res.writeHead(200, { 'Content-Type': 'application/json; charset=UTF-8' });
+                                        res.end(JSON.stringify({
+                                            status: 'success',
+                                            success: true,
+                                            video_url: '/uploads/videos/' + safeName,
+                                            filename: safeName,
+                                            message: 'Video uploaded successfully.'
+                                        }));
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    } catch(upErr) {
+                        console.error('Multipart upload error:', upErr);
+                    }
+                }
+
                 try {
+                    const body = rawBuffer.toString('utf8');
                     if (body) {
                         const trimmed = body.trim();
                         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
