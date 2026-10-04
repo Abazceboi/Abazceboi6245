@@ -72,6 +72,10 @@ foreach ($allUsers as $ju) {
     }
 }
 
+if (!empty($_SESSION['bank_name']))      $bankName      = $_SESSION['bank_name'];
+if (!empty($_SESSION['account_number'])) $accountNumber = $_SESSION['account_number'];
+if (!empty($_SESSION['account_name']))   $accountName   = $_SESSION['account_name'];
+
 if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
     $isActivated = true;
 }
@@ -2084,7 +2088,7 @@ input,textarea,select{font-family:var(--ff);}
       </div>
       <div style="font-size:12px;color:var(--txt-3);line-height:1.5;">
         Funds will be settled directly to your registered bank card: <br>
-        <strong style="color:var(--txt);"><?= htmlspecialchars($bankName) ?> — <?= htmlspecialchars($accountNumber) ?></strong>
+        <strong id="wdRegisteredCardText" style="color:var(--txt);"><span id="wdModalBank"><?= htmlspecialchars($bankName) ?></span> — <span id="wdModalAccount"><?= htmlspecialchars($accountNumber) ?></span></strong>
       </div>
     </div>
     <div class="modal-footer">
@@ -2394,6 +2398,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editH) editH.value = cachedHolder;
   }
 
+  // Immediately synchronize withdrawal modal bank card display
+  syncWithdrawalBankDetails();
+
   // Synchronize profile inputs with localStorage cache so refresh never reverts to default
   const cachedPhone = localStorage.getItem('ix_user_phone_' + CURRENT_USER) || localStorage.getItem('ix_user_phone');
   const cachedEmail = localStorage.getItem('ix_user_email_' + CURRENT_USER) || localStorage.getItem('ix_user_email');
@@ -2682,6 +2689,11 @@ function toast(msg, type = 'info') {
 function openModal(id) { 
   const el = document.getElementById(id);
   if (!el) return;
+  if (id === 'modalWithdraw' || id === 'modalWithdrawConfirm') {
+    if (typeof syncWithdrawalBankDetails === 'function') {
+      syncWithdrawalBankDetails();
+    }
+  }
   el.classList.add('open');
   el.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -2732,6 +2744,42 @@ function copyRef() {
 // ═══════════════════════════════════════════════════════════════════════════
 // ATM CARD & BANK UPDATE
 // ═══════════════════════════════════════════════════════════════════════════
+function syncWithdrawalBankDetails() {
+  const bankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) 
+                || localStorage.getItem('ix_bank_name') 
+                || (document.getElementById('editBankName') ? document.getElementById('editBankName').value.trim() : '')
+                || (document.getElementById('atmBankName') ? document.getElementById('atmBankName').textContent.trim() : '')
+                || (document.getElementById('wdModalBank') ? document.getElementById('wdModalBank').textContent.trim() : '')
+                || 'OPay Digital Services';
+  const accNum = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) 
+              || localStorage.getItem('ix_bank_acc') 
+              || (document.getElementById('editAccountNumber') ? document.getElementById('editAccountNumber').value.trim() : '')
+              || (document.getElementById('atmCardNumber') ? document.getElementById('atmCardNumber').textContent.replace(/\s+/g,'').trim() : '')
+              || (document.getElementById('wdModalAccount') ? document.getElementById('wdModalAccount').textContent.trim() : '')
+              || '0801234567';
+  const accHolder = localStorage.getItem('ix_bank_holder_' + CURRENT_USER)
+                 || localStorage.getItem('ix_bank_holder')
+                 || (document.getElementById('editAccountName') ? document.getElementById('editAccountName').value.trim() : '')
+                 || (document.getElementById('atmCardHolder') ? document.getElementById('atmCardHolder').textContent.trim() : '')
+                 || CURRENT_USER;
+
+  const wdCardText = document.getElementById('wdRegisteredCardText');
+  if (wdCardText) {
+    wdCardText.innerHTML = `<span id="wdModalBank">${bankName}</span> — <span id="wdModalAccount">${accNum}</span>`;
+  }
+  const wdBankSpan = document.getElementById('wdModalBank');
+  if (wdBankSpan) wdBankSpan.textContent = bankName;
+  const wdAccSpan = document.getElementById('wdModalAccount');
+  if (wdAccSpan) wdAccSpan.textContent = accNum;
+
+  const cfmBank = document.getElementById('confirmWdBank');
+  if (cfmBank) cfmBank.textContent = bankName;
+  const cfmAcc = document.getElementById('confirmWdAccount');
+  if (cfmAcc) cfmAcc.textContent = accNum;
+  const cfmName = document.getElementById('confirmWdName');
+  if (cfmName) cfmName.textContent = accHolder;
+}
+
 async function handleUpdateBank(e) {
   e.preventDefault();
   const bankName = document.getElementById('editBankName').value.trim();
@@ -2784,6 +2832,7 @@ async function handleUpdateBank(e) {
         localStorage.setItem('ix_bank_holder', accName);
       }
 
+      syncWithdrawalBankDetails();
       closeModal('modalEditBank');
     } else {
       toast(d.error || d.message || 'Failed to update bank details', 'error');
@@ -3582,9 +3631,9 @@ function proceedToWithdrawalConfirm() {
   const amountStr = type === 'cash' 
     ? ('₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
     : (amount.toLocaleString('en-US') + ' PTS');
-  const bankName = document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
-  const accNo = document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
-  const accName = document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
+  const bankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
+  const accNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
+  const accName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
 
   document.getElementById('confirmWdAmount').textContent = amountStr;
   document.getElementById('confirmWdWallet').textContent = walletLabel;
@@ -3619,9 +3668,9 @@ async function executeWithdrawalReq() {
 
       // Populate Digital Receipt with verified details
       const rc = d.receipt || {};
-      const bankName = rc.bank_name || rc.bank || document.getElementById('atmBankName')?.textContent || 'OPay Digital Services';
-      const accNo = rc.account_number || rc.account || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '0801234567';
-      const accName = rc.account_name || rc.beneficiary_name || document.getElementById('atmCardHolder')?.textContent || CURRENT_USER;
+      const bankName = rc.bank_name || rc.bank || localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent || 'OPay Digital Services';
+      const accNo = rc.account_number || rc.account || localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '0801234567';
+      const accName = rc.account_name || rc.beneficiary_name || localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent || CURRENT_USER;
       const txnId = rc.txn_id || rc.id || ('IX-WD-' + Math.floor(100000 + Math.random() * 900000));
       const dateStr = rc.date_formatted || (new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' WAT');
       const walletLabel = rc.wallet_type || (type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet');
