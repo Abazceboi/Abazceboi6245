@@ -640,6 +640,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // ── Admin: Adjust Survey Slots ──────────────────────────────────────────
+    if ($action === 'adjust_survey_slots') {
+        $id    = trim($input['id'] ?? '');
+        $slots = max(1, intval($input['slots'] ?? $input['total_slots'] ?? 100));
+        $surveys = getSurveys();
+        $updated = false;
+        foreach ($surveys as &$sv) {
+            if ($sv['id'] === $id) {
+                $comp = intval($sv['completions'] ?? 0);
+                $sv['total_slots']     = $slots;
+                $sv['remaining_slots'] = max(0, $slots - $comp);
+                $sv['updated_at']      = date('Y-m-d H:i:s');
+                $updated = true;
+                break;
+            }
+        }
+        if ($updated) {
+            saveSurveys($surveys);
+            echo json_encode(['status' => 'success', 'message' => 'Survey slots updated successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Survey not found']);
+        }
+        exit;
+    }
+
     // ── User: Submit Survey Answers ─────────────────────────────────────────
     if ($action === 'submit_survey') {
         $surveyId = trim($input['survey_id'] ?? '');

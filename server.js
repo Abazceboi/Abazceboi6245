@@ -1830,7 +1830,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
     };
 }
 
-            if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed' || action === 'generate_survey_questions') {
+            if (cleanUrl.includes('surveys.php') || action === 'get_surveys' || action === 'get_all_surveys' || action === 'create_survey' || action === 'update_survey' || action === 'delete_survey' || action === 'toggle_survey_status' || action === 'submit_survey' || action === 'get_user_completed' || action === 'generate_survey_questions' || action === 'adjust_survey_slots') {
                 res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                 res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
@@ -1946,6 +1946,26 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                         });
                         fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
                         res.end(JSON.stringify({ status: 'success', message: 'Status updated' }));
+                        return;
+                    } else if (action === 'adjust_survey_slots') {
+                        const id = (parsed.id || '').trim();
+                        const slots = Math.max(1, parseInt(parsed.slots || parsed.total_slots) || 100);
+                        let updated = false;
+                        surveys.forEach(sv => {
+                            if (sv.id === id) {
+                                const comp = parseInt(sv.completions) || 0;
+                                sv.total_slots = slots;
+                                sv.remaining_slots = Math.max(0, slots - comp);
+                                sv.updated_at = new Date().toISOString();
+                                updated = true;
+                            }
+                        });
+                        if (updated) {
+                            fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
+                            res.end(JSON.stringify({ status: 'success', message: 'Survey slots updated successfully' }));
+                        } else {
+                            res.end(JSON.stringify({ status: 'error', message: 'Survey not found' }));
+                        }
                         return;
                     } else if (action === 'submit_survey') {
                         const surveyId = (parsed.survey_id || '').trim();
@@ -2157,14 +2177,28 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                 const bcastFile = path.join(PUBLIC_DIR, 'config', 'broadcasts.json');
                 let bcastData = {
                     banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
-                    welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' }
+                    welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' },
+                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Surveys', cta_url: 'dashboard.php#surveys', frequency: 'session' }
                 };
                 if (fs.existsSync(bcastFile)) {
                     try { bcastData = Object.assign(bcastData, JSON.parse(fs.readFileSync(bcastFile, 'utf8'))); } catch(e){}
                 }
 
                 if (req.method === 'POST') {
-                    bcastData = Object.assign(bcastData, parsed);
+                    if (action === 'save_popup' || parsed.popup) {
+                        const p = parsed.popup || parsed;
+                        bcastData.popup = {
+                            enabled: !!p.enabled,
+                            title: String(p.title || 'Important Announcement').trim(),
+                            message: String(p.message || '').trim(),
+                            cta_label: String(p.cta_label || 'Learn More').trim(),
+                            cta_url: String(p.cta_url || 'dashboard.php').trim(),
+                            frequency: String(p.frequency || 'session').trim(),
+                            updated_at: new Date().toISOString()
+                        };
+                    } else {
+                        bcastData = Object.assign(bcastData, parsed);
+                    }
                     const configDir = path.dirname(bcastFile);
                     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
                     fs.writeFileSync(bcastFile, JSON.stringify(bcastData, null, 2));
@@ -3025,8 +3059,11 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                     const email = (parsed.email || '').trim();
                     const phone = (parsed.phone || '').trim();
                     const role = (parsed.role || 'member').trim();
-                    const cashBalance = parseFloat(parsed.cash_balance !== undefined ? parsed.cash_balance : (parsed.cash || 0)) || 0;
-                    const pointsBalance = parseInt(parsed.points_balance !== undefined ? parsed.points_balance : (parsed.points || 100)) || 100;
+                    const rawCash = parsed.cash_balance !== undefined ? parsed.cash_balance : (parsed.remaining_cash !== undefined ? parsed.remaining_cash : (parsed.cashBalance !== undefined ? parsed.cashBalance : (parsed.cash !== undefined ? parsed.cash : 0)));
+                    const cashBalance = parseFloat(rawCash) || 0;
+                    const rawPts = parsed.points_balance !== undefined ? parsed.points_balance : (parsed.remaining_pts !== undefined ? parsed.remaining_pts : (parsed.pointsBalance !== undefined ? parsed.pointsBalance : (parsed.points !== undefined ? parsed.points : 0)));
+                    let pointsBalance = parseInt(rawPts);
+                    if (isNaN(pointsBalance)) pointsBalance = 0;
                     const bankName = (parsed.bank_name || '').trim();
                     const accountNumber = (parsed.account_number || parsed.account_no || '').trim();
                     const accountName = (parsed.account_name || '').trim();
@@ -3042,17 +3079,19 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                     usersData.users.forEach(u => {
                         if (u.username.toLowerCase() === targetUsername.toLowerCase()) {
                             u.username = newUsername;
-                            if (fullName) u.full_name = fullName;
+                            if (fullName) { u.full_name = fullName; u.fullName = fullName; }
                             if (email) u.email = email;
                             if (phone) u.phone = phone;
                             u.role = role;
                             u.role_label = roleLabels[role] || 'Active Member';
                             u.remaining_cash = cashBalance;
                             u.remaining_pts = pointsBalance;
+                            u.cashBalance = cashBalance;
+                            u.pointsBalance = pointsBalance;
                             u.total_earned = cashBalance;
-                            if (bankName) u.bank_name = bankName;
-                            if (accountNumber) u.account_number = accountNumber;
-                            if (accountName) u.account_name = accountName;
+                            if (bankName) { u.bank_name = bankName; u.bankName = bankName; }
+                            if (accountNumber) { u.account_number = accountNumber; u.accountNumber = accountNumber; }
+                            if (accountName) { u.account_name = accountName; u.accountName = accountName; }
                             if (newPassword) {
                                 u.password = newPassword;
                                 u.password_updated_at = new Date().toISOString();
@@ -3068,16 +3107,22 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                         const newEntry = {
                             username: newUsername,
                             full_name: fullName || newUsername,
+                            fullName: fullName || newUsername,
                             email: email,
                             phone: phone,
                             role: role,
                             role_label: roleLabels[role] || 'Active Member',
                             remaining_cash: cashBalance,
                             remaining_pts: pointsBalance,
+                            cashBalance: cashBalance,
+                            pointsBalance: pointsBalance,
                             total_earned: cashBalance,
                             bank_name: bankName || 'Pending Setup',
+                            bankName: bankName || 'Pending Setup',
                             account_number: accountNumber || '••••••••',
+                            accountNumber: accountNumber || '••••••••',
                             account_name: accountName || '',
+                            accountName: accountName || '',
                             status: status,
                             updated_at: new Date().toISOString()
                         };

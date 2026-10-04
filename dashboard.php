@@ -51,8 +51,8 @@ $uData = readStorageJson('data/users.json', ['users' => []]);
 $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
 foreach ($allUsers as $ju) {
     if (strtolower($ju['username'] ?? '') === strtolower($username)) {
-        $userPoints       = intval($ju['remaining_pts'] ?? $ju['pointsBalance'] ?? 100);
-        $userCash         = floatval($ju['remaining_cash'] ?? $ju['cashBalance'] ?? 0.00);
+        $userPoints       = isset($ju['remaining_pts']) ? intval($ju['remaining_pts']) : (isset($ju['pointsBalance']) ? intval($ju['pointsBalance']) : 100);
+        $userCash         = isset($ju['remaining_cash']) ? floatval($ju['remaining_cash']) : (isset($ju['cashBalance']) ? floatval($ju['cashBalance']) : 0.00);
         if (!empty($ju['role']))           $userRole         = $ju['role'];
         if (!empty($ju['phone']))          $userPhone        = $ju['phone'];
         if (!empty($ju['email']))          $userEmail        = $ju['email'];
@@ -1611,11 +1611,11 @@ input,textarea,select{font-family:var(--ff);}
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Points Balance</div>
-        <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
+        <div class="stat-value" id="statPtsOverview" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Cash Balance</div>
-        <div class="stat-value" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
+        <div class="stat-value" id="statCashOverview" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Tasks Completed</div>
@@ -1813,12 +1813,12 @@ input,textarea,select{font-family:var(--ff);}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
         <div class="stat-card">
           <div class="stat-label">Task Points Wallet</div>
-          <div class="stat-value" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
+          <div class="stat-value" id="statPtsWallet" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
           <div class="stat-sub">Min payout: <?= number_format($minTaskWd) ?> PTS</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Referral Cash Wallet</div>
-          <div class="stat-value" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
+          <div class="stat-value" id="statCashWallet" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
           <div class="stat-sub">Min payout: ₦<?= number_format($minCashWd) ?></div>
         </div>
       </div>
@@ -2280,6 +2280,22 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 </div>
 
+<!-- Platform Pop-Up Announcement Modal -->
+<div class="modal-backdrop" id="modalAnnouncementPopup" style="z-index:99990;">
+  <div class="modal" style="max-width:480px;text-align:center;padding:28px 24px;border-radius:18px;">
+    <button class="modal-close" onclick="closeModal('modalAnnouncementPopup')" style="position:absolute;top:16px;right:18px;z-index:10;">&times;</button>
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="modal-title" id="popupModalTitle" style="font-size:20px;font-weight:700;margin-bottom:12px;color:var(--txt);">Important Update</div>
+    <div id="popupModalMessage" style="font-size:14px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;"></div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalAnnouncementPopup')">Dismiss</button>
+      <a href="dashboard.php" class="btn btn-primary" id="popupModalCtaBtn" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Explore</a>
+    </div>
+  </div>
+</div>
+
 <?php if (!$isActivated): ?>
 <!-- Mandatory Coupon Activation Gate Overlay -->
 <div class="modal-backdrop active" id="modalActivationGate" style="z-index:99999;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(5,7,15,0.88);">
@@ -2423,17 +2439,21 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTasks();
   loadSurveys();
   loadNotifications();
+  syncLiveProfile();
+  checkAnnouncementPopup();
 
-  // Instant Admin Upload Sync (polls every 20s and immediately when window/tab gains focus)
+  // Instant Admin Upload & Balance Sync (polls every 15s and immediately when window/tab gains focus)
   window.addEventListener('focus', () => {
     loadTasks();
     loadSurveys();
     loadNotifications();
+    syncLiveProfile();
   });
   setInterval(() => {
     loadTasks();
     loadSurveys();
     loadNotifications();
+    syncLiveProfile();
   }, 15000);
   setInterval(() => {
     const timerEls = document.querySelectorAll('.item-timer[data-expires]');
@@ -2527,6 +2547,82 @@ document.addEventListener('click', (e) => {
     d.classList.remove('open');
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE PROFILE & BALANCE SYNC
+// ═══════════════════════════════════════════════════════════════════════════
+async function syncLiveProfile() {
+  if (!CURRENT_USER) return;
+  try {
+    const r = await fetch(`/api/users.php?action=get_profile&username=${encodeURIComponent(CURRENT_USER)}&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    if (d && (d.success || d.status === 'success') && d.user) {
+      const u = d.user;
+      const pts = parseInt(u.remaining_pts !== undefined ? u.remaining_pts : (u.pointsBalance !== undefined ? u.pointsBalance : (d.points_balance !== undefined ? d.points_balance : 0)));
+      const cash = parseFloat(u.remaining_cash !== undefined ? u.remaining_cash : (u.cashBalance !== undefined ? u.cashBalance : (d.cash_balance !== undefined ? d.cash_balance : 0)));
+
+      const ptsEl = document.getElementById('dataPtsBal');
+      if (ptsEl) ptsEl.dataset.pts = pts;
+      const cashEl = document.getElementById('dataCashBal');
+      if (cashEl) cashEl.dataset.cash = cash;
+
+      const pOverview = document.getElementById('statPtsOverview');
+      if (pOverview) pOverview.textContent = pts.toLocaleString();
+      const cOverview = document.getElementById('statCashOverview');
+      if (cOverview) cOverview.textContent = '₦' + cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const pWallet = document.getElementById('statPtsWallet');
+      if (pWallet) pWallet.textContent = pts.toLocaleString() + ' PTS';
+      const cWallet = document.getElementById('statCashWallet');
+      if (cWallet) cWallet.textContent = '₦' + cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POP-UP ANNOUNCEMENT CHECK
+// ═══════════════════════════════════════════════════════════════════════════
+async function checkAnnouncementPopup() {
+  try {
+    const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    const data = d.data || d;
+    const popup = data.popup;
+    if (!popup || !popup.enabled) return;
+
+    const freq = popup.frequency || 'session';
+    const popupId = 'ix_popup_seen_' + (popup.updated_at || 'v1');
+
+    if (freq === 'session' && sessionStorage.getItem('ix_popup_session_seen')) return;
+    if (freq === 'once' && localStorage.getItem(popupId)) return;
+
+    const titleEl = document.getElementById('popupModalTitle');
+    if (titleEl) titleEl.textContent = popup.title || 'Platform Announcement';
+    const msgEl = document.getElementById('popupModalMessage');
+    if (msgEl) msgEl.textContent = popup.message || '';
+    const ctaBtn = document.getElementById('popupModalCtaBtn');
+    if (ctaBtn) {
+      if (popup.cta_label && popup.cta_url) {
+        ctaBtn.textContent = popup.cta_label;
+        ctaBtn.href = popup.cta_url;
+        ctaBtn.style.display = 'inline-flex';
+      } else {
+        ctaBtn.style.display = 'none';
+      }
+    }
+
+    openModal('modalAnnouncementPopup');
+
+    sessionStorage.setItem('ix_popup_session_seen', 'true');
+    if (freq === 'once') localStorage.setItem(popupId, 'true');
+  } catch(e) {}
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOATING DOWN TAB BAR NAVIGATION
@@ -3307,12 +3403,31 @@ function renderSurveys(list) {
     const qCount = (s.questions || []).length;
     const isVideo = (s.format_type === 'video') && Boolean(s.video_url);
 
+    const totalSlots = parseInt(s.total_slots) || 1;
+    const remainingSlots = s.remaining_slots !== undefined ? Math.max(0, parseInt(s.remaining_slots)) : totalSlots;
+    const isFull = (remainingSlots <= 0);
+
     const formatBadge = isVideo
       ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Video Survey</span>'
       : '<span class="item-tag" style="color:var(--purple);font-weight:700;">Written Survey</span>';
 
+    const slotTag = isFull
+      ? '<span class="item-tag" style="color:var(--red);font-weight:700;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);">Not Available (Slots Full)</span>'
+      : `<span class="item-tag" style="color:var(--txt-2);">${remainingSlots} of ${totalSlots} spots left</span>`;
+
+    let actionBtn = '';
+    if (isDone) {
+      actionBtn = '<span class="btn btn-secondary btn-sm" style="pointer-events:none;opacity:0.85;">Completed</span>';
+    } else if (isExp) {
+      actionBtn = '<span class="btn btn-ghost btn-sm" style="pointer-events:none;opacity:0.7;">Expired</span>';
+    } else if (isFull) {
+      actionBtn = '<span class="btn btn-ghost btn-sm" style="pointer-events:none;color:var(--red);border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);font-weight:700;">Not Available</span>';
+    } else {
+      actionBtn = `<button class="btn btn-primary btn-sm" onclick="startSurvey('${esc(s.id)}')">${isVideo ? 'Watch & Start' : 'Start Written Survey'}</button>`;
+    }
+
     return `
-      <div class="grid-item-card">
+      <div class="grid-item-card" style="${isFull ? 'opacity:0.88;border-color:rgba(239,68,68,0.25);' : ''}">
         <div class="item-head">
           <div class="item-title">${esc(s.title)}</div>
           <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} PTS</div>
@@ -3321,14 +3436,15 @@ function renderSurveys(list) {
           <span class="item-tag">${esc(s.category || (isVideo ? 'Video Survey' : 'Written Survey'))}</span>
           ${formatBadge}
           ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : '<span class="item-tag">Direct Words Survey</span>'}
+          ${slotTag}
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
         ${s.description ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-top:8px;">${esc(s.description)}</div>` : ''}
         <div class="item-footer">
-          <span style="font-size:11px;color:var(--txt-3);">${s.remaining_slots || s.total_slots || 0} spots</span>
-          ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Completed</span>'
-                   : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
-                   : `<button class="btn btn-primary btn-sm" onclick="startSurvey('${esc(s.id)}')">${isVideo ? 'Watch & Start' : 'Start Written Survey'}</button>`)}
+          <span style="font-size:11px;color:${isFull ? 'var(--red)' : 'var(--txt-3)'};font-weight:${isFull ? '700' : '500'};">
+            ${isFull ? `0 / ${totalSlots} spots (Fully Taken)` : `${remainingSlots} / ${totalSlots} spots left`}
+          </span>
+          ${actionBtn}
         </div>
       </div>
     `;
@@ -3341,6 +3457,16 @@ function renderSurveys(list) {
 function startSurvey(id) {
   const s = allSurveysList.find(x => x.id === id);
   if (!s) return;
+  const totalSlots = parseInt(s.total_slots) || 1;
+  const rem = s.remaining_slots !== undefined ? parseInt(s.remaining_slots) : totalSlots;
+  if (rem <= 0) {
+    toast('This survey is not available. All participant slots have been filled.', 'error');
+    return;
+  }
+  if (doneSurveyIds.includes(s.id)) {
+    toast('You have already completed this survey.', 'error');
+    return;
+  }
   activeSurvey = s;
   surveyAnswers = {};
   surveyStep = 0;
@@ -3500,7 +3626,13 @@ async function submitSurveyAnswers() {
     if (d.status === 'success') {
       doneSurveyIds.push(activeSurvey.id);
       localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+      if (activeSurvey.remaining_slots !== undefined) {
+        activeSurvey.remaining_slots = Math.max(0, parseInt(activeSurvey.remaining_slots) - 1);
+      }
+      activeSurvey.completions = (parseInt(activeSurvey.completions) || 0) + 1;
+      localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
       showSurveyResult(d);
+      loadSurveys();
     } else {
       toast(d.message || 'Submission error', 'error');
       nextBtn.disabled = false; nextBtn.textContent = 'Submit Survey';

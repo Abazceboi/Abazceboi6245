@@ -30,6 +30,15 @@ $defaults = [
         'message' => 'Connect directly with our community of over 124,000 verified Nigerian earners on WhatsApp & Telegram.',
         'whatsapp' => 'https://chat.whatsapp.com/demo',
         'updated_at' => date('Y-m-d H:i:s')
+    ],
+    'popup' => [
+        'enabled' => false,
+        'title' => 'Important Announcement',
+        'message' => 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.',
+        'cta_label' => 'View Surveys',
+        'cta_url' => 'dashboard.php#surveys',
+        'frequency' => 'session',
+        'updated_at' => date('Y-m-d H:i:s')
     ]
 ];
 
@@ -70,6 +79,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'title' => trim($w['title'] ?? ''),
             'message' => trim($w['message'] ?? ''),
             'whatsapp' => trim($w['whatsapp'] ?? ''),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    if ($action === 'save_popup' || isset($input['popup'])) {
+        $p = $input['popup'] ?? $input;
+        $data['popup'] = [
+            'enabled' => isset($p['enabled']) ? (bool)$p['enabled'] : false,
+            'title' => trim($p['title'] ?? 'Important Announcement'),
+            'message' => trim($p['message'] ?? ''),
+            'cta_label' => trim($p['cta_label'] ?? 'Learn More'),
+            'cta_url' => trim($p['cta_url'] ?? 'dashboard.php'),
+            'frequency' => trim($p['frequency'] ?? 'session'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
     }

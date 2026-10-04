@@ -421,8 +421,8 @@ switch ($action) {
         $email          = trim($input['email'] ?? '');
         $phone          = trim($input['phone'] ?? '');
         $role           = trim($input['role'] ?? 'member');
-        $cashBalance    = isset($input['cash_balance']) ? (float)$input['cash_balance'] : (isset($input['cash']) ? (float)$input['cash'] : 0.0);
-        $pointsBalance  = isset($input['points_balance']) ? (int)$input['points_balance'] : (isset($input['points']) ? (int)$input['points'] : 100);
+        $cashBalance    = isset($input['cash_balance']) ? (float)$input['cash_balance'] : (isset($input['remaining_cash']) ? (float)$input['remaining_cash'] : (isset($input['cashBalance']) ? (float)$input['cashBalance'] : (isset($input['cash']) ? (float)$input['cash'] : 0.0)));
+        $pointsBalance  = isset($input['points_balance']) ? (int)$input['points_balance'] : (isset($input['remaining_pts']) ? (int)$input['remaining_pts'] : (isset($input['pointsBalance']) ? (int)$input['pointsBalance'] : (isset($input['points']) ? (int)$input['points'] : 0)));
         $bankName       = trim($input['bank_name'] ?? '');
         $accountNumber  = trim($input['account_number'] ?? $input['account_no'] ?? '');
         $accountName    = trim($input['account_name'] ?? '');
@@ -470,17 +470,19 @@ switch ($action) {
         foreach ($data['users'] as &$u) {
             if (strtolower($u['username']) === strtolower($targetUsername)) {
                 $u['username'] = $newUsername;
-                if (!empty($fullName)) $u['full_name'] = $fullName;
+                if (!empty($fullName)) { $u['full_name'] = $fullName; $u['fullName'] = $fullName; }
                 if (!empty($email)) $u['email'] = $email;
                 if (!empty($phone)) $u['phone'] = $phone;
                 $u['role'] = $role;
                 $u['role_label'] = $ROLE_LABELS[$role] ?? 'Active Member';
                 $u['remaining_cash'] = $cashBalance;
                 $u['remaining_pts'] = $pointsBalance;
+                $u['cashBalance'] = $cashBalance;
+                $u['pointsBalance'] = $pointsBalance;
                 $u['total_earned'] = $cashBalance;
-                if (!empty($bankName)) $u['bank_name'] = $bankName;
-                if (!empty($accountNumber)) $u['account_number'] = $accountNumber;
-                if (!empty($accountName)) $u['account_name'] = $accountName;
+                if (!empty($bankName)) { $u['bank_name'] = $bankName; $u['bankName'] = $bankName; }
+                if (!empty($accountNumber)) { $u['account_number'] = $accountNumber; $u['accountNumber'] = $accountNumber; }
+                if (!empty($accountName)) { $u['account_name'] = $accountName; $u['accountName'] = $accountName; }
                 if (!empty($newPassword)) {
                     $u['password'] = $newPassword;
                     $u['password_hash'] = $passwordHash;
@@ -499,16 +501,22 @@ switch ($action) {
             $newEntry = [
                 'username' => $newUsername,
                 'full_name' => $fullName ?: $newUsername,
+                'fullName' => $fullName ?: $newUsername,
                 'email' => $email,
                 'phone' => $phone,
                 'role' => $role,
                 'role_label' => $ROLE_LABELS[$role] ?? 'Active Member',
                 'remaining_cash' => $cashBalance,
                 'remaining_pts' => $pointsBalance,
+                'cashBalance' => $cashBalance,
+                'pointsBalance' => $pointsBalance,
                 'total_earned' => $cashBalance,
                 'bank_name' => $bankName ?: 'Pending Setup',
+                'bankName' => $bankName ?: 'Pending Setup',
                 'account_number' => $accountNumber ?: '••••••••',
+                'accountNumber' => $accountNumber ?: '••••••••',
                 'account_name' => $accountName ?: '',
+                'accountName' => $accountName ?: '',
                 'status' => $status,
                 'updated_at' => date('c')
             ];

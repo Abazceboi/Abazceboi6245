@@ -431,6 +431,10 @@ body.sidebar-retracted .main{
     </button>
 
     <div class="nav-label">System</div>
+    <button class="nav-item" onclick="switchAdminTab('notifications', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications & Popups
+    </button>
     <button class="nav-item" onclick="switchAdminTab('pricing', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
       Rates & Settings
@@ -512,7 +516,7 @@ body.sidebar-retracted .main{
 
           <!-- Topic Generator Form -->
           <div class="form-row">
-            <div class="form-group" style="flex:2.2;">
+            <div class="form-group" style="flex:2;">
               <label class="form-label" style="font-size:12px;font-weight:700;">Survey Topic or Theme</label>
               <input type="text" class="form-input" id="genSurveyTopic" placeholder="e.g. Cryptocurrency Adoption, Mobile Banking UX, Telecom Network Speeds, E-Commerce Delivery..." value="Platform User Experience &amp; Features">
             </div>
@@ -525,7 +529,11 @@ body.sidebar-retracted .main{
                 <option value="10">10 Questions (Comprehensive Survey)</option>
               </select>
             </div>
-            <div class="form-group" style="flex:1.2;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Target Persons (Slots)</label>
+              <input type="number" class="form-input" id="genSurveySlots" value="100" min="1" placeholder="e.g. 50">
+            </div>
+            <div class="form-group" style="flex:1.1;">
               <label class="form-label" style="font-size:12px;font-weight:700;">Format Style</label>
               <select class="form-input" id="genSurveyStyle">
                 <option value="feedback" selected>Feedback Questionnaire</option>
@@ -657,8 +665,9 @@ body.sidebar-retracted .main{
               <input type="number" class="form-input" id="svReward" value="150" min="10" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Participant Slots</label>
-              <input type="number" class="form-input" id="svSlots" value="500" min="1" required>
+              <label class="form-label">Participant Slots (Number of Persons)</label>
+              <input type="number" class="form-input" id="svSlots" value="100" min="1" required placeholder="e.g. 50 or 100 persons">
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">When this number of persons complete the survey, slots deduce until 0 and the survey automatically displays Not Available.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Expiry Date & Time (Optional)</label>
@@ -1175,9 +1184,140 @@ body.sidebar-retracted .main{
       </div>
     </div>
 
+    <!-- ══ TAB: NOTIFICATIONS & POP-UP SETTINGS ═══════════════════════════ -->
+    <div id="tab-notifications" class="tab-content">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;margin-bottom:24px;">
+
+        <!-- Card 1: Dashboard Pop-Up Announcement Modal Settings -->
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="card-title">Dashboard Pop-Up Announcement</div>
+            <span class="badge" id="popupStatusBadge">Loading...</span>
+          </div>
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+            Configure an automatic announcement modal that appears on user dashboards. Perfect for bonuses, system updates, and urgent notices.
+          </p>
+          <form onsubmit="handleSavePopupSettings(event)">
+            <div class="form-group">
+              <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>Enable Dashboard Pop-Up</span>
+                <input type="checkbox" id="cfgPopupEnabled" style="width:18px;height:18px;cursor:pointer;">
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pop-Up Title</label>
+              <input type="text" class="form-input" id="cfgPopupTitle" placeholder="e.g. Special Earner Weekend Bonus!">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pop-Up Message / Announcement Content</label>
+              <textarea class="form-input" id="cfgPopupMessage" rows="4" placeholder="Enter message for all users..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Action Button Label</label>
+                <input type="text" class="form-input" id="cfgPopupCtaLabel" placeholder="e.g. Start Survey">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Action Target URL</label>
+                <input type="text" class="form-input" id="cfgPopupCtaUrl" placeholder="e.g. dashboard.php#surveys">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Display Frequency</label>
+              <select class="form-select" id="cfgPopupFrequency">
+                <option value="session">Once Per Browser Session (Recommended)</option>
+                <option value="every_visit">Every Dashboard Visit</option>
+                <option value="once">Once Until Dismissed</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button type="submit" class="btn btn-primary" id="btnSavePopupSettings">Save Pop-Up Settings</button>
+              <button type="button" class="btn btn-ghost" onclick="previewAnnouncementPopup()">Preview Pop-Up</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Card 2: In-App Notification Broadcaster -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Broadcast In-App Notification</div>
+          </div>
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+            Send an instant notification bell update to every user's dashboard header notification center.
+          </p>
+          <form onsubmit="handleSendNotificationBroadcast(event)">
+            <div class="form-group">
+              <label class="form-label">Notification Title</label>
+              <input type="text" class="form-input" id="notifBroadcastTitle" placeholder="e.g. New Surveys Added" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notification Message</label>
+              <textarea class="form-input" id="notifBroadcastMsg" rows="3" placeholder="Write a short concise update for all users..." required></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="notifBroadcastCategory">
+                  <option value="system">System Notice</option>
+                  <option value="tasks">Tasks & Gigs</option>
+                  <option value="wallet">Wallet & Payouts</option>
+                  <option value="reward">Earnings & Bonuses</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Action Link (Optional)</label>
+                <input type="text" class="form-input" id="notifBroadcastLink" placeholder="e.g. dashboard.php#tasks">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnSendBroadcast">Send Broadcast Now</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Card 3: Active Notifications History -->
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="card-title">Live Notification Center Updates</div>
+          <button class="btn btn-danger btn-sm" onclick="handleClearAllNotifications()">Clear All Notifications</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Message</th>
+                <th>Category</th>
+                <th>Date / Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminNotifsTableBody">
+              <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt-3);">Loading notifications...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /layout -->
+
+<!-- Pop-Up Preview Modal -->
+<div class="modal-backdrop" id="modalPreviewPopup">
+  <div class="modal" style="max-width:500px;text-align:center;padding:28px 24px;">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </div>
+    <div class="modal-title" id="prevPopupTitle" style="font-size:20px;font-weight:700;margin-bottom:12px;color:var(--txt);">Announcement Title</div>
+    <div id="prevPopupMessage" style="font-size:14px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;">Message content preview...</div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalPreviewPopup')">Close Preview</button>
+      <button type="button" class="btn btn-primary" id="prevPopupCtaBtn">Action Button</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════ MODALS ══════════════════════════════════════ -->
 
@@ -1410,7 +1550,7 @@ applyTheme(localStorage.getItem('ix_theme') || 'dark');
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['overview','surveys','tasks','users','coupons','withdrawals','pricing'];
+const TABS = ['overview','surveys','tasks','users','coupons','withdrawals','pricing','notifications'];
 
 function switchAdminTab(tab, btn) {
   if (!TABS.includes(tab)) tab = 'overview';
@@ -1433,7 +1573,8 @@ function switchAdminTab(tab, btn) {
     users: 'Users & Ledgers',
     coupons: 'Coupon PINs',
     withdrawals: 'Payout Approvals',
-    pricing: 'Rates & Settings'
+    pricing: 'Rates & Settings',
+    notifications: 'Notifications & Pop-Up Settings'
   };
   const titleEl = document.getElementById('adminTopbarTitle');
   if (titleEl) titleEl.textContent = titles[tab] || 'Admin Panel';
@@ -1452,6 +1593,7 @@ function switchAdminTab(tab, btn) {
   if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
   if (tab === 'withdrawals') loadWithdrawalsData();
   if (tab === 'pricing') loadPricingData();
+  if (tab === 'notifications') loadAdminNotificationsTab();
   closeAdminSidebar();
 }
 
@@ -1502,6 +1644,8 @@ async function generateSurveyFromTopic() {
 
   const count = parseInt(countInp ? countInp.value : 5) || 5;
   const style = styleInp ? styleInp.value : 'feedback';
+  const slotsInp = document.getElementById('genSurveySlots');
+  const slots = parseInt(slotsInp ? slotsInp.value : 100) || 100;
 
   if (btn) {
     btn.disabled = true;
@@ -1513,11 +1657,12 @@ async function generateSurveyFromTopic() {
     const res = await fetch('/api/surveys.php?action=generate_survey_questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topic, count: count, style: style })
+      body: JSON.stringify({ topic: topic, count: count, style: style, slots: slots })
     });
     const data = await res.json();
 
     if (data.status === 'success' && data.plan) {
+      if (slots) data.plan.total_slots = slots;
       lastGeneratedSurveyPlan = data.plan;
       renderGeneratedSurveyResults(data.plan);
       toast('Survey questions successfully generated!', 'success');
@@ -1526,7 +1671,7 @@ async function generateSurveyFromTopic() {
     }
   } catch (err) {
     console.warn('API generator notice, using dynamic local synthesis fallback...', err);
-    const localPlan = generateTopicQuestionsClient(topic, count, style);
+    const localPlan = generateTopicQuestionsClient(topic, count, style, slots);
     lastGeneratedSurveyPlan = localPlan;
     renderGeneratedSurveyResults(localPlan);
     toast('Survey questions generated from topic!', 'success');
@@ -1539,7 +1684,7 @@ async function generateSurveyFromTopic() {
   }
 }
 
-function generateTopicQuestionsClient(topic, count, style) {
+function generateTopicQuestionsClient(topic, count, style, slots = 100) {
   const tLower = (topic || '').toLowerCase();
   let category = 'Special Topic Survey';
   let points = 150;
@@ -1655,7 +1800,7 @@ function generateTopicQuestionsClient(topic, count, style) {
     category: category,
     description: description,
     reward_points: points,
-    total_slots: 500,
+    total_slots: parseInt(slots) || 100,
     format_type: 'word',
     questions: finalQuestions
   };
@@ -2046,17 +2191,25 @@ async function loadSurveysData() {
       return;
     }
     tbody.innerHTML = list.map(s => {
-      const left = s.remaining_slots !== undefined ? s.remaining_slots : s.total_slots;
+      const total = parseInt(s.total_slots) || 1;
+      const left = s.remaining_slots !== undefined ? Math.max(0, parseInt(s.remaining_slots)) : total;
+      const isFull = left <= 0;
       const isExp = s.expires_at && new Date(s.expires_at).getTime() < Date.now();
       const isVid = (s.format_type === 'video') || (!!s.video_url);
+
+      const slotsCell = isFull
+        ? `<span class="badge badge-rejected" style="font-weight:700;">0 / ${total} (Full)</span>`
+        : `<strong>${left}</strong> / ${total} left`;
+
       return `<tr>
         <td><strong>${esc(s.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Survey' : 'Written Survey'}</span></td>
         <td>+${s.reward_points} PTS</td>
-        <td>${left} / ${s.total_slots}</td>
+        <td>${slotsCell}</td>
         <td>${s.completions || 0}</td>
         <td>${s.expires_at ? esc(s.expires_at.replace('T', ' ')) : 'No expiry'} ${isExp ? '<span class="badge badge-rejected">Expired</span>' : ''}</td>
         <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-paused'}">${esc(s.status || 'active')}</span></td>
         <td>
+          <button class="btn btn-secondary btn-sm" onclick="promptAdjustSurveySlots('${esc(s.id)}', ${total})">Edit Slots</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleSurveyStatus('${esc(s.id)}')">${s.status === 'active' ? 'Pause' : 'Activate'}</button>
           <button class="btn btn-danger btn-sm" onclick="deleteSurvey('${esc(s.id)}')">Delete</button>
         </td>
@@ -2064,6 +2217,32 @@ async function loadSurveysData() {
     }).join('');
   } catch(err) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Failed loading surveys.</td></tr>';
+  }
+}
+
+async function promptAdjustSurveySlots(id, currentSlots) {
+  const input = prompt('Enter new participant slots (total number of persons) for this survey:', currentSlots);
+  if (input === null) return;
+  const num = parseInt(input);
+  if (isNaN(num) || num < 1) {
+    toast('Please enter a valid positive number of slots.', 'error');
+    return;
+  }
+  try {
+    const r = await fetch('/api/surveys.php?action=adjust_survey_slots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, slots: num })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Survey slots updated successfully!', 'success');
+      loadSurveysData();
+    } else {
+      toast(d.message || 'Error updating slots', 'error');
+    }
+  } catch(e) {
+    toast('Network error updating slots', 'error');
   }
 }
 
@@ -2650,6 +2829,22 @@ async function saveUserChanges() {
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
+      const userIdx = allUsersList.findIndex(x => (x.username || '').toLowerCase() === username.toLowerCase());
+      if (userIdx !== -1) {
+        allUsersList[userIdx].remaining_pts = newPoints;
+        allUsersList[userIdx].pointsBalance = newPoints;
+        allUsersList[userIdx].remaining_cash = newCash;
+        allUsersList[userIdx].cashBalance = newCash;
+        allUsersList[userIdx].role = newRole;
+        allUsersList[userIdx].status = status;
+        if (fullName) { allUsersList[userIdx].full_name = fullName; allUsersList[userIdx].fullName = fullName; }
+        if (email) allUsersList[userIdx].email = email;
+        if (phone) allUsersList[userIdx].phone = phone;
+        if (bankName) allUsersList[userIdx].bank_name = bankName;
+        if (accountNo) allUsersList[userIdx].account_number = accountNo;
+        if (accountName) allUsersList[userIdx].account_name = accountName;
+        renderUsers(allUsersList);
+      }
       toast('Member account updated successfully!', 'success');
       closeModal('modalEditUser');
       loadUsersData();
@@ -2944,6 +3139,209 @@ async function handleSavePricing(e) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS & POP-UP SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════
+let adminNotifsList = [];
+
+async function loadAdminNotificationsTab() {
+  await Promise.all([loadPopupSettingsData(), loadAdminNotifsData()]);
+}
+
+async function loadPopupSettingsData() {
+  try {
+    const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`);
+    const d = await r.json();
+    const data = d.data || d;
+    const popup = data.popup || {};
+    const enabledInput = document.getElementById('cfgPopupEnabled');
+    if (enabledInput) enabledInput.checked = !!popup.enabled;
+    const titleInput = document.getElementById('cfgPopupTitle');
+    if (titleInput) titleInput.value = popup.title || '';
+    const msgInput = document.getElementById('cfgPopupMessage');
+    if (msgInput) msgInput.value = popup.message || '';
+    const ctaLabelInput = document.getElementById('cfgPopupCtaLabel');
+    if (ctaLabelInput) ctaLabelInput.value = popup.cta_label || '';
+    const ctaUrlInput = document.getElementById('cfgPopupCtaUrl');
+    if (ctaUrlInput) ctaUrlInput.value = popup.cta_url || '';
+    const freqInput = document.getElementById('cfgPopupFrequency');
+    if (freqInput) freqInput.value = popup.frequency || 'session';
+
+    const badge = document.getElementById('popupStatusBadge');
+    if (badge) {
+      if (popup.enabled) {
+        badge.className = 'badge badge-active';
+        badge.textContent = 'Active on Dashboard';
+      } else {
+        badge.className = 'badge badge-paused';
+        badge.textContent = 'Disabled';
+      }
+    }
+  } catch(e){}
+}
+
+async function handleSavePopupSettings(e) {
+  e.preventDefault();
+  const enabled = document.getElementById('cfgPopupEnabled').checked;
+  const title = document.getElementById('cfgPopupTitle').value.trim();
+  const message = document.getElementById('cfgPopupMessage').value.trim();
+  const cta_label = document.getElementById('cfgPopupCtaLabel').value.trim();
+  const cta_url = document.getElementById('cfgPopupCtaUrl').value.trim();
+  const frequency = document.getElementById('cfgPopupFrequency').value;
+
+  const btn = document.getElementById('btnSavePopupSettings');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const r = await fetch('/api/broadcasts.php?action=save_popup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        popup: { enabled, title, message, cta_label, cta_url, frequency }
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('Pop-up settings saved successfully!', 'success');
+      loadPopupSettingsData();
+    } else {
+      toast(d.message || d.error || 'Failed to save pop-up settings', 'error');
+    }
+  } catch(e) {
+    toast('Network error saving pop-up settings', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Pop-Up Settings';
+}
+
+function previewAnnouncementPopup() {
+  const title = document.getElementById('cfgPopupTitle').value.trim() || 'Announcement Title';
+  const message = document.getElementById('cfgPopupMessage').value.trim() || 'Your announcement text will appear here.';
+  const cta_label = document.getElementById('cfgPopupCtaLabel').value.trim() || 'Action Button';
+
+  document.getElementById('prevPopupTitle').textContent = title;
+  document.getElementById('prevPopupMessage').textContent = message;
+  document.getElementById('prevPopupCtaBtn').textContent = cta_label;
+  openModal('modalPreviewPopup');
+}
+
+async function loadAdminNotifsData() {
+  const tbody = document.getElementById('adminNotifsTableBody');
+  try {
+    const r = await fetch(`/api/notifications.php?action=get&_t=${Date.now()}`);
+    const d = await r.json();
+    adminNotifsList = d.notifications || d.data || [];
+    renderAdminNotifs(adminNotifsList);
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--red);">Error loading notifications.</td></tr>';
+  }
+}
+
+function renderAdminNotifs(list) {
+  const tbody = document.getElementById('adminNotifsTableBody');
+  if (!tbody) return;
+  if (!list || !list.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt-3);">No active notifications broadcasted yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(n => {
+    const id = n.id || '';
+    const dateFormatted = n.time || (n.timestamp ? new Date(n.timestamp * 1000).toLocaleString() : 'Recent');
+    return `<tr>
+      <td><strong>${esc(n.title || 'Notification')}</strong></td>
+      <td style="max-width:320px;white-space:normal;">${esc(n.msg || n.message || '')}</td>
+      <td><span class="badge badge-active">${esc(n.category || 'system')}</span></td>
+      <td><span style="font-size:12px;color:var(--txt-2);">${esc(dateFormatted)}</span></td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="handleDeleteNotification('${esc(id)}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function handleSendNotificationBroadcast(e) {
+  e.preventDefault();
+  const title = document.getElementById('notifBroadcastTitle').value.trim();
+  const msg = document.getElementById('notifBroadcastMsg').value.trim();
+  const category = document.getElementById('notifBroadcastCategory').value;
+  const link = document.getElementById('notifBroadcastLink').value.trim() || 'dashboard.php';
+
+  const btn = document.getElementById('btnSendBroadcast');
+  btn.disabled = true; btn.textContent = 'Broadcasting...';
+
+  try {
+    const r = await fetch('/api/notifications.php?action=broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, msg, category, link, icon: category })
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('Notification broadcast sent to all users!', 'success');
+      document.getElementById('notifBroadcastTitle').value = '';
+      document.getElementById('notifBroadcastMsg').value = '';
+      document.getElementById('notifBroadcastLink').value = '';
+      loadAdminNotifsData();
+    } else {
+      toast(d.error || 'Failed to send broadcast', 'error');
+    }
+  } catch(e) {
+    toast('Network error sending broadcast', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Send Broadcast Now';
+}
+
+async function handleDeleteNotification(id) {
+  const ok = await confirmAction({
+    title: 'Delete Notification',
+    message: 'Are you sure you want to remove this notification?',
+    confirmText: 'Delete'
+  });
+  if (!ok) return;
+
+  try {
+    const r = await fetch('/api/notifications.php?action=delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('Notification removed', 'success');
+      loadAdminNotifsData();
+    } else {
+      toast(d.error || 'Failed to delete notification', 'error');
+    }
+  } catch(e) {
+    toast('Network error deleting notification', 'error');
+  }
+}
+
+async function handleClearAllNotifications() {
+  const ok = await confirmAction({
+    title: 'Clear All Notifications',
+    message: 'Are you sure you want to wipe all notifications for all users?',
+    confirmText: 'Clear All'
+  });
+  if (!ok) return;
+
+  try {
+    const r = await fetch('/api/notifications.php?action=clear_all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('All notifications cleared', 'success');
+      loadAdminNotifsData();
+    } else {
+      toast(d.error || 'Failed to clear notifications', 'error');
+    }
+  } catch(e) {
+    toast('Network error clearing notifications', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════════════════════════
 function esc(str) {
@@ -2959,6 +3357,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadWithdrawalsData();
   loadCouponsData();
   loadVendorsDropdown();
+  loadAdminNotificationsTab();
 });
 </script>
 </body>
