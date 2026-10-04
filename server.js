@@ -1442,12 +1442,34 @@ const server = http.createServer((req, res) => {
                     try { subs = JSON.parse(fs.readFileSync(subsFile, 'utf8')); } catch(e){}
                 }
 
+                // Auto-publish scheduled tasks when their publish time arrives
+                const nowMs = Date.now();
+                let tasksAutoUpdated = false;
+                tasks.forEach(t => {
+                    if (t.status === 'scheduled' && t.publish_at && new Date(t.publish_at).getTime() <= nowMs) {
+                        t.status = 'active';
+                        tasksAutoUpdated = true;
+                    }
+                });
+                if (tasksAutoUpdated) {
+                    try { fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2)); } catch(e){}
+                }
+
                 if (req.method === 'POST') {
                     if (action === 'publish_task' || action === 'create_task') {
-                        let expiresAt = parsed.expires_at || '';
+                        let publishAt = (parsed.publish_at || parsed.scheduled_at || '').trim();
+                        let isScheduled = false;
+                        if (publishAt && new Date(publishAt).getTime() > Date.now()) {
+                            isScheduled = true;
+                        } else if (!publishAt) {
+                            publishAt = new Date().toISOString();
+                        }
+
+                        let expiresAt = (parsed.expires_at || '').trim();
                         const durSec = parseInt(parsed.duration_seconds) || 0;
                         if (durSec > 0 && !expiresAt) {
-                            expiresAt = new Date(Date.now() + durSec * 1000).toISOString();
+                            const baseTime = isScheduled ? new Date(publishAt).getTime() : Date.now();
+                            expiresAt = new Date(baseTime + durSec * 1000).toISOString();
                         }
                         const totalSlots = parseInt(parsed.total_slots) || 100;
                         const formatType = parsed.format_type || (parsed.video_url || parsed.video_file ? 'video' : 'word');
@@ -1468,14 +1490,34 @@ const server = http.createServer((req, res) => {
                             proof_type: parsed.proof_type || 'screenshot',
                             require_screenshot: requireScreenshot,
                             instructions: parsed.instructions || '',
+                            publish_at: publishAt,
                             expires_at: expiresAt,
                             duration_seconds: durSec,
-                            status: 'active',
+                            status: isScheduled ? 'scheduled' : 'active',
                             created_at: new Date().toISOString()
                         };
                         tasks.unshift(newTask);
                         fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
-                        res.end(JSON.stringify({ status: 'success', message: 'Task published!', task: newTask, tasks: tasks }));
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            message: isScheduled ? 'Task scheduled for automatic auto-upload!' : 'Task published!',
+                            task: newTask,
+                            tasks: tasks
+                        }));
+                        return;
+                    } else if (action === 'publish_now') {
+                        const id = parsed.id;
+                        tasks.forEach(t => {
+                            if (t.id === id) {
+                                t.status = 'active';
+                                t.publish_at = new Date().toISOString();
+                                if (t.duration_seconds && parseInt(t.duration_seconds) > 0) {
+                                    t.expires_at = new Date(Date.now() + parseInt(t.duration_seconds) * 1000).toISOString();
+                                }
+                            }
+                        });
+                        fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Task published immediately!', tasks: tasks }));
                         return;
                     } else if (action === 'delete_task') {
                         const id = parsed.id;
@@ -1494,6 +1536,21 @@ const server = http.createServer((req, res) => {
                     } else if (action === 'submit_task_proof') {
                         const taskId = parsed.task_id || '';
                         const username = parsed.username || 'Member';
+
+                        const targetTask = tasks.find(t => t.id === taskId);
+                        if (!targetTask) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Task not found' }));
+                            return;
+                        }
+                        if (targetTask.status !== 'active') {
+                            res.end(JSON.stringify({ status: 'error', message: 'This task is not currently active for submissions.' }));
+                            return;
+                        }
+                        if (targetTask.expires_at && new Date(targetTask.expires_at).getTime() < Date.now()) {
+                            res.end(JSON.stringify({ status: 'error', message: 'This task has expired and is closed for new submissions.' }));
+                            return;
+                        }
+
                         // Prevent duplicate
                         const existing = subs.find(s => s.task_id === taskId && (s.username || '').toLowerCase() === username.toLowerCase());
                         if (existing) {
@@ -1588,10 +1645,11 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                // Default get_tasks filters active and non-expired
+                // Default get_tasks filters active, non-expired, and already published
                 const now = Date.now();
                 const activeTasks = tasks.filter(t => {
                     if ((t.status || 'active') !== 'active') return false;
+                    if (t.publish_at && new Date(t.publish_at).getTime() > now) return false;
                     if (t.expires_at && new Date(t.expires_at).getTime() < now) return false;
                     if (t.remaining_slots !== undefined && t.remaining_slots <= 0) return false;
                     return true;

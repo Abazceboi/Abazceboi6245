@@ -21,7 +21,19 @@ $input  = json_decode($raw, true) ?: $_POST;
 
 function getTasks(): array {
     $data = readStorageJson('data/tasks.json', []);
-    return is_array($data) ? $data : [];
+    $tasks = is_array($data) ? $data : [];
+    $now = time();
+    $updated = false;
+    foreach ($tasks as &$t) {
+        if (($t['status'] ?? '') === 'scheduled' && !empty($t['publish_at']) && strtotime($t['publish_at']) <= $now) {
+            $t['status'] = 'active';
+            $updated = true;
+        }
+    }
+    if ($updated) {
+        saveTasks($tasks);
+    }
+    return $tasks;
 }
 
 function saveTasks(array $tasks): void {
@@ -74,6 +86,7 @@ if ($action === 'get_tasks') {
     $now    = time();
     $active = array_values(array_filter($tasks, function ($t) use ($now) {
         if (($t['status'] ?? 'active') !== 'active') return false;
+        if (!empty($t['publish_at']) && strtotime($t['publish_at']) > $now) return false;
         if (!empty($t['expires_at']) && strtotime($t['expires_at']) < $now) return false;
         if (isset($t['remaining_slots']) && intval($t['remaining_slots']) <= 0) return false;
         return true;
@@ -112,9 +125,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $videoUrl = '';
         }
 
+        $publishAt   = trim($input['publish_at'] ?? $input['scheduled_at'] ?? '');
+        $isScheduled = false;
+        if (!empty($publishAt) && strtotime($publishAt) > time()) {
+            $isScheduled = true;
+            $status = 'scheduled';
+        } else {
+            $publishAt = date('Y-m-d H:i:s');
+            $status = 'active';
+        }
+
         // If duration given but no explicit expires_at, compute it
         if ($durationSec > 0 && !$expiresAt) {
-            $expiresAt = date('Y-m-d H:i:s', time() + $durationSec);
+            $baseTime = $isScheduled ? strtotime($publishAt) : time();
+            $expiresAt = date('Y-m-d H:i:s', $baseTime + $durationSec);
         }
 
         $requireScreenshot = isset($input['require_screenshot']) ? (bool)$input['require_screenshot'] : ($input['proof_type'] === 'screenshot');
@@ -134,15 +158,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'proof_type'       => trim($input['proof_type'] ?? 'screenshot'),
             'require_screenshot'=> $requireScreenshot,
             'instructions'     => trim($input['instructions'] ?? ''),
+            'publish_at'       => $publishAt,
             'expires_at'       => $expiresAt,
             'duration_seconds' => $durationSec,
-            'status'           => 'active',
+            'status'           => $status,
             'created_at'       => date('Y-m-d H:i:s'),
         ];
         $tasks = getTasks();
         array_unshift($tasks, $newTask);
         saveTasks($tasks);
-        echo json_encode(['status' => 'success', 'message' => 'Task published!', 'task' => $newTask]);
+        echo json_encode([
+            'status'  => 'success',
+            'message' => $isScheduled ? 'Task scheduled for automatic auto-upload!' : 'Task published!',
+            'task'    => $newTask
+        ]);
+        exit;
+    }
+
+    // ── Admin: Publish Now (For Scheduled Tasks) ────────────────────────────
+    if ($action === 'publish_now') {
+        $id    = trim($input['id'] ?? '');
+        $tasks = getTasks();
+        foreach ($tasks as &$t) {
+            if ($t['id'] === $id) {
+                $t['status'] = 'active';
+                $t['publish_at'] = date('Y-m-d H:i:s');
+                if (!empty($t['duration_seconds']) && intval($t['duration_seconds']) > 0) {
+                    $t['expires_at'] = date('Y-m-d H:i:s', time() + intval($t['duration_seconds']));
+                }
+                break;
+            }
+        }
+        saveTasks($tasks);
+        echo json_encode(['status' => 'success', 'message' => 'Task published immediately!']);
         exit;
     }
 
@@ -185,11 +233,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Check task exists and is active
+        // Check task exists, is active and not expired
         $tasks = getTasks();
         $task  = null;
         foreach ($tasks as &$t) {
             if ($t['id'] === $taskId) { $task = &$t; break; }
+        }
+
+        if (!$task) {
+            echo json_encode(['status' => 'error', 'message' => 'Task not found']);
+            exit;
+        }
+        if (($task['status'] ?? 'active') !== 'active') {
+            echo json_encode(['status' => 'error', 'message' => 'This task is not currently active for submissions.']);
+            exit;
+        }
+        if (isTaskExpired($task)) {
+            echo json_encode(['status' => 'error', 'message' => 'This task has expired and is closed for new submissions.']);
+            exit;
         }
 
         // Check already submitted

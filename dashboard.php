@@ -2367,6 +2367,21 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSurveys();
     loadNotifications();
   }, 15000);
+  setInterval(() => {
+    const timerEls = document.querySelectorAll('.item-timer[data-expires]');
+    if (!timerEls.length) return;
+    const now = Date.now();
+    timerEls.forEach(el => {
+      const exp = parseInt(el.dataset.expires, 10);
+      if (isNaN(exp)) return;
+      const diff = exp - now;
+      if (diff > 0) {
+        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${formatMs(diff)}`;
+      } else {
+        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span style="color:var(--red);">Expired</span>`;
+      }
+    });
+  }, 1000);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2700,7 +2715,22 @@ function renderTasks(list) {
     return;
   }
   const now = Date.now();
-  const html = list.map(t => {
+  const visibleTasks = list.filter(t => {
+    // Hide scheduled tasks until their auto-upload time arrives
+    if (t.status === 'scheduled' && t.publish_at && new Date(t.publish_at).getTime() > now) {
+      return false;
+    }
+    return true;
+  });
+
+  if (!visibleTasks.length) {
+    const emptyHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">No earning tasks available right now. Check back soon.</div>';
+    if (container) container.innerHTML = emptyHtml;
+    if (homeContainer) homeContainer.innerHTML = emptyHtml;
+    return;
+  }
+
+  const html = visibleTasks.map(t => {
     const isDone = doneTaskIds.includes(t.id);
     const expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
     const isExp = expTime && expTime < now;
@@ -2747,7 +2777,7 @@ function renderTasks(list) {
         ${t.description ? `<div style="font-size:12.5px;color:var(--txt-1);line-height:1.5;margin:8px 0;padding:9px 12px;background:var(--surface);border-radius:8px;border-left:3px solid ${isVideo ? 'var(--accent)' : 'var(--green)'};">${esc(t.description)}</div>` : ''}
 
         ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-bottom:8px;">${esc(t.instructions)}</div>` : ''}
-        ${timerText && !isExp ? `<div class="item-timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
+        ${timerText && !isExp ? `<div class="item-timer" data-expires="${expTime}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
         <div class="item-footer">
           <span style="font-size:11px;color:var(--txt-3);">${t.remaining_slots || t.total_slots || 0} slots left</span>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
@@ -2765,6 +2795,14 @@ function renderTasks(list) {
 function openTaskSubmission(id) {
   const t = allTasksList.find(x => x.id === id);
   if (!t) return;
+  if (t.expires_at && new Date(t.expires_at).getTime() < Date.now()) {
+    toast('This task has expired and is closed for new submissions.', 'error');
+    return;
+  }
+  if (t.status === 'scheduled' && t.publish_at && new Date(t.publish_at).getTime() > Date.now()) {
+    toast('This task is scheduled and not yet active.', 'error');
+    return;
+  }
   document.getElementById('proofTaskId').value = t.id;
   document.getElementById('proofTaskPts').value = t.reward_points;
   document.getElementById('proofTaskTitle').textContent = t.title;
@@ -3444,7 +3482,7 @@ function formatMs(ms) {
   const d = Math.floor(h / 24);
   if (d > 0) return `${d}d ${h % 24}h`;
   if (h > 0) return `${h}h ${m % 60}m`;
-  if (m > 0) return `${m}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
   return `${s}s`;
 }
 

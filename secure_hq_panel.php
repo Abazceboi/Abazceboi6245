@@ -816,14 +816,60 @@ body.sidebar-retracted .main{
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Action URL (Optional)</label>
-              <input type="url" class="form-input" id="taskActionUrl" placeholder="https://...">
+          <div class="form-group">
+            <label class="form-label">Action URL (Optional)</label>
+            <input type="url" class="form-input" id="taskActionUrl" placeholder="https://...">
+          </div>
+
+          <!-- Publishing Schedule: Immediate vs Auto-Upload Later -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+            <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:2px;">Publishing Schedule & Auto-Upload</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-bottom:12px;">Publish immediately or draft this task and set a time later for it to auto-upload automatically.</div>
+            
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1px solid var(--border-mid);border-radius:8px;cursor:pointer;">
+                <input type="radio" name="taskPublishSchedule" id="taskSchedNow" value="now" checked onchange="toggleTaskScheduleMode()">
+                <span style="font-size:13px;font-weight:600;color:var(--txt);">Publish Immediately</span>
+              </label>
+              <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1px solid var(--border-mid);border-radius:8px;cursor:pointer;">
+                <input type="radio" name="taskPublishSchedule" id="taskSchedLater" value="later" onchange="toggleTaskScheduleMode()">
+                <span style="font-size:13px;font-weight:600;color:var(--accent);">Schedule Auto-Upload</span>
+              </label>
             </div>
-            <div class="form-group">
-              <label class="form-label">Task Expiry (Optional)</label>
-              <input type="datetime-local" class="form-input" id="taskExpiresAt">
+            
+            <div id="taskScheduleDateBox" style="display:none;padding-top:10px;border-top:1px dashed var(--border);">
+              <label class="form-label" style="font-size:12px;font-weight:700;color:var(--accent);">Auto-Upload Release Date & Time</label>
+              <input type="datetime-local" class="form-input" id="taskPublishAt" onchange="applyTaskTimerPreset()">
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">This task will remain kept in queue and automatically go live on the site at this exact timestamp.</div>
+            </div>
+          </div>
+
+          <!-- Task Duration & Expiry Controls -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+            <div style="font-weight:700;font-size:13px;color:var(--txt);margin-bottom:2px;">Task Duration & Expiry Controls</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-bottom:12px;">Set a countdown timer or an exact expiry date. Once expired, the task automatically closes.</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Quick Timer Duration</label>
+                <select class="form-select" id="taskTimerPreset" onchange="applyTaskTimerPreset()">
+                  <option value="none">Custom / No Timer</option>
+                  <option value="1800">30 Minutes</option>
+                  <option value="3600">1 Hour</option>
+                  <option value="7200">2 Hours</option>
+                  <option value="14400">4 Hours</option>
+                  <option value="21600">6 Hours</option>
+                  <option value="43200">12 Hours</option>
+                  <option value="86400">24 Hours (1 Day)</option>
+                  <option value="172800">48 Hours (2 Days)</option>
+                  <option value="259200">3 Days</option>
+                  <option value="604800">7 Days</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Expiry Date & Time (Optional)</label>
+                <input type="datetime-local" class="form-input" id="taskExpiresAt">
+              </div>
             </div>
           </div>
 
@@ -862,7 +908,7 @@ body.sidebar-retracted .main{
                 <th>Reward</th>
                 <th>Slots Left</th>
                 <th>Completions</th>
-                <th>Expiry</th>
+                <th>Timing & Expiry</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -1822,11 +1868,64 @@ function setTaskFormat(fmt) {
   }
 }
 
+function toggleTaskScheduleMode() {
+  const isLater = document.getElementById('taskSchedLater')?.checked;
+  const box = document.getElementById('taskScheduleDateBox');
+  const btn = document.getElementById('btnPublishTask');
+  if (box) box.style.display = isLater ? 'block' : 'none';
+  if (btn) {
+    if (isLater) {
+      btn.textContent = currentTaskFormat === 'video' ? 'Schedule Video Task (Auto-Upload)' : 'Schedule Written Task (Auto-Upload)';
+    } else {
+      btn.textContent = currentTaskFormat === 'video' ? 'Publish Video Task' : 'Publish Written Task';
+    }
+  }
+}
+
+function applyTaskTimerPreset() {
+  const preset = document.getElementById('taskTimerPreset')?.value;
+  const expInput = document.getElementById('taskExpiresAt');
+  if (!preset || preset === 'none') return;
+  const durSec = parseInt(preset, 10);
+  if (isNaN(durSec) || durSec <= 0) return;
+
+  const isLater = document.getElementById('taskSchedLater')?.checked;
+  const pubVal = document.getElementById('taskPublishAt')?.value;
+  let baseMs = Date.now();
+  if (isLater && pubVal) {
+    const parsedPub = new Date(pubVal).getTime();
+    if (!isNaN(parsedPub)) baseMs = parsedPub;
+  }
+  const expMs = baseMs + durSec * 1000;
+  const d = new Date(expMs);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  if (expInput) expInput.value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+function formatTaskDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (d > 0) return `${d}d ${h % 24}h`;
+  if (h > 0) return `${h}h ${m % 60}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
+  return `${s}s`;
+}
+
 async function handleCreateTask(e) {
   e.preventDefault();
   const isVideo = currentTaskFormat === 'video';
   const videoUrlVal = isVideo ? (document.getElementById('taskVideoUrl').value.trim() || adminUploadedVideoUrl) : '';
   const descriptionVal = document.getElementById('taskDescription').value.trim();
+  const isLater = document.getElementById('taskSchedLater')?.checked;
+  const publishAtVal = isLater ? document.getElementById('taskPublishAt').value.trim() : '';
+  const timerPreset = document.getElementById('taskTimerPreset')?.value;
+  const durSec = (timerPreset && timerPreset !== 'none') ? parseInt(timerPreset, 10) : 0;
 
   const payload = {
     title: document.getElementById('taskTitle').value.trim(),
@@ -1839,6 +1938,8 @@ async function handleCreateTask(e) {
     proof_type: document.getElementById('taskProofType').value,
     require_screenshot: document.getElementById('taskRequireScreenshot') ? document.getElementById('taskRequireScreenshot').checked : true,
     action_url: document.getElementById('taskActionUrl').value.trim(),
+    publish_at: publishAtVal,
+    duration_seconds: durSec,
     expires_at: document.getElementById('taskExpiresAt').value,
     instructions: document.getElementById('taskInstructions').value.trim()
   };
@@ -1853,11 +1954,12 @@ async function handleCreateTask(e) {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Task published successfully!', 'success');
+      toast(d.message || 'Task published successfully!', 'success');
       document.getElementById('createTaskForm').reset();
       adminUploadedVideoUrl = '';
       if (document.getElementById('adminVideoPreviewBox')) document.getElementById('adminVideoPreviewBox').style.display = 'none';
       if (document.getElementById('videoUploadProgress')) document.getElementById('videoUploadProgress').style.display = 'none';
+      toggleTaskScheduleMode();
       loadTasksData();
     } else {
       toast(d.message || 'Error publishing task', 'error');
@@ -1866,7 +1968,7 @@ async function handleCreateTask(e) {
     toast('Network error publishing task', 'error');
   }
   btn.disabled = false;
-  btn.textContent = currentTaskFormat === 'video' ? 'Publish Video Task' : 'Publish Written Task';
+  toggleTaskScheduleMode();
 }
 
 async function loadTasksData() {
@@ -1881,24 +1983,80 @@ async function loadTasksData() {
       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--txt-3);">No tasks created yet.</td></tr>';
       return;
     }
+    const now = Date.now();
     tbody.innerHTML = tasks.map(t => {
       const left = t.remaining_slots !== undefined ? t.remaining_slots : t.total_slots;
-      const isExp = t.expires_at && new Date(t.expires_at).getTime() < Date.now();
+      const isExp = t.expires_at && new Date(t.expires_at).getTime() < now;
       const isVid = (t.format_type === 'video') || (!!(t.video_url || t.video_file));
+      const isScheduled = (t.status === 'scheduled') && t.publish_at && (new Date(t.publish_at).getTime() > now);
+
+      let timingHtml = '';
+      if (isScheduled) {
+        timingHtml = `<div style="color:var(--accent);font-weight:600;font-size:12px;">Auto-Upload:</div><div style="font-size:11px;color:var(--txt-2);">${esc(t.publish_at.replace('T', ' '))}</div>`;
+      } else if (t.expires_at) {
+        const expMs = new Date(t.expires_at).getTime();
+        const diff = expMs - now;
+        if (diff > 0) {
+          timingHtml = `<div style="font-size:12px;color:var(--green);font-weight:600;">Active (${formatTaskDuration(diff)} left)</div><div style="font-size:11px;color:var(--txt-3);">Closes: ${esc(t.expires_at.replace('T', ' '))}</div>`;
+        } else {
+          timingHtml = `<div style="font-size:12px;color:var(--red);font-weight:600;">Expired</div><div style="font-size:11px;color:var(--txt-3);">${esc(t.expires_at.replace('T', ' '))}</div>`;
+        }
+      } else {
+        timingHtml = '<span style="color:var(--txt-3);font-size:12px;">Always Open</span>';
+      }
+
+      let statusBadge = '';
+      if (isScheduled) {
+        statusBadge = '<span class="badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);">Scheduled</span>';
+      } else if (isExp) {
+        statusBadge = '<span class="badge badge-rejected">Expired</span>';
+      } else if (t.status === 'active') {
+        statusBadge = '<span class="badge badge-active">Active</span>';
+      } else {
+        statusBadge = '<span class="badge badge-paused">Paused</span>';
+      }
+
+      let actionButtons = '';
+      if (isScheduled) {
+        actionButtons = `
+          <button class="btn btn-primary btn-sm" onclick="publishTaskNow('${esc(t.id)}')" title="Publish immediately without waiting">Publish Now</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask('${esc(t.id)}')">Delete</button>
+        `;
+      } else {
+        actionButtons = `
+          <button class="btn btn-ghost btn-sm" onclick="toggleTaskStatus('${esc(t.id)}')">${t.status === 'active' ? 'Pause' : 'Activate'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask('${esc(t.id)}')">Delete</button>
+        `;
+      }
+
       return `<tr>
         <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
         <td>${esc(t.category)}</td>
         <td>+${t.reward_points} PTS</td>
         <td>${left} / ${t.total_slots}</td>
         <td>${t.completions || 0}</td>
-        <td>${t.expires_at ? esc(t.expires_at.replace('T', ' ')) : 'No expiry'} ${isExp ? '<span class="badge badge-rejected">Expired</span>' : ''}</td>
-        <td><span class="badge ${t.status === 'active' ? 'badge-active' : 'badge-paused'}">${esc(t.status || 'active')}</span></td>
-        <td>
-          <button class="btn btn-ghost btn-sm" onclick="toggleTaskStatus('${esc(t.id)}')">${t.status === 'active' ? 'Pause' : 'Activate'}</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteTask('${esc(t.id)}')">Delete</button>
-        </td>
+        <td>${timingHtml}</td>
+        <td>${statusBadge}</td>
+        <td>${actionButtons}</td>
       </tr>`;
     }).join('');
+  } catch(e){}
+}
+
+async function publishTaskNow(id) {
+  const ok = await confirmAction({ title: 'Publish Task Now', message: 'Release this scheduled task to all members immediately?' });
+  if (!ok) return;
+  try {
+    const r = await fetch('/api/tasks.php?action=publish_now', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Task published and now active for all members!', 'success');
+      loadTasksData();
+    }
   } catch(e){}
 }
 
