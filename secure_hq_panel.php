@@ -347,6 +347,21 @@ body.sidebar-retracted .main{
 .format-btn.active{border-color:var(--accent);background:rgba(59,130,246,0.09);box-shadow:0 0 0 1px var(--accent);}
 .format-btn svg{width:20px;height:20px;color:var(--accent);flex-shrink:0;}
 
+/* Toggle Switch */
+.toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{
+  position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+  background-color:var(--surface);border:1px solid var(--border-mid);
+  transition:0.22s;border-radius:24px;
+}
+.toggle-slider:before{
+  position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;
+  background-color:var(--txt-3);transition:0.22s;border-radius:50%;
+}
+.toggle-switch input:checked + .toggle-slider{background-color:var(--accent);border-color:var(--accent);}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(20px);background-color:#FFFFFF;}
+
 /* Tabs */
 .tab-content{display:none;}
 .tab-content.active{display:block;}
@@ -621,6 +636,17 @@ body.sidebar-retracted .main{
             <textarea class="form-textarea" id="svDesc" rows="4" placeholder="Enter survey questions, text details, or instructions for members to read and respond to."></textarea>
           </div>
 
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:16px 0;">
+            <div>
+              <div style="font-weight:600;font-size:13px;color:var(--txt);">Require Screenshot Upload Proof</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">When enabled, respondents must upload an image proof to complete this survey.</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="svRequireScreenshot">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
           <!-- Questions Builder (Optional) -->
           <div style="margin:16px 0;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -799,6 +825,17 @@ body.sidebar-retracted .main{
               <label class="form-label">Task Expiry (Optional)</label>
               <input type="datetime-local" class="form-input" id="taskExpiresAt">
             </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+            <div>
+              <div style="font-weight:600;font-size:13px;color:var(--txt);">Require Screenshot Upload Proof</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">When enabled, earners must attach an image screenshot as verification proof.</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="taskRequireScreenshot" checked>
+              <span class="toggle-slider"></span>
+            </label>
           </div>
 
           <div class="form-group">
@@ -1033,8 +1070,20 @@ body.sidebar-retracted .main{
             <input type="number" class="form-input" id="cfgRefComm" value="500">
           </div>
           <div class="form-group">
-            <label class="form-label">Minimum Withdrawal (₦)</label>
-            <input type="number" class="form-input" id="cfgMinWd" value="5000">
+            <label class="form-label">Minimum Points Withdrawal (Tasks & Surveys)</label>
+            <div style="position:relative;">
+              <input type="number" class="form-input" id="cfgMinPointsWd" value="1000" min="100" style="padding-right:50px;">
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">PTS</span>
+            </div>
+            <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing earned points from tasks and surveys. Pure points (1:1), zero conversion rate.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum Affiliate Cash Withdrawal (₦)</label>
+            <div style="position:relative;">
+              <input type="number" class="form-input" id="cfgMinCashWd" value="5000" min="500" style="padding-right:50px;">
+              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">₦</span>
+            </div>
+            <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing cash earnings from affiliate referrals.</div>
           </div>
           <button type="submit" class="btn btn-primary" id="btnSavePricing">Save Settings</button>
         </form>
@@ -1511,6 +1560,22 @@ function setSurveyFormat(fmt) {
     if (vidBox) vidBox.style.display = 'none';
     if (descLabel) descLabel.textContent = 'Written Survey Content & Instructions (Words)';
     if (btnPublish) btnPublish.textContent = 'Publish Written Survey';
+
+    // Disappear all video attributes when switched to word mode
+    const fileInp = document.getElementById('svVideoFileInput');
+    if (fileInp) fileInp.value = '';
+    const urlInp = document.getElementById('svVideoUrl');
+    if (urlInp) urlInp.value = '';
+    svUploadedVideoUrl = '';
+    const prevBox = document.getElementById('svVideoPreviewBox');
+    if (prevBox) prevBox.style.display = 'none';
+    const prevEl = document.getElementById('svVideoPreviewEl');
+    if (prevEl) {
+      try { prevEl.pause(); } catch(e){}
+      prevEl.src = '';
+    }
+    const progBox = document.getElementById('svVideoUploadProgress');
+    if (progBox) progBox.style.display = 'none';
   }
 }
 
@@ -1529,15 +1594,19 @@ async function handleCreateSurvey(e) {
     }];
   }
 
+  const isVideo = currentSurveyFormat === 'video';
+  const finalVideoUrl = isVideo ? (document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl) : '';
+
   const payload = {
     title: document.getElementById('svTitle').value.trim(),
     category: document.getElementById('svCategory').value.trim(),
     format_type: currentSurveyFormat,
-    video_url: currentSurveyFormat === 'video' ? (document.getElementById('svVideoUrl').value.trim() || svUploadedVideoUrl) : '',
+    video_url: finalVideoUrl,
     reward_points: parseInt(document.getElementById('svReward').value) || 150,
     total_slots: parseInt(document.getElementById('svSlots').value) || 500,
     expires_at: document.getElementById('svExpiresAt').value,
     description: document.getElementById('svDesc').value.trim(),
+    require_screenshot: document.getElementById('svRequireScreenshot') ? document.getElementById('svRequireScreenshot').checked : false,
     questions: finalQuestions
   };
 
@@ -1730,6 +1799,26 @@ function setTaskFormat(fmt) {
     if (descLabel) descLabel.textContent = 'Task Description & Details (Words)';
     if (btnPublish) btnPublish.textContent = 'Publish Written Task';
     if (proofSelect && proofSelect.value === 'video_watch') proofSelect.value = 'screenshot';
+
+    // Disappear all video attributes when switched to word mode
+    const fileInp = document.getElementById('taskVideoFileInput');
+    if (fileInp) fileInp.value = '';
+    const urlInp = document.getElementById('taskVideoUrl');
+    if (urlInp) urlInp.value = '';
+    adminUploadedVideoUrl = '';
+    const prevBox = document.getElementById('adminVideoPreviewBox');
+    if (prevBox) prevBox.style.display = 'none';
+    const prevEl = document.getElementById('adminVideoPreviewEl');
+    if (prevEl) {
+      try { prevEl.pause(); } catch(e){}
+      prevEl.src = '';
+    }
+    const progBox = document.getElementById('videoUploadProgress');
+    if (progBox) progBox.style.display = 'none';
+
+    // If category was Sponsored Video, reset to General
+    const catSel = document.getElementById('taskCategory');
+    if (catSel && catSel.value === 'Sponsored Video') catSel.value = 'General';
   }
 }
 
@@ -1748,6 +1837,7 @@ async function handleCreateTask(e) {
     reward_points: parseInt(document.getElementById('taskReward').value) || 150,
     total_slots: parseInt(document.getElementById('taskSlots').value) || 250,
     proof_type: document.getElementById('taskProofType').value,
+    require_screenshot: document.getElementById('taskRequireScreenshot') ? document.getElementById('taskRequireScreenshot').checked : true,
     action_url: document.getElementById('taskActionUrl').value.trim(),
     expires_at: document.getElementById('taskExpiresAt').value,
     instructions: document.getElementById('taskInstructions').value.trim()
@@ -2304,16 +2394,29 @@ async function loadPricingData() {
     const p = d.pricing || {};
     if (p.reg_fee) document.getElementById('cfgRegFee').value = p.reg_fee;
     if (p.ref_commission) document.getElementById('cfgRefComm').value = p.ref_commission;
-    if (p.min_withdrawal) document.getElementById('cfgMinWd').value = p.min_withdrawal;
+    if (p.min_points_withdrawal !== undefined) {
+      document.getElementById('cfgMinPointsWd').value = p.min_points_withdrawal;
+    } else if (p.min_withdrawal) {
+      document.getElementById('cfgMinPointsWd').value = p.min_withdrawal;
+    }
+    if (p.min_cash_withdrawal !== undefined) {
+      document.getElementById('cfgMinCashWd').value = p.min_cash_withdrawal;
+    } else if (p.min_withdrawal) {
+      document.getElementById('cfgMinCashWd').value = p.min_withdrawal;
+    }
   } catch(e){}
 }
 
 async function handleSavePricing(e) {
   e.preventDefault();
+  const minPts = parseFloat(document.getElementById('cfgMinPointsWd').value) || 1000;
+  const minCash = parseFloat(document.getElementById('cfgMinCashWd').value) || 5000;
   const payload = {
     reg_fee: parseFloat(document.getElementById('cfgRegFee').value) || 1000,
     ref_commission: parseFloat(document.getElementById('cfgRefComm').value) || 500,
-    min_withdrawal: parseFloat(document.getElementById('cfgMinWd').value) || 5000
+    min_points_withdrawal: minPts,
+    min_cash_withdrawal: minCash,
+    min_withdrawal: minCash
   };
   const btn = document.getElementById('btnSavePricing');
   btn.disabled = true; btn.textContent = 'Saving...';
@@ -2341,6 +2444,7 @@ function esc(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadPricingData();
   loadSurveysData();
   loadTasksData();
   loadUsersData();

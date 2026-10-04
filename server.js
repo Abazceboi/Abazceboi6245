@@ -94,7 +94,7 @@ function renderPhpFile(filePath, context = {}) {
         return '';
     });
 
-    let dynPricing = { reg_fee: 1000, ref_commission: 500, min_withdrawal: 5000 };
+    let dynPricing = { reg_fee: 1000, ref_commission: 500, min_points_withdrawal: 1000, min_cash_withdrawal: 5000, min_withdrawal: 5000 };
     try {
         const apFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
         if (fs.existsSync(apFile)) {
@@ -104,7 +104,8 @@ function renderPhpFile(filePath, context = {}) {
 
     const dynRegFee = Number(context.regFee || dynPricing.reg_fee || 1000);
     const dynRefComm = Number(context.refBonus || dynPricing.ref_commission || 500);
-    const dynMinWd = Number(context.minCashWd || dynPricing.min_withdrawal || 5000);
+    const dynMinCashWd = Number(context.minCashWd || dynPricing.min_cash_withdrawal || dynPricing.min_withdrawal || 5000);
+    const dynMinPointsWd = Number(context.minTaskWd || dynPricing.min_points_withdrawal || 1000);
 
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_NAME\)\s*\?>/g, 'INNOVATIONX');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_TAGLINE\)\s*\?>/g, 'Where SoftLife Meets High-Yield Daily Earnings');
@@ -113,8 +114,8 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, dynRegFee.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*TASK_POINTS_RATE\s*\?>/g, '150');
     content = content.replace(/<\?=\s*REFERRAL_CASH_BONUS\s*\?>/g, dynRefComm.toLocaleString('en-US'));
-    content = content.replace(/<\?=\s*number_format\(MIN_WITHDRAWAL_NAIRA\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
-    content = content.replace(/<\?=\s*MIN_WITHDRAWAL_NAIRA\s*\?>/g, String(dynMinWd));
+    content = content.replace(/<\?=\s*number_format\(MIN_WITHDRAWAL_NAIRA\)\s*\?>/g, dynMinCashWd.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*MIN_WITHDRAWAL_NAIRA\s*\?>/g, String(dynMinCashWd));
     content = content.replace(/<\?=\s*WHATSAPP_SUPPORT\s*\?>/g, '2347037765714');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
@@ -131,7 +132,7 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*number_format\(\$totalLiquidNaira,\s*2\)\s*\?>/g, Number(context.totalLiquidNaira || context.userCash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     content = content.replace(/<\?=\s*number_format\(\$ptsInNaira,\s*2\)\s*\?>/g, '0.00');
     content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, '1.00');
-    content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, dynMinCashWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$streakCount\s*\?>/g, String(context.streakCount || 1));
     content = content.replace(/<\?=\s*json_encode\(\$isActivated\)\s*\?>/g, JSON.stringify(Boolean(context.isActivated)));
     content = content.replace(/<\?=\s*json_encode\(\$welcomeShown\)\s*\?>/g, JSON.stringify(Boolean(context.welcomeShown)));
@@ -144,9 +145,9 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*number_format\(\$refBonus\)\s*\?>/g, dynRefComm.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$tasksCompleted\s*\?>/g, String(context.tasksCompleted || 0));
     content = content.replace(/<\?=\s*\$surveysCompleted\s*\?>/g, String(context.surveysCompleted || 0));
-    content = content.replace(/<\?=\s*\$minCashWd\s*\?>/g, String(dynMinWd));
-    content = content.replace(/<\?=\s*\$minTaskWd\s*\?>/g, String(dynMinWd));
-    content = content.replace(/<\?=\s*number_format\(\$minTaskWd\)\s*\?>/g, dynMinWd.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*\$minCashWd\s*\?>/g, String(dynMinCashWd));
+    content = content.replace(/<\?=\s*\$minTaskWd\s*\?>/g, String(dynMinPointsWd));
+    content = content.replace(/<\?=\s*number_format\(\$minTaskWd\)\s*\?>/g, dynMinPointsWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*json_encode\(\$referralLink\)\s*\?>/g, JSON.stringify(context.referralLink || ''));
     content = content.replace(/<\?=\s*json_encode\(\$username\)\s*\?>/g, JSON.stringify(context.username || 'Member'));
 
@@ -1451,6 +1452,7 @@ const server = http.createServer((req, res) => {
                         const totalSlots = parseInt(parsed.total_slots) || 100;
                         const formatType = parsed.format_type || (parsed.video_url || parsed.video_file ? 'video' : 'word');
                         const videoUrl = formatType === 'word' ? '' : (parsed.video_url || parsed.video_file || '');
+                        const requireScreenshot = parsed.require_screenshot !== undefined ? Boolean(parsed.require_screenshot) : (parsed.proof_type === 'screenshot');
                         const newTask = {
                             id: 'TASK-' + Math.floor(Math.random() * 900000 + 100000),
                             title: parsed.title || 'New Task',
@@ -1464,6 +1466,7 @@ const server = http.createServer((req, res) => {
                             completions: 0,
                             action_url: parsed.action_url || '',
                             proof_type: parsed.proof_type || 'screenshot',
+                            require_screenshot: requireScreenshot,
                             instructions: parsed.instructions || '',
                             expires_at: expiresAt,
                             duration_seconds: durSec,
@@ -1656,6 +1659,7 @@ const server = http.createServer((req, res) => {
                             remaining_slots: totalSlots,
                             completions: 0,
                             video_url: videoUrl,
+                            require_screenshot: Boolean(parsed.require_screenshot),
                             questions: cleanQuestions,
                             expires_at: (parsed.expires_at || '').trim(),
                             status: 'active',
@@ -1727,6 +1731,12 @@ const server = http.createServer((req, res) => {
                             return;
                         }
 
+                        const proofScr = (parsed.screenshot || parsed.proof || '').trim();
+                        if (targetSurvey.require_screenshot && !proofScr) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Screenshot proof is required to submit this survey.' }));
+                            return;
+                        }
+
                         // Grade questions
                         const questions = targetSurvey.questions || [];
                         let correctCount = 0;
@@ -1758,6 +1768,7 @@ const server = http.createServer((req, res) => {
                             total: totalQ,
                             passed: passed,
                             reward_points: rewardPts,
+                            screenshot: proofScr,
                             status: passed ? 'credited' : 'failed',
                             submitted_at: new Date().toISOString()
                         };
@@ -1851,6 +1862,8 @@ const server = http.createServer((req, res) => {
                     reg_fee: 1000,
                     ref_commission: 500,
                     vendor_wholesale: 800,
+                    min_points_withdrawal: 1000,
+                    min_cash_withdrawal: 5000,
                     min_withdrawal: 5000,
                     updated_at: new Date().toISOString()
                 };
@@ -1861,6 +1874,16 @@ const server = http.createServer((req, res) => {
                 if (req.method === 'POST' || action === 'save_pricing') {
                     pricing = Object.assign(pricing, parsed);
                     delete pricing.points_rate;
+                    if (parsed.min_points_withdrawal !== undefined) {
+                        pricing.min_points_withdrawal = parseFloat(parsed.min_points_withdrawal) || 1000;
+                    }
+                    if (parsed.min_cash_withdrawal !== undefined) {
+                        pricing.min_cash_withdrawal = parseFloat(parsed.min_cash_withdrawal) || 5000;
+                        pricing.min_withdrawal = pricing.min_cash_withdrawal;
+                    } else if (parsed.min_withdrawal !== undefined) {
+                        pricing.min_withdrawal = parseFloat(parsed.min_withdrawal) || 5000;
+                        pricing.min_cash_withdrawal = pricing.min_withdrawal;
+                    }
                     pricing.updated_at = new Date().toISOString();
                     const configDir = path.dirname(pricingFile);
                     if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
@@ -1871,8 +1894,8 @@ const server = http.createServer((req, res) => {
                         const wdFile = path.join(PUBLIC_DIR, 'config', 'withdrawal_settings.json');
                         if (fs.existsSync(wdFile)) {
                             const wdData = JSON.parse(fs.readFileSync(wdFile, 'utf8'));
-                            if (wdData.task) wdData.task.min_amount = parseFloat(pricing.min_withdrawal) || 5000;
-                            if (wdData.affiliate) wdData.affiliate.min_amount = parseFloat(pricing.min_withdrawal) || 5000;
+                            if (wdData.task) wdData.task.min_amount = parseFloat(pricing.min_points_withdrawal) || 1000;
+                            if (wdData.affiliate) wdData.affiliate.min_amount = parseFloat(pricing.min_cash_withdrawal) || 5000;
                             wdData.updated_at = new Date().toISOString();
                             fs.writeFileSync(wdFile, JSON.stringify(wdData, null, 2));
                         }
@@ -1999,7 +2022,7 @@ const server = http.createServer((req, res) => {
                         symbol: symbol,
                         name: parsed.name || symbol,
                         network: parsed.network || 'BNB Smart Chain (BEP20)',
-                        icon: parsed.icon || '🪙',
+                        icon: parsed.icon || '',
                         buy_rate: parseFloat(parsed.buy_rate) || 100,
                         sell_rate: parseFloat(parsed.sell_rate) || 90,
                         min_trade: parseFloat(parsed.min_trade) || 10,
@@ -2499,16 +2522,20 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
-                    let appMinWd = 5000;
+                    let appMinPointsWd = 1000;
+                    let appMinCashWd = 5000;
                     const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                     if (fs.existsSync(pricingFile)) {
                         try {
                             const pr = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                            if (pr.min_withdrawal) appMinWd = parseFloat(pr.min_withdrawal);
+                            if (pr.min_points_withdrawal) appMinPointsWd = parseFloat(pr.min_points_withdrawal);
+                            if (pr.min_cash_withdrawal) appMinCashWd = parseFloat(pr.min_cash_withdrawal);
+                            else if (pr.min_withdrawal) appMinCashWd = parseFloat(pr.min_withdrawal);
                         } catch(e){}
                     }
 
-                    const minAmount = parseFloat(walletSched.min_amount) || appMinWd;
+                    const defaultMin = targetWallet === 'affiliate' ? appMinCashWd : appMinPointsWd;
+                    const minAmount = parseFloat(walletSched.min_amount) || defaultMin;
                     if (amount < minAmount) {
                         const prefix = targetWallet === 'affiliate' ? '₦' : '';
                         const suffix = targetWallet === 'affiliate' ? '' : ' PTS';
@@ -4305,21 +4332,24 @@ const server = http.createServer((req, res) => {
                             context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
                         }
                         const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
-                        let appMinWd = 5000;
+                        let appMinPointsWd = 1000;
+                        let appMinCashWd = 5000;
                         let regFee = 1000;
                         let refBonus = 500;
                         if (fs.existsSync(pricingFile)) {
                             try {
                                 const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                                if (pData.min_withdrawal) appMinWd = parseFloat(pData.min_withdrawal);
+                                if (pData.min_points_withdrawal) appMinPointsWd = parseFloat(pData.min_points_withdrawal);
+                                if (pData.min_cash_withdrawal) appMinCashWd = parseFloat(pData.min_cash_withdrawal);
+                                else if (pData.min_withdrawal) appMinCashWd = parseFloat(pData.min_withdrawal);
                                 if (pData.reg_fee) regFee = parseFloat(pData.reg_fee);
                                 if (pData.ref_commission) refBonus = parseFloat(pData.ref_commission);
                             } catch(e) {}
                         }
                         context.regFee = regFee;
                         context.refBonus = refBonus;
-                        context.minCashWd = appMinWd;
-                        context.minTaskWd = appMinWd;
+                        context.minCashWd = appMinCashWd;
+                        context.minTaskWd = appMinPointsWd;
                         context.totalLiquidNaira = (context.userCash || 0);
                     } catch(e) {}
                 }

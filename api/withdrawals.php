@@ -298,14 +298,18 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $pricingFile = __DIR__ . '/../config/app_pricing.json';
-    $appMinWd = 5000.0;
+    $appMinPointsWd = 1000.0;
+    $appMinCashWd = 5000.0;
     if (file_exists($pricingFile)) {
         $pr = @json_decode(@file_get_contents($pricingFile), true);
-        if (!empty($pr['min_withdrawal'])) $appMinWd = floatval($pr['min_withdrawal']);
+        if (!empty($pr['min_points_withdrawal'])) $appMinPointsWd = floatval($pr['min_points_withdrawal']);
+        if (!empty($pr['min_cash_withdrawal'])) $appMinCashWd = floatval($pr['min_cash_withdrawal']);
+        elseif (!empty($pr['min_withdrawal'])) $appMinCashWd = floatval($pr['min_withdrawal']);
     }
 
-    $minAmount = floatval($walletSched['min_amount'] ?? $appMinWd);
-    if ($minAmount <= 0) $minAmount = $appMinWd;
+    $defaultMin = ($targetWallet === 'affiliate') ? $appMinCashWd : $appMinPointsWd;
+    $minAmount = floatval($walletSched['min_amount'] ?? $defaultMin);
+    if ($minAmount <= 0) $minAmount = $defaultMin;
     if ($amount < $minAmount) {
         $prefix = ($targetWallet === 'affiliate') ? '₦' : '';
         $suffix = ($targetWallet === 'affiliate') ? '' : ' PTS';

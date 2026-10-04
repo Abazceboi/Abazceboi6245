@@ -115,9 +115,8 @@ $refBonus    = floatval($pricing['ref_commission'] ?? 500);
 $appMinWd    = floatval($pricing['min_withdrawal'] ?? 5000);
 
 $wdFile      = __DIR__ . '/config/withdrawal_settings.json';
-$wdSettings  = file_exists($wdFile) ? @json_decode(@file_get_contents($wdFile), true) : [];
-$minCashWd   = floatval($pricing['min_withdrawal'] ?? ($wdSettings['affiliate']['min_amount'] ?? 5000));
-$minTaskWd   = floatval($pricing['min_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 5000));
+$minCashWd   = floatval($pricing['min_cash_withdrawal'] ?? ($pricing['min_withdrawal'] ?? ($wdSettings['affiliate']['min_amount'] ?? 5000)));
+$minTaskWd   = floatval($pricing['min_points_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 1000));
 
 $isAdmin     = in_array(strtolower($username), ['admin','abas6245','abazceboi']) || in_array($userRole, ['admin','super_admin']);
 $appUrl      = rtrim(APP_URL, '/');
@@ -2708,7 +2707,7 @@ function renderTasks(list) {
     const diff = expTime ? expTime - now : null;
     const timerText = diff > 0 ? formatMs(diff) : '';
     const vidSrc = (t.video_url || t.video_file || '').trim();
-    const isVideo = (t.format_type === 'video') || (!!vidSrc);
+    const isVideo = (t.format_type === 'video') && Boolean(vidSrc);
     const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
 
     let videoEmbedHtml = '';
@@ -2781,8 +2780,9 @@ function openTaskSubmission(id) {
   const vidDesc = document.getElementById('proofTaskVideoDesc');
   const btnSend = document.getElementById('btnSendProof');
   const vidSrc = (t.video_url || t.video_file || '').trim();
+  const isVideo = (t.format_type === 'video') && Boolean(vidSrc);
 
-  if (vidSrc) {
+  if (isVideo) {
     const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
     if (ytMatch) {
       vidPlayer.innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:8px;overflow:hidden;">
@@ -2807,6 +2807,13 @@ function openTaskSubmission(id) {
     btnSend.textContent = 'Submit Proof';
   }
 
+  // Handle proof screenshot upload requirement toggle
+  const needsScreenshot = (t.require_screenshot !== false) && (t.proof_type !== 'video_watch');
+  const proofUploadGroup = document.getElementById('proofUploadGroup');
+  if (proofUploadGroup) {
+    proofUploadGroup.style.display = needsScreenshot ? 'block' : 'none';
+  }
+
   openModal('modalTaskProof');
 }
 
@@ -2828,9 +2835,11 @@ async function sendTaskProof() {
   const pts = parseInt(document.getElementById('proofTaskPts').value) || 150;
   const proofUrl = document.getElementById('proofUrl').value.trim();
   const notes = document.getElementById('proofNotes').value.trim();
+  const t = allTasksList.find(x => x.id === taskId);
+  const needsScreenshot = t ? ((t.require_screenshot !== false) && (t.proof_type !== 'video_watch')) : true;
   const finalProof = proofBase64 || proofUrl;
 
-  if (!finalProof) {
+  if (needsScreenshot && !finalProof) {
     toast('Please upload a screenshot or enter a proof URL.', 'error');
     return;
   }
@@ -2838,7 +2847,6 @@ async function sendTaskProof() {
   btn.disabled = true; btn.textContent = 'Submitting...';
 
   try {
-    const t = allTasksList.find(x => x.id === taskId);
     const r = await fetch('/api/tasks.php?action=submit_task_proof', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2846,7 +2854,7 @@ async function sendTaskProof() {
         task_id: taskId,
         task_title: t ? t.title : 'Task',
         username: CURRENT_USER,
-        proof_url: finalProof,
+        proof_url: finalProof || 'Completed directly',
         notes: notes,
         reward_points: pts
       })
@@ -2875,6 +2883,22 @@ let doneSurveyIds = JSON.parse(localStorage.getItem('ix_done_surveys') || '[]');
 let activeSurvey = null;
 let surveyAnswers = {};
 let surveyStep = 0;
+let surveyProofBase64 = '';
+
+function handleSurveyProofImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('File too large (max 5MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    surveyProofBase64 = ev.target.result;
+    const prevImg = document.getElementById('surveyProofPreviewImg');
+    const prevBox = document.getElementById('surveyProofPreviewBox');
+    if (prevImg) prevImg.src = surveyProofBase64;
+    if (prevBox) prevBox.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
 
 async function loadSurveys() {
   const cached = localStorage.getItem('ix_cached_surveys');
@@ -2930,7 +2954,7 @@ function renderSurveys(list) {
     const expTime = s.expires_at ? new Date(s.expires_at).getTime() : null;
     const isExp = expTime && expTime < now;
     const qCount = (s.questions || []).length;
-    const isVideo = (s.format_type === 'video') || (!!s.video_url);
+    const isVideo = (s.format_type === 'video') && Boolean(s.video_url);
 
     const formatBadge = isVideo
       ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Video Survey</span>'
@@ -2969,6 +2993,7 @@ function startSurvey(id) {
   activeSurvey = s;
   surveyAnswers = {};
   surveyStep = 0;
+  surveyProofBase64 = '';
   renderSurveyStep();
   openModal('modalSurveyRunner');
 }
@@ -2979,7 +3004,8 @@ function renderSurveyStep() {
   const footer = document.getElementById('surveyRunnerFooter');
   const nextBtn = document.getElementById('btnSurveyNext');
   const questions = activeSurvey.questions || [];
-  const isVideo = (activeSurvey.format_type === 'video') || (!!activeSurvey.video_url);
+  const isVideo = (activeSurvey.format_type === 'video') && Boolean(activeSurvey.video_url);
+  const needsScreenshot = Boolean(activeSurvey.require_screenshot);
 
   document.getElementById('surveyRunnerTitle').textContent = (isVideo ? 'Video Survey: ' : 'Written Survey: ') + activeSurvey.title;
 
@@ -3003,15 +3029,40 @@ function renderSurveyStep() {
         <div style="font-size:13px;color:var(--txt-2);line-height:1.6;padding:12px;background:var(--surface);border-radius:8px;border-left:3px solid ${isVideo ? 'var(--accent)' : 'var(--purple)'};white-space:pre-wrap;">${esc(activeSurvey.description)}</div>
       </div>`;
     }
+
+    if (!questions.length && needsScreenshot) {
+      html += `
+        <div style="margin:14px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--txt-1);margin-bottom:6px;">Upload Proof Screenshot (Required)</div>
+          <input type="file" id="surveyProofFile" accept="image/*" class="form-input" onchange="handleSurveyProofImage(event)">
+          <div id="surveyProofPreviewBox" style="margin-top:8px;${surveyProofBase64 ? 'display:block;' : 'display:none;'}">
+            <img id="surveyProofPreviewImg" src="${surveyProofBase64 || ''}" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--border);">
+          </div>
+        </div>
+      `;
+    }
+
     html += `<div style="font-size:12px;color:var(--txt-3);background:var(--surface);padding:10px;border-radius:8px;">
       ${questions.length ? `Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.` : `Review and submit to claim <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.`}
     </div>`;
     body.innerHTML = html;
-    nextBtn.textContent = questions.length ? (isVideo ? 'Begin Quiz' : 'Answer Questions') : 'Complete & Earn';
-    nextBtn.onclick = () => {
-      if (!questions.length) submitSurveyAnswers();
-      else { surveyStep = 1; renderSurveyStep(); }
-    };
+
+    if (!questions.length) {
+      nextBtn.textContent = 'Submit Survey & Earn';
+      nextBtn.onclick = () => {
+        if (needsScreenshot && !surveyProofBase64) {
+          toast('Please upload a screenshot proof before submitting.', 'error');
+          return;
+        }
+        submitSurveyAnswers();
+      };
+    } else {
+      nextBtn.textContent = isVideo ? 'Begin Quiz' : 'Answer Questions';
+      nextBtn.onclick = () => {
+        surveyStep = 1;
+        renderSurveyStep();
+      };
+    }
     return;
   }
 
@@ -3032,11 +3083,45 @@ function renderSurveyStep() {
       </div>
     `;
     const isLast = qIdx === questions.length - 1;
-    nextBtn.textContent = isLast ? 'Submit Survey' : 'Next Question';
+    if (isLast && needsScreenshot) {
+      nextBtn.textContent = 'Next: Attach Screenshot';
+      nextBtn.onclick = () => {
+        if (surveyAnswers[q.id] === undefined) { toast('Please choose an answer.', 'error'); return; }
+        surveyStep++;
+        renderSurveyStep();
+      };
+    } else {
+      nextBtn.textContent = isLast ? 'Submit Survey' : 'Next Question';
+      nextBtn.onclick = () => {
+        if (surveyAnswers[q.id] === undefined) { toast('Please choose an answer.', 'error'); return; }
+        if (isLast) submitSurveyAnswers();
+        else { surveyStep++; renderSurveyStep(); }
+      };
+    }
+    return;
+  }
+
+  // Step N+1: Screenshot proof step (if questions exist and needsScreenshot is true)
+  if (needsScreenshot) {
+    body.innerHTML = `
+      <div style="font-size:11px;color:var(--txt-3);margin-bottom:8px;">Final Step: Verification Proof</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">Attach Screenshot Proof</div>
+      <div style="font-size:12.5px;color:var(--txt-2);line-height:1.5;margin-bottom:14px;">This survey requires a screenshot upload as proof of completion. Please attach your image below.</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+        <label class="form-label" style="font-size:12px;font-weight:700;">Select Screenshot Image</label>
+        <input type="file" id="surveyProofFile" accept="image/*" class="form-input" onchange="handleSurveyProofImage(event)">
+        <div id="surveyProofPreviewBox" style="margin-top:8px;${surveyProofBase64 ? 'display:block;' : 'display:none;'}">
+          <img id="surveyProofPreviewImg" src="${surveyProofBase64 || ''}" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--border);">
+        </div>
+      </div>
+    `;
+    nextBtn.textContent = 'Submit Survey';
     nextBtn.onclick = () => {
-      if (surveyAnswers[q.id] === undefined) { toast('Please choose an answer.', 'error'); return; }
-      if (isLast) submitSurveyAnswers();
-      else { surveyStep++; renderSurveyStep(); }
+      if (!surveyProofBase64) {
+        toast('Please upload your proof screenshot.', 'error');
+        return;
+      }
+      submitSurveyAnswers();
     };
   }
 }
@@ -3048,7 +3133,7 @@ function pickAnswer(qId, idx) {
 
 async function submitSurveyAnswers() {
   const nextBtn = document.getElementById('btnSurveyNext');
-  nextBtn.disabled = true; nextBtn.textContent = 'Grading...';
+  nextBtn.disabled = true; nextBtn.textContent = 'Submitting...';
   try {
     const r = await fetch('/api/surveys.php?action=submit_survey', {
       method: 'POST',
@@ -3056,7 +3141,8 @@ async function submitSurveyAnswers() {
       body: JSON.stringify({
         survey_id: activeSurvey.id,
         username: CURRENT_USER,
-        answers: surveyAnswers
+        answers: surveyAnswers,
+        screenshot: surveyProofBase64
       })
     });
     const d = await r.json();
@@ -3162,7 +3248,7 @@ function proceedToWithdrawalConfirm() {
   const type = document.getElementById('wdWalletType').value;
   const amount = parseFloat(document.getElementById('wdAmount').value);
   const minCash = parseFloat(document.getElementById('dataMinCashWd')?.dataset.min || 5000);
-  const minTask = parseFloat(document.getElementById('dataMinTaskWd')?.dataset.min || 5000);
+  const minTask = parseFloat(document.getElementById('dataMinTaskWd')?.dataset.min || 1000);
   const min = type === 'cash' ? minCash : minTask;
   const prefix = type === 'cash' ? '₦' : '';
   const suffix = type === 'cash' ? '' : ' PTS';

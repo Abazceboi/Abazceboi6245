@@ -194,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'remaining_slots'  => $totalSlots,
             'completions'      => 0,
             'video_url'        => $videoUrl,
+            'require_screenshot'=> !empty($input['require_screenshot']),
             'questions'        => $cleanQuestions,
             'expires_at'       => $expiresAt,
             'status'           => 'active',
@@ -313,6 +314,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        $screenshot = trim($input['screenshot'] ?? $input['proof'] ?? '');
+        if (!empty($survey['require_screenshot']) && empty($screenshot)) {
+            echo json_encode(['status' => 'error', 'message' => 'Screenshot proof is required to submit this survey.']);
+            exit;
+        }
+
         // Grade the answers
         $questions   = $survey['questions'] ?? [];
         $totalQ      = count($questions);
@@ -352,6 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'total'         => $totalQ,
             'passed'        => $passed,
             'reward_points' => $rewardPoints,
+            'screenshot'    => $screenshot,
             'status'        => $passed ? 'credited' : 'failed',
             'submitted_at'  => date('Y-m-d H:i:s'),
         ];

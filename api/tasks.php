@@ -117,6 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $expiresAt = date('Y-m-d H:i:s', time() + $durationSec);
         }
 
+        $requireScreenshot = isset($input['require_screenshot']) ? (bool)$input['require_screenshot'] : ($input['proof_type'] === 'screenshot');
+
         $newTask = [
             'id'               => 'TASK-' . strtoupper(substr(uniqid(), -6)),
             'title'            => $title ?: 'New Task',
@@ -130,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'completions'      => 0,
             'action_url'       => trim($input['action_url'] ?? ''),
             'proof_type'       => trim($input['proof_type'] ?? 'screenshot'),
+            'require_screenshot'=> $requireScreenshot,
             'instructions'     => trim($input['instructions'] ?? ''),
             'expires_at'       => $expiresAt,
             'duration_seconds' => $durationSec,
