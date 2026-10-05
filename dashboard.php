@@ -1625,27 +1625,21 @@ input,textarea,select{font-family:var(--ff);}
 
   <!-- ══ TAB: HOME / OVERVIEW ═════════════════════════════════════════════ -->
   <div id="tab-home" class="tab-panel active">
-    <div class="stats-grid">
+    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));">
       <div class="stat-card">
         <div class="stat-label">Points Balance</div>
         <div class="stat-value" id="statPtsOverview" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
+        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Task points &amp; platform credits</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Cash Balance</div>
         <div class="stat-value" id="statCashOverview" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Tasks Completed</div>
-        <div class="stat-value" style="color:var(--amber);"><?= $tasksCompleted ?></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Surveys Completed</div>
-        <div class="stat-value" style="color:var(--purple);"><?= $surveysCompleted ?></div>
+        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Affiliate commissions &amp; cash wallet</div>
       </div>
     </div>
 
     <!-- Referral Link Box on Overview (Clean, No unnecessary subtexts) -->
-    <div class="card">
+    <div class="card" style="margin-bottom:20px;">
       <div class="card-title">Your Referral Link</div>
       <div class="ref-box" style="margin-top:12px;margin-bottom:0;">
         <input type="text" id="homeRefInput" readonly value="<?= htmlspecialchars($referralLink) ?>">
@@ -1653,31 +1647,54 @@ input,textarea,select{font-family:var(--ff);}
       </div>
     </div>
 
-    <!-- Live Available Tasks & Video Gigs on Home Feed -->
-    <div style="margin-top:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div>
-          <h2 style="font-size:16px;font-weight:700;">Available Earning Gigs & Videos</h2>
-          <p style="font-size:12px;color:var(--txt-3);">Watch video streams or complete written tasks for instant point credits.</p>
+    <!-- Clean Quick Navigation Portals -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-top:8px;">
+      <div class="card" style="margin-bottom:0;cursor:pointer;transition:transform 0.2s, border-color 0.2s;" onclick="switchTab('tasks')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--txt);">Earning Tasks</div>
+            <div style="font-size:11.5px;color:var(--txt-3);">Watch video streams &amp; tasks</div>
+          </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="switchTab('tasks')">View All Tasks</button>
       </div>
-      <div id="homeTasksContainer" class="items-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt-3);">Loading tasks...</div>
-      </div>
-    </div>
 
-    <!-- Live Available Surveys (Word & Video) on Home Feed -->
-    <div style="margin-top:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div>
-          <h2 style="font-size:16px;font-weight:700;">Available Surveys (Written & Video)</h2>
-          <p style="font-size:12px;color:var(--txt-3);">Participate in written questionnaires and video feedback sessions.</p>
+      <div class="card" style="margin-bottom:0;cursor:pointer;transition:transform 0.2s, border-color 0.2s;" onclick="switchTab('surveys')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);display:flex;align-items:center;justify-content:center;color:var(--purple);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--txt);">Survey Hub</div>
+            <div style="font-size:11.5px;color:var(--txt-3);">Written &amp; video feedback</div>
+          </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="switchTab('surveys')">View All Surveys</button>
       </div>
-      <div id="homeSurveysContainer" class="items-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt-3);">Loading surveys...</div>
+
+      <div class="card" style="margin-bottom:0;cursor:pointer;transition:transform 0.2s, border-color 0.2s;" onclick="switchTab('ecosystem')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:center;color:var(--green);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--txt);">Ecosystem</div>
+            <div style="font-size:11.5px;color:var(--txt-3);">Opportunities &amp; products</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0;cursor:pointer;transition:transform 0.2s, border-color 0.2s;" onclick="switchTab('wallet')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(234,179,8,0.12);border:1px solid rgba(234,179,8,0.25);display:flex;align-items:center;justify-content:center;color:var(--amber);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;color:var(--txt);">Wallet &amp; Payouts</div>
+            <div style="font-size:11.5px;color:var(--txt-3);">Request bank settlement</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
