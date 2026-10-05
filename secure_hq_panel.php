@@ -504,9 +504,14 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-sub">Active opportunities</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Ecosystem Activity</div>
-          <div class="stat-value" id="kpiOverviewEcoEngagements" style="color:var(--green);font-size:18px;">0</div>
-          <div class="stat-sub">Total views and likes</div>
+          <div class="stat-label">Ecosystem Views</div>
+          <div class="stat-value" id="kpiOverviewEcoViews" style="color:var(--blue);">0</div>
+          <div class="stat-sub">Total opportunity views</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ecosystem Likes</div>
+          <div class="stat-value" id="kpiOverviewEcoLikes" style="color:#ef4444;">0</div>
+          <div class="stat-sub">Total opportunity likes</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Coupon PINs</div>
@@ -3939,13 +3944,13 @@ async function loadAdminOverview() {
     const d = await r.json();
     const items = d.items || [];
     const ecoCountEl = document.getElementById('kpiOverviewEcoListings');
-    const ecoEngageEl = document.getElementById('kpiOverviewEcoEngagements');
+    const ecoViewsEl = document.getElementById('kpiOverviewEcoViews');
+    const ecoLikesEl = document.getElementById('kpiOverviewEcoLikes');
     if (ecoCountEl) ecoCountEl.textContent = items.length;
-    if (ecoEngageEl) {
-      const totalViews = items.reduce((sum, it) => sum + (parseInt(it.views) || 0), 0);
-      const totalLikes = items.reduce((sum, it) => sum + (Array.isArray(it.likes) ? it.likes.length : (parseInt(it.likes_count) || 0)), 0);
-      ecoEngageEl.textContent = `${totalViews} views / ${totalLikes} likes`;
-    }
+    const totalViews = items.reduce((sum, it) => sum + (parseInt(it.views) || 0), 0);
+    const totalLikes = items.reduce((sum, it) => sum + (Array.isArray(it.likes) ? it.likes.length : (parseInt(it.likes_count) || 0)), 0);
+    if (ecoViewsEl) ecoViewsEl.textContent = totalViews.toLocaleString();
+    if (ecoLikesEl) ecoLikesEl.textContent = totalLikes.toLocaleString();
   } catch(e) {}
 
   // Update coupon stats
