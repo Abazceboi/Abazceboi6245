@@ -1020,10 +1020,6 @@ input,textarea,select{font-family:var(--ff);}
               <input type="number" class="form-input" id="taskReward" value="150" min="10" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Total Slots</label>
-              <input type="number" class="form-input" id="taskSlots" value="250" min="1" required>
-            </div>
-            <div class="form-group">
               <label class="form-label">
                 <span>Proof Requirement</span>
                 <span class="label-hint">Verification Mode</span>
@@ -1131,7 +1127,6 @@ input,textarea,select{font-family:var(--ff);}
                 <th>Title</th>
                 <th>Category</th>
                 <th>Reward</th>
-                <th>Slots Left</th>
                 <th>Completions</th>
                 <th>Timing & Expiry</th>
                 <th>Status</th>
@@ -1139,7 +1134,7 @@ input,textarea,select{font-family:var(--ff);}
               </tr>
             </thead>
             <tbody id="tasksTableBody">
-              <tr><td colspan="8" style="text-align:center;padding:20px;">Loading tasks...</td></tr>
+              <tr><td colspan="7" style="text-align:center;padding:20px;">Loading tasks...</td></tr>
             </tbody>
           </table>
         </div>
@@ -2910,7 +2905,6 @@ async function handleCreateTask(e) {
     video_url: videoUrlVal,
     description: descriptionVal,
     reward_points: parseInt(document.getElementById('taskReward').value) || 150,
-    total_slots: parseInt(document.getElementById('taskSlots').value) || 250,
     proof_type: document.getElementById('taskProofType').value,
     require_screenshot: document.getElementById('taskRequireScreenshot') ? document.getElementById('taskRequireScreenshot').checked : true,
     action_url: document.getElementById('taskActionUrl').value.trim(),
@@ -3009,7 +3003,6 @@ async function loadTasksData() {
         <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
         <td>${esc(t.category)}</td>
         <td>+${t.reward_points} PTS</td>
-        <td>${left} / ${t.total_slots}</td>
         <td>${t.completions || 0}</td>
         <td>${timingHtml}</td>
         <td>${statusBadge}</td>

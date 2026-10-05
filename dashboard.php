@@ -1666,8 +1666,7 @@ input,textarea,select{font-family:var(--ff);}
   <div id="tab-surveys" class="tab-panel">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div>
-        <h2 style="font-size:18px;font-weight:700;">Surveys & Quizzes</h2>
-        <p style="font-size:12px;color:var(--txt-3);">Watch video materials and answer questions to earn instant point rewards.</p>
+        <h2 style="font-size:18px;font-weight:700;">Surveys</h2>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="loadSurveys()">Refresh</button>
     </div>
@@ -3171,10 +3170,14 @@ function renderTasks(list) {
 
   const html = visibleTasks.map(t => {
     const isDone = doneTaskIds.includes(t.id);
-    const expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
-    const isExp = expTime && expTime < now;
-    const diff = expTime ? expTime - now : null;
-    const timerText = diff > 0 ? formatMs(diff) : '';
+    let expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
+    if (!expTime || isNaN(expTime)) {
+      const createdMs = t.created_at ? new Date(t.created_at).getTime() : now;
+      expTime = createdMs + (48 * 3600 * 1000);
+    }
+    const isExp = expTime < now;
+    const diff = expTime - now;
+    const timerText = diff > 0 ? formatMs(diff) : 'Expired';
     const vidSrc = (t.video_url || t.video_file || '').trim();
     const isVideo = (t.format_type === 'video') && Boolean(vidSrc);
     const ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
@@ -3205,9 +3208,7 @@ function renderTasks(list) {
           <div class="item-pts">+${t.reward_points} PTS</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <span class="item-tag">${esc(t.category || (isVideo ? 'Sponsored Video' : 'General'))}</span>
           ${formatBadge}
-          <span class="item-tag">${esc(t.proof_type || (isVideo ? 'Watch on Site' : 'Verification Proof'))}</span>
           ${t.action_url ? '<span class="item-tag" style="color:var(--accent);font-weight:700;">Link Visit Required</span>' : ''}
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
@@ -3217,9 +3218,12 @@ function renderTasks(list) {
         ${t.description ? `<div style="font-size:12.5px;color:var(--txt-1);line-height:1.5;margin:8px 0;padding:9px 12px;background:var(--surface);border-radius:8px;border-left:3px solid ${isVideo ? 'var(--accent)' : 'var(--green)'};">${esc(t.description)}</div>` : ''}
 
         ${t.instructions ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-bottom:8px;">${esc(t.instructions)}</div>` : ''}
-        ${timerText && !isExp ? `<div class="item-timer" data-expires="${expTime}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${timerText}</div>` : ''}
+        
         <div class="item-footer">
-          <span style="font-size:11px;color:var(--txt-3);">${t.remaining_slots || t.total_slots || 0} slots left</span>
+          <div class="item-timer" data-expires="${expTime}" style="font-size:12px;color:var(--amber);font-weight:600;display:inline-flex;align-items:center;gap:5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${isExp ? '<span style="color:var(--red);">Expired</span>' : `Closes in ${timerText}`}
+          </div>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
                    : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
                    : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">${isVideo ? 'Watch & Complete' : 'Start Task'}</button>`)}
@@ -3603,10 +3607,8 @@ function renderSurveys(list) {
           <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} PTS</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <span class="item-tag">${esc(s.category || (isVideo ? 'Video Survey' : 'Written Survey'))}</span>
           ${formatBadge}
-          ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : '<span class="item-tag">Direct Words Survey</span>'}
-          ${slotTag}
+          ${qCount ? `<span class="item-tag">${qCount} Questions</span>` : ''}
           ${isExp ? '<span class="item-tag" style="color:var(--red);">Expired</span>' : ''}
         </div>
         ${s.description ? `<div style="font-size:12px;color:var(--txt-2);line-height:1.5;margin-top:8px;">${esc(s.description)}</div>` : ''}
