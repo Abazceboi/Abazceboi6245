@@ -409,18 +409,18 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 
   <nav class="nav-section">
-    <div class="nav-label">Core Management</div>
+    <div class="nav-label">Management</div>
     <button class="nav-item active" onclick="switchAdminTab('overview', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard Overview
+      Overview
     </button>
     <button class="nav-item" onclick="switchAdminTab('surveys', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-      Surveys Hub
+      Surveys
     </button>
     <button class="nav-item" onclick="switchAdminTab('tasks', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Tasks & Gigs Hub
+      Tasks & Gigs
     </button>
     <button class="nav-item" onclick="switchAdminTab('ecosystem', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -428,7 +428,7 @@ input,textarea,select{font-family:var(--ff);}
     </button>
     <button class="nav-item" onclick="switchAdminTab('users', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Users & Ledgers
+      Users
     </button>
     <button class="nav-item" onclick="switchAdminTab('coupons', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
@@ -436,17 +436,17 @@ input,textarea,select{font-family:var(--ff);}
     </button>
     <button class="nav-item" onclick="switchAdminTab('withdrawals', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Payout Approvals
+      Withdrawals
     </button>
 
     <div class="nav-label">System</div>
     <button class="nav-item" onclick="switchAdminTab('notifications', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Notifications & Popups
+      Notifications
     </button>
     <button class="nav-item" onclick="switchAdminTab('pricing', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-      Rates & Settings
+      Pricing & Rates
     </button>
   </nav>
 
@@ -465,7 +465,7 @@ input,textarea,select{font-family:var(--ff);}
     <button class="hamburger-btn" id="sidebarToggleBtn" onclick="toggleSidebarFull()" title="Toggle Navigation Menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="15" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
-    <span class="topbar-title" id="adminTopbarTitle">Dashboard Overview</span>
+    <span class="topbar-title" id="adminTopbarTitle">Overview</span>
     <div class="topbar-actions">
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -477,8 +477,7 @@ input,textarea,select{font-family:var(--ff);}
 
     <!-- ══ TAB: OVERVIEW ═══════════════════════════════════════════════════ -->
     <div id="tab-overview" class="tab-content active">
-      <!-- Top Primary KPI Grid -->
-      <div class="stats-grid">
+      <div class="stats-grid" style="margin-bottom:24px;">
         <div class="stat-card">
           <div class="stat-label">Total Users</div>
           <div class="stat-value" id="kpiUsers" style="color:var(--accent);">0</div>
@@ -487,189 +486,32 @@ input,textarea,select{font-family:var(--ff);}
         <div class="stat-card">
           <div class="stat-label">Active Tasks</div>
           <div class="stat-value" id="kpiTasks" style="color:var(--green);">0</div>
-          <div class="stat-sub">Running earning tasks</div>
+          <div class="stat-sub">Available tasks</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Active Surveys</div>
           <div class="stat-value" id="kpiSurveys" style="color:var(--purple);">0</div>
-          <div class="stat-sub">Published questionnaires</div>
+          <div class="stat-sub">Available surveys</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Pending Payouts</div>
           <div class="stat-value" id="kpiPayouts" style="color:var(--amber);">0</div>
           <div class="stat-sub">Withdrawals awaiting review</div>
         </div>
-      </div>
-
-      <!-- Secondary Ecosystem & Platform Volume Stats -->
-      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));margin-bottom:24px;">
-        <div class="stat-card" style="border-left:3px solid var(--accent);">
+        <div class="stat-card">
           <div class="stat-label">Ecosystem Listings</div>
-          <div class="stat-value" id="kpiOverviewEcoListings" style="font-size:20px;color:var(--txt);">0</div>
-          <div class="stat-sub">Official and member opportunities</div>
+          <div class="stat-value" id="kpiOverviewEcoListings" style="color:var(--txt);">0</div>
+          <div class="stat-sub">Active opportunities</div>
         </div>
-        <div class="stat-card" style="border-left:3px solid var(--green);">
-          <div class="stat-label">Ecosystem Engagements</div>
-          <div class="stat-value" id="kpiOverviewEcoEngagements" style="font-size:20px;color:var(--green);">0</div>
-          <div class="stat-sub">Total views and likes logged</div>
+        <div class="stat-card">
+          <div class="stat-label">Ecosystem Activity</div>
+          <div class="stat-value" id="kpiOverviewEcoEngagements" style="color:var(--green);font-size:18px;">0</div>
+          <div class="stat-sub">Total views and likes</div>
         </div>
-        <div class="stat-card" style="border-left:3px solid var(--purple);">
-          <div class="stat-label">Coupon PINs In Pool</div>
-          <div class="stat-value" id="kpiOverviewCoupons" style="font-size:20px;color:var(--purple);">0</div>
-          <div class="stat-sub">Active and redeemed PIN codes</div>
-        </div>
-        <div class="stat-card" style="border-left:3px solid #38BDF8;">
-          <div class="stat-label">System Security</div>
-          <div class="stat-value" style="font-size:20px;color:#38BDF8;">Protected</div>
-          <div class="stat-sub">Automated ledger and anti-fraud</div>
-        </div>
-      </div>
-
-      <!-- Quick Action Command Shortcuts -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:14px;">
-          <div>
-            <div class="card-title" style="font-size:15px;font-weight:700;">Executive Control Hub</div>
-            <div class="card-sub">Direct access to core administrative functions</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:12px;">
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('withdrawals')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(245,158,11,0.12);color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Review Payouts</div>
-              <div style="font-size:11px;color:var(--txt-3);">Approve pending requests</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('surveys')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(168,85,247,0.12);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Manage Surveys</div>
-              <div style="font-size:11px;color:var(--txt-3);">Slots, templates &amp; questions</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('tasks')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Tasks &amp; Gigs</div>
-              <div style="font-size:11px;color:var(--txt-3);">Add gigs &amp; verify proofs</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('ecosystem')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Ecosystem Control</div>
-              <div style="font-size:11px;color:var(--txt-3);">Fees, posts, views &amp; likes</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('users')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(14,165,233,0.12);color:#0EA5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">User Directory</div>
-              <div style="font-size:11px;color:var(--txt-3);">Edit balances &amp; ledgers</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('coupons')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(236,72,153,0.12);color:#EC4899;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Coupon PINs</div>
-              <div style="font-size:11px;color:var(--txt-3);">Generate &amp; assign PINs</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('notifications')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(249,115,22,0.12);color:#F97316;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Broadcasts &amp; Popups</div>
-              <div style="font-size:11px;color:var(--txt-3);">Dashboard announcements</div>
-            </div>
-          </button>
-
-          <button type="button" class="btn btn-secondary" onclick="switchAdminTab('pricing')" style="padding:12px 14px;justify-content:flex-start;gap:12px;">
-            <div style="width:34px;height:34px;border-radius:8px;background:rgba(100,116,139,0.12);color:#94A3B8;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-            </div>
-            <div style="text-align:left;">
-              <div style="font-weight:700;font-size:13px;color:var(--txt);">Rates &amp; Limits</div>
-              <div style="font-size:11px;color:var(--txt-3);">Withdrawal thresholds</div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Live Pending Payouts Action Queue -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:12px;">
-          <div>
-            <div class="card-title" style="font-size:15px;font-weight:700;">Pending Bank Payouts Awaiting Action</div>
-            <div class="card-sub">Review and settle withdrawal requests in real time</div>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('withdrawals')">View All Withdrawals</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Amount</th>
-                <th>Source Wallet</th>
-                <th>Bank &amp; Account</th>
-                <th>Request Time</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="overviewPayoutsTableBody">
-              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt-3);">Loading pending payouts...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Recent Member Registrations -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:12px;">
-          <div>
-            <div class="card-title" style="font-size:15px;font-weight:700;">Recent Registered Members</div>
-            <div class="card-sub">Latest user registrations and account balances</div>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('users')">Manage All Users</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Full Name</th>
-                <th>Contact</th>
-                <th>Points Balance</th>
-                <th>Cash Balance</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="overviewUsersTableBody">
-              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">Loading recent members...</td></tr>
-            </tbody>
-          </table>
+        <div class="stat-card">
+          <div class="stat-label">Coupon PINs</div>
+          <div class="stat-value" id="kpiOverviewCoupons" style="color:var(--purple);">0</div>
+          <div class="stat-sub">Available and redeemed PINs</div>
         </div>
       </div>
     </div>
@@ -1166,13 +1008,15 @@ input,textarea,select{font-family:var(--ff);}
           </table>
         </div>
       </div>
-    <!-- ══ TAB: ECOSYSTEM ══════════════════════════════════════════════ -->
+    </div>
+
+    <!-- ══ TAB: ECOSYSTEM ════════════════════════════════════════════════ -->
     <div id="tab-ecosystem" class="tab-content">
       <!-- Top header with actions -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
         <div>
-          <div style="font-size:18px;font-weight:700;color:var(--txt);">Innovation Ecosystem Control</div>
-          <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Publish official verified opportunities, moderate member submissions, and control listing fees.</div>
+          <div style="font-size:18px;font-weight:700;color:var(--txt);">Innovation Ecosystem</div>
+          <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Publish official opportunities, moderate submissions, and manage listing fees.</div>
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-primary" onclick="openAdminPostEcoModal()" style="display:flex;align-items:center;gap:6px;">
@@ -1438,7 +1282,7 @@ input,textarea,select{font-family:var(--ff);}
     <div id="tab-pricing" class="tab-content">
       <div class="card" style="max-width:600px;">
         <div class="card-header">
-          <div class="card-title">Platform Rates & Commission Engine</div>
+          <div class="card-title">Platform Rates & Commission</div>
         </div>
         <form onsubmit="handleSavePricing(event)">
           <div class="form-group">
@@ -1971,15 +1815,15 @@ function switchAdminTab(tab, btn) {
   });
   if (btn && btn.classList.contains('nav-item')) btn.classList.add('active');
   const titles = {
-    overview: 'Dashboard Overview',
-    surveys: 'Surveys Hub',
-    tasks: 'Tasks & Gigs Hub',
-    ecosystem: 'Innovation Ecosystem Control',
-    users: 'Users & Ledgers',
+    overview: 'Overview',
+    surveys: 'Surveys',
+    tasks: 'Tasks & Gigs',
+    ecosystem: 'Innovation Ecosystem',
+    users: 'Users',
     coupons: 'Coupon PINs',
-    withdrawals: 'Payout Approvals',
-    pricing: 'Rates & Settings',
-    notifications: 'Notifications & Pop-Up Settings'
+    withdrawals: 'Withdrawals',
+    pricing: 'Pricing & Rates',
+    notifications: 'Notifications'
   };
   const titleEl = document.getElementById('adminTopbarTitle');
   if (titleEl) titleEl.textContent = titles[tab] || 'Admin Panel';
@@ -1992,15 +1836,19 @@ function switchAdminTab(tab, btn) {
     }
   } catch(e) {}
 
-  if (tab === 'overview') loadAdminOverview();
-  if (tab === 'surveys') { loadSurveysData(); loadSurveySubmissions(); }
-  if (tab === 'tasks') { loadTasksData(); loadTaskSubmissions(); }
-  if (tab === 'ecosystem') loadAdminEcosystem();
-  if (tab === 'users') loadUsersData();
-  if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
-  if (tab === 'withdrawals') loadWithdrawalsData();
-  if (tab === 'pricing') loadPricingData();
-  if (tab === 'notifications') loadAdminNotificationsTab();
+  try {
+    if (tab === 'overview') loadAdminOverview();
+    if (tab === 'surveys') { loadSurveysData(); loadSurveySubmissions(); }
+    if (tab === 'tasks') { loadTasksData(); loadTaskSubmissions(); }
+    if (tab === 'ecosystem') loadAdminEcosystem();
+    if (tab === 'users') loadUsersData();
+    if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
+    if (tab === 'withdrawals') loadWithdrawalsData();
+    if (tab === 'pricing') loadPricingData();
+    if (tab === 'notifications') loadAdminNotificationsTab();
+  } catch(e) {
+    console.error('Error loading tab content:', e);
+  }
   closeAdminSidebar();
 }
 
@@ -4046,80 +3894,46 @@ async function deleteAdminEcoItem(id) {
 // OVERVIEW COMMAND CENTER LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 async function loadAdminOverview() {
-  // Update overview payouts table
-  const pBody = document.getElementById('overviewPayoutsTableBody');
+  // Update pending payouts counter
   try {
     const r = await fetch('/api/withdrawals.php?action=get_pending');
     const d = await r.json();
     const list = d.requests || d.withdrawals || [];
-    if (document.getElementById('kpiPayouts')) {
-      document.getElementById('kpiPayouts').textContent = list.length;
-    }
-    if (pBody) {
-      if (!list.length) {
-        pBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--green);font-weight:600;">No pending payouts awaiting review. All clear.</td></tr>';
-      } else {
-        const previewList = list.slice(0, 5);
-        pBody.innerHTML = previewList.map(w => `
-          <tr>
-            <td><strong>${esc(w.username)}</strong></td>
-            <td><strong style="color:var(--green);">₦${Number(w.amount).toLocaleString()}</strong></td>
-            <td><span class="badge badge-active">${esc(w.wallet_type || 'cash')}</span></td>
-            <td>${esc(w.bank_name || '-')} &bull; ${esc(w.account_number || '-')}</td>
-            <td style="font-size:11px;color:var(--txt-2);">${esc(w.created_at || 'Recent')}</td>
-            <td>
-              <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${esc(w.id)}')">Approve</button>
-              <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${esc(w.id)}')">Reject</button>
-            </td>
-          </tr>
-        `).join('');
-      }
-    }
-  } catch(e) {
-    if (pBody) pBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-3);">Unable to load payout requests.</td></tr>';
-  }
+    const el = document.getElementById('kpiPayouts');
+    if (el) el.textContent = list.length;
+  } catch(e) {}
 
-  // Update overview users table
-  const uBody = document.getElementById('overviewUsersTableBody');
+  // Update registered users counter
   try {
     const r = await fetch('/api/users.php?action=get_users');
     const d = await r.json();
     const users = d.users || [];
     allUsersList = users;
-    if (document.getElementById('kpiUsers')) {
-      document.getElementById('kpiUsers').textContent = users.length;
-    }
-    if (uBody) {
-      if (!users.length) {
-        uBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">No registered members found.</td></tr>';
-      } else {
-        const previewUsers = users.slice(0, 6);
-        uBody.innerHTML = previewUsers.map(u => {
-          const statusVal = u.status || 'active';
-          const statusBadge = (statusVal === 'suspended')
-            ? '<span class="badge badge-rejected">Suspended</span>'
-            : (statusVal === 'pending' ? '<span class="badge badge-paused">Pending</span>' : '<span class="badge badge-active">Active</span>');
-          return `
-            <tr>
-              <td><strong>${esc(u.username)}</strong></td>
-              <td>${esc(u.full_name || u.fullName || '-')}</td>
-              <td>${esc(u.email || u.phone || '-')}</td>
-              <td><strong style="color:var(--accent);">${Number(u.remaining_pts || u.pointsBalance || 0).toLocaleString()} PTS</strong></td>
-              <td><strong style="color:var(--green);">₦${Number(u.remaining_cash || u.cashBalance || 0).toLocaleString()}</strong></td>
-              <td>${statusBadge}</td>
-              <td>
-                <button class="btn btn-ghost btn-sm" onclick="openEditUser('${esc(u.username)}')">Edit</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
-    }
-  } catch(e) {
-    if (uBody) uBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--txt-3);">Unable to load user accounts.</td></tr>';
-  }
+    const el = document.getElementById('kpiUsers');
+    if (el) el.textContent = users.length;
+  } catch(e) {}
 
-  // Update ecosystem stats on overview
+  // Update active surveys counter
+  try {
+    const r = await fetch('/api/surveys.php?action=get_surveys');
+    const d = await r.json();
+    const surveys = d.surveys || [];
+    const activeSurveys = surveys.filter(s => s.status !== 'inactive');
+    const el = document.getElementById('kpiSurveys');
+    if (el) el.textContent = activeSurveys.length;
+  } catch(e) {}
+
+  // Update active tasks counter
+  try {
+    const r = await fetch('/api/tasks.php?action=get_tasks');
+    const d = await r.json();
+    const tasks = d.tasks || [];
+    const activeTasks = tasks.filter(t => t.status !== 'inactive');
+    const el = document.getElementById('kpiTasks');
+    if (el) el.textContent = activeTasks.length;
+  } catch(e) {}
+
+  // Update ecosystem stats
   try {
     const r = await fetch('/api/ecosystem.php?action=get_items');
     const d = await r.json();
@@ -4134,7 +3948,7 @@ async function loadAdminOverview() {
     }
   } catch(e) {}
 
-  // Update coupon stats on overview
+  // Update coupon stats
   try {
     const r = await fetch('/api/coupons.php?action=get_pins');
     const d = await r.json();
