@@ -1689,7 +1689,7 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
+function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 100) {
     const tLower = (topic || '').toLowerCase();
     let category = 'General Research';
     let points = 150;
@@ -1824,7 +1824,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
         category: category,
         description: description,
         reward_points: points,
-        total_slots: 500,
+        total_slots: Math.max(1, parseInt(slots) || 100),
         format_type: 'word',
         questions: finalQuestions
     };
@@ -1838,7 +1838,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                     const topic = (parsed.topic || (new URL(req.url, 'http://localhost')).searchParams.get('topic') || 'Platform User Experience & Features').trim();
                     const count = Math.max(2, Math.min(15, parseInt(parsed.count || (new URL(req.url, 'http://localhost')).searchParams.get('count') || 5)));
                     const style = (parsed.style || (new URL(req.url, 'http://localhost')).searchParams.get('style') || 'feedback').trim();
-                    const plan = generateTopicQuestionsJs(topic, count, style);
+                    const slots = Math.max(1, parseInt(parsed.slots || parsed.total_slots || (new URL(req.url, 'http://localhost')).searchParams.get('slots') || 100));
+                    const plan = generateTopicQuestionsJs(topic, count, style, slots);
                     res.end(JSON.stringify({
                         status: 'success',
                         topic: topic,
@@ -1867,7 +1868,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                             res.end(JSON.stringify({ status: 'error', message: 'Survey title is required' }));
                             return;
                         }
-                        const totalSlots = parseInt(parsed.total_slots) || 500;
+                        const totalSlots = Math.max(1, parseInt(parsed.total_slots || parsed.slots) || 100);
                         const formatType = parsed.format_type || (parsed.video_url ? 'video' : 'word');
                         const videoUrl = formatType === 'word' ? '' : (parsed.video_url || '').trim();
                         let cleanQuestions = (parsed.questions || []).map((q, idx) => {
@@ -1921,7 +1922,11 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback') {
                                 if (parsed.format_type !== undefined) sv.format_type = parsed.format_type.trim();
                                 if (parsed.description !== undefined) sv.description = parsed.description.trim();
                                 if (parsed.reward_points !== undefined) sv.reward_points = parseInt(parsed.reward_points) || 100;
-                                if (parsed.total_slots !== undefined) sv.total_slots = parseInt(parsed.total_slots) || 500;
+                                if (parsed.total_slots !== undefined || parsed.slots !== undefined) {
+                                    const newSlots = Math.max(1, parseInt(parsed.total_slots || parsed.slots) || 100);
+                                    sv.total_slots = newSlots;
+                                    sv.remaining_slots = Math.max(0, newSlots - (parseInt(sv.completions) || 0));
+                                }
                                 if (parsed.video_url !== undefined) sv.video_url = parsed.video_url.trim();
                                 if (parsed.expires_at !== undefined) sv.expires_at = parsed.expires_at.trim();
                                 if (parsed.status !== undefined) sv.status = parsed.status.trim();

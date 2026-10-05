@@ -122,13 +122,13 @@ button{cursor:pointer;font-family:var(--ff);}
 input,textarea,select{font-family:var(--ff);}
 
 /* Layout */
-.layout{display:flex;min-height:100vh;transition:all var(--trans);}
+.layout{display:flex;min-height:100vh;}
 
 /* Retractable Sidebar */
 .sidebar{
   width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);
   border-right:1px solid var(--border);display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;height:100vh;z-index:200;
+  position:fixed;top:0;left:0;height:100vh;z-index:9999;
   transition:transform var(--trans), width var(--trans), min-width var(--trans);
 }
 .sidebar-logo{
@@ -160,11 +160,13 @@ input,textarea,select{font-family:var(--ff);}
 .sidebar-footer{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px;}
 
 /* Retracted / Full-screen Mode */
-body.sidebar-retracted .sidebar{
-  transform:translateX(-100%);
-}
-body.sidebar-retracted .main{
-  margin-left:0;
+@media(min-width:1025px){
+  body.sidebar-retracted .sidebar{
+    transform:translateX(-100%);
+  }
+  body.sidebar-retracted .main{
+    margin-left:0;
+  }
 }
 
 /* Main Area */
@@ -190,8 +192,9 @@ body.sidebar-retracted .main{
   width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;cursor:pointer;
   transition:all var(--trans);color:var(--txt-2);flex-shrink:0;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;
 }
-.hamburger-btn:hover{background:var(--card-hover);border-color:var(--accent);color:var(--accent);}
+.hamburger-btn:hover, .hamburger-btn:active{background:var(--card-hover);border-color:var(--accent);color:var(--accent);}
 .hamburger-btn svg{width:18px;height:18px;}
 
 .content{padding:24px;flex:1;}
@@ -353,30 +356,32 @@ body.sidebar-retracted .main{
 .sidebar-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,0.72);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  z-index:190;opacity:0;pointer-events:none;transition:opacity 0.22s ease;
+  z-index:9990;opacity:0;pointer-events:none;transition:opacity 0.22s ease;
 }
 .sidebar-backdrop.active{opacity:1;pointer-events:auto;}
 .mobile-close-btn{
   display:none;background:rgba(255,255,255,0.06);border:1px solid var(--border);
   color:var(--txt-2);width:34px;height:34px;border-radius:8px;
   align-items:center;justify-content:center;cursor:pointer;transition:all var(--trans);
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
 .mobile-close-btn:hover{color:var(--txt);background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);}
 
 @media(max-width:1024px){
   .sidebar{
-    transform:translateX(-100%);
+    transform:translateX(-100%) !important;
     box-shadow:0 10px 40px rgba(0,0,0,0.8);
     transition:transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index:9999 !important;
   }
   .sidebar.mobile-open{
-    transform:translateX(0);
+    transform:translateX(0) !important;
   }
   .mobile-close-btn{
     display:flex;
   }
   .main{
-    margin-left:0;
+    margin-left:0 !important;
   }
 }
 </style>
@@ -494,27 +499,22 @@ body.sidebar-retracted .main{
 
     <!-- ══ TAB: SURVEYS ════════════════════════════════════════════════════ -->
     <div id="tab-surveys" class="tab-content">
-      <!-- Automated Survey Questions Assistant -->
-      <div class="card" style="border: 1px solid rgba(59, 130, 246, 0.35); background: linear-gradient(180deg, rgba(59, 130, 246, 0.06) 0%, var(--card) 100%); margin-bottom: 20px;">
+      <!-- Topic Question Templates -->
+      <div class="card" style="margin-bottom: 20px;">
         <div class="card-header" style="border-bottom: 1px solid var(--border-mid); padding-bottom: 12px;">
           <div style="display:flex;align-items:center;gap:12px;">
             <div style="width:38px;height:38px;border-radius:10px;background:rgba(59, 130, 246, 0.15);border:1px solid rgba(59, 130, 246, 0.3);display:flex;align-items:center;justify-content:center;color:var(--accent);">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
             <div>
-              <div class="card-title" style="font-size:15px;font-weight:700;">Automated Survey &amp; Question Generator</div>
-              <div class="card-sub">Provide any topic or keyword to automatically generate complete survey questions with multiple-choice options and answers.</div>
+              <div class="card-title" style="font-size:15px;font-weight:700;">Topic Question Templates</div>
+              <div class="card-sub">Select or enter a topic to auto-fill standardized survey questions, options, and participant slot targets.</div>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSurveyGenHelp()">Tips &amp; Guide</button>
         </div>
 
         <div style="padding-top:14px;">
-          <div id="surveyGenHelpBox" style="display:none;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--txt-2);line-height:1.55;margin-bottom:14px;">
-            Type any custom topic (e.g. <em>Electric Vehicles, Agricultural Financing, Crypto Staking, Student Data Bundles</em>) or pick a preset below. Select how many questions you need and click <strong>Generate Questions &amp; Survey Plan</strong>. You can review the questions and apply them straight into the publishing form with one click.
-          </div>
-
-          <!-- Topic Generator Form -->
+          <!-- Topic Form -->
           <div class="form-row">
             <div class="form-group" style="flex:2;">
               <label class="form-label" style="font-size:12px;font-weight:700;">Survey Topic or Theme</label>
@@ -557,21 +557,21 @@ body.sidebar-retracted .main{
             </div>
           </div>
 
-          <!-- Generate Button -->
+          <!-- Load Button -->
           <div style="display:flex;gap:10px;align-items:center;">
-            <button type="button" class="btn btn-primary" id="btnRunSurveyGen" onclick="generateSurveyFromTopic()" style="background:linear-gradient(135deg, #2563EB, #3B82F6);font-weight:700;">
+            <button type="button" class="btn btn-primary" id="btnRunSurveyGen" onclick="generateSurveyFromTopic()" style="font-weight:700;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Generate Questions &amp; Survey Plan</span>
+              <span>Load Topic Questions</span>
             </button>
             <span id="genSurveyStatusMsg" style="font-size:12px;color:var(--txt-3);"></span>
           </div>
 
-          <!-- Generation Results Box -->
+          <!-- Results Box -->
           <div id="genSurveyResultsBox" style="display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border-mid);border-radius:12px;padding:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;">
               <div>
-                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Survey Plan Ready</span>
-                <h4 id="genResultTitleDisplay" style="font-size:15px;font-weight:700;color:var(--txt);margin-top:2px;">Generated Title</h4>
+                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Questions Preview</span>
+                <h4 id="genResultTitleDisplay" style="font-size:15px;font-weight:700;color:var(--txt);margin-top:2px;">Survey Preview</h4>
                 <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Suggested Reward: 150 PTS</div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -582,7 +582,7 @@ body.sidebar-retracted .main{
                   Append Questions Only
                 </button>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="generateSurveyFromTopic()">
-                  Regenerate
+                  Refresh Questions
                 </button>
               </div>
             </div>
@@ -1435,6 +1435,53 @@ body.sidebar-retracted .main{
   </div>
 </div>
 
+<!-- Modal: Adjust Survey Participant Slots -->
+<div class="modal-backdrop" id="modalAdjustSurveySlots">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Edit Participant Slots</div>
+      <button class="modal-close" onclick="closeModal('modalAdjustSurveySlots')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="adjSurveyId" value="">
+      <div>
+        <div style="font-size:12px;color:var(--txt-3);margin-bottom:2px;">Survey Title</div>
+        <div style="font-size:14px;font-weight:600;color:var(--txt);" id="adjSurveyTitle">-</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--surface);padding:10px 12px;border-radius:8px;border:1px solid var(--border);">
+        <div>
+          <div style="font-size:11px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;">Completions</div>
+          <div style="font-size:16px;font-weight:700;color:var(--txt);" id="adjSurveyCompletions">0</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;">Slots Remaining</div>
+          <div style="font-size:16px;font-weight:700;color:var(--accent);" id="adjSurveyRemaining">0</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Total Participant Slots (Target Persons)</label>
+        <input type="number" class="form-input" id="adjSurveySlotsInput" min="1" step="1" placeholder="e.g. 50, 100, 250">
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:5px;">Remaining slots are calculated automatically as Total Slots minus Completed Submissions.</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--txt-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Quick Presets</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(25)">25</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(50)">50</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(100)">100</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(200)">200</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(500)">500</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(1000)">1000</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalAdjustSurveySlots')">Cancel</button>
+      <button type="button" class="btn btn-primary" id="btnSaveAdjustSurveySlots" onclick="submitAdjustSurveySlots()">Save Slots</button>
+    </div>
+  </div>
+</div>
+
 <!-- Clean Confirm Dialog Modal -->
 <div class="modal-backdrop" id="modalConfirm">
   <div class="modal" style="max-width:400px;">
@@ -1509,16 +1556,23 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
 // ═══════════════════════════════════════════════════════════════════════════
 // RETRACTABLE SIDEBAR / FULL SCREEN
 // ═══════════════════════════════════════════════════════════════════════════
+function isMobileAdmin() {
+  return window.matchMedia('(max-width: 1024px)').matches || window.innerWidth <= 1024;
+}
+
 function toggleSidebarFull() {
-  if (window.innerWidth <= 1024) {
-    const sb = document.getElementById('adminSidebar');
-    const bd = document.getElementById('sidebarBackdrop');
+  const sb = document.getElementById('adminSidebar');
+  const bd = document.getElementById('sidebarBackdrop');
+  if (isMobileAdmin()) {
     if (sb) {
       const isOpen = sb.classList.toggle('mobile-open');
       if (bd) bd.classList.toggle('active', isOpen);
     }
   } else {
     document.body.classList.toggle('sidebar-retracted');
+    try {
+      localStorage.setItem('ix_admin_sidebar_retracted', document.body.classList.contains('sidebar-retracted') ? '1' : '0');
+    } catch(e) {}
   }
 }
 
@@ -1528,6 +1582,19 @@ function closeAdminSidebar() {
   if (sb) sb.classList.remove('mobile-open');
   if (bd) bd.classList.remove('active');
 }
+
+window.addEventListener('resize', () => {
+  if (!isMobileAdmin()) {
+    closeAdminSidebar();
+  }
+});
+
+// Restore desktop retracted preference if stored
+try {
+  if (!isMobileAdmin() && localStorage.getItem('ix_admin_sidebar_retracted') === '1') {
+    document.body.classList.add('sidebar-retracted');
+  }
+} catch(e) {}
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeAdminSidebar();
@@ -1649,9 +1716,9 @@ async function generateSurveyFromTopic() {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Generating Questions...</span>`;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Loading Questions...</span>`;
   }
-  if (statusMsg) statusMsg.textContent = 'Synthesizing topic questions and benchmark answers...';
+  if (statusMsg) statusMsg.textContent = 'Loading topic questions and standardized answers...';
 
   try {
     const res = await fetch('/api/surveys.php?action=generate_survey_questions', {
@@ -1665,20 +1732,20 @@ async function generateSurveyFromTopic() {
       if (slots) data.plan.total_slots = slots;
       lastGeneratedSurveyPlan = data.plan;
       renderGeneratedSurveyResults(data.plan);
-      toast('Survey questions successfully generated!', 'success');
+      toast('Topic questions loaded successfully!', 'success');
     } else {
       throw new Error(data.message || 'Generation API returned error');
     }
   } catch (err) {
-    console.warn('API generator notice, using dynamic local synthesis fallback...', err);
+    console.warn('API notice, using template fallback...', err);
     const localPlan = generateTopicQuestionsClient(topic, count, style, slots);
     lastGeneratedSurveyPlan = localPlan;
     renderGeneratedSurveyResults(localPlan);
-    toast('Survey questions generated from topic!', 'success');
+    toast('Topic questions loaded from template!', 'success');
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Generate Questions &amp; Survey Plan</span>`;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span>Load Topic Questions</span>`;
     }
     if (statusMsg) statusMsg.textContent = '';
   }
@@ -1844,7 +1911,7 @@ function renderGeneratedSurveyResults(plan) {
 
 function applyGeneratedSurveyToForm(fullApply = true) {
   if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions) {
-    toast('No survey questions generated yet. Click generate above.', 'error');
+    toast('No questions loaded yet. Click load topic questions above.', 'error');
     return;
   }
 
@@ -1876,7 +1943,7 @@ function applyGeneratedSurveyToForm(fullApply = true) {
     const qContainer = document.getElementById('surveyQuestionsContainer');
     if (qContainer) qContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    toast(`Appended ${newQs.length} generated questions to survey builder!`, 'success');
+    toast(`Appended ${newQs.length} questions to survey builder!`, 'success');
   }
 }
 
@@ -2143,7 +2210,7 @@ async function handleCreateSurvey(e) {
     format_type: currentSurveyFormat,
     video_url: finalVideoUrl,
     reward_points: parseInt(document.getElementById('svReward').value) || 150,
-    total_slots: parseInt(document.getElementById('svSlots').value) || 500,
+    total_slots: Math.max(1, parseInt(document.getElementById('svSlots').value) || 100),
     expires_at: document.getElementById('svExpiresAt').value,
     description: document.getElementById('svDesc').value.trim(),
     require_screenshot: document.getElementById('svRequireScreenshot') ? document.getElementById('svRequireScreenshot').checked : false,
@@ -2209,7 +2276,7 @@ async function loadSurveysData() {
         <td>${s.expires_at ? esc(s.expires_at.replace('T', ' ')) : 'No expiry'} ${isExp ? '<span class="badge badge-rejected">Expired</span>' : ''}</td>
         <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-paused'}">${esc(s.status || 'active')}</span></td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="promptAdjustSurveySlots('${esc(s.id)}', ${total})">Edit Slots</button>
+          <button class="btn btn-secondary btn-sm" onclick="openAdjustSurveySlotsModal('${esc(s.id)}', '${esc(s.title).replace(/'/g, "\\'")}', ${total}, ${s.completions || 0}, ${left})">Edit Slots</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleSurveyStatus('${esc(s.id)}')">${s.status === 'active' ? 'Pause' : 'Activate'}</button>
           <button class="btn btn-danger btn-sm" onclick="deleteSurvey('${esc(s.id)}')">Delete</button>
         </td>
@@ -2220,14 +2287,47 @@ async function loadSurveysData() {
   }
 }
 
-async function promptAdjustSurveySlots(id, currentSlots) {
-  const input = prompt('Enter new participant slots (total number of persons) for this survey:', currentSlots);
-  if (input === null) return;
-  const num = parseInt(input);
-  if (isNaN(num) || num < 1) {
-    toast('Please enter a valid positive number of slots.', 'error');
+function openAdjustSurveySlotsModal(id, title, totalSlots, completions, remaining) {
+  const idEl = document.getElementById('adjSurveyId');
+  const titleEl = document.getElementById('adjSurveyTitle');
+  const compEl = document.getElementById('adjSurveyCompletions');
+  const remEl = document.getElementById('adjSurveyRemaining');
+  const inpEl = document.getElementById('adjSurveySlotsInput');
+
+  if (idEl) idEl.value = id;
+  if (titleEl) titleEl.textContent = title || 'Survey';
+  if (compEl) compEl.textContent = completions || 0;
+  if (remEl) remEl.textContent = remaining !== undefined ? remaining : totalSlots;
+  if (inpEl) inpEl.value = totalSlots || 100;
+
+  openModal('modalAdjustSurveySlots');
+}
+
+function setAdjustSlotVal(val) {
+  const inp = document.getElementById('adjSurveySlotsInput');
+  if (inp) {
+    inp.value = val;
+    inp.focus();
+  }
+}
+
+async function submitAdjustSurveySlots() {
+  const id = (document.getElementById('adjSurveyId')?.value || '').trim();
+  const inp = document.getElementById('adjSurveySlotsInput');
+  const btn = document.getElementById('btnSaveAdjustSurveySlots');
+  const num = parseInt(inp ? inp.value : 0);
+
+  if (!id) {
+    toast('No survey selected.', 'error');
     return;
   }
+  if (isNaN(num) || num < 1) {
+    toast('Please enter a valid positive number of slots (at least 1).', 'error');
+    if (inp) inp.focus();
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   try {
     const r = await fetch('/api/surveys.php?action=adjust_survey_slots', {
       method: 'POST',
@@ -2237,12 +2337,15 @@ async function promptAdjustSurveySlots(id, currentSlots) {
     const d = await r.json();
     if (d.status === 'success') {
       toast('Survey slots updated successfully!', 'success');
+      closeModal('modalAdjustSurveySlots');
       loadSurveysData();
     } else {
       toast(d.message || 'Error updating slots', 'error');
     }
   } catch(e) {
     toast('Network error updating slots', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Slots'; }
   }
 }
 

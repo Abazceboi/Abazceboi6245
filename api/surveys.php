@@ -80,7 +80,7 @@ function hasUserCompletedSurvey(string $surveyId, string $username): bool {
     return false;
 }
 
-function generateTopicQuestions(string $topic, int $count = 5, string $style = 'feedback'): array {
+function generateTopicQuestions(string $topic, int $count = 5, string $style = 'feedback', int $slots = 100): array {
     $tLower = strtolower($topic);
     $category = 'General Research';
     $points = 150;
@@ -427,7 +427,7 @@ function generateTopicQuestions(string $topic, int $count = 5, string $style = '
         'category' => $category,
         'description' => $description,
         'reward_points' => $points,
-        'total_slots' => 500,
+        'total_slots' => max(1, $slots),
         'format_type' => 'word',
         'questions' => $finalQuestions
     ];
@@ -439,8 +439,9 @@ if ($action === 'generate_survey_questions') {
     $topic = trim($input['topic'] ?? $_GET['topic'] ?? 'Platform User Experience & Features');
     $count = max(2, min(15, intval($input['count'] ?? $_GET['count'] ?? 5)));
     $style = trim($input['style'] ?? $_GET['style'] ?? 'feedback');
+    $slots = max(1, intval($input['slots'] ?? $_GET['slots'] ?? $input['total_slots'] ?? 100));
     
-    $generated = generateTopicQuestions($topic, $count, $style);
+    $generated = generateTopicQuestions($topic, $count, $style, $slots);
     echo json_encode([
         'status' => 'success',
         'topic'  => $topic,
@@ -504,7 +505,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title       = trim($input['title'] ?? '');
         $description = trim($input['description'] ?? '');
         $rewardPts   = intval($input['reward_points'] ?? 100);
-        $totalSlots  = intval($input['total_slots'] ?? 500);
+        $totalSlots  = max(1, intval($input['total_slots'] ?? $input['slots'] ?? 100));
         $expiresAt   = trim($input['expires_at'] ?? '');
         $formatType  = trim($input['format_type'] ?? '');
         $videoUrl    = trim($input['video_url'] ?? '');
@@ -585,7 +586,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (isset($input['format_type']))  $sv['format_type'] = trim($input['format_type']);
                 if (isset($input['description']))  $sv['description'] = trim($input['description']);
                 if (isset($input['reward_points'])) $sv['reward_points'] = intval($input['reward_points']);
-                if (isset($input['total_slots']))  $sv['total_slots'] = intval($input['total_slots']);
+                if (isset($input['total_slots']) || isset($input['slots'])) {
+                    $newSlots = max(1, intval($input['total_slots'] ?? $input['slots']));
+                    $sv['total_slots'] = $newSlots;
+                    $sv['remaining_slots'] = max(0, $newSlots - intval($sv['completions'] ?? 0));
+                }
                 if (isset($input['video_url']))    $sv['video_url']   = trim($input['video_url']);
                 if (isset($input['expires_at']))   $sv['expires_at']  = trim($input['expires_at']);
                 if (isset($input['status']))       $sv['status']      = trim($input['status']);
