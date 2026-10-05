@@ -479,6 +479,11 @@ input,textarea,select{font-family:var(--ff);}
     <div id="tab-overview" class="tab-content active">
       <div class="stats-grid" style="margin-bottom:24px;">
         <div class="stat-card">
+          <div class="stat-label">Total Amount in Site</div>
+          <div class="stat-value" id="kpiTotalSiteCash" style="color:var(--green);">₦0</div>
+          <div class="stat-sub" id="kpiTotalSiteSub">Combined member wallet balances</div>
+        </div>
+        <div class="stat-card">
           <div class="stat-label">Total Users</div>
           <div class="stat-value" id="kpiUsers" style="color:var(--accent);">0</div>
           <div class="stat-sub">Registered accounts</div>
@@ -3001,7 +3006,20 @@ async function loadUsersData() {
     const r = await fetch('/api/users.php?action=get_users');
     const d = await r.json();
     allUsersList = d.users || [];
-    document.getElementById('kpiUsers').textContent = allUsersList.length;
+    const elUsers = document.getElementById('kpiUsers');
+    if (elUsers) elUsers.textContent = allUsersList.length;
+
+    let totalCash = 0;
+    let totalPts = 0;
+    allUsersList.forEach(u => {
+      totalCash += Number(u.remaining_cash ?? u.cashBalance ?? 0) || 0;
+      totalPts += Number(u.remaining_pts ?? u.pointsBalance ?? 0) || 0;
+    });
+    const cashEl = document.getElementById('kpiTotalSiteCash');
+    if (cashEl) cashEl.textContent = '₦' + totalCash.toLocaleString();
+    const subEl = document.getElementById('kpiTotalSiteSub');
+    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
+
     renderUsers(allUsersList);
   } catch(e){
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
@@ -3908,7 +3926,7 @@ async function loadAdminOverview() {
     if (el) el.textContent = list.length;
   } catch(e) {}
 
-  // Update registered users counter
+  // Update registered users counter & total site amount
   try {
     const r = await fetch('/api/users.php?action=get_users');
     const d = await r.json();
@@ -3916,6 +3934,17 @@ async function loadAdminOverview() {
     allUsersList = users;
     const el = document.getElementById('kpiUsers');
     if (el) el.textContent = users.length;
+
+    let totalCash = 0;
+    let totalPts = 0;
+    users.forEach(u => {
+      totalCash += Number(u.remaining_cash ?? u.cashBalance ?? 0) || 0;
+      totalPts += Number(u.remaining_pts ?? u.pointsBalance ?? 0) || 0;
+    });
+    const cashEl = document.getElementById('kpiTotalSiteCash');
+    if (cashEl) cashEl.textContent = '₦' + totalCash.toLocaleString();
+    const subEl = document.getElementById('kpiTotalSiteSub');
+    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
   } catch(e) {}
 
   // Update active surveys counter
