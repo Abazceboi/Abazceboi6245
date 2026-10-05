@@ -2113,6 +2113,16 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return true;
                 }).map(s => {
                     const copy = JSON.parse(JSON.stringify(s));
+                    const total = parseInt(copy.total_slots) || 100;
+                    const subCount = sSubs.filter(sub => sub.survey_id === s.id).length;
+                    if (subCount > (parseInt(copy.completions) || 0)) {
+                        copy.completions = subCount;
+                    }
+                    if (parseInt(copy.completions) > 0) {
+                        copy.remaining_slots = Math.max(0, total - parseInt(copy.completions));
+                    } else if (copy.remaining_slots === undefined) {
+                        copy.remaining_slots = total;
+                    }
                     if (copy.questions) {
                         copy.questions.forEach(q => {
                             delete q.correct_index;

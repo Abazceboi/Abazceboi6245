@@ -22,7 +22,30 @@ $input  = json_decode($raw, true) ?: $_POST;
 
 function getSurveys(): array {
     $data = readStorageJson('data/surveys.json', []);
-    return is_array($data) ? $data : [];
+    $surveys = is_array($data) ? $data : [];
+    $subs = getSurveySubmissions();
+    if (!empty($subs)) {
+        $counts = [];
+        foreach ($subs as $sub) {
+            $sid = $sub['survey_id'] ?? '';
+            if ($sid) {
+                $counts[$sid] = ($counts[$sid] ?? 0) + 1;
+            }
+        }
+        foreach ($surveys as &$sv) {
+            $sid = $sv['id'] ?? '';
+            $subCount = $counts[$sid] ?? 0;
+            if ($subCount > intval($sv['completions'] ?? 0)) {
+                $sv['completions'] = $subCount;
+            }
+            $total = intval($sv['total_slots'] ?? 100);
+            if (isset($sv['completions']) && intval($sv['completions']) > 0) {
+                $sv['remaining_slots'] = max(0, $total - intval($sv['completions']));
+            }
+        }
+        unset($sv);
+    }
+    return $surveys;
 }
 
 function saveSurveys(array $s): void {
@@ -765,8 +788,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         saveSurveySubmissions($subs);
 
         // Decrement slots and increment completions
-        $survey['remaining_slots'] = max(0, intval($survey['remaining_slots'] ?? 1) - 1);
-        $survey['completions']     = intval($survey['completions'] ?? 0) + 1;
+        foreach ($surveys as &$sv) {
+            if ($sv['id'] === $surveyId) {
+                $sv['remaining_slots'] = max(0, intval($sv['remaining_slots'] ?? 1) - 1);
+                $sv['completions']     = intval($sv['completions'] ?? 0) + 1;
+                $survey = $sv;
+                break;
+            }
+        }
+        unset($sv);
         saveSurveys($surveys);
 
         // Credit points

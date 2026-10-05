@@ -1809,6 +1809,8 @@ input,textarea,select{font-family:var(--ff);}
         <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
       </div>
     </div>
+  </div>
+
   <!-- ══ TAB: INNOVATION ECOSYSTEM ═════════════════════════════════════════ -->
   <div id="tab-ecosystem" class="tab-panel">
     <!-- Header banner -->
@@ -3546,10 +3548,24 @@ async function loadSurveys() {
     const d1 = await r1.json();
     const d2 = await r2.json();
     allSurveysList = d1.surveys || [];
-    localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
     const serverDone = d2.completed_surveys || [];
     doneSurveyIds = [...new Set([...doneSurveyIds, ...serverDone])];
     localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+
+    const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
+    allSurveysList.forEach(s => {
+      const isDone = doneSurveyIds.includes(s.id);
+      const total = parseInt(s.total_slots) || 100;
+      let rem = s.remaining_slots !== undefined ? parseInt(s.remaining_slots) : total;
+      const localDeduct = localDeductions[s.id] || (isDone ? 1 : 0);
+      if (localDeduct > 0 && rem >= total) {
+        rem = Math.max(0, total - localDeduct);
+        s.remaining_slots = rem;
+        s.completions = Math.max(parseInt(s.completions) || 0, localDeduct);
+      }
+    });
+
+    localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
     renderSurveys(allSurveysList);
   } catch(e) {
     if (!allSurveysList.length) {
@@ -3570,6 +3586,7 @@ function renderSurveys(list) {
     return;
   }
   const now = Date.now();
+  const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
   const html = list.map(s => {
     const isDone = doneSurveyIds.includes(s.id);
     const expTime = s.expires_at ? new Date(s.expires_at).getTime() : null;
@@ -3578,7 +3595,11 @@ function renderSurveys(list) {
     const isVideo = (s.format_type === 'video') && Boolean(s.video_url);
 
     const totalSlots = parseInt(s.total_slots) || 1;
-    const remainingSlots = s.remaining_slots !== undefined ? Math.max(0, parseInt(s.remaining_slots)) : totalSlots;
+    let remainingSlots = s.remaining_slots !== undefined ? Math.max(0, parseInt(s.remaining_slots)) : totalSlots;
+    const localDeduct = localDeductions[s.id] || (isDone ? 1 : 0);
+    if (localDeduct > 0 && remainingSlots >= totalSlots) {
+      remainingSlots = Math.max(0, totalSlots - localDeduct);
+    }
     const isFull = (remainingSlots <= 0);
 
     const formatBadge = isVideo
@@ -3796,14 +3817,28 @@ async function submitSurveyAnswers() {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      doneSurveyIds.push(activeSurvey.id);
+      if (!doneSurveyIds.includes(activeSurvey.id)) {
+        doneSurveyIds.push(activeSurvey.id);
+      }
       localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+
+      const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
+      localDeductions[activeSurvey.id] = (localDeductions[activeSurvey.id] || 0) + 1;
+      localStorage.setItem('ix_survey_deductions', JSON.stringify(localDeductions));
+
       if (activeSurvey.remaining_slots !== undefined) {
         activeSurvey.remaining_slots = Math.max(0, parseInt(activeSurvey.remaining_slots) - 1);
       }
       activeSurvey.completions = (parseInt(activeSurvey.completions) || 0) + 1;
+
+      const idx = allSurveysList.findIndex(x => x.id === activeSurvey.id);
+      if (idx !== -1) {
+        allSurveysList[idx].remaining_slots = activeSurvey.remaining_slots;
+        allSurveysList[idx].completions = activeSurvey.completions;
+      }
       localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
       showSurveyResult(d);
+      renderSurveys(allSurveysList);
       loadSurveys();
     } else {
       toast(d.message || 'Submission error', 'error');
