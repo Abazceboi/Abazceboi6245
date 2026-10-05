@@ -54,15 +54,17 @@ function isTaskExpired(array $task): bool {
     return false;
 }
 
-function creditUserPointsTask(string $username, int $points, string $reason): void {
-    if (!$username || $points <= 0) return;
+function creditUserPointsTask(string $username, int $points, string $reason): int {
+    if (!$username || $points <= 0) return 0;
     $uData   = readStorageJson('data/users.json', ['users' => []]);
     $users   = $uData['users'] ?? (is_array($uData) ? $uData : []);
     $wrapped = isset($uData['users']);
+    $newPts = 0;
     foreach ($users as &$u) {
         if (strtolower($u['username'] ?? '') === strtolower($username)) {
             $u['remaining_pts']   = intval($u['remaining_pts'] ?? 100) + $points;
             $u['pointsBalance']   = $u['remaining_pts'];
+            $newPts               = $u['remaining_pts'];
             $u['tasks_completed'] = intval($u['tasks_completed'] ?? 0) + 1;
             $u['activity_ledger'] = $u['activity_ledger'] ?? [];
             array_unshift($u['activity_ledger'], [
@@ -76,6 +78,7 @@ function creditUserPointsTask(string $username, int $points, string $reason): vo
         }
     }
     writeStorageJson('data/users.json', $wrapped ? array_merge($uData, ['users' => $users]) : $users);
+    return $newPts;
 }
 
 // ─── GET ──────────────────────────────────────────────────────────────────────
@@ -267,6 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $actualReward = $task ? intval($task['reward_points']) : $rewardPts;
         $newSub = [
             'id'           => 'SUB-' . strtoupper(substr(uniqid(), -6)),
             'task_id'      => $taskId,
@@ -274,16 +278,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'username'     => $username,
             'proof_url'    => $proofUrl,
             'notes'        => $notes,
-            'reward_points'=> $task ? intval($task['reward_points']) : $rewardPts,
+            'reward_points'=> $actualReward,
             'link_visited' => !empty($input['link_visited']),
             'time_spent'   => intval($input['time_spent'] ?? 0),
-            'status'       => 'pending',
+            'status'       => 'approved',
             'submitted_at' => date('Y-m-d H:i:s'),
+            'reviewed_at'  => date('Y-m-d H:i:s'),
         ];
         array_unshift($subs, $newSub);
         saveSubmissions($subs);
 
-        echo json_encode(['status' => 'success', 'message' => 'Proof submitted. Our team will review and credit your points shortly.', 'submission' => $newSub]);
+        // Credit points immediately
+        $newPoints = creditUserPointsTask($username, $actualReward, $task['title'] ?? $taskTitle);
+
+        // Increment completions
+        foreach ($tasks as &$t) {
+            if ($t['id'] === $taskId) {
+                $t['completions'] = intval($t['completions'] ?? 0) + 1;
+                break;
+            }
+        }
+        unset($t);
+        saveTasks($tasks);
+
+        echo json_encode([
+            'status'        => 'success',
+            'message'       => "Task completed successfully! +{$actualReward} points credited to your wallet.",
+            'reward_points' => $actualReward,
+            'new_points'    => $newPoints,
+            'submission'    => $newSub
+        ]);
         exit;
     }
 

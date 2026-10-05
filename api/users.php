@@ -907,6 +907,42 @@ switch ($action) {
         ]);
         break;
 
+    case 'sync_balance':
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_GET['username'] ?? ''));
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username required']);
+            exit;
+        }
+        $data = loadUsers();
+        $updated = false;
+        $target = null;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
+                if (isset($input['points'])) {
+                    $u['remaining_pts'] = intval($input['points']);
+                    $u['pointsBalance'] = $u['remaining_pts'];
+                }
+                if (isset($input['cash'])) {
+                    $u['remaining_cash'] = floatval($input['cash']);
+                    $u['cashBalance'] = $u['remaining_cash'];
+                }
+                $target = $u;
+                $updated = true;
+                break;
+            }
+        }
+        unset($u);
+        if ($updated) {
+            saveUsers($data);
+        }
+        echo json_encode([
+            'success' => true,
+            'points' => (int)($target['remaining_pts'] ?? $target['pointsBalance'] ?? 100),
+            'cash' => (float)($target['remaining_cash'] ?? $target['cashBalance'] ?? 0.0)
+        ]);
+        break;
+
     case 'update_bank_details':
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);

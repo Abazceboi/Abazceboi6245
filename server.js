@@ -1596,12 +1596,50 @@ const server = http.createServer((req, res) => {
                             reward_points: parseInt(parsed.reward_points) || targetTask.reward_points || 150,
                             link_visited: Boolean(parsed.link_visited),
                             time_spent: parseInt(parsed.time_spent) || 0,
-                            status: 'pending',
-                            submitted_at: new Date().toISOString()
+                            status: 'approved',
+                            submitted_at: new Date().toISOString(),
+                            reviewed_at: new Date().toISOString()
                         };
                         subs.unshift(newSub);
                         fs.writeFileSync(subsFile, JSON.stringify(subs, null, 2));
-                        res.end(JSON.stringify({ status: 'success', message: 'Task proof submitted! Our review team or uploader will verify shortly.', submission: newSub }));
+
+                        targetTask.completions = (targetTask.completions || 0) + 1;
+                        fs.writeFileSync(tasksFile, JSON.stringify(tasks, null, 2));
+
+                        const actualReward = newSub.reward_points;
+                        let updatedUserPts = null;
+                        const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                        if (fs.existsSync(usersFile)) {
+                            try {
+                                const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                                const uList = uData.users || uData;
+                                uList.forEach(u => {
+                                    if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                                        u.remaining_pts = (parseInt(u.remaining_pts) || 100) + actualReward;
+                                        u.pointsBalance = u.remaining_pts;
+                                        u.tasks_completed = (parseInt(u.tasks_completed) || 0) + 1;
+                                        updatedUserPts = u.remaining_pts;
+                                        u.activity_ledger = u.activity_ledger || [];
+                                        u.activity_ledger.unshift({
+                                            time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                                            type: 'Task Reward',
+                                            desc: `Earned ${actualReward} PTS — ${newSub.task_title}`,
+                                            reward_type: 'points',
+                                            reward_value: actualReward
+                                        });
+                                    }
+                                });
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            } catch(e){}
+                        }
+
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            message: `Task completed successfully! +${actualReward} points credited to your wallet.`,
+                            reward_points: actualReward,
+                            new_points: updatedUserPts,
+                            submission: newSub
+                        }));
                         return;
                     } else if (action === 'approve_task_proof') {
                         const subId = parsed.submission_id;
@@ -2048,6 +2086,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         targetSurvey.completions = (targetSurvey.completions || 0) + 1;
                         fs.writeFileSync(surveysFile, JSON.stringify(surveys, null, 2));
 
+                        let updatedSurveyPts = null;
                         if (passed && rewardPts > 0) {
                             const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                             if (fs.existsSync(usersFile)) {
@@ -2059,6 +2098,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                             u.remaining_pts = (parseInt(u.remaining_pts) || 100) + rewardPts;
                                             u.pointsBalance = u.remaining_pts;
                                             u.surveys_completed = (parseInt(u.surveys_completed) || 0) + 1;
+                                            updatedSurveyPts = u.remaining_pts;
                                             u.activity_ledger = u.activity_ledger || [];
                                             u.activity_ledger.unshift({
                                                 time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
@@ -2081,6 +2121,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             correct: correctCount,
                             total: totalQ,
                             reward_points: rewardPts,
+                            new_points: updatedSurveyPts,
                             graded: graded,
                             message: passed
                                 ? `Well done! You scored ${scorePercent}% and earned +${rewardPts} points.`
@@ -3741,6 +3782,30 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             account_name: user.account_name || user.full_name || user.username,
                             referral_code: user.referral_code || 'REF-' + Math.floor(Math.random() * 900000 + 100000),
                             streak_count: parseInt(user.streak_count || 1)
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ success: false, error: 'User not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'sync_balance') {
+                    const uname = (urlObj.searchParams.get('username') || parsed.username || '').trim();
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname.toLowerCase());
+                    if (user) {
+                        if (parsed.points !== undefined) {
+                            user.remaining_pts = parseInt(parsed.points);
+                            user.pointsBalance = user.remaining_pts;
+                        }
+                        if (parsed.cash !== undefined) {
+                            user.remaining_cash = parseFloat(parsed.cash);
+                            user.cashBalance = user.remaining_cash;
+                        }
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                        res.end(JSON.stringify({
+                            success: true,
+                            points: user.remaining_pts,
+                            cash: user.remaining_cash
                         }));
                     } else {
                         res.end(JSON.stringify({ success: false, error: 'User not found' }));

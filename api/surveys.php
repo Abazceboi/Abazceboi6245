@@ -61,16 +61,19 @@ function saveSurveySubmissions(array $s): void {
     writeStorageJson('data/survey_submissions.json', array_values($s));
 }
 
-function creditUserPoints(string $username, int $points, string $reason): void {
-    if (!$username || $points <= 0) return;
+function creditUserPoints(string $username, int $points, string $reason): int {
+    if (!$username || $points <= 0) return 0;
     $uData = readStorageJson('data/users.json', ['users' => []]);
     $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
     $isWrapped = isset($uData['users']);
+    $newPts = 0;
     $credited = false;
     foreach ($users as &$u) {
         if (strtolower($u['username'] ?? '') === strtolower($username)) {
             $u['remaining_pts']   = intval($u['remaining_pts'] ?? 100) + $points;
             $u['pointsBalance']   = $u['remaining_pts'];
+            $newPts               = $u['remaining_pts'];
+            $u['surveys_completed'] = intval($u['surveys_completed'] ?? 0) + 1;
             $u['activity_ledger'] = $u['activity_ledger'] ?? [];
             array_unshift($u['activity_ledger'], [
                 'time'         => date('d/m/Y, H:i'),
@@ -86,6 +89,7 @@ function creditUserPoints(string $username, int $points, string $reason): void {
     if ($credited) {
         writeStorageJson('data/users.json', $isWrapped ? array_merge($uData, ['users' => $users]) : $users);
     }
+    return $newPts;
 }
 
 function isSurveyExpired(array $survey): bool {
@@ -800,8 +804,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         saveSurveys($surveys);
 
         // Credit points
+        $newPoints = null;
         if ($passed && $rewardPoints > 0) {
-            creditUserPoints($username, $rewardPoints, "Completed survey: {$survey['title']}");
+            $newPoints = creditUserPoints($username, $rewardPoints, "Completed survey: {$survey['title']}");
         }
 
         echo json_encode([
@@ -811,6 +816,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'correct'       => $correctCount,
             'total'         => $totalQ,
             'reward_points' => $rewardPoints,
+            'new_points'    => $newPoints,
             'graded'        => $gradedAnswers,
             'message'       => $passed
                 ? "Well done! You scored {$scorePercent}% and earned +{$rewardPoints} points."

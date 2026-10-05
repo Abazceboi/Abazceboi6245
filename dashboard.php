@@ -2515,26 +2515,95 @@ input,textarea,select{font-family:var(--ff);}
 const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
 const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
 
-let userPoints = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
-let userCash = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
+let userPoints = parseInt(localStorage.getItem('ix_user_points_' + CURRENT_USER) || document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
+let userCash = parseFloat(localStorage.getItem('ix_user_cash_' + CURRENT_USER) || document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
+
+function updateUserPointsDisplay(newPts) {
+  userPoints = Math.max(0, parseInt(newPts) || 0);
+  const dataPts = document.getElementById('dataPtsBal');
+  if (dataPts) dataPts.dataset.pts = userPoints.toString();
+  const pOverview = document.getElementById('statPtsOverview');
+  if (pOverview) pOverview.textContent = userPoints.toLocaleString();
+  const pWallet = document.getElementById('statPtsWallet');
+  if (pWallet) pWallet.textContent = userPoints.toLocaleString() + ' PTS';
+  const ecoPts = document.getElementById('ecoUserPtsBadge');
+  if (ecoPts) ecoPts.textContent = userPoints.toLocaleString();
+  const modalPts = document.getElementById('ecoModalPtsBal');
+  if (modalPts) modalPts.textContent = userPoints.toLocaleString();
+  try {
+    localStorage.setItem('ix_user_points_' + CURRENT_USER, userPoints.toString());
+  } catch(e) {}
+  if (CURRENT_USER) {
+    fetch('/api/users.php?action=sync_balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: CURRENT_USER, points: userPoints })
+    }).catch(() => {});
+  }
+}
+
+function updateUserCashDisplay(newCash) {
+  userCash = Math.max(0, parseFloat(newCash) || 0);
+  const dataCash = document.getElementById('dataCashBal');
+  if (dataCash) dataCash.dataset.cash = userCash.toString();
+  const cOverview = document.getElementById('statCashOverview');
+  if (cOverview) cOverview.textContent = '₦' + userCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const cWallet = document.getElementById('statCashWallet');
+  if (cWallet) cWallet.textContent = '₦' + userCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ecoCash = document.getElementById('ecoUserCashBadge');
+  if (ecoCash) ecoCash.textContent = Math.floor(userCash).toLocaleString() + ' NGN';
+  const modalCash = document.getElementById('ecoModalCashBal');
+  if (modalCash) modalCash.textContent = Math.floor(userCash).toLocaleString();
+  try {
+    localStorage.setItem('ix_user_cash_' + CURRENT_USER, userCash.toString());
+  } catch(e) {}
+  if (CURRENT_USER) {
+    fetch('/api/users.php?action=sync_balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: CURRENT_USER, cash: userCash })
+    }).catch(() => {});
+  }
+}
 
 function getUserPoints() {
-  const el = document.getElementById('dataPtsBal');
-  if (el && el.dataset.pts !== undefined) {
-    const val = parseInt(el.dataset.pts);
-    if (!isNaN(val)) userPoints = val;
+  const cached = localStorage.getItem('ix_user_points_' + CURRENT_USER);
+  if (cached !== null && !isNaN(parseInt(cached))) {
+    userPoints = parseInt(cached);
+  } else {
+    const el = document.getElementById('dataPtsBal');
+    if (el && el.dataset.pts !== undefined) {
+      const val = parseInt(el.dataset.pts);
+      if (!isNaN(val)) userPoints = val;
+    }
   }
   return userPoints;
 }
 
 function getUserCash() {
-  const el = document.getElementById('dataCashBal');
-  if (el && el.dataset.cash !== undefined) {
-    const val = parseFloat(el.dataset.cash);
-    if (!isNaN(val)) userCash = val;
+  const cached = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
+  if (cached !== null && !isNaN(parseFloat(cached))) {
+    userCash = parseFloat(cached);
+  } else {
+    const el = document.getElementById('dataCashBal');
+    if (el && el.dataset.cash !== undefined) {
+      const val = parseFloat(el.dataset.cash);
+      if (!isNaN(val)) userCash = val;
+    }
   }
   return userCash;
 }
+
+(function applyCachedBalancesOnBoot() {
+  const cachedPts = localStorage.getItem('ix_user_points_' + CURRENT_USER);
+  if (cachedPts !== null && !isNaN(parseInt(cachedPts))) {
+    updateUserPointsDisplay(parseInt(cachedPts));
+  }
+  const cachedCash = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
+  if (cachedCash !== null && !isNaN(parseFloat(cachedCash))) {
+    updateUserCashDisplay(parseFloat(cachedCash));
+  }
+})();
 
 // Instantly dismiss activation gate if account was already activated
 (function dismissActivationGateIfActive() {
@@ -2755,27 +2824,40 @@ async function syncLiveProfile() {
       const pts = parseInt(u.remaining_pts !== undefined ? u.remaining_pts : (u.pointsBalance !== undefined ? u.pointsBalance : (d.points_balance !== undefined ? d.points_balance : 0)));
       const cash = parseFloat(u.remaining_cash !== undefined ? u.remaining_cash : (u.cashBalance !== undefined ? u.cashBalance : (d.cash_balance !== undefined ? d.cash_balance : 0)));
 
-      const ptsEl = document.getElementById('dataPtsBal');
-      if (ptsEl) ptsEl.dataset.pts = pts;
-      const cashEl = document.getElementById('dataCashBal');
-      if (cashEl) cashEl.dataset.cash = cash;
+      const cachedPts = localStorage.getItem('ix_user_points_' + CURRENT_USER);
+      let finalPts = pts;
+      if (cachedPts !== null) {
+        const localVal = parseInt(cachedPts);
+        if (!isNaN(localVal)) {
+          if (localVal !== pts) {
+            finalPts = localVal;
+            fetch('/api/users.php?action=sync_balance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: CURRENT_USER, points: finalPts })
+            }).catch(() => {});
+          }
+        }
+      }
 
-      const pOverview = document.getElementById('statPtsOverview');
-      if (pOverview) pOverview.textContent = pts.toLocaleString();
-      const cOverview = document.getElementById('statCashOverview');
-      if (cOverview) cOverview.textContent = '₦' + cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const cachedCash = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
+      let finalCash = cash;
+      if (cachedCash !== null) {
+        const localVal = parseFloat(cachedCash);
+        if (!isNaN(localVal)) {
+          if (localVal !== cash) {
+            finalCash = localVal;
+            fetch('/api/users.php?action=sync_balance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: CURRENT_USER, cash: finalCash })
+            }).catch(() => {});
+          }
+        }
+      }
 
-      const pWallet = document.getElementById('statPtsWallet');
-      if (pWallet) pWallet.textContent = pts.toLocaleString() + ' PTS';
-      const cWallet = document.getElementById('statCashWallet');
-      if (cWallet) cWallet.textContent = '₦' + cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-      userPoints = pts;
-      userCash = cash;
-      const ecoPts = document.getElementById('ecoUserPtsBadge');
-      if (ecoPts) ecoPts.textContent = pts.toLocaleString();
-      const ecoCash = document.getElementById('ecoUserCashBadge');
-      if (ecoCash) ecoCash.textContent = Math.floor(cash).toLocaleString() + ' NGN';
+      updateUserPointsDisplay(finalPts);
+      updateUserCashDisplay(finalCash);
     }
   } catch(e) {}
 }
@@ -3514,9 +3596,15 @@ async function sendTaskProof() {
     if (d.status === 'success') {
       doneTaskIds.push(taskId);
       localStorage.setItem('ix_done_tasks', JSON.stringify(doneTaskIds));
-      toast('Proof submitted! The review team will verify and credit your points.', 'success');
+
+      const earned = parseInt(d.reward_points) || pts;
+      const updatedPts = (d.new_points !== undefined && d.new_points !== null) ? parseInt(d.new_points) : (getUserPoints() + earned);
+      updateUserPointsDisplay(updatedPts);
+
+      toast(d.message || `+${earned} points credited to your wallet!`, 'success');
       closeModal('modalTaskProof');
       renderTasks(allTasksList);
+      syncLiveProfile();
     } else {
       toast(d.message || 'Error submitting proof', 'error');
     }
@@ -3865,9 +3953,17 @@ async function submitSurveyAnswers() {
         allSurveysList[idx].completions = activeSurvey.completions;
       }
       localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
+
+      const earned = parseInt(d.reward_points) || 0;
+      if (d.passed && earned > 0) {
+        const updatedPts = (d.new_points !== undefined && d.new_points !== null) ? parseInt(d.new_points) : (getUserPoints() + earned);
+        updateUserPointsDisplay(updatedPts);
+      }
+
       showSurveyResult(d);
       renderSurveys(allSurveysList);
       loadSurveys();
+      syncLiveProfile();
     } else {
       toast(d.message || 'Submission error', 'error');
       nextBtn.disabled = false; nextBtn.textContent = 'Submit Survey';
@@ -4482,27 +4578,23 @@ async function handlePostEcosystemSubmit(e) {
       toast('Opportunity published to the Innovation Ecosystem!', 'success');
       closeModal('modalPostEcosystemItem');
 
-      // Update local balances if returned
+      // Update local balances and displays
       if (d.new_points !== null && d.new_points !== undefined) {
-        userPoints = d.new_points;
-        const ptsEl = document.getElementById('ecoUserPtsBadge');
-        const stPts = document.getElementById('statPtsOverview');
-        const dataPts = document.getElementById('dataPtsBal');
-        if (dataPts) dataPts.dataset.pts = userPoints;
-        if (ptsEl) ptsEl.textContent = userPoints.toLocaleString();
-        if (stPts) stPts.textContent = userPoints.toLocaleString();
+        updateUserPointsDisplay(d.new_points);
+      } else if (method === 'points') {
+        const ptsFee = parseInt(ecosystemSettings.points_fee) || 150;
+        updateUserPointsDisplay(Math.max(0, getUserPoints() - ptsFee));
       }
+
       if (d.new_cash !== null && d.new_cash !== undefined) {
-        userCash = d.new_cash;
-        const cashEl = document.getElementById('ecoUserCashBadge');
-        const stCash = document.getElementById('statCashOverview');
-        const dataCash = document.getElementById('dataCashBal');
-        if (dataCash) dataCash.dataset.cash = userCash;
-        if (cashEl) cashEl.textContent = Math.floor(userCash).toLocaleString() + ' NGN';
-        if (stCash) stCash.textContent = '₦' + userCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        updateUserCashDisplay(d.new_cash);
+      } else if (method !== 'points') {
+        const cashFee = parseInt(ecosystemSettings.cash_fee) || 300;
+        updateUserCashDisplay(Math.max(0, getUserCash() - cashFee));
       }
 
       loadEcosystem();
+      syncLiveProfile();
     } else {
       toast(d.message || 'Error publishing opportunity', 'error');
     }
