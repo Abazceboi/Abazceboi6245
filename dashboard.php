@@ -2515,6 +2515,27 @@ input,textarea,select{font-family:var(--ff);}
 const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
 const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
 
+let userPoints = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
+let userCash = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
+
+function getUserPoints() {
+  const el = document.getElementById('dataPtsBal');
+  if (el && el.dataset.pts !== undefined) {
+    const val = parseInt(el.dataset.pts);
+    if (!isNaN(val)) userPoints = val;
+  }
+  return userPoints;
+}
+
+function getUserCash() {
+  const el = document.getElementById('dataCashBal');
+  if (el && el.dataset.cash !== undefined) {
+    const val = parseFloat(el.dataset.cash);
+    if (!isNaN(val)) userCash = val;
+  }
+  return userCash;
+}
+
 // Instantly dismiss activation gate if account was already activated
 (function dismissActivationGateIfActive() {
   const isAct = localStorage.getItem('ix_is_activated') === '1' ||
@@ -2748,6 +2769,13 @@ async function syncLiveProfile() {
       if (pWallet) pWallet.textContent = pts.toLocaleString() + ' PTS';
       const cWallet = document.getElementById('statCashWallet');
       if (cWallet) cWallet.textContent = '₦' + cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      userPoints = pts;
+      userCash = cash;
+      const ecoPts = document.getElementById('ecoUserPtsBadge');
+      if (ecoPts) ecoPts.textContent = pts.toLocaleString();
+      const ecoCash = document.getElementById('ecoUserCashBadge');
+      if (ecoCash) ecoCash.textContent = Math.floor(cash).toLocaleString() + ' NGN';
     }
   } catch(e) {}
 }
@@ -4372,15 +4400,20 @@ async function openViewEcosystemModal(id) {
 }
 
 function openPostEcosystemModal() {
-  const ptsBal = userPoints;
-  const cashBal = userCash;
-  const ptsBalEl = document.getElementById('ecoModalPtsBal');
-  const cashBalEl = document.getElementById('ecoModalCashBal');
-  if (ptsBalEl) ptsBalEl.textContent = ptsBal.toLocaleString();
-  if (cashBalEl) cashBalEl.textContent = cashBal.toLocaleString();
-  updateEcoFeeBadges();
-  updateEcoPaySelection();
-  openModal('modalPostEcosystemItem');
+  try {
+    const ptsBal = getUserPoints();
+    const cashBal = getUserCash();
+    const ptsBalEl = document.getElementById('ecoModalPtsBal');
+    const cashBalEl = document.getElementById('ecoModalCashBal');
+    if (ptsBalEl) ptsBalEl.textContent = ptsBal.toLocaleString();
+    if (cashBalEl) cashBalEl.textContent = Math.floor(cashBal).toLocaleString();
+    updateEcoFeeBadges();
+    updateEcoPaySelection();
+    openModal('modalPostEcosystemItem');
+  } catch (err) {
+    console.error('Error opening ecosystem modal:', err);
+    openModal('modalPostEcosystemItem');
+  }
 }
 
 function updateEcoPaySelection() {
@@ -4389,18 +4422,20 @@ function updateEcoPaySelection() {
   const btn = document.getElementById('btnSubmitPostEco');
   const ptsFee = parseInt(ecosystemSettings.points_fee) || 150;
   const cashFee = parseInt(ecosystemSettings.cash_fee) || 300;
+  const curPts = getUserPoints();
+  const curCash = getUserCash();
 
   if (method === 'points') {
-    if (userPoints < ptsFee) {
-      if (msg) msg.textContent = 'Insufficient points. You need ' + ptsFee + ' PTS but have ' + userPoints + ' PTS.';
+    if (curPts < ptsFee) {
+      if (msg) msg.textContent = 'Insufficient points. You need ' + ptsFee + ' PTS but have ' + curPts + ' PTS.';
       if (btn) btn.disabled = true;
     } else {
       if (msg) msg.textContent = 'Listing fee of ' + ptsFee + ' PTS will be deducted from your points balance.';
       if (btn) btn.disabled = false;
     }
   } else {
-    if (userCash < cashFee) {
-      if (msg) msg.textContent = 'Insufficient affiliate balance. You need ' + cashFee + ' NGN but have ' + userCash + ' NGN.';
+    if (curCash < cashFee) {
+      if (msg) msg.textContent = 'Insufficient affiliate balance. You need ' + cashFee + ' NGN but have ' + Math.floor(curCash) + ' NGN.';
       if (btn) btn.disabled = true;
     } else {
       if (msg) msg.textContent = 'Listing fee of ' + cashFee + ' NGN will be deducted from your affiliate balance.';
@@ -4452,13 +4487,19 @@ async function handlePostEcosystemSubmit(e) {
         userPoints = d.new_points;
         const ptsEl = document.getElementById('ecoUserPtsBadge');
         const stPts = document.getElementById('statPtsOverview');
+        const dataPts = document.getElementById('dataPtsBal');
+        if (dataPts) dataPts.dataset.pts = userPoints;
         if (ptsEl) ptsEl.textContent = userPoints.toLocaleString();
         if (stPts) stPts.textContent = userPoints.toLocaleString();
       }
       if (d.new_cash !== null && d.new_cash !== undefined) {
         userCash = d.new_cash;
         const cashEl = document.getElementById('ecoUserCashBadge');
-        if (cashEl) cashEl.textContent = userCash.toLocaleString() + ' NGN';
+        const stCash = document.getElementById('statCashOverview');
+        const dataCash = document.getElementById('dataCashBal');
+        if (dataCash) dataCash.dataset.cash = userCash;
+        if (cashEl) cashEl.textContent = Math.floor(userCash).toLocaleString() + ' NGN';
+        if (stCash) stCash.textContent = '₦' + userCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
       loadEcosystem();
