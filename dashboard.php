@@ -863,6 +863,23 @@ input,textarea,select{font-family:var(--ff);}
 .item-timer svg{width:13px;height:13px;}
 .item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
 
+/* Innovation Ecosystem */
+.eco-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
+  transition:transform var(--trans), border-color var(--trans);
+}
+.eco-card:hover{transform:translateY(-2px);border-color:rgba(59,130,246,0.35);}
+.eco-like-btn{
+  background:transparent;border:1px solid var(--border);border-radius:6px;
+  padding:4px 8px;font-size:11.5px;display:flex;align-items:center;gap:5px;
+  color:var(--txt-3);cursor:pointer;transition:all 0.18s;
+}
+.eco-like-btn:hover{color:var(--txt);border-color:var(--txt-3);}
+.eco-like-btn.liked{color:#ef4444;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08);}
+.eco-like-btn.liked svg{fill:#ef4444;}
+.eco-cat-pill.active{background:var(--accent) !important;color:#fff !important;border-color:var(--accent) !important;}
+
 /* Tab Panels */
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
@@ -1827,6 +1844,70 @@ input,textarea,select{font-family:var(--ff);}
         <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
       </div>
     </div>
+  <!-- ══ TAB: INNOVATION ECOSYSTEM ═════════════════════════════════════════ -->
+  <div id="tab-ecosystem" class="tab-panel">
+    <!-- Header banner -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-0.3px;">Innovation Ecosystem</div>
+        <div style="font-size:12.5px;color:var(--txt-3);margin-top:2px;">Discover verified opportunities, products, and services or promote your offer to active members.</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openPostEcosystemModal()" style="display:inline-flex;align-items:center;gap:6px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Post Opportunity</span>
+      </button>
+    </div>
+
+    <!-- Fee and balance highlight card -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--txt);">Listing Pricing</div>
+          <div style="font-size:11.5px;color:var(--txt-3);" id="ecoFeeDisplayNotice">Publish your post for <strong id="ecoPtsFeeNotice">150 PTS</strong> or <strong id="ecoCashFeeNotice">300 NGN</strong> affiliate earnings.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="font-size:11.5px;color:var(--txt-2);">
+          <span>Your PTS: </span><strong style="color:var(--accent);" id="ecoUserPtsBadge"><?= number_format($userPoints) ?></strong>
+        </div>
+        <div style="font-size:11.5px;color:var(--txt-2);">
+          <span>Affiliate Balance: </span><strong style="color:var(--green);" id="ecoUserCashBadge"><?= number_format($userCash) ?> NGN</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter and search bar -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:200px;">
+          <input type="text" class="form-input" id="ecoSearchInput" placeholder="Search opportunities, gigs, products..." oninput="filterEcosystemItems()" style="padding-left:34px;height:38px;font-size:13px;">
+          <svg style="position:absolute;left:10px;top:11px;width:15px;height:15px;color:var(--txt-3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <select class="form-input" id="ecoFilterType" onchange="filterEcosystemItems()" style="width:auto;min-width:140px;height:38px;font-size:12.5px;">
+          <option value="all">All Listings</option>
+          <option value="official">Official Verified Only</option>
+          <option value="member">Member Posts Only</option>
+        </select>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;" id="ecoCategoryPills">
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill active" onclick="selectEcosystemCategory('all', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">All</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Business Opportunity', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Business Opportunity</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Digital Product', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Digital Product</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Gigs & Services', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Gigs & Services</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Tech & Tools', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Tech & Tools</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Crypto & Web3', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Crypto & Web3</button>
+      </div>
+    </div>
+
+    <!-- Items Grid -->
+    <div id="ecosystemGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:14px;">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);font-size:13px;">Loading ecosystem opportunities...</div>
+    </div>
   </div>
 
   <!-- ══ TAB: SETTINGS ═════════════════════════════════════════════════════ -->
@@ -1902,12 +1983,134 @@ input,textarea,select{font-family:var(--ff);}
   <button class="dock-item" onclick="switchTab('wallet', this)" title="Wallet">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
   </button>
+  <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Innovation Ecosystem">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  </button>
   <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings" title="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </nav>
 
 <!-- ══════════════════════════ MODALS ══════════════════════════════════════ -->
+
+<!-- Modal: Post Ecosystem Opportunity or Product -->
+<div class="modal-backdrop" id="modalPostEcosystemItem">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">Post in Innovation Ecosystem</div>
+      <button class="modal-close" onclick="closeModal('modalPostEcosystemItem')">&times;</button>
+    </div>
+    <form onsubmit="handlePostEcosystemSubmit(event)">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Opportunity / Product Title</label>
+          <input type="text" class="form-input" id="postEcoTitle" required placeholder="e.g. Graphic Design Gig, VTU Portal, Affiliate Tool">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="postEcoCategory" required>
+              <option value="Business Opportunity">Business Opportunity</option>
+              <option value="Digital Product">Digital Product</option>
+              <option value="Gigs & Services">Gigs & Services</option>
+              <option value="Tech & Tools">Tech & Tools</option>
+              <option value="Crypto & Web3">Crypto & Web3</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Deal / Price Tag</label>
+            <input type="text" class="form-input" id="postEcoPrice" placeholder="e.g. Free, 5,000 NGN, 20% Comm">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Contact / Opportunity URL</label>
+          <input type="url" class="form-input" id="postEcoLink" required placeholder="https://wa.me/... or https://t.me/... or website link">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Description / Offer Pitch</label>
+          <textarea class="form-input" id="postEcoDesc" rows="3" required placeholder="Describe what you are offering, how members benefit, and how to get started..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Banner Image URL (Optional)</label>
+          <input type="url" class="form-input" id="postEcoImage" placeholder="https://example.com/banner.jpg">
+        </div>
+
+        <!-- Payment Selection -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Choose Listing Fee Payment Method</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
+              <input type="radio" name="ecoPayMethod" value="points" checked onchange="updateEcoPaySelection()">
+              <span style="flex:1;">Pay with Points (<strong id="ecoModalPtsFee">150 PTS</strong>)</span>
+              <span style="font-size:11px;color:var(--accent);">Bal: <span id="ecoModalPtsBal">0</span> PTS</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
+              <input type="radio" name="ecoPayMethod" value="affiliate_balance" onchange="updateEcoPaySelection()">
+              <span style="flex:1;">Pay with Affiliate Earnings (<strong id="ecoModalCashFee">300 NGN</strong>)</span>
+              <span style="font-size:11px;color:var(--green);">Bal: <span id="ecoModalCashBal">0</span> NGN</span>
+            </label>
+          </div>
+          <div id="ecoPayValidationMsg" style="font-size:11.5px;margin-top:8px;color:var(--txt-3);"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modalPostEcosystemItem')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnSubmitPostEco">Pay &amp; Publish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: View Ecosystem Opportunity Details -->
+<div class="modal-backdrop" id="modalViewEcosystemItem">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title" id="viewEcoModalTitle">Opportunity Details</div>
+      <button class="modal-close" onclick="closeModal('modalViewEcosystemItem')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div id="viewEcoImageWrapper" style="display:none;width:100%;max-height:220px;overflow:hidden;border-radius:8px;border:1px solid var(--border);">
+        <img id="viewEcoImage" src="" alt="Banner" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span class="item-tag" id="viewEcoCategory" style="color:var(--accent);">Category</span>
+          <span id="viewEcoBadge"></span>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:var(--green);" id="viewEcoPrice">Price</span>
+      </div>
+
+      <div style="font-size:16px;font-weight:700;color:var(--txt);line-height:1.3;" id="viewEcoHeading"></div>
+      <div style="font-size:13px;color:var(--txt-2);line-height:1.6;white-space:pre-line;" id="viewEcoDescription"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:12px;color:var(--txt-3);">
+        <div>Posted by: <strong style="color:var(--txt);" id="viewEcoAuthor">-</strong></div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="display:flex;align-items:center;gap:4px;" id="viewEcoViewsCount">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="viewEcoViewsVal">0</span> views
+          </span>
+          <button type="button" class="btn btn-ghost btn-sm" id="viewEcoLikeBtn" onclick="handleViewModalLike()" style="padding:3px 8px;font-size:12px;display:flex;align-items:center;gap:4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span id="viewEcoLikesVal">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalViewEcosystemItem')">Close</button>
+      <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" id="btnConnectEcoLink" style="display:inline-flex;align-items:center;gap:6px;">
+        <span>Connect / Open Opportunity</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
 
 <!-- Edit Bank Card Modal -->
 <div class="modal-backdrop" id="modalEditBank">
@@ -2627,7 +2830,7 @@ async function checkAnnouncementPopup() {
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOATING DOWN TAB BAR NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'settings'];
+const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'ecosystem', 'settings'];
 
 function switchTab(tab, btn) {
   if (!TABS.includes(tab)) tab = 'home';
@@ -2654,6 +2857,7 @@ function switchTab(tab, btn) {
 
   if (tab === 'tasks') loadTasks();
   if (tab === 'surveys') loadSurveys();
+  if (tab === 'ecosystem') loadEcosystem();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3915,6 +4119,354 @@ function copyReceiptTxn() {
 
 function printReceipt() {
   window.print();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INNOVATION ECOSYSTEM (OPPORTUNITIES, PRODUCTS, VIEWS, LIKES)
+// ═══════════════════════════════════════════════════════════════════════════
+let allEcosystemItems = [];
+let ecosystemSettings = { points_fee: 150, cash_fee: 300, allow_member_posts: true };
+let selectedEcoCategory = 'all';
+let viewingEcoItem = null;
+
+async function loadEcosystem() {
+  const grid = document.getElementById('ecosystemGrid');
+  if (!grid) return;
+  try {
+    const r = await fetch('/api/ecosystem.php?action=get_items&username=' + encodeURIComponent(CURRENT_USER));
+    const d = await r.json();
+    if (d.status === 'success') {
+      allEcosystemItems = d.items || [];
+      if (d.settings) {
+        ecosystemSettings = d.settings;
+        updateEcoFeeBadges();
+      }
+      renderEcosystemGrid();
+    } else {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);">Failed to load ecosystem items.</div>';
+    }
+  } catch(e) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);">Network error loading ecosystem.</div>';
+  }
+}
+
+function updateEcoFeeBadges() {
+  const ptsFee = parseInt(ecosystemSettings.points_fee) || 150;
+  const cashFee = parseInt(ecosystemSettings.cash_fee) || 300;
+  const ptsEl = document.getElementById('ecoPtsFeeNotice');
+  const cashEl = document.getElementById('ecoCashFeeNotice');
+  const mPtsFee = document.getElementById('ecoModalPtsFee');
+  const mCashFee = document.getElementById('ecoModalCashFee');
+  if (ptsEl) ptsEl.textContent = ptsFee + ' PTS';
+  if (cashEl) cashEl.textContent = cashFee.toLocaleString() + ' NGN';
+  if (mPtsFee) mPtsFee.textContent = ptsFee + ' PTS';
+  if (mCashFee) mCashFee.textContent = cashFee.toLocaleString() + ' NGN';
+}
+
+function selectEcosystemCategory(cat, btn) {
+  selectedEcoCategory = cat;
+  document.querySelectorAll('.eco-cat-pill').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  filterEcosystemItems();
+}
+
+function filterEcosystemItems() {
+  const query = (document.getElementById('ecoSearchInput')?.value || '').toLowerCase().trim();
+  const filterType = document.getElementById('ecoFilterType')?.value || 'all';
+
+  let list = allEcosystemItems;
+
+  if (selectedEcoCategory !== 'all') {
+    list = list.filter(it => (it.category || '').toLowerCase() === selectedEcoCategory.toLowerCase());
+  }
+
+  if (filterType === 'official') {
+    list = list.filter(it => it.is_official);
+  } else if (filterType === 'member') {
+    list = list.filter(it => !it.is_official);
+  }
+
+  if (query) {
+    list = list.filter(it =>
+      (it.title || '').toLowerCase().includes(query) ||
+      (it.description || '').toLowerCase().includes(query) ||
+      (it.category || '').toLowerCase().includes(query) ||
+      (it.author || '').toLowerCase().includes(query)
+    );
+  }
+
+  renderEcosystemList(list);
+}
+
+function renderEcosystemGrid() {
+  filterEcosystemItems();
+}
+
+function renderEcosystemList(list) {
+  const grid = document.getElementById('ecosystemGrid');
+  if (!grid) return;
+
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--txt-3);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);">No opportunities or products found matching your search. Be the first to post!</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(item => {
+    const isOfficial = Boolean(item.is_official);
+    const badgeHtml = isOfficial
+      ? '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;border-color:rgba(59,130,246,0.25);">Official Verified</span>'
+      : '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+    const isLiked = Boolean(item.user_liked);
+    const likesCount = item.likes_count || 0;
+    const viewsCount = item.views || 0;
+
+    return `
+      <div class="eco-card" id="ecoCard_${esc(item.id)}">
+        <div>
+          ${item.image_url ? `
+            <div style="width:100%;height:130px;border-radius:8px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
+              <img src="${esc(item.image_url)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
+            </div>
+          ` : ''}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <span class="item-tag">${esc(item.category)}</span>
+              ${badgeHtml}
+            </div>
+            ${item.price_tag ? `<span style="font-size:12px;font-weight:700;color:var(--green);">${esc(item.price_tag)}</span>` : ''}
+          </div>
+
+          <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px;line-height:1.35;">${esc(item.title)}</div>
+          <div style="font-size:12px;color:var(--txt-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${esc(item.description)}</div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:8px;">Posted by: <strong style="color:var(--txt);">${esc(item.author)}</strong></div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:auto;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <!-- View count -->
+            <span style="font-size:11.5px;color:var(--txt-3);display:flex;align-items:center;gap:4px;" title="Views">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span id="ecoViews_${esc(item.id)}">${viewsCount}</span>
+            </span>
+
+            <!-- Like button -->
+            <button type="button" class="eco-like-btn ${isLiked ? 'liked' : ''}" id="ecoLikeBtn_${esc(item.id)}" onclick="toggleLikeEcosystem('${esc(item.id)}', event)" title="Like this opportunity">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="ecoLikes_${esc(item.id)}">${likesCount}</span>
+            </button>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" onclick="openViewEcosystemModal('${esc(item.id)}')">View &amp; Connect</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function toggleLikeEcosystem(id, e) {
+  if (e) e.stopPropagation();
+  try {
+    const r = await fetch('/api/ecosystem.php?action=like_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, username: CURRENT_USER })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      const it = allEcosystemItems.find(x => x.id === id);
+      if (it) {
+        it.user_liked = d.liked;
+        it.likes_count = d.likes_count;
+      }
+      const btn = document.getElementById('ecoLikeBtn_' + id);
+      const span = document.getElementById('ecoLikes_' + id);
+      if (btn) btn.classList.toggle('liked', d.liked);
+      if (span) span.textContent = d.likes_count;
+
+      if (viewingEcoItem && viewingEcoItem.id === id) {
+        viewingEcoItem.user_liked = d.liked;
+        viewingEcoItem.likes_count = d.likes_count;
+        const vBtn = document.getElementById('viewEcoLikeBtn');
+        const vSpan = document.getElementById('viewEcoLikesVal');
+        if (vBtn) vBtn.classList.toggle('btn-primary', d.liked);
+        if (vSpan) vSpan.textContent = d.likes_count;
+      }
+    }
+  } catch(err) {}
+}
+
+function handleViewModalLike() {
+  if (viewingEcoItem) {
+    toggleLikeEcosystem(viewingEcoItem.id);
+  }
+}
+
+async function openViewEcosystemModal(id) {
+  const item = allEcosystemItems.find(x => x.id === id);
+  if (!item) return;
+  viewingEcoItem = item;
+
+  document.getElementById('viewEcoModalTitle').textContent = item.title;
+  document.getElementById('viewEcoHeading').textContent = item.title;
+  document.getElementById('viewEcoCategory').textContent = item.category;
+  document.getElementById('viewEcoPrice').textContent = item.price_tag || 'Deal Available';
+  document.getElementById('viewEcoDescription').textContent = item.description;
+  document.getElementById('viewEcoAuthor').textContent = item.author;
+
+  const badgeEl = document.getElementById('viewEcoBadge');
+  if (badgeEl) {
+    badgeEl.innerHTML = item.is_official
+      ? '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;">Official Verified</span>'
+      : '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;">Member Post</span>';
+  }
+
+  const imgWrap = document.getElementById('viewEcoImageWrapper');
+  const imgEl = document.getElementById('viewEcoImage');
+  if (imgWrap && imgEl) {
+    if (item.image_url) {
+      imgEl.src = item.image_url;
+      imgWrap.style.display = 'block';
+    } else {
+      imgWrap.style.display = 'none';
+    }
+  }
+
+  const viewsVal = document.getElementById('viewEcoViewsVal');
+  if (viewsVal) viewsVal.textContent = item.views || 0;
+
+  const vBtn = document.getElementById('viewEcoLikeBtn');
+  const vSpan = document.getElementById('viewEcoLikesVal');
+  if (vBtn) vBtn.classList.toggle('btn-primary', Boolean(item.user_liked));
+  if (vSpan) vSpan.textContent = item.likes_count || 0;
+
+  const connectBtn = document.getElementById('btnConnectEcoLink');
+  if (connectBtn) {
+    if (item.contact_link) {
+      connectBtn.href = item.contact_link;
+      connectBtn.style.display = 'inline-flex';
+    } else {
+      connectBtn.style.display = 'none';
+    }
+  }
+
+  openModal('modalViewEcosystemItem');
+
+  // Increment views
+  try {
+    const r = await fetch('/api/ecosystem.php?action=increment_views', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      item.views = d.views;
+      const vCardSpan = document.getElementById('ecoViews_' + id);
+      if (vCardSpan) vCardSpan.textContent = d.views;
+      if (viewsVal) viewsVal.textContent = d.views;
+    }
+  } catch(err) {}
+}
+
+function openPostEcosystemModal() {
+  const ptsBal = userPoints;
+  const cashBal = userCash;
+  const ptsBalEl = document.getElementById('ecoModalPtsBal');
+  const cashBalEl = document.getElementById('ecoModalCashBal');
+  if (ptsBalEl) ptsBalEl.textContent = ptsBal.toLocaleString();
+  if (cashBalEl) cashBalEl.textContent = cashBal.toLocaleString();
+  updateEcoFeeBadges();
+  updateEcoPaySelection();
+  openModal('modalPostEcosystemItem');
+}
+
+function updateEcoPaySelection() {
+  const method = document.querySelector('input[name="ecoPayMethod"]:checked')?.value || 'points';
+  const msg = document.getElementById('ecoPayValidationMsg');
+  const btn = document.getElementById('btnSubmitPostEco');
+  const ptsFee = parseInt(ecosystemSettings.points_fee) || 150;
+  const cashFee = parseInt(ecosystemSettings.cash_fee) || 300;
+
+  if (method === 'points') {
+    if (userPoints < ptsFee) {
+      if (msg) msg.textContent = 'Insufficient points. You need ' + ptsFee + ' PTS but have ' + userPoints + ' PTS.';
+      if (btn) btn.disabled = true;
+    } else {
+      if (msg) msg.textContent = 'Listing fee of ' + ptsFee + ' PTS will be deducted from your points balance.';
+      if (btn) btn.disabled = false;
+    }
+  } else {
+    if (userCash < cashFee) {
+      if (msg) msg.textContent = 'Insufficient affiliate balance. You need ' + cashFee + ' NGN but have ' + userCash + ' NGN.';
+      if (btn) btn.disabled = true;
+    } else {
+      if (msg) msg.textContent = 'Listing fee of ' + cashFee + ' NGN will be deducted from your affiliate balance.';
+      if (btn) btn.disabled = false;
+    }
+  }
+}
+
+async function handlePostEcosystemSubmit(e) {
+  e.preventDefault();
+  const title = document.getElementById('postEcoTitle')?.value.trim();
+  const category = document.getElementById('postEcoCategory')?.value;
+  const price = document.getElementById('postEcoPrice')?.value.trim();
+  const link = document.getElementById('postEcoLink')?.value.trim();
+  const desc = document.getElementById('postEcoDesc')?.value.trim();
+  const image = document.getElementById('postEcoImage')?.value.trim();
+  const method = document.querySelector('input[name="ecoPayMethod"]:checked')?.value || 'points';
+  const btn = document.getElementById('btnSubmitPostEco');
+
+  if (!title || !desc || !link) {
+    toast('Please fill in all required fields.', 'error');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Publishing...'; }
+
+  try {
+    const r = await fetch('/api/ecosystem.php?action=create_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        category: category,
+        price_tag: price,
+        contact_link: link,
+        description: desc,
+        image_url: image,
+        username: CURRENT_USER,
+        payment_method: method
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Opportunity published to the Innovation Ecosystem!', 'success');
+      closeModal('modalPostEcosystemItem');
+
+      // Update local balances if returned
+      if (d.new_points !== null && d.new_points !== undefined) {
+        userPoints = d.new_points;
+        const ptsEl = document.getElementById('ecoUserPtsBadge');
+        const stPts = document.getElementById('statPtsOverview');
+        if (ptsEl) ptsEl.textContent = userPoints.toLocaleString();
+        if (stPts) stPts.textContent = userPoints.toLocaleString();
+      }
+      if (d.new_cash !== null && d.new_cash !== undefined) {
+        userCash = d.new_cash;
+        const cashEl = document.getElementById('ecoUserCashBadge');
+        if (cashEl) cashEl.textContent = userCash.toLocaleString() + ' NGN';
+      }
+
+      loadEcosystem();
+    } else {
+      toast(d.message || 'Error publishing opportunity', 'error');
+    }
+  } catch(err) {
+    toast('Network error publishing opportunity', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Pay & Publish'; }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

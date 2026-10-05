@@ -1,0 +1,6 @@
+{
+  "points_fee": 150,
+  "cash_fee": 300,
+  "auto_approve": true,
+  "allow_member_posts": true
+}

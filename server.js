@@ -2269,6 +2269,302 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 return;
             }
 
+            // Innovation Ecosystem API
+            if (cleanUrl.includes('ecosystem.php')) {
+                const ecoFile = path.join(PUBLIC_DIR, 'data', 'ecosystem.json');
+                const ecoSettingsFile = path.join(PUBLIC_DIR, 'data', 'ecosystem_settings.json');
+                const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+
+                let ecoItems = [];
+                if (fs.existsSync(ecoFile)) {
+                    try { ecoItems = JSON.parse(fs.readFileSync(ecoFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(ecoItems)) ecoItems = [];
+
+                let ecoSettings = { points_fee: 150, cash_fee: 300, auto_approve: true, allow_member_posts: true };
+                if (fs.existsSync(ecoSettingsFile)) {
+                    try { ecoSettings = Object.assign(ecoSettings, JSON.parse(fs.readFileSync(ecoSettingsFile, 'utf8'))); } catch(e){}
+                }
+
+                if (action === 'get_items') {
+                    const reqUrl = new URL(req.url, 'http://localhost');
+                    const username = (parsed.username || reqUrl.searchParams.get('username') || '').trim();
+                    const isAdmin = (parsed.is_admin || reqUrl.searchParams.get('is_admin') === '1' || reqUrl.searchParams.get('is_admin') === 'true');
+
+                    const formatted = [];
+                    for (const item of ecoItems) {
+                        const likes = Array.isArray(item.likes) ? item.likes : [];
+                        const likesCount = likes.length;
+                        const userLiked = username ? likes.includes(username) : false;
+
+                        if (!isAdmin && (item.status || 'active') !== 'active') {
+                            continue;
+                        }
+
+                        formatted.push({
+                            id: item.id || '',
+                            title: item.title || '',
+                            category: item.category || 'General Opportunity',
+                            description: item.description || '',
+                            price_tag: item.price_tag || 'Deal Available',
+                            author: item.author || 'Member',
+                            author_role: item.author_role || 'member',
+                            is_official: Boolean(item.is_official),
+                            is_admin_verified: Boolean(item.is_admin_verified),
+                            contact_link: item.contact_link || '',
+                            image_url: item.image_url || '',
+                            payment_method: item.payment_method || 'official',
+                            fee_paid: parseInt(item.fee_paid) || 0,
+                            views: parseInt(item.views) || 0,
+                            likes_count: likesCount,
+                            user_liked: userLiked,
+                            status: item.status || 'active',
+                            created_at: item.created_at || ''
+                        });
+                    }
+
+                    res.end(JSON.stringify({ status: 'success', items: formatted, settings: ecoSettings }));
+                    return;
+                }
+
+                if (action === 'get_settings') {
+                    res.end(JSON.stringify({ status: 'success', settings: ecoSettings }));
+                    return;
+                }
+
+                if (action === 'increment_views') {
+                    const id = (parsed.id || '').trim();
+                    let newViews = 0;
+                    let found = false;
+                    for (const it of ecoItems) {
+                        if (it.id === id) {
+                            it.views = (parseInt(it.views) || 0) + 1;
+                            newViews = it.views;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', views: newViews }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'like_item') {
+                    const id = (parsed.id || '').trim();
+                    const username = (parsed.username || '').trim();
+                    if (!id || !username) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item ID and username are required' }));
+                        return;
+                    }
+                    let liked = false;
+                    let likesCount = 0;
+                    let found = false;
+                    for (const it of ecoItems) {
+                        if (it.id === id) {
+                            if (!Array.isArray(it.likes)) it.likes = [];
+                            const idx = it.likes.indexOf(username);
+                            if (idx !== -1) {
+                                it.likes.splice(idx, 1);
+                                liked = false;
+                            } else {
+                                it.likes.push(username);
+                                liked = true;
+                            }
+                            likesCount = it.likes.length;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', liked, likes_count: likesCount }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'create_item') {
+                    const title = (parsed.title || '').trim();
+                    const category = (parsed.category || 'Business Opportunity').trim();
+                    const description = (parsed.description || '').trim();
+                    const priceTag = (parsed.price_tag || 'Deal Available').trim();
+                    const contactLink = (parsed.contact_link || '').trim();
+                    const imageUrl = (parsed.image_url || '').trim();
+                    const username = (parsed.username || '').trim();
+                    const payMethod = (parsed.payment_method || 'points').trim();
+                    const isAdmin = Boolean(parsed.is_admin);
+
+                    if (!title) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Title is required' }));
+                        return;
+                    }
+                    if (!description) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Description is required' }));
+                        return;
+                    }
+
+                    let feePaid = 0;
+                    let newPoints = null;
+                    let newCash = null;
+
+                    if (!isAdmin) {
+                        if (!ecoSettings.allow_member_posts) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Member uploads are currently paused by administration' }));
+                            return;
+                        }
+                        if (!username) {
+                            res.end(JSON.stringify({ status: 'error', message: 'User authentication required' }));
+                            return;
+                        }
+
+                        let usersData = { users: [] };
+                        if (fs.existsSync(usersFile)) {
+                            try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                        }
+                        const isWrapped = Array.isArray(usersData.users);
+                        const userList = isWrapped ? usersData.users : (Array.isArray(usersData) ? usersData : []);
+                        const targetUser = userList.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+
+                        if (!targetUser) {
+                            res.end(JSON.stringify({ status: 'error', message: 'User account not found' }));
+                            return;
+                        }
+
+                        const ptsReq = parseInt(ecoSettings.points_fee) || 150;
+                        const cashReq = parseInt(ecoSettings.cash_fee) || 300;
+
+                        if (payMethod === 'points') {
+                            const curPts = parseInt(targetUser.remaining_pts || targetUser.pointsBalance) || 0;
+                            if (curPts < ptsReq) {
+                                res.end(JSON.stringify({ status: 'error', message: `Insufficient points. You have ${curPts} PTS, but ${ptsReq} PTS are required to publish.` }));
+                                return;
+                            }
+                            targetUser.remaining_pts = Math.max(0, curPts - ptsReq);
+                            targetUser.pointsBalance = targetUser.remaining_pts;
+                            feePaid = ptsReq;
+                            newPoints = targetUser.remaining_pts;
+                            newCash = parseInt(targetUser.remaining_cash || targetUser.cashBalance) || 0;
+
+                            if (!Array.isArray(targetUser.activity_ledger)) targetUser.activity_ledger = [];
+                            targetUser.activity_ledger.unshift({
+                                time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                                type: 'Ecosystem Listing Fee',
+                                desc: `Published ecosystem opportunity: ${title}`,
+                                reward_type: 'points',
+                                reward_value: -ptsReq
+                            });
+                        } else {
+                            const curCash = parseInt(targetUser.remaining_cash || targetUser.cashBalance) || 0;
+                            if (curCash < cashReq) {
+                                res.end(JSON.stringify({ status: 'error', message: `Insufficient affiliate balance. You have ${curCash} NGN, but ${cashReq} NGN is required to publish.` }));
+                                return;
+                            }
+                            targetUser.remaining_cash = Math.max(0, curCash - cashReq);
+                            targetUser.cashBalance = targetUser.remaining_cash;
+                            feePaid = cashReq;
+                            newCash = targetUser.remaining_cash;
+                            newPoints = parseInt(targetUser.remaining_pts || targetUser.pointsBalance) || 0;
+
+                            if (!Array.isArray(targetUser.activity_ledger)) targetUser.activity_ledger = [];
+                            targetUser.activity_ledger.unshift({
+                                time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                                type: 'Ecosystem Listing Fee',
+                                desc: `Published ecosystem opportunity: ${title}`,
+                                reward_type: 'cash',
+                                reward_value: -cashReq
+                            });
+                        }
+
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    }
+
+                    const newItem = {
+                        id: 'ECO-' + Math.random().toString(36).substring(2, 7).toUpperCase(),
+                        title: title,
+                        category: category,
+                        description: description,
+                        price_tag: priceTag,
+                        author: isAdmin ? 'InnovationX HQ' : username,
+                        author_role: isAdmin ? 'admin' : 'member',
+                        is_official: isAdmin,
+                        is_admin_verified: isAdmin,
+                        contact_link: contactLink,
+                        image_url: imageUrl,
+                        payment_method: isAdmin ? 'official' : payMethod,
+                        fee_paid: feePaid,
+                        views: 0,
+                        likes: [],
+                        status: (isAdmin || ecoSettings.auto_approve) ? 'active' : 'pending',
+                        created_at: new Date().toISOString()
+                    };
+
+                    ecoItems.unshift(newItem);
+                    fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Opportunity published to the Innovation Ecosystem successfully!',
+                        item: newItem,
+                        new_points: newPoints,
+                        new_cash: newCash
+                    }));
+                    return;
+                }
+
+                if (action === 'toggle_status') {
+                    const id = (parsed.id || '').trim();
+                    let newStatus = 'active';
+                    let found = false;
+                    for (const it of ecoItems) {
+                        if (it.id === id) {
+                            it.status = (it.status || 'active') === 'active' ? 'paused' : 'active';
+                            newStatus = it.status;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', new_status: newStatus, message: 'Status updated successfully' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'delete_item') {
+                    const id = (parsed.id || '').trim();
+                    const prevLen = ecoItems.length;
+                    ecoItems = ecoItems.filter(it => it.id !== id);
+                    if (ecoItems.length !== prevLen) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Item deleted from ecosystem' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'save_settings') {
+                    ecoSettings.points_fee = Math.max(0, parseInt(parsed.points_fee) || 150);
+                    ecoSettings.cash_fee = Math.max(0, parseInt(parsed.cash_fee) || 300);
+                    ecoSettings.auto_approve = Boolean(parsed.auto_approve);
+                    ecoSettings.allow_member_posts = parsed.allow_member_posts !== undefined ? Boolean(parsed.allow_member_posts) : true;
+
+                    fs.writeFileSync(ecoSettingsFile, JSON.stringify(ecoSettings, null, 2));
+                    res.end(JSON.stringify({ status: 'success', message: 'Ecosystem settings saved successfully', settings: ecoSettings }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'error', message: 'Unknown action' }));
+                return;
+            }
+
             // Tokens OTC & Market API
             if (cleanUrl.includes('tokens.php')) {
                 const tokenConfigFile = path.join(PUBLIC_DIR, 'config', 'tokens_config.json');

@@ -422,6 +422,10 @@ input,textarea,select{font-family:var(--ff);}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Tasks & Gigs Hub
     </button>
+    <button class="nav-item" onclick="switchAdminTab('ecosystem', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Innovation Ecosystem
+    </button>
     <button class="nav-item" onclick="switchAdminTab('users', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Users & Ledgers
@@ -994,6 +998,120 @@ input,textarea,select{font-family:var(--ff);}
           </table>
         </div>
       </div>
+    <!-- ══ TAB: ECOSYSTEM ══════════════════════════════════════════════ -->
+    <div id="tab-ecosystem" class="tab-content">
+      <!-- Top header with actions -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--txt);">Innovation Ecosystem Control</div>
+          <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Publish official verified opportunities, moderate member submissions, and control listing fees.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="openAdminPostEcoModal()" style="display:flex;align-items:center;gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Post Official Opportunity</span>
+          </button>
+          <button class="btn btn-ghost" onclick="loadAdminEcosystem()">Refresh</button>
+        </div>
+      </div>
+
+      <!-- KPI stats grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Listings</div>
+          <div class="stat-value" id="kpiEcoTotal" style="color:var(--accent);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Official Posts</div>
+          <div class="stat-value" id="kpiEcoOfficial" style="color:var(--blue);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Member Posts</div>
+          <div class="stat-value" id="kpiEcoMember" style="color:var(--green);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Views</div>
+          <div class="stat-value" id="kpiEcoViews" style="color:var(--purple);">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Likes</div>
+          <div class="stat-value" id="kpiEcoLikes" style="color:#ef4444;">0</div>
+        </div>
+      </div>
+
+      <!-- Settings Card -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Listing Fee &amp; Moderation Settings</div>
+            <div class="card-sub">Configure required payment to publish in the ecosystem and member posting permissions.</div>
+          </div>
+        </div>
+        <form onsubmit="handleSaveEcoSettings(event)" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;align-items:end;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Points Listing Fee (PTS)</label>
+            <input type="number" class="form-input" id="adminEcoPtsFee" min="0" step="1" required placeholder="e.g. 150">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Affiliate Balance Fee (NGN)</label>
+            <input type="number" class="form-input" id="adminEcoCashFee" min="0" step="1" required placeholder="e.g. 300">
+          </div>
+          <div class="form-group" style="margin-bottom:0;display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="adminEcoAllowMemberPosts" checked>
+              <span>Allow Member Uploads</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="adminEcoAutoApprove" checked>
+              <span>Auto-Approve Submissions</span>
+            </label>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-secondary" id="btnSaveEcoSettings" style="width:100%;">Save Settings</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Listings Table Card -->
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="card-title">All Opportunities &amp; Products</div>
+            <div class="card-sub">Active listings visible in member dashboard ecosystem.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" class="form-input" id="adminEcoSearch" placeholder="Search title or author..." oninput="filterAdminEcoTable()" style="width:200px;font-size:12.5px;">
+            <select class="form-input" id="adminEcoCategoryFilter" onchange="filterAdminEcoTable()" style="width:auto;font-size:12.5px;">
+              <option value="all">All Categories</option>
+              <option value="Business Opportunity">Business Opportunity</option>
+              <option value="Digital Product">Digital Product</option>
+              <option value="Gigs & Services">Gigs & Services</option>
+              <option value="Tech & Tools">Tech & Tools</option>
+              <option value="Crypto & Web3">Crypto & Web3</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title &amp; Type</th>
+                <th>Category</th>
+                <th>Author</th>
+                <th>Pricing / Fee</th>
+                <th>Engagement</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminEcoTableBody">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">Loading ecosystem items...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ══ TAB: USERS ══════════════════════════════════════════════════════ -->
@@ -1482,6 +1600,61 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 </div>
 
+<!-- Modal: Admin Create Official Ecosystem Opportunity -->
+<div class="modal-backdrop" id="modalAdminPostEcosystem">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div class="modal-title">Post Official Opportunity / Product</div>
+      <button class="modal-close" onclick="closeModal('modalAdminPostEcosystem')">&times;</button>
+    </div>
+    <form onsubmit="handleAdminPostEcoSubmit(event)">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Opportunity / Product Title</label>
+          <input type="text" class="form-input" id="adminPostEcoTitle" required placeholder="e.g. VIP Ambassador Program, Exclusive VTU API">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="adminPostEcoCategory" required>
+              <option value="Business Opportunity">Business Opportunity</option>
+              <option value="Digital Product">Digital Product</option>
+              <option value="Gigs & Services">Gigs & Services</option>
+              <option value="Tech & Tools">Tech & Tools</option>
+              <option value="Crypto & Web3">Crypto & Web3</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Deal / Price Tag</label>
+            <input type="text" class="form-input" id="adminPostEcoPrice" placeholder="e.g. Free Official Access, Wholesale Rates">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">External Opportunity Link / Contact</label>
+          <input type="url" class="form-input" id="adminPostEcoLink" required placeholder="https://t.me/... or https://wa.me/... or website link">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Description / Offer Pitch</label>
+          <textarea class="form-input" id="adminPostEcoDesc" rows="3" required placeholder="Detailed information about this verified platform opportunity..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Banner Image URL (Optional)</label>
+          <input type="url" class="form-input" id="adminPostEcoImage" placeholder="https://example.com/banner.jpg">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modalAdminPostEcosystem')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnAdminSubmitEco">Publish Official Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Clean Confirm Dialog Modal -->
 <div class="modal-backdrop" id="modalConfirm">
   <div class="modal" style="max-width:400px;">
@@ -1617,7 +1790,7 @@ applyTheme(localStorage.getItem('ix_theme') || 'dark');
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['overview','surveys','tasks','users','coupons','withdrawals','pricing','notifications'];
+const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','pricing','notifications'];
 
 function switchAdminTab(tab, btn) {
   if (!TABS.includes(tab)) tab = 'overview';
@@ -1637,6 +1810,7 @@ function switchAdminTab(tab, btn) {
     overview: 'Dashboard Overview',
     surveys: 'Surveys Hub',
     tasks: 'Tasks & Gigs Hub',
+    ecosystem: 'Innovation Ecosystem Control',
     users: 'Users & Ledgers',
     coupons: 'Coupon PINs',
     withdrawals: 'Payout Approvals',
@@ -1656,6 +1830,7 @@ function switchAdminTab(tab, btn) {
 
   if (tab === 'surveys') { loadSurveysData(); loadSurveySubmissions(); }
   if (tab === 'tasks') { loadTasksData(); loadTaskSubmissions(); }
+  if (tab === 'ecosystem') loadAdminEcosystem();
   if (tab === 'users') loadUsersData();
   if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
   if (tab === 'withdrawals') loadWithdrawalsData();
@@ -3445,6 +3620,262 @@ async function handleClearAllNotifications() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// INNOVATION ECOSYSTEM CONTROL
+// ═══════════════════════════════════════════════════════════════════════════
+let adminEcoItems = [];
+let adminEcoSettings = { points_fee: 150, cash_fee: 300, auto_approve: true, allow_member_posts: true };
+
+async function loadAdminEcosystem() {
+  const tbody = document.getElementById('adminEcoTableBody');
+  try {
+    const r = await fetch('/api/ecosystem.php?action=get_items&is_admin=1');
+    const d = await r.json();
+    if (d.status === 'success') {
+      adminEcoItems = d.items || [];
+      if (d.settings) {
+        adminEcoSettings = d.settings;
+        const ptsInp = document.getElementById('adminEcoPtsFee');
+        const cashInp = document.getElementById('adminEcoCashFee');
+        const allowInp = document.getElementById('adminEcoAllowMemberPosts');
+        const autoInp = document.getElementById('adminEcoAutoApprove');
+        if (ptsInp) ptsInp.value = adminEcoSettings.points_fee || 150;
+        if (cashInp) cashInp.value = adminEcoSettings.cash_fee || 300;
+        if (allowInp) allowInp.checked = adminEcoSettings.allow_member_posts !== false;
+        if (autoInp) autoInp.checked = Boolean(adminEcoSettings.auto_approve);
+      }
+
+      // Update KPI cards
+      const total = adminEcoItems.length;
+      const official = adminEcoItems.filter(x => x.is_official).length;
+      const member = total - official;
+      const views = adminEcoItems.reduce((acc, x) => acc + (parseInt(x.views) || 0), 0);
+      const likes = adminEcoItems.reduce((acc, x) => acc + (parseInt(x.likes_count) || 0), 0);
+
+      const kTotal = document.getElementById('kpiEcoTotal');
+      const kOfficial = document.getElementById('kpiEcoOfficial');
+      const kMember = document.getElementById('kpiEcoMember');
+      const kViews = document.getElementById('kpiEcoViews');
+      const kLikes = document.getElementById('kpiEcoLikes');
+
+      if (kTotal) kTotal.textContent = total;
+      if (kOfficial) kOfficial.textContent = official;
+      if (kMember) kMember.textContent = member;
+      if (kViews) kViews.textContent = views;
+      if (kLikes) kLikes.textContent = likes;
+
+      renderAdminEcoTable(adminEcoItems);
+    } else {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red);">Failed to load ecosystem items.</td></tr>';
+    }
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red);">Network error loading ecosystem.</td></tr>';
+  }
+}
+
+function filterAdminEcoTable() {
+  const q = (document.getElementById('adminEcoSearch')?.value || '').toLowerCase().trim();
+  const cat = document.getElementById('adminEcoCategoryFilter')?.value || 'all';
+
+  let list = adminEcoItems;
+  if (cat !== 'all') {
+    list = list.filter(it => (it.category || '').toLowerCase() === cat.toLowerCase());
+  }
+  if (q) {
+    list = list.filter(it =>
+      (it.title || '').toLowerCase().includes(q) ||
+      (it.author || '').toLowerCase().includes(q) ||
+      (it.description || '').toLowerCase().includes(q)
+    );
+  }
+  renderAdminEcoTable(list);
+}
+
+function renderAdminEcoTable(list) {
+  const tbody = document.getElementById('adminEcoTableBody');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">No ecosystem items found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => {
+    const isOfficial = Boolean(item.is_official);
+    const badgeType = isOfficial
+      ? '<span class="badge badge-active">Official HQ</span>'
+      : '<span class="badge badge-neutral">Member Post</span>';
+    const feeInfo = isOfficial
+      ? '<span style="font-size:11.5px;color:var(--txt-3);">Free (Admin)</span>'
+      : (item.payment_method === 'points'
+          ? `<strong style="color:var(--accent);">${item.fee_paid} PTS</strong>`
+          : `<strong style="color:var(--green);">${item.fee_paid.toLocaleString()} NGN</strong>`);
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600;color:var(--txt);">${esc(item.title)}</div>
+          <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">${badgeType} <span style="margin-left:6px;color:var(--green);font-weight:600;">${esc(item.price_tag || '')}</span></div>
+        </td>
+        <td><span class="badge badge-neutral">${esc(item.category)}</span></td>
+        <td><strong>${esc(item.author)}</strong></td>
+        <td>${feeInfo}</td>
+        <td>
+          <span style="font-size:12px;color:var(--txt-2);">
+            <strong>${item.views || 0}</strong> views / <strong>${item.likes_count || 0}</strong> likes
+          </span>
+        </td>
+        <td>
+          <span class="badge ${item.status === 'active' ? 'badge-active' : 'badge-paused'}">
+            ${esc(item.status || 'active')}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
+            ${item.status === 'active' ? 'Pause' : 'Activate'}
+          </button>
+          ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
+          <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function handleSaveEcoSettings(e) {
+  e.preventDefault();
+  const pts = parseInt(document.getElementById('adminEcoPtsFee')?.value) || 150;
+  const cash = parseInt(document.getElementById('adminEcoCashFee')?.value) || 300;
+  const allow = document.getElementById('adminEcoAllowMemberPosts')?.checked;
+  const auto = document.getElementById('adminEcoAutoApprove')?.checked;
+  const btn = document.getElementById('btnSaveEcoSettings');
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  try {
+    const r = await fetch('/api/ecosystem.php?action=save_settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        points_fee: pts,
+        cash_fee: cash,
+        allow_member_posts: allow,
+        auto_approve: auto
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Ecosystem settings saved successfully!', 'success');
+      adminEcoSettings = d.settings;
+    } else {
+      toast(d.message || 'Error saving settings', 'error');
+    }
+  } catch(err) {
+    toast('Network error saving settings', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Settings'; }
+  }
+}
+
+function openAdminPostEcoModal() {
+  openModal('modalAdminPostEcosystem');
+}
+
+async function handleAdminPostEcoSubmit(e) {
+  e.preventDefault();
+  const title = document.getElementById('adminPostEcoTitle')?.value.trim();
+  const category = document.getElementById('adminPostEcoCategory')?.value;
+  const price = document.getElementById('adminPostEcoPrice')?.value.trim();
+  const link = document.getElementById('adminPostEcoLink')?.value.trim();
+  const desc = document.getElementById('adminPostEcoDesc')?.value.trim();
+  const image = document.getElementById('adminPostEcoImage')?.value.trim();
+  const btn = document.getElementById('btnAdminSubmitEco');
+
+  if (!title || !desc || !link) {
+    toast('Please fill in title, description, and link.', 'error');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Publishing...'; }
+  try {
+    const r = await fetch('/api/ecosystem.php?action=create_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        category: category,
+        price_tag: price,
+        contact_link: link,
+        description: desc,
+        image_url: image,
+        is_admin: true
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Official opportunity published to the ecosystem!', 'success');
+      closeModal('modalAdminPostEcosystem');
+      document.getElementById('adminPostEcoTitle').value = '';
+      document.getElementById('adminPostEcoPrice').value = '';
+      document.getElementById('adminPostEcoLink').value = '';
+      document.getElementById('adminPostEcoDesc').value = '';
+      document.getElementById('adminPostEcoImage').value = '';
+      loadAdminEcosystem();
+    } else {
+      toast(d.message || 'Error creating post', 'error');
+    }
+  } catch(err) {
+    toast('Network error publishing post', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Publish Official Post'; }
+  }
+}
+
+async function toggleAdminEcoStatus(id) {
+  try {
+    const r = await fetch('/api/ecosystem.php?action=toggle_status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast(d.message || 'Status updated', 'success');
+      loadAdminEcosystem();
+    } else {
+      toast(d.message || 'Error updating status', 'error');
+    }
+  } catch(err) {
+    toast('Network error updating status', 'error');
+  }
+}
+
+async function deleteAdminEcoItem(id) {
+  const ok = await confirmAction({
+    title: 'Delete Ecosystem Listing',
+    message: 'Are you sure you want to delete this listing from the ecosystem? This action cannot be undone.',
+    confirmText: 'Delete Listing',
+    confirmClass: 'btn-danger'
+  });
+  if (!ok) return;
+
+  try {
+    const r = await fetch('/api/ecosystem.php?action=delete_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Item deleted from ecosystem', 'success');
+      loadAdminEcosystem();
+    } else {
+      toast(d.message || 'Error deleting item', 'error');
+    }
+  } catch(err) {
+    toast('Network error deleting item', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════════════════════════
 function esc(str) {
@@ -3456,6 +3887,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPricingData();
   loadSurveysData();
   loadTasksData();
+  loadAdminEcosystem();
   loadUsersData();
   loadWithdrawalsData();
   loadCouponsData();
