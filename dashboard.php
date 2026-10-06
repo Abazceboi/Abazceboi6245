@@ -46,6 +46,16 @@ $isActivated    = false;
 
 require_once __DIR__ . '/includes/storage_helper.php';
 
+// Load ecosystem listing fees dynamically
+$ecoSettings = readStorageJson('data/ecosystem_settings.json', [
+    'points_fee' => 150,
+    'cash_fee' => 300,
+    'auto_approve' => true,
+    'allow_member_posts' => true
+]);
+$ecoPtsFee = intval($ecoSettings['points_fee'] ?? 150);
+$ecoCashFee = intval($ecoSettings['cash_fee'] ?? 300);
+
 // Safe persistent check across local server, session, and Vercel
 $uData = readStorageJson('data/users.json', ['users' => []]);
 $allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
@@ -1833,7 +1843,7 @@ input,textarea,select{font-family:var(--ff);}
         </div>
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--txt);">Listing Pricing</div>
-          <div style="font-size:11.5px;color:var(--txt-3);" id="ecoFeeDisplayNotice">Publish your post for <strong id="ecoPtsFeeNotice">150 PTS</strong> or <strong id="ecoCashFeeNotice">300 NGN</strong> affiliate earnings.</div>
+          <div style="font-size:11.5px;color:var(--txt-3);" id="ecoFeeDisplayNotice">Publish your post for <strong id="ecoPtsFeeNotice"><?= $ecoPtsFee ?> PTS</strong> or <strong id="ecoCashFeeNotice"><?= number_format($ecoCashFee) ?> NGN</strong> affiliate earnings.</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
@@ -2013,12 +2023,12 @@ input,textarea,select{font-family:var(--ff);}
           <div style="display:flex;flex-direction:column;gap:8px;">
             <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="points" checked onchange="updateEcoPaySelection()">
-              <span style="flex:1;">Pay with Points (<strong id="ecoModalPtsFee">150 PTS</strong>)</span>
+              <span style="flex:1;">Pay with Points (<strong id="ecoModalPtsFee"><?= $ecoPtsFee ?> PTS</strong>)</span>
               <span style="font-size:11px;color:var(--accent);">Bal: <span id="ecoModalPtsBal">0</span> PTS</span>
             </label>
             <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="affiliate_balance" onchange="updateEcoPaySelection()">
-              <span style="flex:1;">Pay with Affiliate Earnings (<strong id="ecoModalCashFee">300 NGN</strong>)</span>
+              <span style="flex:1;">Pay with Affiliate Earnings (<strong id="ecoModalCashFee"><?= number_format($ecoCashFee) ?> NGN</strong>)</span>
               <span style="font-size:11px;color:var(--green);">Bal: <span id="ecoModalCashBal">0</span> NGN</span>
             </label>
           </div>
@@ -2701,6 +2711,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadNotifications();
   syncLiveProfile();
   checkAnnouncementPopup();
+  updateEcoFeeBadges();
+  loadEcosystem();
 
   // Instant Admin Upload & Balance Sync (polls every 15s and immediately when window/tab gains focus)
   window.addEventListener('focus', () => {
@@ -2708,12 +2720,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSurveys();
     loadNotifications();
     syncLiveProfile();
+    loadEcosystem();
   });
   setInterval(() => {
     loadTasks();
     loadSurveys();
     loadNotifications();
     syncLiveProfile();
+    loadEcosystem();
   }, 15000);
   setInterval(() => {
     const timerEls = document.querySelectorAll('.item-timer[data-expires]');
@@ -3228,29 +3242,40 @@ let doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
 let proofBase64 = '';
 
 async function loadTasks() {
+  const container = document.getElementById('tasksContainer');
+  const homeContainer = document.getElementById('homeTasksContainer');
+  const deletedTasks = JSON.parse(localStorage.getItem('ix_deleted_tasks') || '[]');
+  const customTasks = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
+
   const cached = localStorage.getItem('ix_cached_tasks');
   if (cached && (!allTasksList || !allTasksList.length)) {
     try {
-      allTasksList = JSON.parse(cached);
+      let parsed = JSON.parse(cached).filter(t => !deletedTasks.includes(t.id));
+      customTasks.forEach(ct => {
+        if (!parsed.some(t => t.id === ct.id) && !deletedTasks.includes(ct.id)) parsed.unshift(ct);
+      });
+      allTasksList = parsed;
       renderTasks(allTasksList);
     } catch(e) {}
   }
-  const container = document.getElementById('tasksContainer');
-  const homeContainer = document.getElementById('homeTasksContainer');
   try {
     const r = await fetch(`/api/tasks.php?action=get_tasks&_t=${Date.now()}`, {
       cache: 'no-store',
       headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
     });
     const d = await r.json();
-    allTasksList = d.tasks || [];
+    let tasks = (d.tasks || []).filter(t => !deletedTasks.includes(t.id));
+    customTasks.forEach(ct => {
+      if (!tasks.some(t => t.id === ct.id) && !deletedTasks.includes(ct.id)) tasks.unshift(ct);
+    });
+    allTasksList = tasks;
     localStorage.setItem('ix_cached_tasks', JSON.stringify(allTasksList));
     renderTasks(allTasksList);
   } catch(e) {
     if (!allTasksList.length) {
-      const errHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">Unable to load tasks right now.</div>';
-      if (container) container.innerHTML = errHtml;
-      if (homeContainer) homeContainer.innerHTML = errHtml;
+      const emptyHtml = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--txt-3);">No tasks currently available.</div>';
+      if (container) container.innerHTML = emptyHtml;
+      if (homeContainer) homeContainer.innerHTML = emptyHtml;
     }
   }
 }
@@ -3640,15 +3665,22 @@ function handleSurveyProofImage(e) {
 }
 
 async function loadSurveys() {
+  const container = document.getElementById('surveysContainer');
+  const homeContainer = document.getElementById('homeSurveysContainer');
+  const deletedSurveys = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
+  const customSurveys = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+
   const cached = localStorage.getItem('ix_cached_surveys');
   if (cached && (!allSurveysList || !allSurveysList.length)) {
     try {
-      allSurveysList = JSON.parse(cached);
+      let parsed = JSON.parse(cached).filter(s => !deletedSurveys.includes(s.id));
+      customSurveys.forEach(cs => {
+        if (!parsed.some(s => s.id === cs.id) && !deletedSurveys.includes(cs.id)) parsed.unshift(cs);
+      });
+      allSurveysList = parsed;
       renderSurveys(allSurveysList);
     } catch(e) {}
   }
-  const container = document.getElementById('surveysContainer');
-  const homeContainer = document.getElementById('homeSurveysContainer');
   try {
     const [r1, r2] = await Promise.all([
       fetch(`/api/surveys.php?action=get_surveys&_t=${Date.now()}`, {
@@ -3663,7 +3695,12 @@ async function loadSurveys() {
     ]);
     const d1 = await r1.json();
     const d2 = await r2.json();
-    allSurveysList = d1.surveys || [];
+    let surveys = (d1.surveys || []).filter(s => !deletedSurveys.includes(s.id));
+    customSurveys.forEach(cs => {
+      if (!surveys.some(s => s.id === cs.id) && !deletedSurveys.includes(cs.id)) surveys.unshift(cs);
+    });
+    allSurveysList = surveys;
+    localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
     const serverDone = d2.completed_surveys || [];
     doneSurveyIds = [...new Set([...doneSurveyIds, ...serverDone])];
     localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
@@ -4252,28 +4289,52 @@ function printReceipt() {
 // INNOVATION ECOSYSTEM (OPPORTUNITIES, PRODUCTS, VIEWS, LIKES)
 // ═══════════════════════════════════════════════════════════════════════════
 let allEcosystemItems = [];
-let ecosystemSettings = { points_fee: 150, cash_fee: 300, allow_member_posts: true };
+let ecosystemSettings = <?= json_encode($ecoSettings) ?>;
+try {
+  const localEco = JSON.parse(localStorage.getItem('ix_eco_settings') || 'null');
+  if (localEco && (localEco.points_fee !== undefined || localEco.cash_fee !== undefined)) {
+    ecosystemSettings = Object.assign({}, ecosystemSettings, localEco);
+  }
+} catch(e){}
+
 let selectedEcoCategory = 'all';
 let viewingEcoItem = null;
 
 async function loadEcosystem() {
   const grid = document.getElementById('ecosystemGrid');
   if (!grid) return;
+
+  const deletedEco = JSON.parse(localStorage.getItem('ix_deleted_eco_items') || '[]');
+  const customEco = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+  const localSettings = JSON.parse(localStorage.getItem('ix_eco_settings') || 'null');
+  if (localSettings) {
+    ecosystemSettings = Object.assign({}, ecosystemSettings, localSettings);
+    updateEcoFeeBadges();
+  }
+
   try {
-    const r = await fetch('/api/ecosystem.php?action=get_items&username=' + encodeURIComponent(CURRENT_USER));
+    const r = await fetch('/api/ecosystem.php?action=get_items&username=' + encodeURIComponent(CURRENT_USER) + '&_t=' + Date.now());
     const d = await r.json();
     if (d.status === 'success') {
-      allEcosystemItems = d.items || [];
+      let items = (d.items || []).filter(it => !deletedEco.includes(it.id));
+      customEco.forEach(ci => {
+        if (!items.some(it => it.id === ci.id) && !deletedEco.includes(ci.id)) items.unshift(ci);
+      });
+      allEcosystemItems = items;
       if (d.settings) {
-        ecosystemSettings = d.settings;
+        ecosystemSettings = Object.assign({}, d.settings, localSettings || {});
         updateEcoFeeBadges();
       }
       renderEcosystemGrid();
     } else {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);">Failed to load ecosystem items.</div>';
+      let items = customEco.filter(it => !deletedEco.includes(it.id));
+      allEcosystemItems = items;
+      renderEcosystemGrid();
     }
   } catch(e) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);">Network error loading ecosystem.</div>';
+    let items = customEco.filter(it => !deletedEco.includes(it.id));
+    allEcosystemItems = items;
+    renderEcosystemGrid();
   }
 }
 
@@ -4577,6 +4638,18 @@ async function handlePostEcosystemSubmit(e) {
     if (d.status === 'success') {
       toast('Opportunity published to the Innovation Ecosystem!', 'success');
       closeModal('modalPostEcosystemItem');
+
+      if (d.item) {
+        try {
+          let customs = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+          customs = customs.filter(x => x.id !== d.item.id);
+          customs.unshift(d.item);
+          localStorage.setItem('ix_custom_eco_items', JSON.stringify(customs));
+          let deleted = JSON.parse(localStorage.getItem('ix_deleted_eco_items') || '[]');
+          deleted = deleted.filter(x => x !== d.item.id);
+          localStorage.setItem('ix_deleted_eco_items', JSON.stringify(deleted));
+        } catch(e){}
+      }
 
       // Update local balances and displays
       if (d.new_points !== null && d.new_points !== undefined) {

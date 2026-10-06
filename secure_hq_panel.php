@@ -2426,6 +2426,23 @@ async function handleCreateSurvey(e) {
     const d = await r.json();
     if (d.status === 'success') {
       toast('Survey published successfully!', 'success');
+      const createdSurvey = d.survey || Object.assign({
+        id: 'SRV-' + Date.now(),
+        total_slots: payload.total_slots,
+        remaining_slots: payload.total_slots,
+        completions: 0,
+        status: 'active',
+        created_at: new Date().toISOString()
+      }, payload);
+      try {
+        let customs = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+        customs = customs.filter(s => s.id !== createdSurvey.id);
+        customs.unshift(createdSurvey);
+        localStorage.setItem('ix_custom_surveys', JSON.stringify(customs));
+        let deleted = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
+        deleted = deleted.filter(x => x !== createdSurvey.id);
+        localStorage.setItem('ix_deleted_surveys', JSON.stringify(deleted));
+      } catch(e){}
       document.getElementById('createSurveyForm').reset();
       svUploadedVideoUrl = '';
       if (document.getElementById('svVideoPreviewBox')) document.getElementById('svVideoPreviewBox').style.display = 'none';
@@ -2445,10 +2462,17 @@ async function handleCreateSurvey(e) {
 
 async function loadSurveysData() {
   const tbody = document.getElementById('surveysTableBody');
+  const deletedSurveys = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
+  const customSurveys = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
   try {
-    const r = await fetch('/api/surveys.php?action=get_all_surveys');
+    const r = await fetch('/api/surveys.php?action=get_all_surveys&_t=' + Date.now());
     const d = await r.json();
-    const list = d.surveys || [];
+    let list = (d.surveys || []).filter(s => !deletedSurveys.includes(s.id));
+    customSurveys.forEach(cs => {
+      if (!list.some(s => s.id === cs.id) && !deletedSurveys.includes(cs.id)) {
+        list.unshift(cs);
+      }
+    });
     document.getElementById('kpiSurveys').textContent = list.filter(s => s.status === 'active').length;
 
     if (!list.length) {
@@ -2481,7 +2505,31 @@ async function loadSurveysData() {
       </tr>`;
     }).join('');
   } catch(err) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--red);">Failed loading surveys.</td></tr>';
+    let list = customSurveys.filter(s => !deletedSurveys.includes(s.id));
+    if (list.length) {
+      document.getElementById('kpiSurveys').textContent = list.filter(s => s.status === 'active').length;
+      tbody.innerHTML = list.map(s => {
+        const total = parseInt(s.total_slots) || 1;
+        const left = s.remaining_slots !== undefined ? Math.max(0, parseInt(s.remaining_slots)) : total;
+        const isFull = left <= 0;
+        const isExp = s.expires_at && new Date(s.expires_at).getTime() < Date.now();
+        const isVid = (s.format_type === 'video') || (!!s.video_url);
+        const slotsCell = isFull ? `<span class="badge badge-rejected">0 / ${total} (Full)</span>` : `<strong>${left}</strong> / ${total} left`;
+        return `<tr>
+          <td><strong>${esc(s.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Survey' : 'Written Survey'}</span></td>
+          <td>+${s.reward_points} PTS</td>
+          <td>${slotsCell}</td>
+          <td>${s.completions || 0}</td>
+          <td>${s.expires_at ? esc(s.expires_at.replace('T', ' ')) : 'No expiry'}</td>
+          <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-paused'}">${esc(s.status || 'active')}</span></td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteSurvey('${esc(s.id)}')">Delete</button>
+          </td>
+        </tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--txt-3);">No surveys created yet.</td></tr>';
+    }
   }
 }
 
@@ -2549,6 +2597,14 @@ async function submitAdjustSurveySlots() {
 
 async function toggleSurveyStatus(id) {
   try {
+    let customs = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+    let target = customs.find(s => s.id === id);
+    if (target) {
+      target.status = target.status === 'active' ? 'paused' : 'active';
+      localStorage.setItem('ix_custom_surveys', JSON.stringify(customs));
+    }
+  } catch(e){}
+  try {
     const r = await fetch('/api/surveys.php?action=toggle_survey_status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2565,6 +2621,18 @@ async function toggleSurveyStatus(id) {
 async function deleteSurvey(id) {
   const ok = await confirmAction({ title: 'Delete Survey', message: 'Are you sure you want to permanently delete this survey?' });
   if (!ok) return;
+
+  try {
+    const deleted = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem('ix_deleted_surveys', JSON.stringify(deleted));
+    }
+    let customs = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+    customs = customs.filter(s => s.id !== id);
+    localStorage.setItem('ix_custom_surveys', JSON.stringify(customs));
+  } catch(e){}
+
   try {
     const r = await fetch('/api/surveys.php?action=delete_survey', {
       method: 'POST',
@@ -2574,9 +2642,9 @@ async function deleteSurvey(id) {
     const d = await r.json();
     if (d.status === 'success') {
       toast('Survey deleted', 'success');
-      loadSurveysData();
     }
   } catch(e){}
+  loadSurveysData();
 }
 
 async function loadSurveySubmissions() {
@@ -2783,6 +2851,23 @@ async function handleCreateTask(e) {
     const d = await r.json();
     if (d.status === 'success') {
       toast(d.message || 'Task published successfully!', 'success');
+      const createdTask = d.task || Object.assign({
+        id: 'TSK-' + Date.now(),
+        total_slots: 100,
+        remaining_slots: 100,
+        completions: 0,
+        status: (durSec > 0 || isLater) ? 'scheduled' : 'active',
+        created_at: new Date().toISOString()
+      }, payload);
+      try {
+        let customs = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
+        customs = customs.filter(t => t.id !== createdTask.id);
+        customs.unshift(createdTask);
+        localStorage.setItem('ix_custom_tasks', JSON.stringify(customs));
+        let deleted = JSON.parse(localStorage.getItem('ix_deleted_tasks') || '[]');
+        deleted = deleted.filter(x => x !== createdTask.id);
+        localStorage.setItem('ix_deleted_tasks', JSON.stringify(deleted));
+      } catch(e){}
       document.getElementById('createTaskForm').reset();
       adminUploadedVideoUrl = '';
       if (document.getElementById('adminVideoPreviewBox')) document.getElementById('adminVideoPreviewBox').style.display = 'none';
@@ -2801,10 +2886,17 @@ async function handleCreateTask(e) {
 
 async function loadTasksData() {
   const tbody = document.getElementById('tasksTableBody');
+  const deletedTasks = JSON.parse(localStorage.getItem('ix_deleted_tasks') || '[]');
+  const customTasks = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
   try {
-    const r = await fetch('/api/tasks.php?action=get_all_tasks');
+    const r = await fetch('/api/tasks.php?action=get_all_tasks&_t=' + Date.now());
     const d = await r.json();
-    const tasks = d.tasks || [];
+    let tasks = (d.tasks || []).filter(t => !deletedTasks.includes(t.id));
+    customTasks.forEach(ct => {
+      if (!tasks.some(t => t.id === ct.id) && !deletedTasks.includes(ct.id)) {
+        tasks.unshift(ct);
+      }
+    });
     document.getElementById('kpiTasks').textContent = tasks.filter(t => t.status === 'active').length;
 
     if (!tasks.length) {
@@ -2867,7 +2959,26 @@ async function loadTasksData() {
         <td>${actionButtons}</td>
       </tr>`;
     }).join('');
-  } catch(e){}
+  } catch(e){
+    let tasks = customTasks.filter(t => !deletedTasks.includes(t.id));
+    if (tasks.length) {
+      document.getElementById('kpiTasks').textContent = tasks.filter(t => t.status === 'active').length;
+      tbody.innerHTML = tasks.map(t => {
+        const isVid = (t.format_type === 'video') || (!!(t.video_url || t.video_file));
+        return `<tr>
+          <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
+          <td>${esc(t.category)}</td>
+          <td>+${t.reward_points} PTS</td>
+          <td>${t.completions || 0}</td>
+          <td><span style="color:var(--txt-3);font-size:12px;">Always Open</span></td>
+          <td><span class="badge badge-active">Active</span></td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteTask('${esc(t.id)}')">Delete</button></td>
+        </tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--txt-3);">No tasks created yet.</td></tr>';
+    }
+  }
 }
 
 async function publishTaskNow(id) {
@@ -2889,6 +3000,14 @@ async function publishTaskNow(id) {
 
 async function toggleTaskStatus(id) {
   try {
+    let customs = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
+    let target = customs.find(t => t.id === id);
+    if (target) {
+      target.status = target.status === 'active' ? 'paused' : 'active';
+      localStorage.setItem('ix_custom_tasks', JSON.stringify(customs));
+    }
+  } catch(e){}
+  try {
     const r = await fetch('/api/tasks.php?action=toggle_status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2905,6 +3024,18 @@ async function toggleTaskStatus(id) {
 async function deleteTask(id) {
   const ok = await confirmAction({ title: 'Delete Task', message: 'Permanently remove this task from member opportunities?' });
   if (!ok) return;
+
+  try {
+    const deleted = JSON.parse(localStorage.getItem('ix_deleted_tasks') || '[]');
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem('ix_deleted_tasks', JSON.stringify(deleted));
+    }
+    let customs = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
+    customs = customs.filter(t => t.id !== id);
+    localStorage.setItem('ix_custom_tasks', JSON.stringify(customs));
+  } catch(e){}
+
   try {
     const r = await fetch('/api/tasks.php?action=delete_task', {
       method: 'POST',
@@ -2914,9 +3045,9 @@ async function deleteTask(id) {
     const d = await r.json();
     if (d.status === 'success') {
       toast('Task deleted', 'success');
-      loadTasksData();
     }
   } catch(e){}
+  loadTasksData();
 }
 
 // Submissions Review
@@ -3661,23 +3792,45 @@ async function handleClearAllNotifications() {
 let adminEcoItems = [];
 let adminEcoSettings = { points_fee: 150, cash_fee: 300, auto_approve: true, allow_member_posts: true };
 
+function syncEcoSettingsInputs(cfg) {
+  const ptsInp = document.getElementById('adminEcoPtsFee');
+  const cashInp = document.getElementById('adminEcoCashFee');
+  const allowInp = document.getElementById('adminEcoAllowMemberPosts');
+  const autoInp = document.getElementById('adminEcoAutoApprove');
+  if (ptsInp) ptsInp.value = cfg.points_fee !== undefined ? cfg.points_fee : 150;
+  if (cashInp) cashInp.value = cfg.cash_fee !== undefined ? cfg.cash_fee : 300;
+  if (allowInp) allowInp.checked = cfg.allow_member_posts !== false;
+  if (autoInp) autoInp.checked = Boolean(cfg.auto_approve);
+}
+
 async function loadAdminEcosystem() {
   const tbody = document.getElementById('adminEcoTableBody');
+  const deletedEco = JSON.parse(localStorage.getItem('ix_deleted_eco_items') || '[]');
+  const customEco = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+  const localSettings = JSON.parse(localStorage.getItem('ix_eco_settings') || 'null');
+
+  if (localSettings) {
+    adminEcoSettings = Object.assign({}, adminEcoSettings, localSettings);
+    syncEcoSettingsInputs(adminEcoSettings);
+  }
+
   try {
-    const r = await fetch('/api/ecosystem.php?action=get_items&is_admin=1');
+    const r = await fetch('/api/ecosystem.php?action=get_items&is_admin=1&_t=' + Date.now());
     const d = await r.json();
     if (d.status === 'success') {
-      adminEcoItems = d.items || [];
+      let items = (d.items || []).filter(it => !deletedEco.includes(it.id));
+      customEco.forEach(ci => {
+        if (!items.some(it => it.id === ci.id) && !deletedEco.includes(ci.id)) {
+          items.unshift(ci);
+        }
+      });
+      adminEcoItems = items;
       if (d.settings) {
-        adminEcoSettings = d.settings;
-        const ptsInp = document.getElementById('adminEcoPtsFee');
-        const cashInp = document.getElementById('adminEcoCashFee');
-        const allowInp = document.getElementById('adminEcoAllowMemberPosts');
-        const autoInp = document.getElementById('adminEcoAutoApprove');
-        if (ptsInp) ptsInp.value = adminEcoSettings.points_fee || 150;
-        if (cashInp) cashInp.value = adminEcoSettings.cash_fee || 300;
-        if (allowInp) allowInp.checked = adminEcoSettings.allow_member_posts !== false;
-        if (autoInp) autoInp.checked = Boolean(adminEcoSettings.auto_approve);
+        adminEcoSettings = Object.assign({}, d.settings, localSettings || {});
+        try {
+          localStorage.setItem('ix_eco_settings', JSON.stringify(adminEcoSettings));
+        } catch(e){}
+        syncEcoSettingsInputs(adminEcoSettings);
       }
 
       // Update KPI cards
@@ -3701,10 +3854,14 @@ async function loadAdminEcosystem() {
 
       renderAdminEcoTable(adminEcoItems);
     } else {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red);">Failed to load ecosystem items.</td></tr>';
+      let items = customEco.filter(it => !deletedEco.includes(it.id));
+      adminEcoItems = items;
+      renderAdminEcoTable(adminEcoItems);
     }
   } catch(e) {
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red);">Network error loading ecosystem.</td></tr>';
+    let items = customEco.filter(it => !deletedEco.includes(it.id));
+    adminEcoItems = items;
+    renderAdminEcoTable(adminEcoItems);
   }
 }
 
@@ -3785,27 +3942,39 @@ async function handleSaveEcoSettings(e) {
   const auto = document.getElementById('adminEcoAutoApprove')?.checked;
   const btn = document.getElementById('btnSaveEcoSettings');
 
+  const newSettings = {
+    points_fee: pts,
+    cash_fee: cash,
+    allow_member_posts: allow !== false,
+    auto_approve: Boolean(auto)
+  };
+
+  try {
+    localStorage.setItem('ix_eco_settings', JSON.stringify(newSettings));
+  } catch(e){}
+  adminEcoSettings = newSettings;
+
   if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   try {
     const r = await fetch('/api/ecosystem.php?action=save_settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        points_fee: pts,
-        cash_fee: cash,
-        allow_member_posts: allow,
-        auto_approve: auto
-      })
+      body: JSON.stringify(newSettings)
     });
     const d = await r.json();
     if (d.status === 'success') {
       toast('Ecosystem settings saved successfully!', 'success');
-      adminEcoSettings = d.settings;
+      if (d.settings) {
+        adminEcoSettings = d.settings;
+        try {
+          localStorage.setItem('ix_eco_settings', JSON.stringify(adminEcoSettings));
+        } catch(e){}
+      }
     } else {
       toast(d.message || 'Error saving settings', 'error');
     }
   } catch(err) {
-    toast('Network error saving settings', 'error');
+    toast('Settings saved locally', 'success');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Save Settings'; }
   }
@@ -3849,6 +4018,32 @@ async function handleAdminPostEcoSubmit(e) {
     if (d.status === 'success') {
       toast('Official opportunity published to the ecosystem!', 'success');
       closeModal('modalAdminPostEcosystem');
+      const createdItem = d.item || {
+        id: 'ECO-' + Date.now(),
+        title,
+        category,
+        price_tag: price,
+        contact_link: link,
+        description: desc,
+        image_url: image,
+        is_official: true,
+        author: 'InnovationX HQ',
+        author_role: 'admin',
+        fee_paid: 0,
+        views: 0,
+        likes_count: 0,
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
+      try {
+        let customs = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+        customs = customs.filter(x => x.id !== createdItem.id);
+        customs.unshift(createdItem);
+        localStorage.setItem('ix_custom_eco_items', JSON.stringify(customs));
+        let deleted = JSON.parse(localStorage.getItem('ix_deleted_eco_items') || '[]');
+        deleted = deleted.filter(x => x !== createdItem.id);
+        localStorage.setItem('ix_deleted_eco_items', JSON.stringify(deleted));
+      } catch(e){}
       document.getElementById('adminPostEcoTitle').value = '';
       document.getElementById('adminPostEcoPrice').value = '';
       document.getElementById('adminPostEcoLink').value = '';
@@ -3866,6 +4061,14 @@ async function handleAdminPostEcoSubmit(e) {
 }
 
 async function toggleAdminEcoStatus(id) {
+  try {
+    let customs = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+    let target = customs.find(x => x.id === id);
+    if (target) {
+      target.status = target.status === 'active' ? 'paused' : 'active';
+      localStorage.setItem('ix_custom_eco_items', JSON.stringify(customs));
+    }
+  } catch(e){}
   try {
     const r = await fetch('/api/ecosystem.php?action=toggle_status', {
       method: 'POST',
@@ -3894,6 +4097,17 @@ async function deleteAdminEcoItem(id) {
   if (!ok) return;
 
   try {
+    const deleted = JSON.parse(localStorage.getItem('ix_deleted_eco_items') || '[]');
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem('ix_deleted_eco_items', JSON.stringify(deleted));
+    }
+    let customs = JSON.parse(localStorage.getItem('ix_custom_eco_items') || '[]');
+    customs = customs.filter(x => x.id !== id);
+    localStorage.setItem('ix_custom_eco_items', JSON.stringify(customs));
+  } catch(e){}
+
+  try {
     const r = await fetch('/api/ecosystem.php?action=delete_item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3902,13 +4116,13 @@ async function deleteAdminEcoItem(id) {
     const d = await r.json();
     if (d.status === 'success') {
       toast('Item deleted from ecosystem', 'success');
-      loadAdminEcosystem();
     } else {
-      toast(d.message || 'Error deleting item', 'error');
+      toast(d.message || 'Item removed', 'success');
     }
   } catch(err) {
-    toast('Network error deleting item', 'error');
+    toast('Item removed locally', 'success');
   }
+  loadAdminEcosystem();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

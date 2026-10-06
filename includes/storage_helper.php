@@ -53,10 +53,66 @@ function getStorageFilePath(string $relativePath): string {
     return $target;
 }
 
+function getDbStorageJson(string $key) {
+    if (!function_exists('getDbConnection')) {
+        $dbConfig = dirname(__DIR__) . '/config/db.php';
+        if (file_exists($dbConfig)) {
+            require_once $dbConfig;
+        }
+    }
+    if (!function_exists('getDbConnection')) return null;
+    $pdo = getDbConnection();
+    if (!$pdo) return null;
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS app_storage (key VARCHAR(191) PRIMARY KEY, value TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+        $stmt = $pdo->prepare("SELECT value FROM app_storage WHERE key = ?");
+        $stmt->execute([$key]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && isset($row['value']) && $row['value'] !== null) {
+            return json_decode($row['value'], true);
+        }
+    } catch (Throwable $e) {}
+    return null;
+}
+
+function setDbStorageJson(string $key, $data): bool {
+    if (!function_exists('getDbConnection')) {
+        $dbConfig = dirname(__DIR__) . '/config/db.php';
+        if (file_exists($dbConfig)) {
+            require_once $dbConfig;
+        }
+    }
+    if (!function_exists('getDbConnection')) return false;
+    $pdo = getDbConnection();
+    if (!$pdo) return false;
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS app_storage (key VARCHAR(191) PRIMARY KEY, value TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'pgsql') {
+            $stmt = $pdo->prepare("INSERT INTO app_storage (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP");
+        } else if ($driver === 'mysql') {
+            $stmt = $pdo->prepare("INSERT INTO app_storage (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = CURRENT_TIMESTAMP");
+        } else {
+            // SQLite
+            $stmt = $pdo->prepare("INSERT OR REPLACE INTO app_storage (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)");
+        }
+        return $stmt->execute([$key, $json]);
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 function readStorageJson(string $relativePath, $default = []) {
     $relativePathClean = ltrim(str_replace(['\\', '/'], '/', $relativePath), '/');
     $storageFile = getStorageFilePath($relativePathClean);
     $bundleFile = dirname(__DIR__) . '/' . $relativePathClean;
+
+    // 0. Check database persistent storage first
+    $dbData = getDbStorageJson($relativePathClean);
+    if ($dbData !== null) {
+        return $dbData;
+    }
 
     // 1. Check updated storage copy first (in /tmp or writable dir)
     if (file_exists($storageFile)) {
@@ -87,6 +143,9 @@ function writeStorageJson(string $relativePath, $data): bool {
     $relativePathClean = ltrim(str_replace(['\\', '/'], '/', $relativePath), '/');
     $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     
+    // 0. Also write to database
+    setDbStorageJson($relativePathClean, $data);
+
     // 1. Write to storage file (guaranteed writable)
     $storageFile = getStorageFilePath($relativePathClean);
     $res1 = @file_put_contents($storageFile, $json, LOCK_EX);
