@@ -277,6 +277,15 @@ input,textarea,select{font-family:var(--ff);}
 .data-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--txt-2);}
 .data-table tr:hover td{background:var(--card-hover);}
 
+/* Clean Borderless Tables */
+.table-wrap-clean{overflow-x:auto;border:none !important;border-radius:var(--radius);background:transparent;}
+.clean-table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:13px;text-align:left;border:none !important;}
+.clean-table th{background:transparent;padding:10px 14px;color:var(--txt-3);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border:none !important;white-space:nowrap;}
+.clean-table td{padding:12px 14px;background:var(--surface);border:none !important;color:var(--txt-2);vertical-align:middle;}
+.clean-table tr td:first-child{border-top-left-radius:8px;border-bottom-left-radius:8px;}
+.clean-table tr td:last-child{border-top-right-radius:8px;border-bottom-right-radius:8px;}
+.clean-table tr:hover td{background:var(--card-hover);}
+
 /* Badges */
 .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;}
 .badge-active{background:rgba(16,185,129,0.12);color:var(--green);}
@@ -1115,21 +1124,21 @@ input,textarea,select{font-family:var(--ff);}
           </div>
         </div>
 
-        <div class="table-responsive">
-          <table class="table">
+        <div class="table-wrap-clean">
+          <table class="clean-table">
             <thead>
               <tr>
-                <th>Title &amp; Type</th>
-                <th>Category</th>
-                <th>Author</th>
-                <th>Pricing / Fee</th>
-                <th>Engagement</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style="min-width:260px;width:30%;">Title &amp; Type</th>
+                <th style="min-width:140px;width:14%;">Category</th>
+                <th style="min-width:130px;width:13%;">Author</th>
+                <th style="min-width:120px;width:12%;">Pricing / Fee</th>
+                <th style="min-width:140px;width:13%;">Engagement</th>
+                <th style="min-width:90px;width:8%;">Status</th>
+                <th style="min-width:170px;width:10%;text-align:right;">Actions</th>
               </tr>
             </thead>
             <tbody id="adminEcoTableBody">
-              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">Loading ecosystem items...</td></tr>
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);background:transparent;">Loading ecosystem items...</td></tr>
             </tbody>
           </table>
         </div>
@@ -3888,7 +3897,7 @@ function renderAdminEcoTable(list) {
   if (!tbody) return;
 
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">No ecosystem items found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);background:transparent;">No ecosystem items found.</td></tr>';
     return;
   }
 
@@ -3906,28 +3915,33 @@ function renderAdminEcoTable(list) {
     return `
       <tr>
         <td>
-          <div style="font-weight:600;color:var(--txt);">${esc(item.title)}</div>
-          <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">${badgeType} <span style="margin-left:6px;color:var(--green);font-weight:600;">${esc(item.price_tag || '')}</span></div>
+          <div style="font-weight:600;color:var(--txt);line-height:1.35;">${esc(item.title)}</div>
+          <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            ${badgeType}
+            <span style="color:var(--green);font-weight:600;">${esc(item.price_tag || '')}</span>
+          </div>
         </td>
-        <td><span class="badge badge-neutral">${esc(item.category)}</span></td>
-        <td><strong>${esc(item.author)}</strong></td>
+        <td><span class="badge badge-neutral" style="white-space:nowrap;">${esc(item.category)}</span></td>
+        <td><strong style="color:var(--txt);">${esc(item.author)}</strong></td>
         <td>${feeInfo}</td>
         <td>
-          <span style="font-size:12px;color:var(--txt-2);">
+          <span style="font-size:12px;color:var(--txt-2);white-space:nowrap;">
             <strong>${item.views || 0}</strong> views / <strong>${item.likes_count || 0}</strong> likes
           </span>
         </td>
         <td>
-          <span class="badge ${item.status === 'active' ? 'badge-active' : 'badge-paused'}">
+          <span class="badge ${item.status === 'active' ? 'badge-active' : 'badge-paused'}" style="text-transform:capitalize;">
             ${esc(item.status || 'active')}
           </span>
         </td>
-        <td>
-          <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
-            ${item.status === 'active' ? 'Pause' : 'Activate'}
-          </button>
-          ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+        <td style="text-align:right;">
+          <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
+              ${item.status === 'active' ? 'Pause' : 'Activate'}
+            </button>
+            ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
+            <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+          </div>
         </td>
       </tr>
     `;
