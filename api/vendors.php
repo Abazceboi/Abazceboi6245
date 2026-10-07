@@ -137,7 +137,7 @@ if ($action === 'add_vendor' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode([
             'success' => false,
             'status' => 'error',
-            'message' => 'Vendor name and WhatsApp phone number are required.'
+            'message' => 'Vendor name and phone number are required.'
         ]);
         exit;
     }

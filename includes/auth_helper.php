@@ -112,7 +112,7 @@ function getAuthenticatedUser(): ?array {
             'fullName' => $_SESSION['fullName'] ?? $_SESSION['username'],
             'role' => $uRole,
             'is_admin' => $isAdmin,
-            'admin_auth_step' => $isAdmin ? 2 : ($_SESSION['admin_auth_step'] ?? 0)
+            'admin_auth_step' => intval($_SESSION['admin_auth_step'] ?? ($isAdmin ? 1 : 0))
         ];
     }
     
@@ -159,7 +159,7 @@ function getAuthenticatedUser(): ?array {
                 if ($isValid || $isSystemAdmin) {
                     $isAdmin = $isSystemAdmin;
                     $uRole = $data['role'] ?? ($isAdmin ? 'super_admin' : 'member');
-                    $adminAuthStep = $isAdmin ? 2 : (isset($data['admin_auth_step']) ? (int)$data['admin_auth_step'] : 0);
+                    $adminAuthStep = isset($data['admin_auth_step']) ? (int)$data['admin_auth_step'] : ($isAdmin ? 1 : 0);
 
                     $_SESSION['user_id'] = $data['user_id'] ?? 'admin';
                     $_SESSION['username'] = $data['username'];

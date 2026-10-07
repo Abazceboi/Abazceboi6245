@@ -2,7 +2,12 @@
 require_once __DIR__ . '/config/app.php';
 
 $pinFromQuery = $_GET['pin'] ?? '';
-$refFromQuery = $_GET['ref'] ?? '';
+$refFromQuery = trim($_GET['ref'] ?? '');
+if (!empty($refFromQuery)) {
+    setcookie('ix_ref', $refFromQuery, time() + 86400 * 30, '/');
+} elseif (!empty($_COOKIE['ix_ref'])) {
+    $refFromQuery = trim($_COOKIE['ix_ref']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -281,6 +286,10 @@ $refFromQuery = $_GET['ref'] ?? '';
                 <h1 class="auth-title">Sign Up</h1>
             </div>
 
+            <div id="alreadyLoggedInBanner" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:0.82rem;color:#BAE6FD;">
+                <span>You are currently signed in as <strong id="loggedInUsername" style="color:#FFF;"></strong>. If you are registering a new referred earner, you can proceed below or <a href="javascript:void(0)" onclick="signoutForNewRegistration()" style="color:#38BDF8;font-weight:700;text-decoration:underline;margin-left:4px;">Sign Out to start fresh</a>.</span>
+            </div>
+
             <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
                 <div class="form-grid">
                     <div class="form-group">
@@ -315,7 +324,7 @@ $refFromQuery = $_GET['ref'] ?? '';
                     </div>
 
                     <div class="form-group full">
-                        <label for="regPhone">WhatsApp / Phone Number</label>
+                        <label for="regPhone">Phone Number</label>
                         <div style="display:flex;align-items:center;gap:8px">
                             <span id="countryDialCode" style="display:inline-flex;align-items:center;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-size:0.88rem;font-weight:700;color:#38BDF8;min-width:64px;justify-content:center">+234</span>
                             <input type="tel" id="regPhone" name="phone" class="form-input" placeholder="e.g. 08012345678, 09012345678, or 1234567890" required autocomplete="tel" style="flex:1">
@@ -474,6 +483,49 @@ $refFromQuery = $_GET['ref'] ?? '';
             btn.innerHTML = `<span>Create Free Account</span>`;
         });
     }
+
+    function signoutForNewRegistration() {
+        try {
+            localStorage.removeItem('ix_current_user');
+            localStorage.removeItem('ix_user_email');
+            localStorage.removeItem('ix_user_phone');
+            localStorage.removeItem('ix_user_fullname');
+            sessionStorage.clear();
+        } catch(e) {}
+        fetch('api/auth.php?action=logout', { method: 'POST' }).finally(() => {
+            window.location.reload();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const activeUser = localStorage.getItem('ix_current_user') || sessionStorage.getItem('ix_user');
+        if (activeUser) {
+            const banner = document.getElementById('alreadyLoggedInBanner');
+            const userEl = document.getElementById('loggedInUsername');
+            if (banner && userEl) {
+                userEl.textContent = activeUser;
+                banner.style.display = 'block';
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get('ref');
+        const refInput = document.getElementById('referralCode');
+
+        if (refParam) {
+            try {
+                localStorage.setItem('ix_ref', refParam);
+            } catch(e) {}
+            if (refInput && !refInput.value) {
+                refInput.value = refParam;
+            }
+        } else {
+            const cachedRef = localStorage.getItem('ix_ref');
+            if (cachedRef && refInput && !refInput.value) {
+                refInput.value = cachedRef;
+            }
+        }
+    });
     </script>
 </body>
 </html>

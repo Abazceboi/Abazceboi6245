@@ -6,6 +6,10 @@ $siteContent = [];
 if (file_exists($siteContentFile)) {
     $siteContent = json_decode(file_get_contents($siteContentFile), true) ?: [];
 }
+if (!empty($_GET['ref'])) {
+    $refParam = trim($_GET['ref']);
+    setcookie('ix_ref', $refParam, time() + 86400 * 30, '/');
+}
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -351,4 +355,13 @@ foreach ($faqData as $item): ?>
         </div>
     </section>
 
+<script>
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    if (ref) {
+        try { localStorage.setItem('ix_ref', ref); } catch(e) {}
+    }
+})();
+</script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

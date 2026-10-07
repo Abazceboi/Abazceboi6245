@@ -5035,7 +5035,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         || ['admin', 'super_admin'].includes((u.role || '').toLowerCase())
                         || ['admin', 'abas6245', 'abazceboi'].includes((u.username || '').toLowerCase());
                     context.isAdmin = uAdminCheck;
-                    context.adminAuthStep = context.isAdmin ? 2 : Number(u.admin_auth_step || 0);
+                    context.adminAuthStep = u.admin_auth_step !== undefined ? Number(u.admin_auth_step) : (context.isAdmin ? 1 : 0);
 
                     try {
                         const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
@@ -5048,7 +5048,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                     || ['admin', 'abas6245', 'abazceboi'].includes((userRecord.username || '').toLowerCase());
                                 if (recAdminCheck) {
                                     context.isAdmin = true;
-                                    context.adminAuthStep = 2;
+                                    if (u.admin_auth_step !== undefined) {
+                                        context.adminAuthStep = Number(u.admin_auth_step);
+                                    }
                                 }
                                 context.bankName = userRecord.bank_name || 'OPay Digital Services';
                                 context.accountNumber = userRecord.account_number || '0801234567';
@@ -5115,6 +5117,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     if (!context.isAdmin) {
                         res.writeHead(302, { 'Location': '/login.php' });
                         res.end();
+                        return;
+                    }
+                    if (context.adminAuthStep < 2) {
+                        renderPinChallengePage(res);
                         return;
                     }
                 }

@@ -53,7 +53,81 @@ if (isset($_GET['logout_admin'])) {
     exit;
 }
 
-// Keep admin session permanently active across all reloads
+$pinError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['master_pin'])) {
+    $enteredPin = trim($_POST['master_pin']);
+    if (function_exists('verifyAdminMasterPin')) {
+        $verifyRes = verifyAdminMasterPin($enteredPin);
+        if ($verifyRes['success']) {
+            $_SESSION['admin_auth_step'] = 2;
+            header("Location: secure_hq_panel.php");
+            exit;
+        } else {
+            $pinError = $verifyRes['message'] ?? 'Invalid security PIN. Access denied.';
+        }
+    } else {
+        $masterPin = getenv('ADMIN_PIN') ?: ($_ENV['ADMIN_PIN'] ?? ($_SERVER['ADMIN_PIN'] ?? '9999'));
+        if ($enteredPin === $masterPin) {
+            $_SESSION['admin_auth_step'] = 2;
+            header("Location: secure_hq_panel.php");
+            exit;
+        } else {
+            $pinError = 'Invalid security PIN. Access denied.';
+        }
+    }
+}
+
+$adminAuthStep = intval($_SESSION['admin_auth_step'] ?? ($authUser['admin_auth_step'] ?? 1));
+if ($adminAuthStep < 2) {
+    ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin 2-Step Verification | INNOVATIONX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#07090F;color:#F1F5F9}
+        .pin-card{background:#0D1117;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:48px 40px;box-shadow:0 10px 40px rgba(0,0,0,0.6);width:100%;max-width:420px;text-align:center}
+        .pin-icon{width:56px;height:56px;border-radius:14px;background:rgba(2,132,199,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:#38BDF8}
+        .pin-card h2{font-size:1.25rem;font-weight:700;margin-bottom:6px;color:#F1F5F9}
+        .pin-card p{font-size:.85rem;color:#94A3B8;margin-bottom:28px}
+        .pin-input{width:100%;padding:14px 16px;border:2px solid rgba(255,255,255,0.15);border-radius:10px;font-size:1.4rem;text-align:center;letter-spacing:8px;outline:none;transition:border .2s;font-family:inherit;background:#07090F;color:#F1F5F9}
+        .pin-input:focus{border-color:#0284C7;box-shadow:0 0 0 3px rgba(2,132,199,0.25)}
+        .pin-btn{width:100%;padding:14px;background:#0284C7;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:16px;transition:background .2s;font-family:inherit}
+        .pin-btn:hover{background:#0369A1}
+        .pin-error{color:#EF4444;font-size:.82rem;font-weight:600;margin-bottom:16px;padding:10px;background:rgba(239,68,68,.12);border-radius:8px;border:1px solid rgba(239,68,68,.25)}
+    </style>
+</head>
+<body>
+    <div class="pin-card">
+        <div class="pin-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h2>Admin 2-Step Verification</h2>
+        <p>Enter your Master Security PIN (Default: 9999) to unlock the Admin HQ Panel</p>
+        <?php if (!empty($pinError)): ?>
+            <div class="pin-error"><?= htmlspecialchars($pinError) ?></div>
+        <?php endif; ?>
+        <form method="POST" action="secure_hq_panel.php">
+            <input type="password" name="master_pin" class="pin-input" maxlength="6" autofocus required autocomplete="off" placeholder="••••">
+            <button type="submit" class="pin-btn">Verify & Unlock Dashboard</button>
+            <div style="margin-top:16px">
+                <a href="logout.php" style="color:#94A3B8;font-size:0.8rem;text-decoration:none">Sign out</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+    <?php
+    exit;
+}
+
+// Keep admin session active once Step 2 PIN is verified
 $_SESSION['is_admin'] = true;
 $_SESSION['admin_auth_step'] = 2;
 if (function_exists('setAuthCookie')) {
@@ -613,7 +687,10 @@ input,textarea,select{font-family:var(--ff);}
                 <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Suggested Reward: 150 PTS</div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button type="button" class="btn btn-primary btn-sm" onclick="applyGeneratedSurveyToForm(true)" style="background:var(--green);border-color:var(--green);color:#fff;font-weight:700;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="applyAndPublishGeneratedSurvey()" style="background:#0284C7;border-color:#0284C7;color:#fff;font-weight:700;">
+                  Apply &amp; Publish Live Now
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="applyGeneratedSurveyToForm(true)" style="background:var(--green);border-color:var(--green);color:#fff;font-weight:700;">
                   Apply Directly to Survey Form
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="applyGeneratedSurveyToForm(false)">
@@ -2116,6 +2193,61 @@ function renderGeneratedSurveyResults(plan) {
   box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+async function applyAndPublishGeneratedSurvey() {
+  if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions || !lastGeneratedSurveyPlan.questions.length) {
+    toast('No questions loaded yet. Click load topic questions above.', 'error');
+    return;
+  }
+
+  const payload = {
+    title: lastGeneratedSurveyPlan.title || 'Platform Feedback Survey',
+    category: lastGeneratedSurveyPlan.category || 'General',
+    format_type: 'word',
+    video_url: '',
+    reward_points: parseInt(lastGeneratedSurveyPlan.reward_points) || 150,
+    total_slots: Math.max(1, parseInt(lastGeneratedSurveyPlan.total_slots) || 100),
+    expires_at: '',
+    description: lastGeneratedSurveyPlan.description || '',
+    require_screenshot: false,
+    questions: lastGeneratedSurveyPlan.questions
+  };
+
+  toast('Publishing generated survey live to user dashboard...', 'info');
+  try {
+    const r = await fetch('/api/surveys.php?action=create_survey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (d.status === 'success') {
+      toast('Generated survey published successfully and is now live on the user dashboard!', 'success');
+      const createdSurvey = d.survey || Object.assign({
+        id: 'SRV-' + Date.now(),
+        total_slots: payload.total_slots,
+        remaining_slots: payload.total_slots,
+        completions: 0,
+        status: 'active',
+        created_at: new Date().toISOString()
+      }, payload);
+      try {
+        let customs = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+        customs = customs.filter(s => s.id !== createdSurvey.id);
+        customs.unshift(createdSurvey);
+        localStorage.setItem('ix_custom_surveys', JSON.stringify(customs));
+        let deleted = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
+        deleted = deleted.filter(x => x !== createdSurvey.id);
+        localStorage.setItem('ix_deleted_surveys', JSON.stringify(deleted));
+      } catch(e){}
+      loadSurveysData();
+    } else {
+      toast(d.message || 'Error publishing survey', 'error');
+    }
+  } catch(err) {
+    toast('Network error publishing survey', 'error');
+  }
+}
+
 function applyGeneratedSurveyToForm(fullApply = true) {
   if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions) {
     toast('No questions loaded yet. Click load topic questions above.', 'error');
@@ -2141,7 +2273,7 @@ function applyGeneratedSurveyToForm(fullApply = true) {
     const formEl = document.getElementById('createSurveyForm');
     if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    toast('Survey questions and details applied directly to the form!', 'success');
+    toast('Survey populated into form below! Click "Publish Written Survey" below to publish, or use "Apply & Publish Live Now" to publish instantly.', 'info');
   } else {
     const newQs = JSON.parse(JSON.stringify(lastGeneratedSurveyPlan.questions));
     surveyQuestions = surveyQuestions.concat(newQs);
@@ -3362,7 +3494,7 @@ async function loadVendorsDropdown() {
     const vendors = d.vendors || d.data || [];
     let opts = '<option value="">General Platform Pool (Unassigned)</option>';
     vendors.forEach(v => {
-      opts += `<option value="${esc(v.id || v.name)}" data-name="${esc(v.name)}">${esc(v.name)} (${esc(v.phone || v.whatsapp || 'Verified')})</option>`;
+      opts += `<option value="${esc(v.id || v.name)}" data-name="${esc(v.name)}">${esc(v.name)} (${esc(v.phone || 'Verified')})</option>`;
     });
     select.innerHTML = opts;
   } catch(e){}
