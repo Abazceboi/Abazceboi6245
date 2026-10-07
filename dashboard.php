@@ -89,9 +89,6 @@ if (!empty($_SESSION['account_name']))   $accountName   = $_SESSION['account_nam
 if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
     $isActivated = true;
 }
-if (!empty($_SESSION['is_activated']) || (!empty($_COOKIE['ix_account_activated']) && $_COOKIE['ix_account_activated'] === '1')) {
-    $isActivated = true;
-}
 
 // DB fallback
 $pdo = getDbConnection();
@@ -127,7 +124,26 @@ if ($isActivated) {
     if (!headers_sent()) {
         @setcookie('ix_account_activated', '1', time() + 86400 * 365, '/', '', false, false);
     }
+} else {
+    $_SESSION['is_activated'] = false;
+    unset($_SESSION['is_activated']);
+    if (!headers_sent()) {
+        @setcookie('ix_account_activated', '', time() - 3600, '/', '', false, false);
+    }
 }
+
+// Dynamic activation gate lock message configured from Admin HQ
+$bcastConfig = readStorageJson('config/broadcasts.json', []);
+$actSettings = $bcastConfig['activation_lock'] ?? [
+    'title' => 'Account Activation Required',
+    'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
+    'cta_label' => 'Contact Verified Vendors',
+    'cta_url' => 'vendors.php'
+];
+$actTitle = !empty($actSettings['title']) ? $actSettings['title'] : 'Account Activation Required';
+$actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+$actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Contact Verified Vendors';
+$actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'vendors.php';
 
 // Pricing and withdrawal thresholds from central storage
 $pricing     = readStorageJson('config/app_pricing.json', []);
@@ -171,7 +187,7 @@ foreach ($allUsers as $au) {
             'email' => $au['email'] ?? '',
             'created_at' => $au['created_at'] ?? '',
             'is_activated' => !empty($au['is_activated']) || !empty($au['coupon_pin_used']) || !empty($au['coupon_activated']),
-            'status' => (!empty($au['is_activated']) || !empty($au['coupon_pin_used']) || !empty($au['coupon_activated'])) ? 'Activated' : 'Active'
+            'status' => (!empty($au['is_activated']) || !empty($au['coupon_pin_used']) || !empty($au['coupon_activated'])) ? 'Activated' : 'Pending Activation'
         ];
     }
 }
@@ -192,14 +208,20 @@ if ($pdo) {
                     'email' => $dr['email'] ?? '',
                     'created_at' => $dr['createdAt'] ?? date('c'),
                     'is_activated' => !empty($dr['couponPinUsed']),
-                    'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Active'
+                    'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Pending Activation'
                 ];
             }
         }
     } catch(Exception $e){}
 }
-if (count($referredUsersList) > $referralCount) {
-    $referralCount = count($referredUsersList);
+$actDownlines = 0;
+foreach ($referredUsersList as $ru) {
+    if (!empty($ru['is_activated'])) {
+        $actDownlines++;
+    }
+}
+if ($actDownlines > $referralCount) {
+    $referralCount = $actDownlines;
 }
 ?>
 <!DOCTYPE html>
@@ -1761,7 +1783,7 @@ input,textarea,select{font-family:var(--ff);}
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--accent);" id="refDisplayCount"><?= count($referredUsersList) > $referralCount ? count($referredUsersList) : $referralCount ?></div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent);" id="refDisplayCount"><?= (int)$referralCount ?></div>
           <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Referrals</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
@@ -1813,7 +1835,7 @@ input,textarea,select{font-family:var(--ff);}
                     <?php if (!empty($ru['is_activated'])): ?>
                       <span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Activated</span>
                     <?php else: ?>
-                      <span class="badge" style="background:rgba(56,189,248,0.15);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Active Member</span>
+                      <span class="badge" style="background:rgba(234,179,8,0.15);color:#FBBF24;border:1px solid rgba(234,179,8,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Pending Activation</span>
                     <?php endif; ?>
                   </td>
                 </tr>
@@ -2610,9 +2632,9 @@ input,textarea,select{font-family:var(--ff);}
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
     </div>
-    <h2 style="font-size:1.4rem;font-weight:900;margin:0 0 8px;color:var(--txt);">Account Activation Required</h2>
-    <p style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;">
-      Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.
+    <h2 id="actGateTitle" style="font-size:1.4rem;font-weight:900;margin:0 0 8px;color:var(--txt);"><?= htmlspecialchars($actTitle) ?></h2>
+    <p id="actGateMessage" style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;white-space:pre-line;">
+      <?= htmlspecialchars($actMessage) ?>
     </p>
 
     <div style="text-align:left;margin-bottom:14px;">
@@ -2628,7 +2650,7 @@ input,textarea,select{font-family:var(--ff);}
 
     <div style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
       Need an activation code?
-      <a href="vendors.php" target="_blank" style="color:#7DD3FC;font-weight:700;text-decoration:underline;margin-left:4px;">Contact Verified Vendors</a>
+      <a href="<?= htmlspecialchars($actCtaUrl) ?>" id="actGateCtaLink" target="_blank" style="color:#7DD3FC;font-weight:700;text-decoration:underline;margin-left:4px;"><?= htmlspecialchars($actCtaLabel) ?></a>
     </div>
 
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:center;gap:16px;font-size:12px;">
@@ -2727,18 +2749,28 @@ function getUserCash() {
   updateUserCashDisplay(userCash, true);
 })();
 
-// Instantly dismiss activation gate if account was already activated
-(function dismissActivationGateIfActive() {
-  const isAct = localStorage.getItem('ix_is_activated') === '1' ||
-                (CURRENT_USER && localStorage.getItem('ix_activated_' + CURRENT_USER) === '1') ||
-                document.cookie.includes('ix_account_activated=1');
-  if (isAct) {
-    const gate = document.getElementById('modalActivationGate');
-    if (gate) {
-      gate.classList.remove('active');
-      gate.style.display = 'none';
-      gate.remove();
-    }
+// Enforce activation gate lock for unactivated accounts
+(function enforceActivationGateLock() {
+  const gate = document.getElementById('modalActivationGate');
+  if (!gate) return;
+  const isServerActivated = document.getElementById('dataActivated')?.dataset.activated === '1';
+  if (!isServerActivated) {
+    // Strictly maintain the lock screen
+    gate.classList.add('active');
+    gate.style.display = 'flex';
+    // Clear stale activation markers from previous sessions
+    try {
+      localStorage.removeItem('ix_is_activated');
+      if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
+        localStorage.removeItem('ix_activated_' + CURRENT_USER);
+      }
+      document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    } catch(e) {}
+  } else {
+    // Only dismiss if the server verified that the user is genuinely active
+    gate.classList.remove('active');
+    gate.style.display = 'none';
+    gate.remove();
   }
 })();
 

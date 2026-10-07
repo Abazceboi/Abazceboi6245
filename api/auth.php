@@ -103,33 +103,7 @@ if ($action === 'register') {
                 $canonicalReferrer = $ju['username'];
                 $canonicalRefCode = !empty($ju['referral_code']) ? $ju['referral_code'] : ('INX-' . strtoupper($ju['username']));
 
-                // Increment referrer's referral count immediately upon registration
-                $ju['referral_count'] = intval($ju['referral_count'] ?? 0) + 1;
-                $ju['referrals_count'] = $ju['referral_count'];
-
-                if (!isset($ju['activity_ledger']) || !is_array($ju['activity_ledger'])) {
-                    $ju['activity_ledger'] = [];
-                }
-                array_unshift($ju['activity_ledger'], [
-                    'time' => date('d/m/Y, H:i'),
-                    'type' => 'New Referral',
-                    'desc' => "New member @{$username} registered using your referral link",
-                    'reward_type' => 'referral',
-                    'reward_value' => 0
-                ]);
-
-                $allNotifs = readStorageJson('data/notifications.json', []);
-                if (!is_array($allNotifs)) $allNotifs = [];
-                array_unshift($allNotifs, [
-                    'id' => 'notif-' . uniqid(),
-                    'title' => 'New Downline Referral',
-                    'msg' => "Member @{$username} just registered using your referral link!",
-                    'message' => "Member @{$username} just registered using your referral link!",
-                    'target' => $ju['username'],
-                    'time' => date('d M Y, H:i'),
-                    'created_at' => date('c')
-                ]);
-                writeStorageJson('data/notifications.json', $allNotifs);
+                // Record the canonical referrer relationship. Referrer is only credited after activation PIN redemption.
                 break;
             }
         }

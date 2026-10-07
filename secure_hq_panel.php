@@ -1463,6 +1463,41 @@ input,textarea,select{font-family:var(--ff);}
           </form>
         </div>
 
+        <!-- Card 1B: Account Activation Lock Screen Message Settings -->
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="card-title">Account Activation Lock Screen Message</div>
+            <span class="badge badge-active" id="actLockStatusBadge">Lock Enforced</span>
+          </div>
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+            Customize the message, title, and vendor help link shown inside the mandatory activation gate lock modal. Unactivated members remain strictly locked until entering a coupon PIN.
+          </p>
+          <form onsubmit="handleSaveActivationLockSettings(event)">
+            <div class="form-group">
+              <label class="form-label">Activation Lock Screen Title</label>
+              <input type="text" class="form-input" id="cfgActLockTitle" placeholder="e.g. Account Activation Required">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Activation Notice / Pop-Up Message</label>
+              <textarea class="form-input" id="cfgActLockMessage" rows="4" placeholder="Enter custom message shown to unactivated members..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Help / Vendor Button Label</label>
+                <input type="text" class="form-input" id="cfgActLockCtaLabel" placeholder="e.g. Contact Verified Vendors">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Help / Vendor Link (URL or WhatsApp)</label>
+                <input type="text" class="form-input" id="cfgActLockCtaUrl" placeholder="e.g. vendors.php or https://wa.me/...">
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button type="submit" class="btn btn-primary" id="btnSaveActLockSettings">Save Activation Lock Message</button>
+              <button type="button" class="btn btn-ghost" onclick="previewActivationLockModal()">Preview Lock Screen</button>
+            </div>
+          </form>
+        </div>
+
         <!-- Card 2: In-App Notification Broadcaster -->
         <div class="card">
           <div class="card-header">
@@ -1541,6 +1576,34 @@ input,textarea,select{font-family:var(--ff);}
     <div style="display:flex;gap:12px;justify-content:center;">
       <button type="button" class="btn btn-ghost" onclick="closeModal('modalPreviewPopup')">Close Preview</button>
       <button type="button" class="btn btn-primary" id="prevPopupCtaBtn">Action Button</button>
+    </div>
+  </div>
+</div>
+
+<!-- Activation Lock Screen Preview Modal -->
+<div class="modal-backdrop" id="modalPreviewActLock">
+  <div class="modal" style="max-width:480px;text-align:center;padding:32px 28px;border-radius:20px;border:1px solid rgba(56,189,248,0.3);box-shadow:0 25px 60px rgba(0,0,0,0.8),0 0 50px rgba(56,189,248,0.15);">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:#38BDF8;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="modal-title" id="prevActLockTitle" style="font-size:1.4rem;font-weight:900;margin:0 0 8px;color:var(--txt);">Account Activation Required</div>
+    <div id="prevActLockMessage" style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;white-space:pre-line;text-align:center;">Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.</div>
+    <div style="text-align:left;margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-2);margin-bottom:6px;">Coupon Activation PIN</label>
+      <input type="text" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" disabled style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;opacity:0.7;">
+    </div>
+    <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:14px;font-weight:800;border-radius:12px;margin-bottom:16px;background:linear-gradient(135deg, #0284C7, #38BDF8);">
+      Activate Account Now
+    </button>
+    <div style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+      Need an activation code?
+      <a href="#" id="prevActLockCtaBtn" style="color:#7DD3FC;font-weight:700;text-decoration:underline;margin-left:4px;">Contact Verified Vendors</a>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:center;">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modalPreviewActLock')">Close Preview</button>
     </div>
   </div>
 </div>
@@ -3730,7 +3793,7 @@ async function handleSavePricing(e) {
 let adminNotifsList = [];
 
 async function loadAdminNotificationsTab() {
-  await Promise.all([loadPopupSettingsData(), loadAdminNotifsData()]);
+  await Promise.all([loadPopupSettingsData(), loadActivationLockSettingsData(), loadAdminNotifsData()]);
 }
 
 async function loadPopupSettingsData() {
@@ -3807,6 +3870,74 @@ function previewAnnouncementPopup() {
   document.getElementById('prevPopupMessage').textContent = message;
   document.getElementById('prevPopupCtaBtn').textContent = cta_label;
   openModal('modalPreviewPopup');
+}
+
+async function loadActivationLockSettingsData() {
+  try {
+    const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`);
+    const d = await r.json();
+    const data = d.data || d;
+    const act = data.activation_lock || {};
+    const titleInput = document.getElementById('cfgActLockTitle');
+    if (titleInput) titleInput.value = act.title || 'Account Activation Required';
+    const msgInput = document.getElementById('cfgActLockMessage');
+    if (msgInput) msgInput.value = act.message || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+    const ctaLabelInput = document.getElementById('cfgActLockCtaLabel');
+    if (ctaLabelInput) ctaLabelInput.value = act.cta_label || 'Contact Verified Vendors';
+    const ctaUrlInput = document.getElementById('cfgActLockCtaUrl');
+    if (ctaUrlInput) ctaUrlInput.value = act.cta_url || 'vendors.php';
+  } catch(e){}
+}
+
+async function handleSaveActivationLockSettings(e) {
+  e.preventDefault();
+  const title = document.getElementById('cfgActLockTitle').value.trim();
+  const message = document.getElementById('cfgActLockMessage').value.trim();
+  const cta_label = document.getElementById('cfgActLockCtaLabel').value.trim();
+  const cta_url = document.getElementById('cfgActLockCtaUrl').value.trim();
+
+  const btn = document.getElementById('btnSaveActLockSettings');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  try {
+    const r = await fetch('/api/broadcasts.php?action=save_activation_lock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activation_lock: {
+          enabled: true,
+          title: title || 'Account Activation Required',
+          message: message || '',
+          cta_label: cta_label || 'Contact Verified Vendors',
+          cta_url: cta_url || 'vendors.php'
+        }
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('Activation lock message saved successfully!', 'success');
+      loadActivationLockSettingsData();
+    } else {
+      toast(d.message || d.error || 'Failed to save activation lock settings', 'error');
+    }
+  } catch(e) {
+    toast('Network error saving activation lock settings', 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Save Activation Lock Message'; }
+}
+
+function previewActivationLockModal() {
+  const title = document.getElementById('cfgActLockTitle').value.trim() || 'Account Activation Required';
+  const message = document.getElementById('cfgActLockMessage').value.trim() || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+  const cta_label = document.getElementById('cfgActLockCtaLabel').value.trim() || 'Contact Verified Vendors';
+
+  const tEl = document.getElementById('prevActLockTitle');
+  if (tEl) tEl.textContent = title;
+  const mEl = document.getElementById('prevActLockMessage');
+  if (mEl) mEl.textContent = message;
+  const cEl = document.getElementById('prevActLockCtaBtn');
+  if (cEl) cEl.textContent = cta_label;
+  openModal('modalPreviewActLock');
 }
 
 async function loadAdminNotifsData() {

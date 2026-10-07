@@ -1,0 +1,30 @@
+{
+  "banner": {
+    "enabled": true,
+    "title": "Welcome to INNOVATIONX v3.5!",
+    "message": "Instant bank withdrawals are now active 24/7 across all Nigerian financial institutions.",
+    "cta_label": "Explore Earnings",
+    "cta_url": "dashboard.php"
+  },
+  "welcome_modal": {
+    "enabled": true,
+    "title": "Official Earner Orientation Hub",
+    "message": "Connect directly with our community of over 124,000 verified Nigerian earners on WhatsApp & Telegram.",
+    "whatsapp": "https://chat.whatsapp.com/demo"
+  },
+  "popup": {
+    "enabled": false,
+    "title": "Important Announcement",
+    "message": "Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.",
+    "cta_label": "View Surveys",
+    "cta_url": "dashboard.php#surveys",
+    "frequency": "session"
+  },
+  "activation_lock": {
+    "enabled": true,
+    "title": "Account Activation Required",
+    "message": "Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.",
+    "cta_label": "Contact Verified Vendors",
+    "cta_url": "vendors.php"
+  }
+}

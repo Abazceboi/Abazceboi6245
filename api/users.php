@@ -964,7 +964,7 @@ switch ($action) {
                     'full_name' => $u['full_name'] ?? ($u['fullName'] ?? ($u['username'] ?? '')),
                     'created_at' => $u['created_at'] ?? '',
                     'is_activated' => !empty($u['is_activated']) || !empty($u['coupon_pin_used']) || !empty($u['coupon_activated']),
-                    'status' => !empty($u['is_activated']) || !empty($u['coupon_pin_used']) ? 'Activated' : 'Active'
+                    'status' => (!empty($u['is_activated']) || !empty($u['coupon_pin_used']) || !empty($u['coupon_activated'])) ? 'Activated' : 'Pending Activation'
                 ];
             }
         }
@@ -986,13 +986,19 @@ switch ($action) {
                             'full_name' => $dr['fullName'] ?? $dr['username'],
                             'created_at' => $dr['createdAt'] ?? date('c'),
                             'is_activated' => !empty($dr['couponPinUsed']),
-                            'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Active'
+                            'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Pending Activation'
                         ];
                     }
                 }
             } catch(Exception $e){}
         }
-        echo json_encode(['success' => true, 'status' => 'success', 'referrals' => $referrals, 'count' => count($referrals)]);
+        $actCount = 0;
+        foreach ($referrals as $rf) {
+            if (!empty($rf['is_activated'])) {
+                $actCount++;
+            }
+        }
+        echo json_encode(['success' => true, 'status' => 'success', 'referrals' => $referrals, 'count' => $actCount, 'total_count' => count($referrals)]);
         exit;
 
     case 'sync_balance':

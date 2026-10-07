@@ -39,6 +39,14 @@ $defaults = [
         'cta_url' => 'dashboard.php#surveys',
         'frequency' => 'session',
         'updated_at' => date('Y-m-d H:i:s')
+    ],
+    'activation_lock' => [
+        'enabled' => true,
+        'title' => 'Account Activation Required',
+        'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
+        'cta_label' => 'Contact Verified Vendors',
+        'cta_url' => 'vendors.php',
+        'updated_at' => date('Y-m-d H:i:s')
     ]
 ];
 
@@ -92,6 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'cta_label' => trim($p['cta_label'] ?? 'Learn More'),
             'cta_url' => trim($p['cta_url'] ?? 'dashboard.php'),
             'frequency' => trim($p['frequency'] ?? 'session'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    if ($action === 'save_activation_lock' || isset($input['activation_lock'])) {
+        $al = $input['activation_lock'] ?? $input;
+        $data['activation_lock'] = [
+            'enabled' => isset($al['enabled']) ? (bool)$al['enabled'] : true,
+            'title' => trim($al['title'] ?? 'Account Activation Required'),
+            'message' => trim($al['message'] ?? 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.'),
+            'cta_label' => trim($al['cta_label'] ?? 'Contact Verified Vendors'),
+            'cta_url' => trim($al['cta_url'] ?? 'vendors.php'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
     }

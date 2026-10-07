@@ -677,8 +677,6 @@ const server = http.createServer((req, res) => {
                         if (matchedReferrer) {
                             canonicalReferrer = matchedReferrer.username;
                             canonicalRefCode = matchedReferrer.referral_code || ('INX-' + matchedReferrer.username.toUpperCase());
-                            matchedReferrer.referral_count = (parseInt(matchedReferrer.referral_count) || 0) + 1;
-                            matchedReferrer.referrals_count = matchedReferrer.referral_count;
                         } else {
                             canonicalReferrer = ref;
                         }
@@ -2259,7 +2257,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 let bcastData = {
                     banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
                     welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' },
-                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Surveys', cta_url: 'dashboard.php#surveys', frequency: 'session' }
+                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Surveys', cta_url: 'dashboard.php#surveys', frequency: 'session' },
+                    activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' }
                 };
                 if (fs.existsSync(bcastFile)) {
                     try { bcastData = Object.assign(bcastData, JSON.parse(fs.readFileSync(bcastFile, 'utf8'))); } catch(e){}
@@ -2275,6 +2274,16 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             cta_label: String(p.cta_label || 'Learn More').trim(),
                             cta_url: String(p.cta_url || 'dashboard.php').trim(),
                             frequency: String(p.frequency || 'session').trim(),
+                            updated_at: new Date().toISOString()
+                        };
+                    } else if (action === 'save_activation_lock' || parsed.activation_lock) {
+                        const al = parsed.activation_lock || parsed;
+                        bcastData.activation_lock = {
+                            enabled: al.enabled !== undefined ? !!al.enabled : true,
+                            title: String(al.title || 'Account Activation Required').trim(),
+                            message: String(al.message || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.').trim(),
+                            cta_label: String(al.cta_label || 'Contact Verified Vendors').trim(),
+                            cta_url: String(al.cta_url || 'vendors.php').trim(),
                             updated_at: new Date().toISOString()
                         };
                     } else {
@@ -3835,11 +3844,12 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 full_name: u.full_name || u.fullName || u.username || '',
                                 created_at: u.created_at || '',
                                 is_activated: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated),
-                                status: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated) ? 'Activated' : 'Active'
+                                status: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated) ? 'Activated' : 'Pending Activation'
                             });
                         }
                     });
-                    res.end(JSON.stringify({ success: true, status: 'success', referrals: referrals, count: referrals.length }));
+                    const activatedCount = referrals.filter(r => r.is_activated).length;
+                    res.end(JSON.stringify({ success: true, status: 'success', referrals: referrals, count: activatedCount, total_count: referrals.length }));
                     return;
                 }
 

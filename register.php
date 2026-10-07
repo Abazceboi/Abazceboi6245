@@ -8,6 +8,8 @@ if (!empty($refFromQuery)) {
 } elseif (!empty($_COOKIE['ix_ref'])) {
     $refFromQuery = trim($_COOKIE['ix_ref']);
 }
+// Clear any existing activation cookie on registration page so new accounts start locked
+setcookie('ix_account_activated', '', time() - 3600, '/');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -474,6 +476,10 @@ if (!empty($refFromQuery)) {
                     if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                     if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                     sessionStorage.setItem('ix_user', data.username);
+                    // Explicitly remove any active status token so activation gate stays locked
+                    localStorage.removeItem('ix_is_activated');
+                    if (data.username) localStorage.removeItem('ix_activated_' + data.username);
+                    document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
                 } catch(e) {}
                 
                 window.location.replace('dashboard.php?new_reg=1');
@@ -498,6 +504,8 @@ if (!empty($refFromQuery)) {
             localStorage.removeItem('ix_user_email');
             localStorage.removeItem('ix_user_phone');
             localStorage.removeItem('ix_user_fullname');
+            localStorage.removeItem('ix_is_activated');
+            document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             sessionStorage.clear();
             if (refParam) {
                 localStorage.setItem('ix_ref', refParam);
