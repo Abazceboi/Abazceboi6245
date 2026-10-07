@@ -106,6 +106,22 @@ if ($action === 'get_submissions') {
     exit;
 }
 
+if ($action === 'get_user_completed') {
+    $username = trim($_GET['username'] ?? ($input['username'] ?? ''));
+    if (empty($username) && session_status() === PHP_SESSION_ACTIVE) {
+        $username = $_SESSION['username'] ?? '';
+    }
+    $subs = getSubmissions();
+    $completed = [];
+    foreach ($subs as $s) {
+        if (!empty($s['task_id']) && strtolower($s['username'] ?? '') === strtolower($username)) {
+            $completed[] = $s['task_id'];
+        }
+    }
+    echo json_encode(['status' => 'success', 'completed_tasks' => array_values(array_unique($completed))]);
+    exit;
+}
+
 // ─── POST ─────────────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -62,6 +62,7 @@ function renderPhpFile(filePath, context = {}) {
 
     if (context.isActivated) {
         content = content.replace(/<\?php\s+if\s*\(\s*!\$isActivated\s*\)\s*:\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
+        content = content.replace(/<!-- Mandatory Coupon Activation Gate Overlay -->[\s\S]*?<div[^>]*id="modalActivationGate"[\s\S]*?<\/div>\s*<\/div>\s*(?:<\?php\s+endif;\s*\?>)?/g, '');
     }
 
     content = content.replace(/(?:require_once|require|include_once|include)\s+__DIR__\s*\.\s*['"]([^'"]+)['"];?/g, (match, relPath) => {
@@ -136,6 +137,10 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*number_format\(\$ptsRate,\s*2\)\s*\?>/g, '1.00');
     content = content.replace(/<\?=\s*number_format\(\$minCashWd\)\s*\?>/g, dynMinCashWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*\$streakCount\s*\?>/g, String(context.streakCount || 1));
+    content = content.replace(/<\?=\s*\(?\$isActivated\s*\?\s*['"]1['"]\s*:\s*['"]0['"]\)?\s*\?>/g, context.isActivated ? '1' : '0');
+    content = content.replace(/<\?=\s*\(?\$isActivated\s*\?\s*1\s*:\s*0\)?\s*\?>/g, context.isActivated ? '1' : '0');
+    content = content.replace(/<\?=\s*\$isActivated\s*\?>/g, context.isActivated ? '1' : '0');
+    content = content.replace(/data-activated="<?= \$isActivated \? '1' : '0' ?>"/g, 'data-activated="' + (context.isActivated ? '1' : '0') + '"');
     content = content.replace(/<\?=\s*json_encode\(\$isActivated\)\s*\?>/g, JSON.stringify(Boolean(context.isActivated)));
     content = content.replace(/<\?=\s*json_encode\(\$welcomeShown\)\s*\?>/g, JSON.stringify(Boolean(context.welcomeShown)));
     content = content.replace(/<\?=\s*htmlspecialchars\(\$loginError\s*\?\?\s*''\)\s*\?>/g, context.loginError || '');
@@ -649,16 +654,28 @@ const server = http.createServer((req, res) => {
                             res.end(JSON.stringify({ status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration. Please input a Member Registration PIN.` }));
                             return;
                         }
-                        if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                        const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
+                        let usedList = [];
+                        if (fs.existsSync(usedFile)) {
+                            try { usedList = JSON.parse(fs.readFileSync(usedFile, 'utf8')); } catch(e){}
+                        }
+                        const isBlacklisted = usedList.some(u => (typeof u === 'string' ? u : (u.code || '')).toUpperCase() === pin);
+                        if (isBlacklisted || targetPin.is_used || targetPin.isUsed || targetPin.status === 'used' || targetPin.used_by || targetPin.usedBy) {
                             res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                             return;
                         }
                         targetPin.is_used = true;
                         targetPin.isUsed = true;
+                        targetPin.status = 'used';
                         targetPin.used_by = username;
                         targetPin.usedBy = username;
                         targetPin.used_at = new Date().toISOString();
                         fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
+
+                        if (!isBlacklisted) {
+                            usedList.unshift({ code: pin, used_by: username, used_at: new Date().toISOString() });
+                            fs.writeFileSync(usedFile, JSON.stringify(usedList, null, 2));
+                        }
                         isActivated = true;
                     }
 
@@ -715,7 +732,11 @@ const server = http.createServer((req, res) => {
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
 
                     const cookieVal = createSessionCookie(newUserId, username, false, email, phone, fullName, 'member');
-                    res.setHeader('Set-Cookie', `ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`);
+                    const regCookies = [`ix_session=${cookieVal}; Path=/; SameSite=Lax; Max-Age=2592000`];
+                    if (isActivated) {
+                        regCookies.push('ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000');
+                    }
+                    res.setHeader('Set-Cookie', regCookies);
                     res.end(JSON.stringify({
                         status: 'success',
                         username: username,
@@ -738,6 +759,15 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    if (fs.existsSync(usersFile)) {
+                        try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                    }
+                    const userRecord = (usersData.users || []).find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (userRecord && (userRecord.is_activated || userRecord.coupon_activated || userRecord.coupon_pin_used)) {
+                        res.end(JSON.stringify({ status: 'error', message: 'This account is already activated and unlocked. Activation codes only need to be entered once.' }));
+                        return;
+                    }
+
                     let coupons = [];
                     if (fs.existsSync(couponsFile)) {
                         try { coupons = JSON.parse(fs.readFileSync(couponsFile, 'utf8')); } catch(e){}
@@ -751,19 +781,27 @@ const server = http.createServer((req, res) => {
                         res.end(JSON.stringify({ status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration.` }));
                         return;
                     }
-                    if (targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+
+                    const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
+                    let usedList = [];
+                    if (fs.existsSync(usedFile)) {
+                        try { usedList = JSON.parse(fs.readFileSync(usedFile, 'utf8')); } catch(e){}
+                    }
+                    const isBlacklisted = usedList.some(u => (typeof u === 'string' ? u : (u.code || '')).toUpperCase() === pin);
+
+                    if (isBlacklisted || targetPin.is_used || targetPin.isUsed || targetPin.status === 'used' || targetPin.used_by || targetPin.usedBy) {
                         res.end(JSON.stringify({ status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                         return;
                     }
 
                     targetPin.is_used = true;
                     targetPin.isUsed = true;
+                    targetPin.status = 'used';
                     targetPin.used_by = username;
                     targetPin.usedBy = username;
                     targetPin.used_at = new Date().toISOString();
                     fs.writeFileSync(couponsFile, JSON.stringify(coupons, null, 2));
 
-                    const userRecord = (usersData.users || []).find(u => (u.username || '').toLowerCase() === username.toLowerCase());
                     if (userRecord) {
                         userRecord.is_activated = true;
                         userRecord.coupon_activated = true;
@@ -1110,6 +1148,18 @@ const server = http.createServer((req, res) => {
                         return;
                     }
 
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    let uData = { users: [] };
+                    if (fs.existsSync(usersFile)) {
+                        try { uData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                    }
+                    const users = uData.users || (Array.isArray(uData) ? uData : []);
+                    const userRecord = users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (userRecord && (userRecord.is_activated || userRecord.coupon_activated || userRecord.coupon_pin_used)) {
+                        res.end(JSON.stringify({ success: false, status: 'error', message: 'This account is already activated and unlocked. Activation codes only need to be entered once.' }));
+                        return;
+                    }
+
                     const usedFile = path.join(PUBLIC_DIR, 'data', 'used_coupons.json');
                     let usedList = [];
                     if (fs.existsSync(usedFile)) {
@@ -1126,7 +1176,7 @@ const server = http.createServer((req, res) => {
                         res.end(JSON.stringify({ success: false, status: 'error', message: `Invalid Code Type: '${pin}' is an Uploader Accreditation Code. It cannot be used for Member Registration.` }));
                         return;
                     }
-                    if (isBlacklisted || targetPin.is_used || targetPin.isUsed || targetPin.used_by || targetPin.usedBy) {
+                    if (isBlacklisted || targetPin.is_used || targetPin.isUsed || targetPin.status === 'used' || targetPin.used_by || targetPin.usedBy) {
                         res.end(JSON.stringify({ success: false, status: 'error', message: `This activation PIN has already been used and cannot be redeemed again. Each coupon code is strictly single-use only.` }));
                         return;
                     }
@@ -1145,19 +1195,13 @@ const server = http.createServer((req, res) => {
                         fs.writeFileSync(usedFile, JSON.stringify(usedList, null, 2));
                     }
 
-                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
-                    if (fs.existsSync(usersFile)) {
-                        try {
-                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
-                            const users = uData.users || (Array.isArray(uData) ? uData : []);
-                            const userRecord = users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
-                            if (userRecord) {
-                                userRecord.is_activated = true;
-                                userRecord.coupon_activated = true;
-                                userRecord.coupon_pin_used = pin;
-                                userRecord.role_label = 'Active Member';
-                                userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
-                                userRecord.pointsBalance = userRecord.remaining_pts;
+                    if (userRecord) {
+                        userRecord.is_activated = true;
+                        userRecord.coupon_activated = true;
+                        userRecord.coupon_pin_used = pin;
+                        userRecord.role_label = 'Active Member';
+                        userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
+                        userRecord.pointsBalance = userRecord.remaining_pts;
 
                                 // Award Referral Commission ONLY now that downline has activated with a coupon
                                 if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
@@ -1210,9 +1254,7 @@ const server = http.createServer((req, res) => {
                                     userRecord.referral_commission_at = new Date().toISOString();
                                 }
 
-                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
-                            }
-                        } catch(e) {}
+                        fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
                     }
 
                     res.setHeader('Set-Cookie', 'ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000');
@@ -1471,7 +1513,7 @@ const server = http.createServer((req, res) => {
                 }
             }
 
-            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions') {
+            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions' || action === 'get_user_completed_tasks' || (cleanUrl.includes('tasks.php') && action === 'get_user_completed')) {
                 res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                 res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
@@ -1729,6 +1771,14 @@ const server = http.createServer((req, res) => {
 
                 if (action === 'get_submissions') {
                     res.end(JSON.stringify({ status: 'success', submissions: subs }));
+                    return;
+                }
+
+                if (action === 'get_user_completed') {
+                    const sessUser = parseSessionCookie(req);
+                    const username = (parsed.username || urlObj.searchParams.get('username') || (sessUser ? sessUser.username : '')).toLowerCase();
+                    const completedIds = subs.filter(s => (s.username || '').toLowerCase() === username).map(s => s.task_id);
+                    res.end(JSON.stringify({ status: 'success', completed_tasks: [...new Set(completedIds)] }));
                     return;
                 }
 
@@ -5126,7 +5176,25 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 context.userCash = parseFloat(userRecord.remaining_cash !== undefined ? userRecord.remaining_cash : (userRecord.cashBalance || 0));
                                 context.userPoints = parseInt(userRecord.remaining_pts !== undefined ? userRecord.remaining_pts : (userRecord.pointsBalance || 100));
                                 context.streakCount = parseInt(userRecord.streak_count || 1);
-                                context.isActivated = Boolean(userRecord.is_activated || userRecord.coupon_activated || ['admin', 'super_admin', 'uploader', 'vendor'].includes(userRecord.role));
+                                const isUserAct = Boolean(
+                                    userRecord.is_activated === true ||
+                                    userRecord.is_activated === 1 ||
+                                    userRecord.is_activated === '1' ||
+                                    userRecord.is_activated === 'true' ||
+                                    userRecord.coupon_activated === true ||
+                                    userRecord.coupon_activated === 1 ||
+                                    userRecord.coupon_activated === '1' ||
+                                    userRecord.coupon_pin_used ||
+                                    ['admin', 'super_admin', 'uploader', 'vendor'].includes(String(userRecord.role || '').toLowerCase())
+                                );
+                                context.isActivated = isUserAct;
+                                if (!context.isActivated && req.headers.cookie && req.headers.cookie.includes('ix_account_activated=1')) {
+                                    context.isActivated = true;
+                                    userRecord.is_activated = true;
+                                    try {
+                                        fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                                    } catch(e){}
+                                }
                                 context.welcomeShown = Boolean(userRecord.welcome_shown);
                                 context.referralCode = userRecord.referral_code || ('INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase());
                                 const proto = req.headers['x-forwarded-proto'] || 'http';
@@ -5190,10 +5258,14 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
 
                 const rendered = renderPhpFile(filePath, context);
-                res.writeHead(200, {
+                const resHeaders = {
                     'Content-Type': 'text/html; charset=UTF-8',
                     'Cache-Control': 'no-cache, no-store, must-revalidate'
-                });
+                };
+                if (context.isActivated) {
+                    resHeaders['Set-Cookie'] = 'ix_account_activated=1; Path=/; SameSite=Lax; Max-Age=31536000';
+                }
+                res.writeHead(200, resHeaders);
                 res.end(rendered);
             } catch (renderErr) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });

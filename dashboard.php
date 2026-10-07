@@ -2742,6 +2742,9 @@ function getUserCash() {
 
 (function applyCachedBalancesOnBoot() {
   try {
+    localStorage.removeItem('ix_done_tasks');
+    localStorage.removeItem('ix_done_surveys');
+    localStorage.removeItem('ix_survey_deductions');
     localStorage.setItem('ix_user_points_' + CURRENT_USER, userPoints.toString());
     localStorage.setItem('ix_user_cash_' + CURRENT_USER, userCash.toString());
   } catch(e) {}
@@ -2753,21 +2756,24 @@ function getUserCash() {
 (function enforceActivationGateLock() {
   const gate = document.getElementById('modalActivationGate');
   if (!gate) return;
-  const isServerActivated = document.getElementById('dataActivated')?.dataset.activated === '1';
+  const dataEl = document.getElementById('dataActivated');
+  const isServerActivated = (dataEl && dataEl.dataset.activated === '1') ||
+    document.cookie.includes('ix_account_activated=1') ||
+    (typeof CURRENT_USER !== 'undefined' && CURRENT_USER && localStorage.getItem('ix_activated_' + CURRENT_USER) === '1');
+
   if (!isServerActivated) {
     // Strictly maintain the lock screen
     gate.classList.add('active');
     gate.style.display = 'flex';
-    // Clear stale activation markers from previous sessions
-    try {
-      localStorage.removeItem('ix_is_activated');
-      if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
-        localStorage.removeItem('ix_activated_' + CURRENT_USER);
-      }
-      document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    } catch(e) {}
   } else {
-    // Only dismiss if the server verified that the user is genuinely active
+    // Only dismiss if the server or active account verified that the user is genuinely active
+    try {
+      if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
+        localStorage.setItem('ix_activated_' + CURRENT_USER, '1');
+      }
+      localStorage.setItem('ix_is_activated', '1');
+      document.cookie = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax";
+    } catch(e) {}
     gate.classList.remove('active');
     gate.style.display = 'none';
     gate.remove();
@@ -3453,7 +3459,7 @@ async function handleUpdateBank(e) {
 // TASKS LOGIC (LIST, TIMERS, PROOF UPLOAD)
 // ═══════════════════════════════════════════════════════════════════════════
 let allTasksList = [];
-let doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks') || '[]');
+let doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks_' + CURRENT_USER) || '[]');
 let proofBase64 = '';
 
 async function loadTasks() {
@@ -3461,6 +3467,8 @@ async function loadTasks() {
   const homeContainer = document.getElementById('homeTasksContainer');
   const deletedTasks = JSON.parse(localStorage.getItem('ix_deleted_tasks') || '[]');
   const customTasks = JSON.parse(localStorage.getItem('ix_custom_tasks') || '[]');
+
+  doneTaskIds = JSON.parse(localStorage.getItem('ix_done_tasks_' + CURRENT_USER) || '[]');
 
   const cached = localStorage.getItem('ix_cached_tasks');
   if (cached && (!allTasksList || !allTasksList.length)) {
@@ -3474,11 +3482,27 @@ async function loadTasks() {
     } catch(e) {}
   }
   try {
-    const r = await fetch(`/api/tasks.php?action=get_tasks&_t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-    });
+    const userParam = CURRENT_USER ? `&username=${encodeURIComponent(CURRENT_USER)}` : '';
+    const [r, rDone] = await Promise.all([
+      fetch(`/api/tasks.php?action=get_tasks&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      }),
+      fetch(`/api/tasks.php?action=get_user_completed${userParam}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      }).catch(() => null)
+    ]);
     const d = await r.json();
+    if (rDone) {
+      try {
+        const dDone = await rDone.json();
+        if (dDone && Array.isArray(dDone.completed_tasks)) {
+          doneTaskIds = dDone.completed_tasks;
+          localStorage.setItem('ix_done_tasks_' + CURRENT_USER, JSON.stringify(doneTaskIds));
+        }
+      } catch(e) {}
+    }
     let tasks = (d.tasks || []).filter(t => !deletedTasks.includes(t.id));
     customTasks.forEach(ct => {
       if (!tasks.some(t => t.id === ct.id) && !deletedTasks.includes(ct.id)) tasks.unshift(ct);
@@ -3834,8 +3858,10 @@ async function sendTaskProof() {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      doneTaskIds.push(taskId);
-      localStorage.setItem('ix_done_tasks', JSON.stringify(doneTaskIds));
+      if (!doneTaskIds.includes(taskId)) {
+        doneTaskIds.push(taskId);
+      }
+      localStorage.setItem('ix_done_tasks_' + CURRENT_USER, JSON.stringify(doneTaskIds));
 
       const earned = parseInt(d.reward_points) || pts;
       const updatedPts = (d.new_points !== undefined && d.new_points !== null) ? parseInt(d.new_points) : (getUserPoints() + earned);
@@ -3858,7 +3884,7 @@ async function sendTaskProof() {
 // SURVEYS & QUIZZES LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 let allSurveysList = [];
-let doneSurveyIds = JSON.parse(localStorage.getItem('ix_done_surveys') || '[]');
+let doneSurveyIds = JSON.parse(localStorage.getItem('ix_done_surveys_' + CURRENT_USER) || '[]');
 let activeSurvey = null;
 let surveyAnswers = {};
 let surveyStep = 0;
@@ -3884,6 +3910,8 @@ async function loadSurveys() {
   const homeContainer = document.getElementById('homeSurveysContainer');
   const deletedSurveys = JSON.parse(localStorage.getItem('ix_deleted_surveys') || '[]');
   const customSurveys = JSON.parse(localStorage.getItem('ix_custom_surveys') || '[]');
+
+  doneSurveyIds = JSON.parse(localStorage.getItem('ix_done_surveys_' + CURRENT_USER) || '[]');
 
   const cached = localStorage.getItem('ix_cached_surveys');
   if (cached && (!allSurveysList || !allSurveysList.length)) {
@@ -3916,11 +3944,11 @@ async function loadSurveys() {
     });
     allSurveysList = surveys;
     localStorage.setItem('ix_cached_surveys', JSON.stringify(allSurveysList));
-    const serverDone = d2.completed_surveys || [];
-    doneSurveyIds = [...new Set([...doneSurveyIds, ...serverDone])];
-    localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+    const serverDone = Array.isArray(d2.completed_surveys) ? d2.completed_surveys : [];
+    doneSurveyIds = serverDone;
+    localStorage.setItem('ix_done_surveys_' + CURRENT_USER, JSON.stringify(doneSurveyIds));
 
-    const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
+    const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions_' + CURRENT_USER) || '{}');
     allSurveysList.forEach(s => {
       const isDone = doneSurveyIds.includes(s.id);
       const total = parseInt(s.total_slots) || 100;
@@ -3954,7 +3982,7 @@ function renderSurveys(list) {
     return;
   }
   const now = Date.now();
-  const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
+  const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions_' + CURRENT_USER) || '{}');
   const html = list.map(s => {
     const isDone = doneSurveyIds.includes(s.id);
     const expTime = s.expires_at ? new Date(s.expires_at).getTime() : null;
@@ -4188,11 +4216,11 @@ async function submitSurveyAnswers() {
       if (!doneSurveyIds.includes(activeSurvey.id)) {
         doneSurveyIds.push(activeSurvey.id);
       }
-      localStorage.setItem('ix_done_surveys', JSON.stringify(doneSurveyIds));
+      localStorage.setItem('ix_done_surveys_' + CURRENT_USER, JSON.stringify(doneSurveyIds));
 
-      const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions') || '{}');
+      const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions_' + CURRENT_USER) || '{}');
       localDeductions[activeSurvey.id] = (localDeductions[activeSurvey.id] || 0) + 1;
-      localStorage.setItem('ix_survey_deductions', JSON.stringify(localDeductions));
+      localStorage.setItem('ix_survey_deductions_' + CURRENT_USER, JSON.stringify(localDeductions));
 
       if (activeSurvey.remaining_slots !== undefined) {
         activeSurvey.remaining_slots = Math.max(0, parseInt(activeSurvey.remaining_slots) - 1);

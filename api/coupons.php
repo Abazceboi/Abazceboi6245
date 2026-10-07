@@ -248,6 +248,27 @@ if ($action === 'activate' || $action === 'activate_coupon') {
         if ($u) $username = $u['username'] ?? '';
     }
 
+    // Single-use check: account cannot be activated multiple times
+    require_once __DIR__ . '/../includes/storage_helper.php';
+    $uData = readStorageJson('data/users.json', ['users' => []]);
+    $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
+    $wrapped = isset($uData['users']);
+    if (!empty($username)) {
+        foreach ($users as $chkU) {
+            if (strtolower($chkU['username'] ?? '') === strtolower($username)) {
+                if (!empty($chkU['is_activated']) || !empty($chkU['coupon_activated']) || !empty($chkU['coupon_pin_used'])) {
+                    echo json_encode([
+                        'success' => false,
+                        'status' => 'error',
+                        'message' => 'This account is already activated and unlocked. Activation codes only need to be entered once.'
+                    ]);
+                    exit;
+                }
+                break;
+            }
+        }
+    }
+
     $validation = validateCouponForRegistration($code, $pdo);
     if (!$validation['valid']) {
         echo json_encode([

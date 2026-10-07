@@ -207,6 +207,19 @@ if ($action === 'activate_coupon') {
         exit;
     }
 
+    $jsonUsers = loadJsonUsers();
+    if (!empty($username)) {
+        foreach ($jsonUsers as $chkU) {
+            if (strtolower($chkU['username'] ?? '') === strtolower($username)) {
+                if (!empty($chkU['is_activated']) || !empty($chkU['coupon_activated']) || !empty($chkU['coupon_pin_used'])) {
+                    echo json_encode(['status' => 'error', 'message' => 'This account is already activated and unlocked. Activation codes only need to be entered once.']);
+                    exit;
+                }
+                break;
+            }
+        }
+    }
+
     $pinValidation = validateCouponForRegistration($pin, $pdo);
     if (!$pinValidation['valid']) {
         echo json_encode(['status' => 'error', 'message' => $pinValidation['message']]);

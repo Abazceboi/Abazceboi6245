@@ -476,10 +476,24 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
                     if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                     if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                     sessionStorage.setItem('ix_user', data.username);
-                    // Explicitly remove any active status token so activation gate stays locked
-                    localStorage.removeItem('ix_is_activated');
-                    if (data.username) localStorage.removeItem('ix_activated_' + data.username);
-                    document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+                    // Explicitly clear legacy and previous user task/survey completion markers
+                    localStorage.removeItem('ix_done_tasks');
+                    localStorage.removeItem('ix_done_surveys');
+                    localStorage.removeItem('ix_survey_deductions');
+                    if (data.username) {
+                        localStorage.removeItem('ix_done_tasks_' + data.username);
+                        localStorage.removeItem('ix_done_surveys_' + data.username);
+                        localStorage.removeItem('ix_survey_deductions_' + data.username);
+                    }
+                    if (!data.is_activated) {
+                        localStorage.removeItem('ix_is_activated');
+                        if (data.username) localStorage.removeItem('ix_activated_' + data.username);
+                        document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+                    } else {
+                        localStorage.setItem('ix_is_activated', '1');
+                        if (data.username) localStorage.setItem('ix_activated_' + data.username, '1');
+                        document.cookie = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax";
+                    }
                 } catch(e) {}
                 
                 window.location.replace('dashboard.php?new_reg=1');

@@ -467,6 +467,11 @@ if (!empty($_GET['error'])) {
                 if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                 if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                 localStorage.setItem('ix_is_admin', data.isAdmin ? 'true' : 'false');
+                try {
+                    localStorage.removeItem('ix_done_tasks');
+                    localStorage.removeItem('ix_done_surveys');
+                    localStorage.removeItem('ix_survey_deductions');
+                } catch(e) {}
 
                 const u = (data.username || '').toLowerCase();
                 const isAct = Boolean(data.is_activated || data.isActivated || localStorage.getItem('ix_activated_' + u) === '1');
