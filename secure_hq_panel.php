@@ -723,7 +723,7 @@ input,textarea,select{font-family:var(--ff);}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
             <div>
               <div style="font-weight:700;font-size:13px;">Written Survey (Words)</div>
-              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Text questionnaire, written feedback & word prompts</div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Text questionnaire, written feedback &amp; short answer questions</div>
             </div>
           </button>
           <button type="button" class="format-btn" id="btnSurveyFormatVideo" onclick="setSurveyFormat('video')">
@@ -2228,7 +2228,7 @@ function renderGeneratedSurveyResults(plan) {
 
   if (!box || !titleDisplay || !list) return;
 
-  titleDisplay.textContent = plan.title || 'Generated Survey';
+  titleDisplay.textContent = plan.title || 'Official Survey';
   if (metaDisplay) {
     metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Suggested Reward: ${plan.reward_points} PTS | Slots: ${plan.total_slots}`;
   }
@@ -2237,7 +2237,7 @@ function renderGeneratedSurveyResults(plan) {
     <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:12px;font-weight:700;color:var(--accent);">Question ${qIdx + 1}</span>
-        <span style="font-size:10.5px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600;">Answer Verified</span>
+        <span style="font-size:10.5px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600;">Verified Option</span>
       </div>
       <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;line-height:1.4;">${esc(q.question)}</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:6px;">
@@ -2275,7 +2275,7 @@ async function applyAndPublishGeneratedSurvey() {
     questions: lastGeneratedSurveyPlan.questions
   };
 
-  toast('Publishing generated survey live to user dashboard...', 'info');
+  toast('Publishing survey live to user dashboard...', 'info');
   try {
     const r = await fetch('/api/surveys.php?action=create_survey', {
       method: 'POST',
@@ -2284,7 +2284,7 @@ async function applyAndPublishGeneratedSurvey() {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Generated survey published successfully and is now live on the user dashboard!', 'success');
+      toast('Survey published successfully and is now live on the user dashboard!', 'success');
       const createdSurvey = d.survey || Object.assign({
         id: 'SRV-' + Date.now(),
         total_slots: payload.total_slots,

@@ -164,7 +164,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
                                 <span style="color:#7DD3FC;font-weight:700">3–8 Mins</span>
-                                <span style="color:#34D399;font-weight:700">⭐ 5.0 (4,920+)</span>
+                                <span style="color:#34D399;font-weight:700">Rating: 5.0 (4,920+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
                                 <span>Fee: <b style="color:#34D399">0.00%</b></span>
@@ -186,7 +186,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
                                 <span style="color:#7DD3FC;font-weight:700">5–15 Mins</span>
-                                <span style="color:#34D399;font-weight:700">⭐ 4.9 (2,180+)</span>
+                                <span style="color:#34D399;font-weight:700">Rating: 4.9 (2,180+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
                                 <span>Fee: <b style="color:#34D399">0.00%</b></span>
@@ -208,7 +208,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.74rem;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.03);margin-bottom:8px">
                                 <span style="color:#7DD3FC;font-weight:700">10–25 Mins</span>
-                                <span style="color:#34D399;font-weight:700">⭐ 4.95 (1,450+)</span>
+                                <span style="color:#34D399;font-weight:700">Rating: 4.95 (1,450+)</span>
                             </div>
                             <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.7rem;color:#94A3B8">
                                 <span>Fee: <b style="color:#34D399">0.00%</b></span>

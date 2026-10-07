@@ -113,7 +113,7 @@ require_once __DIR__ . '/includes/header.php';
  <span class="job-badge job-badge-web2">Digital Gig</span>
  <span class="job-posted-time">1 day ago</span>
  </div>
- <h3 class="job-title">E-Commerce Product Review & Rating Assistant</h3>
+ <h3 class="job-title">E-Commerce Product Review & Rating Specialist</h3>
  <p class="job-desc">Test merchant test products, write helpful genuine reviews on consumer feedback platforms, and get paid directly in Naira per completed verified submission.</p>
  <div class="job-reward-box">
  <span class="job-reward-label">Payment Per Review</span>
