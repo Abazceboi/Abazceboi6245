@@ -662,6 +662,28 @@ const server = http.createServer((req, res) => {
                         isActivated = true;
                     }
 
+                    let canonicalReferrer = '';
+                    let canonicalRefCode = '';
+                    if (ref) {
+                        const refLower = ref.toLowerCase();
+                        const refUpper = ref.toUpperCase();
+                        const matchedReferrer = (usersData.users || []).find(u => {
+                            const uName = (u.username || '').toLowerCase();
+                            const uCode = (u.referral_code || '').toUpperCase();
+                            const uInx = ('INX-' + uName).toUpperCase();
+                            const uInxRaw = ('INX-' + (u.username || '')).toUpperCase();
+                            return uName === refLower || (uCode && uCode === refUpper) || uInx === refUpper || uInxRaw === refUpper;
+                        });
+                        if (matchedReferrer) {
+                            canonicalReferrer = matchedReferrer.username;
+                            canonicalRefCode = matchedReferrer.referral_code || ('INX-' + matchedReferrer.username.toUpperCase());
+                            matchedReferrer.referral_count = (parseInt(matchedReferrer.referral_count) || 0) + 1;
+                            matchedReferrer.referrals_count = matchedReferrer.referral_count;
+                        } else {
+                            canonicalReferrer = ref;
+                        }
+                    }
+
                     const newUserId = 'USR-' + Date.now().toString(36).toUpperCase();
                     const newUser = {
                         id: newUserId,
@@ -678,8 +700,11 @@ const server = http.createServer((req, res) => {
                         remaining_cash: 0.00,
                         remaining_pts: isActivated ? 100 : 0,
                         total_earned: 0.00,
-                        referral_code: 'REF-' + Math.floor(Math.random() * 900000 + 100000),
-                        referred_by: ref,
+                        referral_code: 'INX-' + username.toUpperCase(),
+                        referral_count: 0,
+                        referral_earnings: 0.00,
+                        referred_by: canonicalReferrer,
+                        referred_by_code: canonicalRefCode,
                         coupon_pin_used: isActivated ? pin : '',
                         status: 'active',
                         created_at: new Date().toISOString(),
@@ -3793,10 +3818,17 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const uname = (urlObj.searchParams.get('username') || parsed.username || '').trim().toLowerCase();
                     const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname);
                     const userRefCode = user ? (user.referral_code || '').toUpperCase() : '';
+                    const inxUpper = ('INX-' + uname).toUpperCase();
+                    const inxRaw = user ? ('INX-' + user.username).toUpperCase() : '';
                     const referrals = [];
                     (usersData.users || []).forEach(u => {
                         const refBy = (u.referred_by || u.referredBy || '').trim();
-                        if (refBy && (refBy.toLowerCase() === uname || (userRefCode && refBy.toUpperCase() === userRefCode))) {
+                        if (refBy && (
+                            refBy.toLowerCase() === uname ||
+                            (userRefCode && refBy.toUpperCase() === userRefCode) ||
+                            refBy.toUpperCase() === inxUpper ||
+                            refBy.toUpperCase() === inxRaw
+                        )) {
                             referrals.push({
                                 username: u.username || '',
                                 email: u.email || '',

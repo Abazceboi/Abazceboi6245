@@ -30,7 +30,7 @@ if ($action === 'register') {
     $phone = trim($data['phone'] ?? '');
     $country = strtoupper(trim($data['country'] ?? 'NG'));
     $password = $data['password'] ?? '';
-    $referredBy = trim($data['ref'] ?? '');
+    $rawRef = trim($data['ref'] ?? ($data['referred_by'] ?? ($data['referral_code'] ?? ($_COOKIE['ix_ref'] ?? ''))));
     $pin = strtoupper(trim($data['pin'] ?? ''));
     
     if (strlen($username) < 3 || strlen($password) < 6) {
@@ -84,9 +84,63 @@ if ($action === 'register') {
             }
         } catch (Exception $e) {}
     }
+
+    // Resolve Referrer to canonical user profile
+    $canonicalReferrer = '';
+    $canonicalRefCode = '';
+    if (!empty($rawRef)) {
+        $refLower = strtolower($rawRef);
+        $refUpper = strtoupper($rawRef);
+        foreach ($jsonUsers as &$ju) {
+            $uName = strtolower($ju['username'] ?? '');
+            $uCode = strtoupper(trim($ju['referral_code'] ?? ''));
+            $uInx = strtoupper('INX-' . $uName);
+            $uInxMd5_1 = strtoupper('INX-' . substr(md5($uName . 'ref'), 0, 8));
+            $uInxMd5_2 = strtoupper('INX-' . substr(md5(($ju['username'] ?? '') . 'ref'), 0, 8));
+            $uRefMd5 = strtoupper('REF-' . substr(md5($uName), 0, 6));
+
+            if ($uName === $refLower || ($uCode && $uCode === $refUpper) || $uInx === $refUpper || $uInxMd5_1 === $refUpper || $uInxMd5_2 === $refUpper || $uRefMd5 === $refUpper) {
+                $canonicalReferrer = $ju['username'];
+                $canonicalRefCode = !empty($ju['referral_code']) ? $ju['referral_code'] : ('INX-' . strtoupper($ju['username']));
+
+                // Increment referrer's referral count immediately upon registration
+                $ju['referral_count'] = intval($ju['referral_count'] ?? 0) + 1;
+                $ju['referrals_count'] = $ju['referral_count'];
+
+                if (!isset($ju['activity_ledger']) || !is_array($ju['activity_ledger'])) {
+                    $ju['activity_ledger'] = [];
+                }
+                array_unshift($ju['activity_ledger'], [
+                    'time' => date('d/m/Y, H:i'),
+                    'type' => 'New Referral',
+                    'desc' => "New member @{$username} registered using your referral link",
+                    'reward_type' => 'referral',
+                    'reward_value' => 0
+                ]);
+
+                $allNotifs = readStorageJson('data/notifications.json', []);
+                if (!is_array($allNotifs)) $allNotifs = [];
+                array_unshift($allNotifs, [
+                    'id' => 'notif-' . uniqid(),
+                    'title' => 'New Downline Referral',
+                    'msg' => "Member @{$username} just registered using your referral link!",
+                    'message' => "Member @{$username} just registered using your referral link!",
+                    'target' => $ju['username'],
+                    'time' => date('d M Y, H:i'),
+                    'created_at' => date('c')
+                ]);
+                writeStorageJson('data/notifications.json', $allNotifs);
+                break;
+            }
+        }
+        unset($ju);
+        if (empty($canonicalReferrer)) {
+            $canonicalReferrer = $rawRef;
+        }
+    }
     
     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-    $referralCode = 'REF-' . strtoupper(substr(md5(uniqid()), 0, 8));
+    $referralCode = 'INX-' . strtoupper($username);
     $userId = 'USR-' . strtoupper(substr(md5(uniqid()), 0, 8));
 
     // Try inserting into SQL DB if available
@@ -94,10 +148,15 @@ if ($action === 'register') {
         try {
             try {
                 $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy, couponPinUsed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy, $isActivated ? $pin : '']);
+                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $canonicalReferrer, $isActivated ? $pin : '']);
             } catch (Exception $colEx) {
                 $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $referredBy]);
+                $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $canonicalReferrer]);
+            }
+            if (!empty($canonicalReferrer)) {
+                try {
+                    $pdo->prepare('UPDATE users SET "referralCount" = COALESCE("referralCount", 0) + 1 WHERE LOWER(username) = LOWER(?)')->execute([$canonicalReferrer]);
+                } catch(Exception $e2){}
             }
         } catch (Exception $e) {
             // DB insert failed, continue with JSON persistence
@@ -121,7 +180,10 @@ if ($action === 'register') {
         'remaining_pts' => $isActivated ? 100 : 0,
         'total_earned' => 0.00,
         'referral_code' => $referralCode,
-        'referred_by' => $referredBy,
+        'referral_count' => 0,
+        'referral_earnings' => 0.00,
+        'referred_by' => $canonicalReferrer,
+        'referred_by_code' => $canonicalRefCode,
         'coupon_pin_used' => $isActivated ? $pin : '',
         'status' => 'active',
         'created_at' => date('c'),
@@ -212,8 +274,11 @@ if ($action === 'activate_coupon') {
         foreach ($jsonUsers as &$refUser) {
             $rUser = strtolower($refUser['username'] ?? '');
             $rCode = strtoupper(trim($refUser['referral_code'] ?? ''));
+            $rInx = strtoupper('INX-' . $rUser);
+            $rInxMd5_1 = strtoupper('INX-' . substr(md5($rUser . 'ref'), 0, 8));
+            $rInxMd5_2 = strtoupper('INX-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
 
-            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper)) {
+            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
                 $refUser['remaining_cash'] = floatval($refUser['remaining_cash'] ?? 0) + $commAmount;
                 $refUser['cashBalance'] = $refUser['remaining_cash'];
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;

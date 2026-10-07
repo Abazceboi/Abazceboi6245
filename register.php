@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/app.php';
 
 $pinFromQuery = $_GET['pin'] ?? '';
-$refFromQuery = trim($_GET['ref'] ?? '');
+$refFromQuery = trim($_GET['ref'] ?? ($_GET['r'] ?? ($_GET['referral'] ?? ($_GET['referrer'] ?? ''))));
 if (!empty($refFromQuery)) {
     setcookie('ix_ref', $refFromQuery, time() + 86400 * 30, '/');
 } elseif (!empty($_COOKIE['ix_ref'])) {
@@ -354,7 +354,13 @@ if (!empty($refFromQuery)) {
 
                     <div class="form-group full">
                         <label for="referralCode">Referral Username (Optional)</label>
-                        <input type="text" id="referralCode" name="ref" class="form-input" value="<?= htmlspecialchars($refFromQuery) ?>" placeholder="Referrer username if any">
+                        <div style="position:relative;">
+                            <input type="text" id="referralCode" name="ref" class="form-input" value="<?= htmlspecialchars($refFromQuery) ?>" placeholder="Referrer username if any" <?= !empty($refFromQuery) ? 'style="border-color:rgba(56,189,248,0.5);background:rgba(56,189,248,0.05);color:#38BDF8;font-weight:700;"' : '' ?>>
+                            <div id="refBadgeIndicator" style="<?= !empty($refFromQuery) ? 'display:flex;' : 'display:none;' ?>font-size:0.75rem;color:#10B981;font-weight:700;margin-top:6px;align-items:center;gap:4px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                Referred by @<span id="refBadgeUsername"><?= htmlspecialchars($refFromQuery) ?></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -443,7 +449,7 @@ if (!empty($refFromQuery)) {
         btn.innerHTML = `<span>Creating your account...</span>`;
 
         const fullName = document.getElementById('fullName').value.trim();
-        const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '');
+        const refCode = (document.getElementById('referralCode') ? document.getElementById('referralCode').value.trim() : '') || localStorage.getItem('ix_ref') || '';
 
         fetch('api/auth.php?action=register', {
             method: 'POST',
@@ -485,19 +491,54 @@ if (!empty($refFromQuery)) {
     }
 
     function signoutForNewRegistration() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get('ref') || urlParams.get('r') || urlParams.get('referral') || urlParams.get('referrer') || (document.getElementById('referralCode')?.value.trim()) || localStorage.getItem('ix_ref') || '';
         try {
             localStorage.removeItem('ix_current_user');
             localStorage.removeItem('ix_user_email');
             localStorage.removeItem('ix_user_phone');
             localStorage.removeItem('ix_user_fullname');
             sessionStorage.clear();
+            if (refParam) {
+                localStorage.setItem('ix_ref', refParam);
+            }
         } catch(e) {}
         fetch('api/auth.php?action=logout', { method: 'POST' }).finally(() => {
-            window.location.reload();
+            const redirectUrl = refParam ? ('register.php?ref=' + encodeURIComponent(refParam)) : 'register.php';
+            window.location.replace(redirectUrl);
         });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get('ref') || urlParams.get('r') || urlParams.get('referral') || urlParams.get('referrer');
+        const refInput = document.getElementById('referralCode');
+        const badgeIndicator = document.getElementById('refBadgeIndicator');
+        const badgeUser = document.getElementById('refBadgeUsername');
+
+        let effectiveRef = '';
+        if (refParam) {
+            effectiveRef = refParam.trim();
+            try {
+                localStorage.setItem('ix_ref', effectiveRef);
+            } catch(e) {}
+        } else {
+            const cachedRef = localStorage.getItem('ix_ref');
+            if (cachedRef) effectiveRef = cachedRef.trim();
+        }
+
+        if (effectiveRef && refInput) {
+            refInput.value = effectiveRef;
+            refInput.style.borderColor = 'rgba(56,189,248,0.5)';
+            refInput.style.background = 'rgba(56,189,248,0.05)';
+            refInput.style.color = '#38BDF8';
+            refInput.style.fontWeight = '700';
+            if (badgeIndicator && badgeUser) {
+                badgeUser.textContent = effectiveRef;
+                badgeIndicator.style.display = 'flex';
+            }
+        }
+
         const activeUser = localStorage.getItem('ix_current_user') || sessionStorage.getItem('ix_user');
         if (activeUser) {
             const banner = document.getElementById('alreadyLoggedInBanner');
@@ -505,24 +546,6 @@ if (!empty($refFromQuery)) {
             if (banner && userEl) {
                 userEl.textContent = activeUser;
                 banner.style.display = 'block';
-            }
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const refParam = urlParams.get('ref');
-        const refInput = document.getElementById('referralCode');
-
-        if (refParam) {
-            try {
-                localStorage.setItem('ix_ref', refParam);
-            } catch(e) {}
-            if (refInput && !refInput.value) {
-                refInput.value = refParam;
-            }
-        } else {
-            const cachedRef = localStorage.getItem('ix_ref');
-            if (cachedRef && refInput && !refInput.value) {
-                refInput.value = cachedRef;
             }
         }
     });

@@ -942,10 +942,22 @@ switch ($action) {
                 break;
             }
         }
+        $rInxUpper = strtoupper('INX-' . $uLower);
+        $rInxMd5_1 = strtoupper('INX-' . substr(md5($uLower . 'ref'), 0, 8));
+        $rInxMd5_2 = strtoupper('INX-' . substr(md5($username . 'ref'), 0, 8));
+        $rMd5_3 = strtoupper('REF-' . substr(md5($uLower), 0, 6));
+
         $referrals = [];
         foreach ($data['users'] as $u) {
             $refBy = trim($u['referred_by'] ?? ($u['referredBy'] ?? ''));
-            if (!empty($refBy) && (strtolower($refBy) === $uLower || ($userRefCode && strtoupper($refBy) === $userRefCode))) {
+            if (!empty($refBy) && (
+                strtolower($refBy) === $uLower ||
+                ($userRefCode && strtoupper($refBy) === $userRefCode) ||
+                strtoupper($refBy) === $rInxUpper ||
+                strtoupper($refBy) === $rInxMd5_1 ||
+                strtoupper($refBy) === $rInxMd5_2 ||
+                strtoupper($refBy) === $rMd5_3
+            )) {
                 $referrals[] = [
                     'username' => $u['username'] ?? '',
                     'email' => $u['email'] ?? '',
@@ -958,8 +970,8 @@ switch ($action) {
         }
         if ($pdo) {
             try {
-                $stmt = $pdo->prepare('SELECT username, email, "fullName", "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
-                $stmt->execute([$username, $userRefCode]);
+                $stmt = $pdo->prepare('SELECT username, email, "fullName", "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) OR UPPER("referredBy") = UPPER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
+                $stmt->execute([$username, $userRefCode, $rInxUpper, $rInxMd5_1]);
                 $dbRefs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 foreach ($dbRefs as $dr) {
                     $unLower = strtolower($dr['username']);

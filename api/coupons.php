@@ -299,8 +299,11 @@ if ($action === 'activate' || $action === 'activate_coupon') {
         foreach ($users as &$refUser) {
             $rUser = strtolower($refUser['username'] ?? '');
             $rCode = strtoupper(trim($refUser['referral_code'] ?? ''));
+            $rInx = strtoupper('INX-' . $rUser);
+            $rInxMd5_1 = strtoupper('INX-' . substr(md5($rUser . 'ref'), 0, 8));
+            $rInxMd5_2 = strtoupper('INX-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
 
-            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper)) {
+            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
                 $refUser['remaining_cash'] = floatval($refUser['remaining_cash'] ?? 0) + $commAmount;
                 $refUser['cashBalance'] = $refUser['remaining_cash'];
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;

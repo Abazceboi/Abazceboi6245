@@ -36,7 +36,7 @@ $userFullName   = $authUser['fullName'] ?? $username;
 $bankName       = 'OPay Digital Services';
 $accountNumber  = '0801234567';
 $accountName    = $userFullName;
-$referralCode   = 'INX-' . strtoupper(substr(md5($username . 'ref'), 0, 8));
+$referralCode   = 'INX-' . strtoupper($username);
 $referralCount  = 0;
 $referralEarnings = 0.00;
 $tasksCompleted = 0;
@@ -145,15 +145,27 @@ if (!empty($reqHost) && !str_contains($reqHost, 'localhost:5050')) {
 } else {
     $appUrl = rtrim(APP_URL, '/');
 }
-$referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
+$referralLink = $appUrl . '/register.php?ref=' . urlencode($username);
 
 // Query direct downline referrals for Referrals Tab
 $referredUsersList = [];
 $uLower = strtolower($username);
 $rCodeUpper = strtoupper($referralCode);
+$rInxUpper = strtoupper('INX-' . $username);
+$rInxMd5_1 = strtoupper('INX-' . substr(md5($uLower . 'ref'), 0, 8));
+$rInxMd5_2 = strtoupper('INX-' . substr(md5($username . 'ref'), 0, 8));
+$rMd5_3 = strtoupper('REF-' . substr(md5($uLower), 0, 6));
+
 foreach ($allUsers as $au) {
     $refBy = trim($au['referred_by'] ?? ($au['referredBy'] ?? ''));
-    if (!empty($refBy) && (strtolower($refBy) === $uLower || ($rCodeUpper && strtoupper($refBy) === $rCodeUpper))) {
+    if (!empty($refBy) && (
+        strtolower($refBy) === $uLower ||
+        ($rCodeUpper && strtoupper($refBy) === $rCodeUpper) ||
+        strtoupper($refBy) === $rInxUpper ||
+        strtoupper($refBy) === $rInxMd5_1 ||
+        strtoupper($refBy) === $rInxMd5_2 ||
+        strtoupper($refBy) === $rMd5_3
+    )) {
         $referredUsersList[] = [
             'username' => $au['username'] ?? '',
             'email' => $au['email'] ?? '',
@@ -165,8 +177,8 @@ foreach ($allUsers as $au) {
 }
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT username, email, "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
-        $stmt->execute([$username, $referralCode]);
+        $stmt = $pdo->prepare('SELECT username, email, "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) OR UPPER("referredBy") = UPPER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
+        $stmt->execute([$username, $referralCode, $rInxUpper, $rInxMd5_1]);
         $dbRefs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($dbRefs as $dr) {
             $unLower = strtolower($dr['username']);
@@ -185,6 +197,9 @@ if ($pdo) {
             }
         }
     } catch(Exception $e){}
+}
+if (count($referredUsersList) > $referralCount) {
+    $referralCount = count($referredUsersList);
 }
 ?>
 <!DOCTYPE html>
@@ -2728,13 +2743,13 @@ function getUserCash() {
 })();
 
 function getReferralLink() {
-  const code = REF_CODE || document.getElementById('dataRefCode')?.dataset.code || '<?= htmlspecialchars($referralCode) ?>';
+  const user = CURRENT_USER || document.getElementById('dataUser')?.dataset.user || '<?= htmlspecialchars($username) ?>';
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
-    return window.location.origin + '/register.php?ref=' + encodeURIComponent(code);
+    return window.location.origin + '/register.php?ref=' + encodeURIComponent(user);
   }
   const raw = document.getElementById('dataRefLink')?.dataset.link;
   if (raw && !raw.includes('localhost') && (raw.startsWith('http://') || raw.startsWith('https://'))) return raw;
-  return '/register.php?ref=' + encodeURIComponent(code);
+  return '/register.php?ref=' + encodeURIComponent(user);
 }
 
 const FINAL_REF_LINK = getReferralLink();
