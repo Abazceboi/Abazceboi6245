@@ -137,33 +137,43 @@ switch ($action) {
                 foreach ($dbRows as $r) {
                     $unLower = strtolower($r['username']);
                     if (isset($delMap[$unLower])) continue;
-                    $role = !empty($r['role']) ? $r['role'] : ($usersMap[$unLower]['role'] ?? 'member');
+                    $existingUser = $usersMap[$unLower] ?? [];
+                    $role = !empty($existingUser['role']) ? $existingUser['role'] : (!empty($r['role']) ? $r['role'] : 'member');
+                    
+                    // Prioritize active balance from JSON storage, falling back to database
+                    $finalCash = isset($existingUser['remaining_cash']) ? (float)$existingUser['remaining_cash'] : (isset($existingUser['cashBalance']) ? (float)$existingUser['cashBalance'] : (float)($r['cashBalance'] ?? $r['cashbalance'] ?? 0.0));
+                    $finalPts = isset($existingUser['remaining_pts']) ? (int)$existingUser['remaining_pts'] : (isset($existingUser['pointsBalance']) ? (int)$existingUser['pointsBalance'] : (int)($r['pointsBalance'] ?? $r['pointsbalance'] ?? 100));
+
                     $dbEntry = [
-                        'id' => $r['id'],
+                        'id' => $existingUser['id'] ?? ($r['id'] ?? 'usr_' . substr(md5($r['username']), 0, 6)),
                         'username' => $r['username'],
-                        'full_name' => $r['fullName'] ?? $r['fullname'] ?? $r['username'],
-                        'email' => $r['email'] ?? '',
-                        'phone' => $r['phone'] ?? '',
+                        'full_name' => $existingUser['full_name'] ?? $existingUser['fullName'] ?? ($r['fullName'] ?? $r['fullname'] ?? $r['username']),
+                        'email' => !empty($existingUser['email']) ? $existingUser['email'] : ($r['email'] ?? ''),
+                        'phone' => !empty($existingUser['phone']) ? $existingUser['phone'] : ($r['phone'] ?? ''),
                         'role' => $role,
                         'mode' => ($role === 'uploader') ? 'uploader' : 'active',
                         'status_label' => $GLOBALS['ROLE_LABELS'][$role] ?? 'Active Member',
-                        'created_at' => $r['createdAt'] ?? $r['createdat'] ?? ($usersMap[$unLower]['created_at'] ?? date('c')),
-                        'join_date_formatted' => !empty($r['createdAt'] ?? $r['createdat']) ? date('d M Y, H:i', strtotime($r['createdAt'] ?? $r['createdat'])) : date('d M Y, H:i'),
-                        'recent_activity' => 'Platform Member (Active)',
-                        'recent_activity_time' => 'Online',
-                        'referrals_count' => $usersMap[$unLower]['referrals_count'] ?? 0,
-                        'referral_earnings' => $usersMap[$unLower]['referral_earnings'] ?? 0,
-                        'tasks_completed' => $usersMap[$unLower]['tasks_completed'] ?? 0,
-                        'total_earned' => (float)($r['cashBalance'] ?? $r['cashbalance'] ?? 0.0),
-                        'remaining_cash' => (float)($r['cashBalance'] ?? $r['cashbalance'] ?? 0.0),
-                        'remaining_pts' => (int)($r['pointsBalance'] ?? $r['pointsbalance'] ?? 100),
-                        'bank_name' => $usersMap[$unLower]['bank_name'] ?? 'Pending Setup',
-                        'account_number' => $usersMap[$unLower]['account_number'] ?? '••••••••',
-                        'activity_ledger' => $usersMap[$unLower]['activity_ledger'] ?? [
+                        'created_at' => $existingUser['created_at'] ?? ($r['createdAt'] ?? $r['createdat'] ?? date('c')),
+                        'join_date_formatted' => !empty($existingUser['created_at'] ?? $r['createdAt']) ? date('d M Y, H:i', strtotime($existingUser['created_at'] ?? $r['createdAt'])) : date('d M Y, H:i'),
+                        'recent_activity' => $existingUser['recent_activity'] ?? 'Platform Member (Active)',
+                        'recent_activity_time' => $existingUser['recent_activity_time'] ?? 'Online',
+                        'referrals_count' => $existingUser['referrals_count'] ?? 0,
+                        'referral_earnings' => $existingUser['referral_earnings'] ?? 0,
+                        'tasks_completed' => $existingUser['tasks_completed'] ?? 0,
+                        'total_earned' => $finalCash,
+                        'remaining_cash' => $finalCash,
+                        'remaining_pts' => $finalPts,
+                        'cashBalance' => $finalCash,
+                        'pointsBalance' => $finalPts,
+                        'bank_name' => $existingUser['bank_name'] ?? ($r['bankName'] ?? 'Pending Setup'),
+                        'account_number' => $existingUser['account_number'] ?? ($r['accountNumber'] ?? '••••••••'),
+                        'account_name' => $existingUser['account_name'] ?? ($r['accountName'] ?? ''),
+                        'status' => $existingUser['status'] ?? 'active',
+                        'activity_ledger' => $existingUser['activity_ledger'] ?? [
                             ['time' => 'Recently', 'type' => 'Auth', 'desc' => 'Account Registered and Active', 'ip' => '102.89.x.x']
                         ]
                     ];
-                    $usersMap[$unLower] = array_merge($usersMap[$unLower] ?? [], $dbEntry);
+                    $usersMap[$unLower] = array_merge($existingUser, $dbEntry);
                 }
             } catch (Exception $e) {
                 // Fallback for case-insensitive column names
@@ -172,30 +182,36 @@ switch ($action) {
                     $dbRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     foreach ($dbRows as $r) {
                         $unLower = strtolower($r['username']);
-                        $role = !empty($r['role']) ? $r['role'] : ($usersMap[$unLower]['role'] ?? 'member');
-                        $usersMap[$unLower] = array_merge($usersMap[$unLower] ?? [], [
-                            'id' => $r['id'],
+                        $existingUser = $usersMap[$unLower] ?? [];
+                        $role = !empty($existingUser['role']) ? $existingUser['role'] : (!empty($r['role']) ? $r['role'] : 'member');
+                        $finalCash = isset($existingUser['remaining_cash']) ? (float)$existingUser['remaining_cash'] : (isset($existingUser['cashBalance']) ? (float)$existingUser['cashBalance'] : 0.0);
+                        $finalPts = isset($existingUser['remaining_pts']) ? (int)$existingUser['remaining_pts'] : (isset($existingUser['pointsBalance']) ? (int)$existingUser['pointsBalance'] : 100);
+
+                        $usersMap[$unLower] = array_merge($existingUser, [
+                            'id' => $existingUser['id'] ?? $r['id'],
                             'username' => $r['username'],
-                            'full_name' => $r['username'],
-                            'email' => $r['email'] ?? '',
-                            'phone' => $r['phone'] ?? '',
+                            'full_name' => $existingUser['full_name'] ?? $r['username'],
+                            'email' => !empty($existingUser['email']) ? $existingUser['email'] : ($r['email'] ?? ''),
+                            'phone' => !empty($existingUser['phone']) ? $existingUser['phone'] : ($r['phone'] ?? ''),
                             'role' => $role,
                             'mode' => ($role === 'uploader') ? 'uploader' : 'active',
                             'status_label' => $GLOBALS['ROLE_LABELS'][$role] ?? 'Active Member',
                             'join_date_formatted' => date('d M Y, H:i'),
                             'recent_activity' => 'Platform Member (Active)',
                             'recent_activity_time' => 'Online',
-                            'referrals_count' => 0,
-                            'referral_earnings' => 0,
-                            'tasks_completed' => 0,
-                            'total_earned' => 0,
-                            'remaining_cash' => 0,
-                            'remaining_pts' => 100,
-                            'bank_name' => 'Pending Setup',
-                            'account_number' => '••••••••'
+                            'referrals_count' => $existingUser['referrals_count'] ?? 0,
+                            'referral_earnings' => $existingUser['referral_earnings'] ?? 0,
+                            'tasks_completed' => $existingUser['tasks_completed'] ?? 0,
+                            'total_earned' => $finalCash,
+                            'remaining_cash' => $finalCash,
+                            'remaining_pts' => $finalPts,
+                            'cashBalance' => $finalCash,
+                            'pointsBalance' => $finalPts,
+                            'bank_name' => $existingUser['bank_name'] ?? 'Pending Setup',
+                            'account_number' => $existingUser['account_number'] ?? '••••••••'
                         ]);
                     }
-                } catch (Exception $e2) {}
+                } catch(Exception $e2){}
             }
         }
 
@@ -445,22 +461,27 @@ switch ($action) {
         if ($pdo) {
             try {
                 if ($passwordHash) {
-                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ?, "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
-                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $passwordHash, $targetUsername]);
+                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ?, "bankName" = ?, "accountNumber" = ?, "accountName" = ?, "passwordHash" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $bankName, $accountNumber, $accountName, $passwordHash, $targetUsername]);
                 } else {
-                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
-                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                    $stmt = $pdo->prepare('UPDATE users SET username = ?, "fullName" = ?, email = ?, phone = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ?, "bankName" = ?, "accountNumber" = ?, "accountName" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $bankName, $accountNumber, $accountName, $targetUsername]);
                 }
             } catch (Exception $e) {
                 try {
                     if ($passwordHash) {
-                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ?, passwordHash = ? WHERE LOWER(username) = LOWER(?)');
-                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $passwordHash, $targetUsername]);
+                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ?, bankName = ?, accountNumber = ?, accountName = ?, passwordHash = ? WHERE LOWER(username) = LOWER(?)');
+                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $bankName, $accountNumber, $accountName, $passwordHash, $targetUsername]);
                     } else {
-                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ? WHERE LOWER(username) = LOWER(?)');
-                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                        $stmt = $pdo->prepare('UPDATE users SET username = ?, fullName = ?, email = ?, phone = ?, role = ?, cashBalance = ?, pointsBalance = ?, bankName = ?, accountNumber = ?, accountName = ? WHERE LOWER(username) = LOWER(?)');
+                        $stmt->execute([$newUsername, $fullName, $email, $phone, $role, $cashBalance, $pointsBalance, $bankName, $accountNumber, $accountName, $targetUsername]);
                     }
-                } catch (Exception $e2) {}
+                } catch (Exception $e2) {
+                    try {
+                        $stmt = $pdo->prepare('UPDATE users SET username = ?, role = ?, "cashBalance" = ?, "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
+                        $stmt->execute([$newUsername, $role, $cashBalance, $pointsBalance, $targetUsername]);
+                    } catch(Exception $e3){}
+                }
             }
         }
 
@@ -904,8 +925,63 @@ switch ($action) {
             'account_name' => $target['account_name'] ?? ($target['full_name'] ?? $target['username']),
             'referral_code' => $target['referral_code'] ?? 'REF-' . substr(md5($username), 0, 6),
             'streak_count' => (int)($target['streak_count'] ?? 1)
-        ]);
         break;
+
+    case 'get_referrals':
+        $username = trim($_GET['username'] ?? $_POST['username'] ?? '');
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username required']);
+            exit;
+        }
+        $data = loadUsers();
+        $uLower = strtolower($username);
+        $userRefCode = '';
+        foreach ($data['users'] as $u) {
+            if (strtolower($u['username'] ?? '') === $uLower) {
+                $userRefCode = strtoupper(trim($u['referral_code'] ?? ''));
+                break;
+            }
+        }
+        $referrals = [];
+        foreach ($data['users'] as $u) {
+            $refBy = trim($u['referred_by'] ?? ($u['referredBy'] ?? ''));
+            if (!empty($refBy) && (strtolower($refBy) === $uLower || ($userRefCode && strtoupper($refBy) === $userRefCode))) {
+                $referrals[] = [
+                    'username' => $u['username'] ?? '',
+                    'email' => $u['email'] ?? '',
+                    'full_name' => $u['full_name'] ?? ($u['fullName'] ?? ($u['username'] ?? '')),
+                    'created_at' => $u['created_at'] ?? '',
+                    'is_activated' => !empty($u['is_activated']) || !empty($u['coupon_pin_used']) || !empty($u['coupon_activated']),
+                    'status' => !empty($u['is_activated']) || !empty($u['coupon_pin_used']) ? 'Activated' : 'Active'
+                ];
+            }
+        }
+        if ($pdo) {
+            try {
+                $stmt = $pdo->prepare('SELECT username, email, "fullName", "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
+                $stmt->execute([$username, $userRefCode]);
+                $dbRefs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($dbRefs as $dr) {
+                    $unLower = strtolower($dr['username']);
+                    $exists = false;
+                    foreach ($referrals as $rf) {
+                        if (strtolower($rf['username']) === $unLower) { $exists = true; break; }
+                    }
+                    if (!$exists) {
+                        $referrals[] = [
+                            'username' => $dr['username'],
+                            'email' => $dr['email'] ?? '',
+                            'full_name' => $dr['fullName'] ?? $dr['username'],
+                            'created_at' => $dr['createdAt'] ?? date('c'),
+                            'is_activated' => !empty($dr['couponPinUsed']),
+                            'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Active'
+                        ];
+                    }
+                }
+            } catch(Exception $e){}
+        }
+        echo json_encode(['success' => true, 'status' => 'success', 'referrals' => $referrals, 'count' => count($referrals)]);
+        exit;
 
     case 'sync_balance':
         $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);

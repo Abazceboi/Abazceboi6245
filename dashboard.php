@@ -101,8 +101,12 @@ if ($pdo) {
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
-            if (isset($row['pointsBalance']))  $userPoints   = intval($row['pointsBalance']);
-            if (isset($row['cashBalance']))    $userCash     = floatval($row['cashBalance']);
+            if (isset($row['pointsBalance']) && (!isset($userPoints) || $row['pointsBalance'] > $userPoints)) {
+                $userPoints = intval($row['pointsBalance']);
+            }
+            if (isset($row['cashBalance']) && (!isset($userCash) || $row['cashBalance'] > $userCash)) {
+                $userCash = floatval($row['cashBalance']);
+            }
             if (!empty($row['role']))          $userRole     = $row['role'];
             if (!empty($row['bankName']))      $bankName     = $row['bankName'];
             if (!empty($row['accountNumber'])) $accountNumber= $row['accountNumber'];
@@ -125,14 +129,13 @@ if ($isActivated) {
     }
 }
 
-$pricingFile = __DIR__ . '/config/app_pricing.json';
-$pricing     = file_exists($pricingFile) ? @json_decode(@file_get_contents($pricingFile), true) : [];
+// Pricing and withdrawal thresholds from central storage
+$pricing     = readStorageJson('config/app_pricing.json', []);
+$wdSettings  = readStorageJson('config/withdrawal_settings.json', []);
 $refBonus    = floatval($pricing['ref_commission'] ?? 500);
-$appMinWd    = floatval($pricing['min_withdrawal'] ?? 5000);
-
-$wdFile      = __DIR__ . '/config/withdrawal_settings.json';
 $minCashWd   = floatval($pricing['min_cash_withdrawal'] ?? ($pricing['min_withdrawal'] ?? ($wdSettings['affiliate']['min_amount'] ?? 5000)));
 $minTaskWd   = floatval($pricing['min_points_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 1000));
+$appMinWd    = $minCashWd;
 
 $isAdmin     = in_array(strtolower($username), ['admin','abas6245','abazceboi']) || in_array($userRole, ['admin','super_admin']);
 $reqProto    = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
@@ -143,6 +146,46 @@ if (!empty($reqHost) && !str_contains($reqHost, 'localhost:5050')) {
     $appUrl = rtrim(APP_URL, '/');
 }
 $referralLink = $appUrl . '/register.php?ref=' . urlencode($referralCode);
+
+// Query direct downline referrals for Referrals Tab
+$referredUsersList = [];
+$uLower = strtolower($username);
+$rCodeUpper = strtoupper($referralCode);
+foreach ($allUsers as $au) {
+    $refBy = trim($au['referred_by'] ?? ($au['referredBy'] ?? ''));
+    if (!empty($refBy) && (strtolower($refBy) === $uLower || ($rCodeUpper && strtoupper($refBy) === $rCodeUpper))) {
+        $referredUsersList[] = [
+            'username' => $au['username'] ?? '',
+            'email' => $au['email'] ?? '',
+            'created_at' => $au['created_at'] ?? '',
+            'is_activated' => !empty($au['is_activated']) || !empty($au['coupon_pin_used']) || !empty($au['coupon_activated']),
+            'status' => (!empty($au['is_activated']) || !empty($au['coupon_pin_used']) || !empty($au['coupon_activated'])) ? 'Activated' : 'Active'
+        ];
+    }
+}
+if ($pdo) {
+    try {
+        $stmt = $pdo->prepare('SELECT username, email, "createdAt", "couponPinUsed" FROM users WHERE LOWER("referredBy") = LOWER(?) OR UPPER("referredBy") = UPPER(?) ORDER BY "createdAt" DESC');
+        $stmt->execute([$username, $referralCode]);
+        $dbRefs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($dbRefs as $dr) {
+            $unLower = strtolower($dr['username']);
+            $already = false;
+            foreach ($referredUsersList as $ru) {
+                if (strtolower($ru['username']) === $unLower) { $already = true; break; }
+            }
+            if (!$already) {
+                $referredUsersList[] = [
+                    'username' => $dr['username'],
+                    'email' => $dr['email'] ?? '',
+                    'created_at' => $dr['createdAt'] ?? date('c'),
+                    'is_activated' => !empty($dr['couponPinUsed']),
+                    'status' => !empty($dr['couponPinUsed']) ? 'Activated' : 'Active'
+                ];
+            }
+        }
+    } catch(Exception $e){}
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -1703,13 +1746,73 @@ input,textarea,select{font-family:var(--ff);}
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--accent);"><?= $referralCount ?></div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent);" id="refDisplayCount"><?= count($referredUsersList) > $referralCount ? count($referredUsersList) : $referralCount ?></div>
           <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Referrals</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
           <div style="font-size:22px;font-weight:700;color:var(--green);">₦<?= number_format($referralEarnings, 2) ?></div>
           <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Earned Cash</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Direct Referred Earners Directory -->
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div class="card-title" style="margin-bottom:2px;">Referred Earners Directory</div>
+          <div class="card-sub">Members registered through your personal referral link with their verified Gmail address.</div>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="loadReferrals()">Refresh Directory</button>
+      </div>
+
+      <div class="table-container" style="overflow-x:auto;">
+        <table class="table" style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
+              <th style="padding:10px 12px;">Earner Username</th>
+              <th style="padding:10px 12px;">Gmail Address</th>
+              <th style="padding:10px 12px;">Date Joined</th>
+              <th style="padding:10px 12px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="referralsTableBody">
+            <?php if (!empty($referredUsersList)): ?>
+              <?php foreach ($referredUsersList as $ru): ?>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:12px;font-weight:600;color:var(--txt);">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:28px;height:28px;border-radius:50%;background:rgba(56,189,248,0.15);color:#38BDF8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">
+                        <?= strtoupper(substr($ru['username'] ?? 'U', 0, 1)) ?>
+                      </div>
+                      <span>@<?= htmlspecialchars($ru['username'] ?? '') ?></span>
+                    </div>
+                  </td>
+                  <td style="padding:12px;color:var(--txt-2);">
+                    <span style="font-family:monospace;font-size:12px;color:#7DD3FC;"><?= htmlspecialchars($ru['email'] ?? 'Pending Setup') ?></span>
+                  </td>
+                  <td style="padding:12px;color:var(--txt-3);font-size:12px;">
+                    <?= !empty($ru['created_at']) ? date('d M Y, H:i', strtotime($ru['created_at'])) : 'Recent' ?>
+                  </td>
+                  <td style="padding:12px;">
+                    <?php if (!empty($ru['is_activated'])): ?>
+                      <span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Activated</span>
+                    <?php else: ?>
+                      <span class="badge" style="background:rgba(56,189,248,0.15);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Active Member</span>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="4" style="text-align:center;padding:32px 16px;color:var(--txt-3);">
+                  <div style="font-size:14px;font-weight:600;color:var(--txt-2);margin-bottom:4px;">No referred earners yet</div>
+                  <div style="font-size:12px;">Share your link above. When a user registers with your referral link, their username and Gmail address will appear here.</div>
+                </td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1812,12 +1915,12 @@ input,textarea,select{font-family:var(--ff);}
         <div class="stat-card">
           <div class="stat-label">Task Points Wallet</div>
           <div class="stat-value" id="statPtsWallet" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
-          <div class="stat-sub">Min payout: <?= number_format($minTaskWd) ?> PTS</div>
+          <div class="stat-sub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Referral Cash Wallet</div>
           <div class="stat-value" id="statCashWallet" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
-          <div class="stat-sub">Min payout: ₦<?= number_format($minCashWd) ?></div>
+          <div class="stat-sub">Min payout: ₦<span class="min-cash-display"><?= number_format($minCashWd) ?></span></div>
         </div>
       </div>
 
@@ -2228,7 +2331,7 @@ input,textarea,select{font-family:var(--ff);}
               </div>
               <div class="fancy-trigger-text">
                 <div class="fancy-trigger-title" id="wdWalletTitle">Task Points Wallet</div>
-                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: <?= number_format($minTaskWd) ?> PTS</div>
+                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
               </div>
             </div>
             <div class="fancy-chevron">
@@ -2246,7 +2349,7 @@ input,textarea,select{font-family:var(--ff);}
                 <div class="fancy-option-name">Task Points Wallet</div>
                 <div class="fancy-option-desc">Earnings from completed tasks & video surveys</div>
               </div>
-              <div class="fancy-option-badge">Min <?= number_format($minTaskWd) ?> PTS</div>
+              <div class="fancy-option-badge">Min <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
               <div class="fancy-option-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -2260,7 +2363,7 @@ input,textarea,select{font-family:var(--ff);}
                 <div class="fancy-option-name">Referral Cash Wallet</div>
                 <div class="fancy-option-desc">Direct affiliate commissions & network rewards</div>
               </div>
-              <div class="fancy-option-badge cash-badge">Min ₦<?= number_format($minCashWd) ?></div>
+              <div class="fancy-option-badge cash-badge">Min ₦<span class="min-cash-display"><?= number_format($minCashWd) ?></span></div>
               <div class="fancy-option-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -2531,10 +2634,10 @@ input,textarea,select{font-family:var(--ff);}
 const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
 const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
 
-let userPoints = parseInt(localStorage.getItem('ix_user_points_' + CURRENT_USER) || document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
-let userCash = parseFloat(localStorage.getItem('ix_user_cash_' + CURRENT_USER) || document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
+let userPoints = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
+let userCash = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
 
-function updateUserPointsDisplay(newPts) {
+function updateUserPointsDisplay(newPts, skipSync = false) {
   userPoints = Math.max(0, parseInt(newPts) || 0);
   const dataPts = document.getElementById('dataPtsBal');
   if (dataPts) dataPts.dataset.pts = userPoints.toString();
@@ -2549,7 +2652,7 @@ function updateUserPointsDisplay(newPts) {
   try {
     localStorage.setItem('ix_user_points_' + CURRENT_USER, userPoints.toString());
   } catch(e) {}
-  if (CURRENT_USER) {
+  if (CURRENT_USER && !skipSync) {
     fetch('/api/users.php?action=sync_balance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2558,7 +2661,7 @@ function updateUserPointsDisplay(newPts) {
   }
 }
 
-function updateUserCashDisplay(newCash) {
+function updateUserCashDisplay(newCash, skipSync = false) {
   userCash = Math.max(0, parseFloat(newCash) || 0);
   const dataCash = document.getElementById('dataCashBal');
   if (dataCash) dataCash.dataset.cash = userCash.toString();
@@ -2573,7 +2676,7 @@ function updateUserCashDisplay(newCash) {
   try {
     localStorage.setItem('ix_user_cash_' + CURRENT_USER, userCash.toString());
   } catch(e) {}
-  if (CURRENT_USER) {
+  if (CURRENT_USER && !skipSync) {
     fetch('/api/users.php?action=sync_balance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2583,42 +2686,30 @@ function updateUserCashDisplay(newCash) {
 }
 
 function getUserPoints() {
-  const cached = localStorage.getItem('ix_user_points_' + CURRENT_USER);
-  if (cached !== null && !isNaN(parseInt(cached))) {
-    userPoints = parseInt(cached);
-  } else {
-    const el = document.getElementById('dataPtsBal');
-    if (el && el.dataset.pts !== undefined) {
-      const val = parseInt(el.dataset.pts);
-      if (!isNaN(val)) userPoints = val;
-    }
+  const el = document.getElementById('dataPtsBal');
+  if (el && el.dataset.pts !== undefined) {
+    const val = parseInt(el.dataset.pts);
+    if (!isNaN(val)) userPoints = val;
   }
   return userPoints;
 }
 
 function getUserCash() {
-  const cached = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
-  if (cached !== null && !isNaN(parseFloat(cached))) {
-    userCash = parseFloat(cached);
-  } else {
-    const el = document.getElementById('dataCashBal');
-    if (el && el.dataset.cash !== undefined) {
-      const val = parseFloat(el.dataset.cash);
-      if (!isNaN(val)) userCash = val;
-    }
+  const el = document.getElementById('dataCashBal');
+  if (el && el.dataset.cash !== undefined) {
+    const val = parseFloat(el.dataset.cash);
+    if (!isNaN(val)) userCash = val;
   }
   return userCash;
 }
 
 (function applyCachedBalancesOnBoot() {
-  const cachedPts = localStorage.getItem('ix_user_points_' + CURRENT_USER);
-  if (cachedPts !== null && !isNaN(parseInt(cachedPts))) {
-    updateUserPointsDisplay(parseInt(cachedPts));
-  }
-  const cachedCash = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
-  if (cachedCash !== null && !isNaN(parseFloat(cachedCash))) {
-    updateUserCashDisplay(parseFloat(cachedCash));
-  }
+  try {
+    localStorage.setItem('ix_user_points_' + CURRENT_USER, userPoints.toString());
+    localStorage.setItem('ix_user_cash_' + CURRENT_USER, userCash.toString());
+  } catch(e) {}
+  updateUserPointsDisplay(userPoints, true);
+  updateUserCashDisplay(userCash, true);
 })();
 
 // Instantly dismiss activation gate if account was already activated
@@ -2720,6 +2811,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSurveys();
   loadNotifications();
   syncLiveProfile();
+  syncLivePricing();
+  loadReferrals();
   checkAnnouncementPopup();
   updateEcoFeeBadges();
   loadEcosystem();
@@ -2730,6 +2823,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSurveys();
     loadNotifications();
     syncLiveProfile();
+    syncLivePricing();
+    loadReferrals();
     loadEcosystem();
   });
   setInterval(() => {
@@ -2737,6 +2832,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSurveys();
     loadNotifications();
     syncLiveProfile();
+    syncLivePricing();
+    loadReferrals();
     loadEcosystem();
   }, 15000);
   setInterval(() => {
@@ -2848,40 +2945,97 @@ async function syncLiveProfile() {
       const pts = parseInt(u.remaining_pts !== undefined ? u.remaining_pts : (u.pointsBalance !== undefined ? u.pointsBalance : (d.points_balance !== undefined ? d.points_balance : 0)));
       const cash = parseFloat(u.remaining_cash !== undefined ? u.remaining_cash : (u.cashBalance !== undefined ? u.cashBalance : (d.cash_balance !== undefined ? d.cash_balance : 0)));
 
-      const cachedPts = localStorage.getItem('ix_user_points_' + CURRENT_USER);
-      let finalPts = pts;
-      if (cachedPts !== null) {
-        const localVal = parseInt(cachedPts);
-        if (!isNaN(localVal)) {
-          if (localVal !== pts) {
-            finalPts = localVal;
-            fetch('/api/users.php?action=sync_balance', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: CURRENT_USER, points: finalPts })
-            }).catch(() => {});
-          }
-        }
+      updateUserPointsDisplay(pts, true);
+      updateUserCashDisplay(cash, true);
+    }
+  } catch(e) {}
+}
+
+async function syncLivePricing() {
+  try {
+    const r = await fetch(`/api/pricing.php?action=get_pricing&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    if (d && (d.status === 'success' || d.pricing)) {
+      const p = d.pricing || {};
+      const minCash = parseFloat(p.min_cash_withdrawal !== undefined ? p.min_cash_withdrawal : (p.min_withdrawal !== undefined ? p.min_withdrawal : 5000)) || 5000;
+      const minTask = parseFloat(p.min_points_withdrawal !== undefined ? p.min_points_withdrawal : 1000) || 1000;
+
+      const dataCashEl = document.getElementById('dataMinCashWd');
+      if (dataCashEl) dataCashEl.dataset.min = minCash.toString();
+      const dataTaskEl = document.getElementById('dataMinTaskWd');
+      if (dataTaskEl) dataTaskEl.dataset.min = minTask.toString();
+
+      document.querySelectorAll('.min-cash-display').forEach(el => {
+        el.textContent = minCash.toLocaleString();
+      });
+      document.querySelectorAll('.min-task-display').forEach(el => {
+        el.textContent = minTask.toLocaleString();
+      });
+
+      const optTask = document.querySelector('.fancy-option[data-value="task"]');
+      if (optTask) {
+        optTask.dataset.sub = `Min payout: ${minTask.toLocaleString()} PTS`;
+        const badge = optTask.querySelector('.fancy-option-badge');
+        if (badge) badge.innerHTML = `Min <span class="min-task-display">${minTask.toLocaleString()}</span> PTS`;
+      }
+      const optCash = document.querySelector('.fancy-option[data-value="cash"]');
+      if (optCash) {
+        optCash.dataset.sub = `Min payout: ₦${minCash.toLocaleString()}`;
+        const badge = optCash.querySelector('.fancy-option-badge');
+        if (badge) badge.innerHTML = `Min ₦<span class="min-cash-display">${minCash.toLocaleString()}</span>`;
       }
 
-      const cachedCash = localStorage.getItem('ix_user_cash_' + CURRENT_USER);
-      let finalCash = cash;
-      if (cachedCash !== null) {
-        const localVal = parseFloat(cachedCash);
-        if (!isNaN(localVal)) {
-          if (localVal !== cash) {
-            finalCash = localVal;
-            fetch('/api/users.php?action=sync_balance', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: CURRENT_USER, cash: finalCash })
-            }).catch(() => {});
-          }
+      const activeWallet = document.getElementById('wdWalletType')?.value || 'task';
+      const triggerSub = document.getElementById('wdWalletSub');
+      if (triggerSub) {
+        if (activeWallet === 'cash') {
+          triggerSub.innerHTML = `Min payout: ₦<span class="min-cash-display">${minCash.toLocaleString()}</span>`;
+        } else {
+          triggerSub.innerHTML = `Min payout: <span class="min-task-display">${minTask.toLocaleString()}</span> PTS`;
         }
       }
+    }
+  } catch(e) {}
+}
 
-      updateUserPointsDisplay(finalPts);
-      updateUserCashDisplay(finalCash);
+async function loadReferrals() {
+  if (!CURRENT_USER) return;
+  const tbody = document.getElementById('referralsTableBody');
+  const countEl = document.getElementById('refDisplayCount');
+  try {
+    const r = await fetch(`/api/users.php?action=get_referrals&username=${encodeURIComponent(CURRENT_USER)}&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    if (d && (d.status === 'success' || d.success) && Array.isArray(d.referrals)) {
+      if (countEl) {
+        countEl.textContent = (d.count !== undefined ? d.count : d.referrals.length).toString();
+      }
+      if (tbody) {
+        if (d.referrals.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--txt-3);font-size:12.5px;">No downline earners referred yet. Share your link above to begin earning commissions!</td></tr>';
+        } else {
+          tbody.innerHTML = d.referrals.map(u => {
+            const isAct = u.is_activated === true || u.is_activated === 1 || u.is_activated === '1';
+            const badgeBg = isAct ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+            const badgeColor = isAct ? 'var(--green)' : 'var(--red)';
+            const statusLabel = isAct ? 'Activated' : 'Pending Activation';
+            const formattedDate = u.created_at ? esc(u.created_at.substring(0, 10)) : 'Recent';
+            return `<tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:12px;font-weight:600;color:var(--txt);">${esc(u.username || 'Member')}</td>
+              <td style="padding:12px;color:var(--txt-2);">${esc(u.email || 'No email provided')}</td>
+              <td style="padding:12px;color:var(--txt-3);font-size:12px;">${formattedDate}</td>
+              <td style="padding:12px;">
+                <span class="item-tag" style="background:${badgeBg};color:${badgeColor};font-size:11px;font-weight:700;">${statusLabel}</span>
+              </td>
+            </tr>`;
+          }).join('');
+        }
+      }
     }
   } catch(e) {}
 }
@@ -2958,6 +3112,8 @@ function switchTab(tab, btn) {
 
   if (tab === 'tasks') loadTasks();
   if (tab === 'surveys') loadSurveys();
+  if (tab === 'referrals') loadReferrals();
+  if (tab === 'wallet') { syncLivePricing(); syncLiveProfile(); }
   if (tab === 'ecosystem') loadEcosystem();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -3091,6 +3247,8 @@ function openModal(id) {
   const el = document.getElementById(id);
   if (!el) return;
   if (id === 'modalWithdraw' || id === 'modalWithdrawConfirm') {
+    if (typeof syncLivePricing === 'function') syncLivePricing();
+    if (typeof syncLiveProfile === 'function') syncLiveProfile();
     if (typeof syncWithdrawalBankDetails === 'function') {
       syncWithdrawalBankDetails();
     }
@@ -4169,12 +4327,20 @@ async function executeWithdrawalReq() {
       body: JSON.stringify({
         username: CURRENT_USER,
         amount: amount,
+        wallet: type,
         wallet_type: type
       })
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
       closeModal('modalWithdrawConfirm');
+
+      if (type === 'cash') {
+        updateUserCashDisplay(Math.max(0, userCash - amount), true);
+      } else {
+        updateUserPointsDisplay(Math.max(0, userPoints - amount), true);
+      }
+      syncLiveProfile();
 
       // Populate Digital Receipt with verified details
       const rc = d.receipt || {};

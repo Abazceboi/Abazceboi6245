@@ -3122,7 +3122,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                 if (action === 'request_withdrawal' && req.method === 'POST') {
                     const username = (parsed.username || '').trim();
-                    const wallet = (parsed.wallet || 'cash').toLowerCase();
+                    const wallet = (parsed.wallet || parsed.wallet_type || 'cash').toLowerCase().trim();
                     const amount = parseFloat(parsed.amount) || 0;
 
                     if (!username || amount <= 0) {
@@ -3144,7 +3144,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
                     const user = usersData.users[uIdx];
 
-                    const targetWallet = (wallet === 'cash' || wallet === 'affiliate') ? 'affiliate' : 'task';
+                    const targetWallet = (wallet === 'task' || wallet === 'points') ? 'task' : 'affiliate';
                     const walletSched = s[targetWallet] || {};
                     const evalResult = evaluateWalletSchedule(walletSched, targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
                     if (!evalResult.is_open) {
@@ -3786,6 +3786,28 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     } else {
                         res.end(JSON.stringify({ success: false, error: 'User not found' }));
                     }
+                    return;
+                }
+
+                if (action === 'get_referrals') {
+                    const uname = (urlObj.searchParams.get('username') || parsed.username || '').trim().toLowerCase();
+                    const user = usersData.users.find(u => (u.username || '').toLowerCase() === uname);
+                    const userRefCode = user ? (user.referral_code || '').toUpperCase() : '';
+                    const referrals = [];
+                    (usersData.users || []).forEach(u => {
+                        const refBy = (u.referred_by || u.referredBy || '').trim();
+                        if (refBy && (refBy.toLowerCase() === uname || (userRefCode && refBy.toUpperCase() === userRefCode))) {
+                            referrals.push({
+                                username: u.username || '',
+                                email: u.email || '',
+                                full_name: u.full_name || u.fullName || u.username || '',
+                                created_at: u.created_at || '',
+                                is_activated: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated),
+                                status: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated) ? 'Activated' : 'Active'
+                            });
+                        }
+                    });
+                    res.end(JSON.stringify({ success: true, status: 'success', referrals: referrals, count: referrals.length }));
                     return;
                 }
 

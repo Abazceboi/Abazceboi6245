@@ -257,7 +257,7 @@ if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
 if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $username = trim($input['username'] ?? '');
-    $wallet = strtolower($input['wallet'] ?? 'cash');
+    $wallet = strtolower(trim($input['wallet'] ?? ($input['wallet_type'] ?? 'cash')));
     $amount = floatval($input['amount'] ?? 0);
 
     if (empty($username) || $amount <= 0) {
@@ -289,7 +289,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $user = &$usersData['users'][$uIdx];
 
-    $targetWallet = ($wallet === 'cash' || $wallet === 'affiliate') ? 'affiliate' : 'task';
+    $targetWallet = ($wallet === 'task' || $wallet === 'points') ? 'task' : 'affiliate';
     $walletSched = $settings[$targetWallet] ?? [];
     $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
     if (!$evalResult['is_open']) {
