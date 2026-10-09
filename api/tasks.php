@@ -51,6 +51,11 @@ function saveSubmissions(array $subs): void {
 
 function isTaskExpired(array $task): bool {
     if (!empty($task['expires_at']) && strtotime($task['expires_at']) < time()) return true;
+    if (!empty($task['created_at'])) {
+        $created = strtotime($task['created_at']);
+        if (!empty($task['duration_seconds']) && ($created + intval($task['duration_seconds'])) < time()) return true;
+        if (!empty($task['expires_in_seconds']) && ($created + intval($task['expires_in_seconds'])) < time()) return true;
+    }
     return false;
 }
 
@@ -89,7 +94,7 @@ if ($action === 'get_tasks') {
     $active = array_values(array_filter($tasks, function ($t) use ($now) {
         if (($t['status'] ?? 'active') !== 'active') return false;
         if (!empty($t['publish_at']) && strtotime($t['publish_at']) > $now) return false;
-        if (!empty($t['expires_at']) && strtotime($t['expires_at']) < $now) return false;
+        if (isTaskExpired($t)) return false;
         return true;
     }));
     echo json_encode(['status' => 'success', 'tasks' => $active]);

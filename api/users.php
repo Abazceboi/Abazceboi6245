@@ -67,17 +67,36 @@ function getDeletedUsersList(): array {
 
 function loadUsers() {
     $data = readStorageJson('data/users.json', ['users' => []]);
-    if (!isset($data['users']) || !is_array($data['users'])) {
-        $data = ['users' => []];
+    $usersList = [];
+    if (is_array($data)) {
+        if (isset($data['users']) && is_array($data['users'])) {
+            $usersList = $data['users'];
+        } else {
+            $usersList = array_values($data);
+        }
+    }
+    if (empty($usersList)) {
+        $bundleFile = dirname(__DIR__) . '/data/users.json';
+        if (file_exists($bundleFile)) {
+            $raw = @file_get_contents($bundleFile);
+            if ($raw) {
+                $bData = json_decode($raw, true);
+                if (isset($bData['users']) && is_array($bData['users'])) {
+                    $usersList = $bData['users'];
+                } elseif (is_array($bData)) {
+                    $usersList = array_values($bData);
+                }
+            }
+        }
     }
     $delMap = getDeletedUsersList();
     if (!empty($delMap)) {
-        $data['users'] = array_values(array_filter($data['users'], function($u) use ($delMap) {
+        $usersList = array_values(array_filter($usersList, function($u) use ($delMap) {
             $un = strtolower(trim($u['username'] ?? ''));
             return !empty($un) && !isset($delMap[$un]);
         }));
     }
-    return $data;
+    return ['users' => $usersList];
 }
 
 function saveUsers($data) {
@@ -123,7 +142,9 @@ switch ($action) {
         $delMap = getDeletedUsersList();
         $usersMap = [];
         foreach (($data['users'] ?? []) as $u) {
-            $unLower = strtolower($u['username']);
+            $un = trim($u['username'] ?? '');
+            if (empty($un)) continue;
+            $unLower = strtolower($un);
             if (!isset($delMap[$unLower])) {
                 $usersMap[$unLower] = $u;
             }
@@ -1055,6 +1076,8 @@ switch ($action) {
             exit;
         }
 
+        $pin = trim($input['withdrawal_pin'] ?? $input['pin'] ?? '');
+
         $data = loadUsers();
         if (!isset($data['users']) || !is_array($data['users'])) {
             $data = ['users' => []];
@@ -1066,6 +1089,9 @@ switch ($action) {
                 $u['bank_name'] = $bankName;
                 $u['account_number'] = $accNum;
                 $u['account_name'] = $accName ?: ($u['full_name'] ?? $u['username']);
+                if (!empty($pin)) {
+                    $u['withdrawal_pin'] = $pin;
+                }
                 $u['bank_updated_at'] = date('c');
                 $found = true;
                 $targetUser = $u;

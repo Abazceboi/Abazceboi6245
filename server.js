@@ -1531,6 +1531,15 @@ const server = http.createServer((req, res) => {
 
                 // Auto-publish scheduled tasks when their publish time arrives
                 const nowMs = Date.now();
+                const isTaskExpired = (t) => {
+                    if (t.expires_at && new Date(t.expires_at).getTime() < nowMs) return true;
+                    if (t.created_at) {
+                        const created = new Date(t.created_at).getTime();
+                        if (t.duration_seconds && (created + parseInt(t.duration_seconds) * 1000) < nowMs) return true;
+                        if (t.expires_in_seconds && (created + parseInt(t.expires_in_seconds) * 1000) < nowMs) return true;
+                    }
+                    return false;
+                };
                 let tasksAutoUpdated = false;
                 tasks.forEach(t => {
                     if (t.status === 'scheduled' && t.publish_at && new Date(t.publish_at).getTime() <= nowMs) {
@@ -1633,7 +1642,7 @@ const server = http.createServer((req, res) => {
                             res.end(JSON.stringify({ status: 'error', message: 'This task is not currently active for submissions.' }));
                             return;
                         }
-                        if (targetTask.expires_at && new Date(targetTask.expires_at).getTime() < Date.now()) {
+                        if (isTaskExpired(targetTask)) {
                             res.end(JSON.stringify({ status: 'error', message: 'This task has expired and is closed for new submissions.' }));
                             return;
                         }
@@ -1792,7 +1801,7 @@ const server = http.createServer((req, res) => {
                 const activeTasks = tasks.filter(t => {
                     if ((t.status || 'active') !== 'active') return false;
                     if (t.publish_at && new Date(t.publish_at).getTime() > now) return false;
-                    if (t.expires_at && new Date(t.expires_at).getTime() < now) return false;
+                    if (isTaskExpired(t)) return false;
                     if (t.remaining_slots !== undefined && t.remaining_slots <= 0) return false;
                     return true;
                 });
@@ -3280,6 +3289,40 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         user.account_name = parsed.account_name;
                     }
 
+                    // Strict Bank Details Verification
+                    const curBank = (user.bank_name || parsed.bank_name || '').trim();
+                    const curAccNum = (user.account_number || parsed.account_number || '').trim();
+                    const curAccHolder = (user.account_name || parsed.account_name || '').trim();
+                    const isBankConfigured = curBank && curBank !== 'Pending Setup' && curAccNum && curAccNum !== '0801234567' && curAccNum !== '••••••••' && curAccNum.length >= 9 && curAccHolder;
+                    if (!isBankConfigured) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Action required: You must configure your verified bank details in wallet settings before requesting a withdrawal.' }));
+                        return;
+                    }
+
+                    // Strict 4-Digit Withdrawal PIN Verification
+                    const configuredPin = String(user.withdrawal_pin || '').trim();
+                    const providedPin = String(parsed.withdrawal_pin || parsed.pin || '').trim();
+
+                    if (!configuredPin && !providedPin) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Action required: You must set up a 4-digit security withdrawal PIN before withdrawing.' }));
+                        return;
+                    }
+                    if (configuredPin && !providedPin) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Please enter your 4-digit withdrawal PIN to authorize this payout.' }));
+                        return;
+                    }
+                    if (configuredPin && providedPin !== configuredPin) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Invalid withdrawal PIN. Please enter your correct 4-digit security PIN.' }));
+                        return;
+                    }
+                    if (!configuredPin && providedPin) {
+                        if (providedPin.length !== 4 || !/^\d{4}$/.test(providedPin)) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Withdrawal PIN must be exactly 4 numeric digits.' }));
+                            return;
+                        }
+                        user.withdrawal_pin = providedPin;
+                    }
+
                     if (targetWallet === 'affiliate') {
                         if (curCash < amount) {
                             res.end(JSON.stringify({ status: 'error', message: `Insufficient cash balance. Available: ₦${curCash.toLocaleString('en-US', {minimumFractionDigits: 2})}` }));
@@ -3412,17 +3455,24 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
             if (cleanUrl.includes('users.php')) {
                 const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                 const deletedUsersFile = path.join(PUBLIC_DIR, 'data', 'deleted_users.json');
-                let usersData = { users: [] };
+                let rawUsers = null;
                 let deletedUsersList = [];
                 if (fs.existsSync(usersFile)) {
-                    try { usersData = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                    try { rawUsers = JSON.parse(fs.readFileSync(usersFile, 'utf8')); } catch(e){}
+                }
+                let uList = [];
+                if (Array.isArray(rawUsers)) {
+                    uList = rawUsers;
+                } else if (rawUsers && Array.isArray(rawUsers.users)) {
+                    uList = rawUsers.users;
                 }
                 if (fs.existsSync(deletedUsersFile)) {
                     try { deletedUsersList = JSON.parse(fs.readFileSync(deletedUsersFile, 'utf8')); } catch(e){}
                 }
                 if (!Array.isArray(deletedUsersList)) deletedUsersList = [];
                 const delUserSet = new Set(deletedUsersList.map(u => (typeof u === 'string' ? u : (u.username || '')).toLowerCase().trim()));
-                usersData.users = (usersData.users || []).filter(u => !delUserSet.has((u.username || '').toLowerCase().trim()));
+                uList = uList.filter(u => !delUserSet.has((u.username || '').toLowerCase().trim()));
+                let usersData = { users: uList };
 
                 const validRoles = ['member', 'uploader', 'moderator', 'vendor', 'sub_admin', 'super_admin'];
                 const roleLabels = { member: 'Active Member', uploader: 'Verified Uploader', moderator: 'Moderator', vendor: 'Verified Vendor', sub_admin: 'Sub-Admin', super_admin: 'Super Admin' };
@@ -3966,6 +4016,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             u.bank_name = bankName;
                             u.account_number = accNum;
                             u.account_name = accName || u.full_name || u.username;
+                            if (parsed.withdrawal_pin) {
+                                u.withdrawal_pin = String(parsed.withdrawal_pin).trim();
+                            }
                             u.bank_updated_at = new Date().toISOString();
                             found = true;
                             targetUser = u;

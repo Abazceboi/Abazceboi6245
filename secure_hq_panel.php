@@ -3338,15 +3338,19 @@ let allUsersList = [];
 async function loadUsersData() {
   const tbody = document.getElementById('usersTableBody');
   try {
-    const r = await fetch('/api/users.php?action=get_users');
+    const r = await fetch('/api/users.php?action=get_users&_t=' + Date.now(), {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
     const d = await r.json();
-    allUsersList = d.users || [];
+    allUsersList = Array.isArray(d.users) ? d.users : (Array.isArray(d) ? d : []);
     const elUsers = document.getElementById('kpiUsers');
     if (elUsers) elUsers.textContent = allUsersList.length;
 
     let totalCash = 0;
     let totalPts = 0;
     allUsersList.forEach(u => {
+      if (!u) return;
       totalCash += Number(u.remaining_cash ?? u.cashBalance ?? 0) || 0;
       totalPts += Number(u.remaining_pts ?? u.pointsBalance ?? 0) || 0;
     });
@@ -3357,18 +3361,21 @@ async function loadUsersData() {
 
     renderUsers(allUsersList);
   } catch(e){
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
   }
 }
 
 function renderUsers(list) {
   const tbody = document.getElementById('usersTableBody');
-  if (!list.length) {
+  if (!tbody) return;
+  if (!Array.isArray(list) || !list.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--txt-3);">No members found.</td></tr>';
     return;
   }
-  tbody.innerHTML = list.map(u => {
-    const isProtected = ['admin','abas6245','abazceboi'].includes((u.username||'').toLowerCase());
+  tbody.innerHTML = list.filter(Boolean).map(u => {
+    const uName = (u.username || '').trim();
+    if (!uName) return '';
+    const isProtected = ['admin','abas6245','abazceboi'].includes(uName.toLowerCase());
     const regRaw = u.created_at || u.createdAt || u.join_date_formatted || u.role_updated_at || u.updated_at || '';
     let regFormatted = '-';
     if (regRaw) {
@@ -4419,9 +4426,12 @@ async function loadAdminOverview() {
 
   // Update registered users counter & total site amount
   try {
-    const r = await fetch('/api/users.php?action=get_users');
+    const r = await fetch('/api/users.php?action=get_users&_t=' + Date.now(), {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
     const d = await r.json();
-    const users = d.users || [];
+    const users = Array.isArray(d.users) ? d.users : (Array.isArray(d) ? d : []);
     allUsersList = users;
     const el = document.getElementById('kpiUsers');
     if (el) el.textContent = users.length;

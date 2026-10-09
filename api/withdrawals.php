@@ -359,6 +359,40 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($input['account_number']) && (empty($user['account_number']) || $user['account_number'] === '••••••••')) $user['account_number'] = trim($input['account_number']);
     if (!empty($input['account_name']) && empty($user['account_name'])) $user['account_name'] = trim($input['account_name']);
 
+    // Strict Bank Details Verification
+    $curBank = trim($user['bank_name'] ?? '');
+    $curAccNum = trim($user['account_number'] ?? '');
+    $curAccHolder = trim($user['account_name'] ?? '');
+    $isBankConfigured = !empty($curBank) && $curBank !== 'Pending Setup' && !empty($curAccNum) && $curAccNum !== '0801234567' && $curAccNum !== '••••••••' && strlen($curAccNum) >= 9 && !empty($curAccHolder);
+    if (!$isBankConfigured) {
+        echo json_encode(['status' => 'error', 'message' => 'Action required: You must configure your verified bank details in wallet settings before requesting a withdrawal.']);
+        exit;
+    }
+
+    // Strict 4-Digit Withdrawal PIN Verification
+    $configuredPin = trim((string)($user['withdrawal_pin'] ?? ''));
+    $providedPin = trim((string)($input['withdrawal_pin'] ?? ($input['pin'] ?? '')));
+
+    if (empty($configuredPin) && empty($providedPin)) {
+        echo json_encode(['status' => 'error', 'message' => 'Action required: You must set up a 4-digit security withdrawal PIN before withdrawing.']);
+        exit;
+    }
+    if (!empty($configuredPin) && empty($providedPin)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please enter your 4-digit withdrawal PIN to authorize this payout.']);
+        exit;
+    }
+    if (!empty($configuredPin) && $providedPin !== $configuredPin) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid withdrawal PIN. Please enter your correct 4-digit security PIN.']);
+        exit;
+    }
+    if (empty($configuredPin) && !empty($providedPin)) {
+        if (strlen($providedPin) !== 4 || !ctype_digit($providedPin)) {
+            echo json_encode(['status' => 'error', 'message' => 'Withdrawal PIN must be exactly 4 numeric digits.']);
+            exit;
+        }
+        $user['withdrawal_pin'] = $providedPin;
+    }
+
     $targetWallet = ($wallet === 'task' || $wallet === 'points') ? 'task' : 'affiliate';
     $walletSched = $settings[$targetWallet] ?? [];
     $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');

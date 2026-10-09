@@ -36,6 +36,7 @@ $userFullName   = $authUser['fullName'] ?? $username;
 $bankName       = 'OPay Digital Services';
 $accountNumber  = '0801234567';
 $accountName    = $userFullName;
+$withdrawalPin  = '';
 $referralCode   = 'INX-' . strtoupper($username);
 $referralCount  = 0;
 $referralEarnings = 0.00;
@@ -70,6 +71,7 @@ foreach ($allUsers as $ju) {
         if (!empty($ju['bank_name']))      $bankName         = $ju['bank_name'];
         if (!empty($ju['account_number'])) $accountNumber    = $ju['account_number'];
         if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
+        if (!empty($ju['withdrawal_pin'])) $withdrawalPin    = (string)$ju['withdrawal_pin'];
         if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
         if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
         if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
@@ -85,6 +87,7 @@ foreach ($allUsers as $ju) {
 if (!empty($_SESSION['bank_name']))      $bankName      = $_SESSION['bank_name'];
 if (!empty($_SESSION['account_number'])) $accountNumber = $_SESSION['account_number'];
 if (!empty($_SESSION['account_name']))   $accountName   = $_SESSION['account_name'];
+if (!empty($_SESSION['withdrawal_pin'])) $withdrawalPin = $_SESSION['withdrawal_pin'];
 
 if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
     $isActivated = true;
@@ -94,7 +97,7 @@ if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode" FROM users WHERE LOWER(username)=LOWER(?)');
+        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode","withdrawalPin" FROM users WHERE LOWER(username)=LOWER(?)');
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -108,6 +111,7 @@ if ($pdo) {
             if (!empty($row['bankName']))      $bankName     = $row['bankName'];
             if (!empty($row['accountNumber'])) $accountNumber= $row['accountNumber'];
             if (!empty($row['accountName']))   $accountName  = $row['accountName'];
+            if (!empty($row['withdrawalPin'])) $withdrawalPin= (string)$row['withdrawalPin'];
             if (!empty($row['fullName']))      $userFullName = $row['fullName'];
             if (!empty($row['phone']))         $userPhone    = $row['phone'];
             if (!empty($row['email']))         $userEmail    = $row['email'];
@@ -116,8 +120,16 @@ if ($pdo) {
                 $isActivated = true;
             }
         }
-    } catch(Exception $e){}
 }
+
+$isBankConfigured = !empty($bankName) 
+    && $bankName !== 'Pending Setup' 
+    && !empty($accountNumber) 
+    && $accountNumber !== '0801234567' 
+    && !str_starts_with($accountNumber, '••••') 
+    && strlen($accountNumber) >= 9 
+    && !empty($accountName);
+$isPinConfigured = !empty($withdrawalPin) && preg_match('/^\d{4}$/', (string)$withdrawalPin);
 
 if ($isActivated) {
     $_SESSION['is_activated'] = true;
@@ -1660,6 +1672,7 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataMinCashWd" data-min="<?= $minCashWd ?>" style="display:none"></span>
 <span id="dataMinTaskWd" data-min="<?= $minTaskWd ?>" style="display:none"></span>
 <span id="dataActivated" data-activated="<?= $isActivated ? '1' : '0' ?>" style="display:none"></span>
+<span id="dataBankSetup" data-bank-configured="<?= $isBankConfigured ? '1' : '0' ?>" data-pin-configured="<?= $isPinConfigured ? '1' : '0' ?>" data-has-pin="<?= !empty($withdrawalPin) ? '1' : '0' ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
@@ -2256,6 +2269,11 @@ input,textarea,select{font-family:var(--ff);}
           <label class="form-label">Account Holder Name</label>
           <input type="text" class="form-input" id="editAccountName" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full account name">
         </div>
+        <div class="form-group">
+          <label class="form-label">4-Digit Security Withdrawal PIN</label>
+          <input type="password" class="form-input" id="editWithdrawalPin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="Set 4-digit PIN (e.g. 1234)" value="<?= htmlspecialchars($withdrawalPin) ?>" required>
+          <span style="font-size:11px;color:var(--txt-3);margin-top:4px;display:block;">Required for authorizing withdrawals and settlement payouts.</span>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" onclick="closeModal('modalEditBank')">Cancel</button>
@@ -2476,6 +2494,13 @@ input,textarea,select{font-family:var(--ff);}
           <span style="color:var(--txt-3);">Settlement Channel:</span>
           <span style="color:var(--txt);font-weight:600;">NIBSS Instant Payment (NIP)</span>
         </div>
+      </div>
+
+      <!-- Withdrawal PIN Authorization Input -->
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label" style="font-weight:700;color:var(--txt);">Security Withdrawal PIN (4 Digits)</label>
+        <input type="password" class="form-input" id="confirmWithdrawalPin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="Enter your 4-digit PIN" style="font-family:monospace;letter-spacing:4px;font-size:16px;text-align:center;" required>
+        <span style="font-size:11px;color:var(--txt-3);margin-top:4px;display:block;">Required to authorize and release funds to your bank account.</span>
       </div>
 
       <div style="font-size:11px;color:var(--txt-3);line-height:1.55;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.16);padding:10px 12px;border-radius:10px;">
@@ -2901,6 +2926,18 @@ document.addEventListener('DOMContentLoaded', () => {
         el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${formatMs(diff)}`;
       } else {
         el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span style="color:var(--red);">Expired</span>`;
+        const card = el.closest('.grid-item-card');
+        if (card) {
+          const actionBtn = card.querySelector('button[onclick*="openTaskSubmission"]');
+          if (actionBtn) {
+            const expBtn = document.createElement('button');
+            expBtn.className = 'btn btn-ghost btn-sm';
+            expBtn.disabled = true;
+            expBtn.style.cssText = 'opacity:0.6;cursor:not-allowed;pointer-events:none;';
+            expBtn.textContent = 'Task Expired';
+            actionBtn.replaceWith(expBtn);
+          }
+        }
       }
     });
   }, 1000);
@@ -3296,10 +3333,58 @@ function toast(msg, type = 'info') {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 3200);
 }
 
+function isUserBankAndPinConfigured() {
+  const setupEl = document.getElementById('dataBankSetup');
+  let bankConfigured = setupEl ? (setupEl.dataset.bankConfigured === '1') : false;
+  let pinConfigured = setupEl ? (setupEl.dataset.pinConfigured === '1') : false;
+
+  const bName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || '';
+  const bAcc = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || '';
+  const bPin = localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || '';
+
+  if (bName && bName !== 'Pending Setup' && bAcc && bAcc !== '0801234567' && bAcc.length >= 9) {
+    bankConfigured = true;
+  }
+  if (bPin && /^\d{4}$/.test(bPin)) {
+    pinConfigured = true;
+  }
+
+  const editB = document.getElementById('editBankName')?.value?.trim();
+  const editA = document.getElementById('editAccountNumber')?.value?.trim();
+  const editP = document.getElementById('editWithdrawalPin')?.value?.trim();
+  if (editB && editB !== 'Pending Setup' && editA && editA !== '0801234567' && editA.length >= 9) {
+    bankConfigured = true;
+  }
+  if (editP && /^\d{4}$/.test(editP)) {
+    pinConfigured = true;
+  }
+
+  return { bankConfigured, pinConfigured, ready: Boolean(bankConfigured && pinConfigured) };
+}
+
 function openModal(id) { 
   const el = document.getElementById(id);
   if (!el) return;
-  if (id === 'modalWithdraw' || id === 'modalWithdrawConfirm') {
+  if (id === 'modalWithdraw') {
+    const { bankConfigured, pinConfigured, ready } = isUserBankAndPinConfigured();
+    if (!ready) {
+      if (!bankConfigured && !pinConfigured) {
+        toast('Action required: Please configure your bank account and 4-digit withdrawal PIN before withdrawing.', 'error');
+      } else if (!bankConfigured) {
+        toast('Action required: Please configure your bank details before withdrawing.', 'error');
+      } else {
+        toast('Action required: Please set up your 4-digit security withdrawal PIN before withdrawing.', 'error');
+      }
+      openModal('modalEditBank');
+      return;
+    }
+    if (typeof syncLivePricing === 'function') syncLivePricing();
+    if (typeof syncLiveProfile === 'function') syncLiveProfile();
+    if (typeof syncWithdrawalBankDetails === 'function') {
+      syncWithdrawalBankDetails();
+    }
+  }
+  if (id === 'modalWithdrawConfirm') {
     if (typeof syncLivePricing === 'function') syncLivePricing();
     if (typeof syncLiveProfile === 'function') syncLiveProfile();
     if (typeof syncWithdrawalBankDetails === 'function') {
@@ -3397,10 +3482,17 @@ async function handleUpdateBank(e) {
   const bankName = document.getElementById('editBankName').value.trim();
   const accNum = document.getElementById('editAccountNumber').value.trim();
   const accName = document.getElementById('editAccountName').value.trim();
+  const pinInput = document.getElementById('editWithdrawalPin');
+  const withdrawalPin = pinInput ? pinInput.value.trim() : '';
   const btn = document.getElementById('btnSaveBank');
 
   if (!bankName || !accNum || accNum.length < 9) {
     toast('Please enter a valid bank name and 10-digit account number.', 'error');
+    return;
+  }
+  if (!withdrawalPin || !/^\d{4}$/.test(withdrawalPin)) {
+    toast('Please enter a valid 4-digit numeric withdrawal PIN.', 'error');
+    if (pinInput) pinInput.focus();
     return;
   }
 
@@ -3410,7 +3502,8 @@ async function handleUpdateBank(e) {
       username: CURRENT_USER,
       bank_name: bankName,
       account_number: accNum,
-      account_name: accName
+      account_name: accName,
+      withdrawal_pin: withdrawalPin
     };
     const r = await fetch(`api/users.php?action=update_bank_details&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
@@ -3419,29 +3512,42 @@ async function handleUpdateBank(e) {
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
-      toast('Bank card updated successfully!', 'success');
+      toast('Bank details and withdrawal PIN saved successfully!', 'success');
       const upperBank = bankName.toUpperCase();
       const formattedAcc = accNum.replace(/(\d{4})/g, '$1  ').trim();
       const finalHolder = (accName || CURRENT_USER).toUpperCase();
 
-      document.getElementById('atmBankName').textContent = upperBank;
-      document.getElementById('atmCardNumber').textContent = formattedAcc;
-      document.getElementById('atmCardHolder').textContent = finalHolder;
+      const atmB = document.getElementById('atmBankName');
+      const atmC = document.getElementById('atmCardNumber');
+      const atmH = document.getElementById('atmCardHolder');
+      if (atmB) atmB.textContent = upperBank;
+      if (atmC) atmC.textContent = formattedAcc;
+      if (atmH) atmH.textContent = finalHolder;
 
       const editB = document.getElementById('editBankName');
       const editA = document.getElementById('editAccountNumber');
       const editH = document.getElementById('editAccountName');
+      const editP = document.getElementById('editWithdrawalPin');
       if (editB) editB.value = bankName;
       if (editA) editA.value = accNum;
       if (editH) editH.value = accName || finalHolder;
+      if (editP) editP.value = withdrawalPin;
 
       localStorage.setItem('ix_bank_name_' + CURRENT_USER, bankName);
       localStorage.setItem('ix_bank_acc_' + CURRENT_USER, accNum);
+      localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, withdrawalPin);
       localStorage.setItem('ix_bank_name', bankName);
       localStorage.setItem('ix_bank_acc', accNum);
       if (accName) {
         localStorage.setItem('ix_bank_holder_' + CURRENT_USER, accName);
         localStorage.setItem('ix_bank_holder', accName);
+      }
+
+      const setupEl = document.getElementById('dataBankSetup');
+      if (setupEl) {
+        setupEl.dataset.bankConfigured = '1';
+        setupEl.dataset.pinConfigured = '1';
+        setupEl.dataset.hasPin = '1';
       }
 
       syncWithdrawalBankDetails();
@@ -3519,6 +3625,21 @@ async function loadTasks() {
   }
 }
 
+function isClientTaskExpired(t) {
+  if (!t) return false;
+  const now = Date.now();
+  if (t.expires_at && !isNaN(new Date(t.expires_at).getTime())) {
+    return new Date(t.expires_at).getTime() <= now;
+  }
+  const createdMs = t.created_at && !isNaN(new Date(t.created_at).getTime()) ? new Date(t.created_at).getTime() : 0;
+  if (createdMs) {
+    if (t.duration_seconds && (createdMs + (parseInt(t.duration_seconds, 10) * 1000)) <= now) return true;
+    if (t.expires_in_seconds && (createdMs + (parseInt(t.expires_in_seconds, 10) * 1000)) <= now) return true;
+    if (!t.expires_at && !t.duration_seconds && !t.expires_in_seconds && (createdMs + (48 * 3600 * 1000)) <= now) return true;
+  }
+  return false;
+}
+
 function renderTasks(list) {
   const container = document.getElementById('tasksContainer');
   const homeContainer = document.getElementById('homeTasksContainer');
@@ -3546,13 +3667,21 @@ function renderTasks(list) {
 
   const html = visibleTasks.map(t => {
     const isDone = doneTaskIds.includes(t.id);
-    let expTime = t.expires_at ? new Date(t.expires_at).getTime() : null;
-    if (!expTime || isNaN(expTime)) {
-      const createdMs = t.created_at ? new Date(t.created_at).getTime() : now;
-      expTime = createdMs + (48 * 3600 * 1000);
+    let expTime = null;
+    if (t.expires_at && !isNaN(new Date(t.expires_at).getTime())) {
+      expTime = new Date(t.expires_at).getTime();
+    } else {
+      const createdMs = t.created_at && !isNaN(new Date(t.created_at).getTime()) ? new Date(t.created_at).getTime() : now;
+      if (t.duration_seconds) {
+        expTime = createdMs + (parseInt(t.duration_seconds, 10) * 1000);
+      } else if (t.expires_in_seconds) {
+        expTime = createdMs + (parseInt(t.expires_in_seconds, 10) * 1000);
+      } else {
+        expTime = createdMs + (48 * 3600 * 1000);
+      }
     }
-    const isExp = expTime < now;
-    const diff = expTime - now;
+    const isExp = isClientTaskExpired(t) || (expTime !== null && expTime <= now);
+    const diff = (expTime !== null) ? (expTime - now) : 0;
     const timerText = diff > 0 ? formatMs(diff) : 'Expired';
     const vidSrc = (t.video_url || t.video_file || '').trim();
     const isVideo = (t.format_type === 'video') && Boolean(vidSrc);
@@ -3601,7 +3730,7 @@ function renderTasks(list) {
             ${isExp ? '<span style="color:var(--red);">Expired</span>' : `Closes in ${timerText}`}
           </div>
           ${isDone ? '<span class="btn btn-secondary btn-sm" style="pointer-events:none;">Submitted</span>'
-                   : (isExp ? '<span class="btn btn-ghost btn-sm" style="pointer-events:none;">Closed</span>'
+                   : (isExp ? '<button class="btn btn-ghost btn-sm" disabled style="opacity:0.6;cursor:not-allowed;pointer-events:none;">Task Expired</button>'
                    : `<button class="btn btn-primary btn-sm" onclick="openTaskSubmission('${esc(t.id)}')">${isVideo ? 'Watch & Complete' : 'Start Task'}</button>`)}
         </div>
       </div>
@@ -3700,7 +3829,7 @@ document.addEventListener('visibilitychange', () => {
 function openTaskSubmission(id) {
   const t = allTasksList.find(x => x.id === id);
   if (!t) return;
-  if (t.expires_at && new Date(t.expires_at).getTime() < Date.now()) {
+  if (isClientTaskExpired(t)) {
     toast('This task has expired and is closed for new submissions.', 'error');
     return;
   }
@@ -4352,6 +4481,20 @@ function proceedToWithdrawalConfirm() {
     return;
   }
 
+  const { bankConfigured, pinConfigured, ready } = isUserBankAndPinConfigured();
+  if (!ready) {
+    if (!bankConfigured && !pinConfigured) {
+      toast('Action required: Please configure your bank account and 4-digit withdrawal PIN before withdrawing.', 'error');
+    } else if (!bankConfigured) {
+      toast('Action required: Please configure your bank details before withdrawing.', 'error');
+    } else {
+      toast('Action required: Please set up your 4-digit security withdrawal PIN before withdrawing.', 'error');
+    }
+    closeModal('modalWithdraw');
+    openModal('modalEditBank');
+    return;
+  }
+
   // Check balance
   const cashBal = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || 0);
   const ptsBal = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || 0);
@@ -4384,6 +4527,9 @@ function proceedToWithdrawalConfirm() {
   document.getElementById('confirmWdAccount').textContent = accNo;
   document.getElementById('confirmWdName').textContent = accName;
 
+  const pinConfirmInput = document.getElementById('confirmWithdrawalPin');
+  if (pinConfirmInput) pinConfirmInput.value = '';
+
   closeModal('modalWithdraw');
   openModal('modalWithdrawConfirm');
 }
@@ -4391,6 +4537,14 @@ function proceedToWithdrawalConfirm() {
 async function executeWithdrawalReq() {
   if (!pendingWithdrawalData) return;
   const { type, amount } = pendingWithdrawalData;
+
+  const pinInput = document.getElementById('confirmWithdrawalPin');
+  const pinVal = pinInput ? pinInput.value.trim() : '';
+  if (!pinVal || !/^\d{4}$/.test(pinVal)) {
+    toast('Please enter your 4-digit security withdrawal PIN.', 'error');
+    if (pinInput) pinInput.focus();
+    return;
+  }
 
   const btn = document.getElementById('btnAuthorizePayout');
   if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
@@ -4408,6 +4562,7 @@ async function executeWithdrawalReq() {
         amount: amount,
         wallet: type,
         wallet_type: type,
+        withdrawal_pin: pinVal,
         client_points: getUserPoints(),
         client_cash: getUserCash(),
         bank_name: curBankName,
