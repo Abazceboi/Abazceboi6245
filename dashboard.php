@@ -120,6 +120,7 @@ if ($pdo) {
                 $isActivated = true;
             }
         }
+    } catch (Exception $e) {}
 }
 
 $isBankConfigured = !empty($bankName) 
