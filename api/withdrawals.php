@@ -369,30 +369,6 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Strict 4-Digit Withdrawal PIN Verification
-    $configuredPin = trim((string)($user['withdrawal_pin'] ?? ''));
-    $providedPin = trim((string)($input['withdrawal_pin'] ?? ($input['pin'] ?? '')));
-
-    if (empty($configuredPin) && empty($providedPin)) {
-        echo json_encode(['status' => 'error', 'message' => 'Action required: You must set up a 4-digit security withdrawal PIN before withdrawing.']);
-        exit;
-    }
-    if (!empty($configuredPin) && empty($providedPin)) {
-        echo json_encode(['status' => 'error', 'message' => 'Please enter your 4-digit withdrawal PIN to authorize this payout.']);
-        exit;
-    }
-    if (!empty($configuredPin) && $providedPin !== $configuredPin) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid withdrawal PIN. Please enter your correct 4-digit security PIN.']);
-        exit;
-    }
-    if (empty($configuredPin) && !empty($providedPin)) {
-        if (strlen($providedPin) !== 4 || !ctype_digit($providedPin)) {
-            echo json_encode(['status' => 'error', 'message' => 'Withdrawal PIN must be exactly 4 numeric digits.']);
-            exit;
-        }
-        $user['withdrawal_pin'] = $providedPin;
-    }
-
     $targetWallet = ($wallet === 'task' || $wallet === 'points') ? 'task' : 'affiliate';
     $walletSched = $settings[$targetWallet] ?? [];
     $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');

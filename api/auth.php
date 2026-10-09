@@ -149,6 +149,9 @@ if ($action === 'register') {
         'role' => 'member',
         'role_label' => $isActivated ? 'Active Member' : 'Free Member',
         'is_activated' => $isActivated,
+        'bank_name' => '',
+        'account_number' => '',
+        'account_name' => '',
         'welcome_shown' => false,
         'remaining_cash' => 0.00,
         'remaining_pts' => $isActivated ? 100 : 0,
@@ -179,6 +182,9 @@ if ($action === 'register') {
     $_SESSION['role'] = 'member';
     $_SESSION['is_admin'] = false;
     $_SESSION['is_activated'] = $isActivated;
+    $_SESSION['bank_name'] = '';
+    $_SESSION['account_number'] = '';
+    $_SESSION['account_name'] = '';
     
     // Set browser session cookie so refreshing on Vercel never logs the user out
     if (function_exists('setAuthCookie')) {

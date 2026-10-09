@@ -476,6 +476,17 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
                     if (data.phone) localStorage.setItem('ix_user_phone', data.phone);
                     if (data.fullName) localStorage.setItem('ix_user_fullname', data.fullName);
                     sessionStorage.setItem('ix_user', data.username);
+                    // Explicitly clear bank details so new registration starts with empty bank card
+                    localStorage.removeItem('ix_bank_name');
+                    localStorage.removeItem('ix_bank_acc');
+                    localStorage.removeItem('ix_bank_holder');
+                    localStorage.removeItem('ix_withdrawal_pin');
+                    if (data.username) {
+                        localStorage.removeItem('ix_bank_name_' + data.username);
+                        localStorage.removeItem('ix_bank_acc_' + data.username);
+                        localStorage.removeItem('ix_bank_holder_' + data.username);
+                        localStorage.removeItem('ix_withdrawal_pin_' + data.username);
+                    }
                     // Explicitly clear legacy and previous user task/survey completion markers
                     localStorage.removeItem('ix_done_tasks');
                     localStorage.removeItem('ix_done_surveys');
@@ -518,6 +529,10 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             localStorage.removeItem('ix_user_email');
             localStorage.removeItem('ix_user_phone');
             localStorage.removeItem('ix_user_fullname');
+            localStorage.removeItem('ix_bank_name');
+            localStorage.removeItem('ix_bank_acc');
+            localStorage.removeItem('ix_bank_holder');
+            localStorage.removeItem('ix_withdrawal_pin');
             localStorage.removeItem('ix_is_activated');
             document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             sessionStorage.clear();

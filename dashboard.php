@@ -33,15 +33,56 @@ $userRole       = 'member';
 $userPhone      = $authUser['phone'] ?? '';
 $userEmail      = $authUser['email'] ?? '';
 $userFullName   = $authUser['fullName'] ?? $username;
-$bankName       = 'OPay Digital Services';
-$accountNumber  = '0801234567';
-$accountName    = $userFullName;
-$withdrawalPin  = '';
+$bankName       = '';
+$accountNumber  = '';
+$accountName    = '';
 $referralCode   = 'INX-' . strtoupper($username);
 $referralCount  = 0;
 $referralEarnings = 0.00;
 $tasksCompleted = 0;
 $surveysCompleted = 0;
+
+$nigerianBanks = [
+    'Access Bank',
+    'Access Bank (Diamond)',
+    'ALAT by WEMA',
+    'Carbon',
+    'Citibank Nigeria',
+    'Ecobank Nigeria',
+    'FairMoney Microfinance Bank',
+    'Fidelity Bank',
+    'First Bank of Nigeria',
+    'First City Monument Bank (FCMB)',
+    'Globus Bank',
+    'Guaranty Trust Bank (GTBank)',
+    'Heritage Bank',
+    'Jaiz Bank',
+    'Keystone Bank',
+    'Kuda Bank',
+    'Lotus Bank',
+    'Moniepoint Microfinance Bank',
+    'OPay Digital Services',
+    'Optimus Bank',
+    'PalmPay',
+    'Parallex Bank',
+    'Polaris Bank',
+    'PremiumTrust Bank',
+    'Providus Bank',
+    'Rubies Bank',
+    'Signature Bank',
+    'Stanbic IBTC Bank',
+    'Standard Chartered Bank',
+    'Sterling Bank',
+    'SunTrust Bank',
+    'Taj Bank',
+    'Titan Trust Bank',
+    'Union Bank of Nigeria',
+    'United Bank for Africa (UBA)',
+    'Unity Bank',
+    'VFD Microfinance Bank',
+    'Wema Bank',
+    'Zenith Bank'
+];
 
 $isActivated    = false;
 
@@ -68,10 +109,9 @@ foreach ($allUsers as $ju) {
         if (!empty($ju['phone']))          $userPhone        = $ju['phone'];
         if (!empty($ju['email']))          $userEmail        = $ju['email'];
         if (!empty($ju['full_name']))      $userFullName     = $ju['full_name'];
-        if (!empty($ju['bank_name']))      $bankName         = $ju['bank_name'];
-        if (!empty($ju['account_number'])) $accountNumber    = $ju['account_number'];
+        if (!empty($ju['bank_name']) && $ju['bank_name'] !== 'Pending Setup') $bankName = $ju['bank_name'];
+        if (!empty($ju['account_number']) && $ju['account_number'] !== '0801234567' && $ju['account_number'] !== '••••••••') $accountNumber = $ju['account_number'];
         if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
-        if (!empty($ju['withdrawal_pin'])) $withdrawalPin    = (string)$ju['withdrawal_pin'];
         if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
         if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
         if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
@@ -84,10 +124,9 @@ foreach ($allUsers as $ju) {
     }
 }
 
-if (!empty($_SESSION['bank_name']))      $bankName      = $_SESSION['bank_name'];
-if (!empty($_SESSION['account_number'])) $accountNumber = $_SESSION['account_number'];
-if (!empty($_SESSION['account_name']))   $accountName   = $_SESSION['account_name'];
-if (!empty($_SESSION['withdrawal_pin'])) $withdrawalPin = $_SESSION['withdrawal_pin'];
+if (!empty($_SESSION['bank_name']) && $_SESSION['bank_name'] !== 'Pending Setup')           $bankName      = $_SESSION['bank_name'];
+if (!empty($_SESSION['account_number']) && $_SESSION['account_number'] !== '0801234567')      $accountNumber = $_SESSION['account_number'];
+if (!empty($_SESSION['account_name']))        $accountName   = $_SESSION['account_name'];
 
 if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
     $isActivated = true;
@@ -97,7 +136,7 @@ if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode","withdrawalPin" FROM users WHERE LOWER(username)=LOWER(?)');
+        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode" FROM users WHERE LOWER(username)=LOWER(?)');
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -108,10 +147,9 @@ if ($pdo) {
                 $userCash = floatval($row['cashBalance']);
             }
             if (!empty($row['role']))          $userRole     = $row['role'];
-            if (!empty($row['bankName']))      $bankName     = $row['bankName'];
-            if (!empty($row['accountNumber'])) $accountNumber= $row['accountNumber'];
+            if (!empty($row['bankName']) && $row['bankName'] !== 'Pending Setup')      $bankName     = $row['bankName'];
+            if (!empty($row['accountNumber']) && $row['accountNumber'] !== '0801234567') $accountNumber= $row['accountNumber'];
             if (!empty($row['accountName']))   $accountName  = $row['accountName'];
-            if (!empty($row['withdrawalPin'])) $withdrawalPin= (string)$row['withdrawalPin'];
             if (!empty($row['fullName']))      $userFullName = $row['fullName'];
             if (!empty($row['phone']))         $userPhone    = $row['phone'];
             if (!empty($row['email']))         $userEmail    = $row['email'];
@@ -130,7 +168,6 @@ $isBankConfigured = !empty($bankName)
     && !str_starts_with($accountNumber, '••••') 
     && strlen($accountNumber) >= 9 
     && !empty($accountName);
-$isPinConfigured = !empty($withdrawalPin) && preg_match('/^\d{4}$/', (string)$withdrawalPin);
 
 if ($isActivated) {
     $_SESSION['is_activated'] = true;
@@ -1673,7 +1710,7 @@ input,textarea,select{font-family:var(--ff);}
 <span id="dataMinCashWd" data-min="<?= $minCashWd ?>" style="display:none"></span>
 <span id="dataMinTaskWd" data-min="<?= $minTaskWd ?>" style="display:none"></span>
 <span id="dataActivated" data-activated="<?= $isActivated ? '1' : '0' ?>" style="display:none"></span>
-<span id="dataBankSetup" data-bank-configured="<?= $isBankConfigured ? '1' : '0' ?>" data-pin-configured="<?= $isPinConfigured ? '1' : '0' ?>" data-has-pin="<?= !empty($withdrawalPin) ? '1' : '0' ?>" style="display:none"></span>
+<span id="dataBankSetup" data-bank-configured="<?= $isBankConfigured ? '1' : '0' ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
@@ -1883,7 +1920,7 @@ input,textarea,select{font-family:var(--ff);}
           <!-- Card Header: Bank & Card Type -->
           <div class="atm-card-top">
             <div class="atm-bank-info">
-              <span class="atm-bank-name" id="atmBankName"><?= htmlspecialchars($bankName) ?></span>
+              <span class="atm-bank-name" id="atmBankName"><?= htmlspecialchars(!empty($bankName) ? $bankName : 'NOT CONFIGURED') ?></span>
               <span class="atm-card-type">PLATINUM DEBIT</span>
             </div>
             <div class="atm-brand-badge">
@@ -1929,7 +1966,7 @@ input,textarea,select{font-family:var(--ff);}
           <!-- Embossed Card / Account Number -->
           <div class="atm-card-number-row">
             <div class="atm-card-number" id="atmCardNumber">
-              <?= htmlspecialchars(chunk_split($accountNumber, 4, '  ')) ?>
+              <?= htmlspecialchars(!empty($accountNumber) ? chunk_split($accountNumber, 4, '  ') : '••••  ••••  ••') ?>
             </div>
           </div>
 
@@ -1937,7 +1974,7 @@ input,textarea,select{font-family:var(--ff);}
           <div class="atm-card-bottom">
             <div class="atm-card-col">
               <span class="atm-label">CARDHOLDER</span>
-              <span class="atm-card-holder" id="atmCardHolder"><?= htmlspecialchars($accountName) ?></span>
+              <span class="atm-card-holder" id="atmCardHolder"><?= htmlspecialchars(!empty($accountName) ? $accountName : 'CARDHOLDER NAME') ?></span>
             </div>
             <div class="atm-card-col atm-expiry-col">
               <span class="atm-label">EXPIRES</span>
@@ -2260,7 +2297,17 @@ input,textarea,select{font-family:var(--ff);}
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Bank Name</label>
-          <input type="text" class="form-input" id="editBankName" required value="<?= htmlspecialchars($bankName) ?>" placeholder="e.g. Opay, PalmPay, GTBank">
+          <select class="form-input" id="editBankName" required style="background:var(--bg-input, #121420);color:var(--txt, #FFFFFF);cursor:pointer;">
+            <option value="">-- Select Your Bank --</option>
+            <?php foreach ($nigerianBanks as $nb): ?>
+              <option value="<?= htmlspecialchars($nb) ?>" <?= ($bankName === $nb) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($nb) ?>
+              </option>
+            <?php endforeach; ?>
+            <?php if (!empty($bankName) && !in_array($bankName, $nigerianBanks)): ?>
+              <option value="<?= htmlspecialchars($bankName) ?>" selected><?= htmlspecialchars($bankName) ?></option>
+            <?php endif; ?>
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">Account Number (10 Digits)</label>
@@ -2269,11 +2316,6 @@ input,textarea,select{font-family:var(--ff);}
         <div class="form-group">
           <label class="form-label">Account Holder Name</label>
           <input type="text" class="form-input" id="editAccountName" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full account name">
-        </div>
-        <div class="form-group">
-          <label class="form-label">4-Digit Security Withdrawal PIN</label>
-          <input type="password" class="form-input" id="editWithdrawalPin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="Set 4-digit PIN (e.g. 1234)" value="<?= htmlspecialchars($withdrawalPin) ?>" required>
-          <span style="font-size:11px;color:var(--txt-3);margin-top:4px;display:block;">Required for authorizing withdrawals and settlement payouts.</span>
         </div>
       </div>
       <div class="modal-footer">
@@ -2433,7 +2475,13 @@ input,textarea,select{font-family:var(--ff);}
       </div>
       <div style="font-size:12px;color:var(--txt-3);line-height:1.5;">
         Funds will be settled directly to your registered bank card: <br>
-        <strong id="wdRegisteredCardText" style="color:var(--txt);"><span id="wdModalBank"><?= htmlspecialchars($bankName) ?></span> — <span id="wdModalAccount"><?= htmlspecialchars($accountNumber) ?></span></strong>
+        <strong id="wdRegisteredCardText" style="color:var(--txt);">
+          <?php if (!empty($bankName) && !empty($accountNumber)): ?>
+            <span id="wdModalBank"><?= htmlspecialchars($bankName) ?></span> — <span id="wdModalAccount"><?= htmlspecialchars($accountNumber) ?></span>
+          <?php else: ?>
+            <span id="wdModalBank" style="display:none;"></span><span id="wdModalAccount" style="display:none;"></span><span style="color:var(--txt-3);font-weight:500;">No bank account configured — Click &quot;Edit Bank Card Details&quot; to link</span>
+          <?php endif; ?>
+        </strong>
       </div>
     </div>
     <div class="modal-footer">
@@ -2495,13 +2543,6 @@ input,textarea,select{font-family:var(--ff);}
           <span style="color:var(--txt-3);">Settlement Channel:</span>
           <span style="color:var(--txt);font-weight:600;">NIBSS Instant Payment (NIP)</span>
         </div>
-      </div>
-
-      <!-- Withdrawal PIN Authorization Input -->
-      <div class="form-group" style="margin-bottom:14px;">
-        <label class="form-label" style="font-weight:700;color:var(--txt);">Security Withdrawal PIN (4 Digits)</label>
-        <input type="password" class="form-input" id="confirmWithdrawalPin" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="Enter your 4-digit PIN" style="font-family:monospace;letter-spacing:4px;font-size:16px;text-align:center;" required>
-        <span style="font-size:11px;color:var(--txt-3);margin-top:4px;display:block;">Required to authorize and release funds to your bank account.</span>
       </div>
 
       <div style="font-size:11px;color:var(--txt-3);line-height:1.55;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.16);padding:10px 12px;border-radius:10px;">
@@ -2825,43 +2866,47 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hInput) hInput.value = FINAL_REF_LINK;
   if (pInput) pInput.value = FINAL_REF_LINK;
 
-  // Initialize ATM card fields with guaranteed fallback
+  // Initialize ATM card fields and inputs (empty by default for new accounts)
   const bNameEl = document.getElementById('atmBankName');
   const accNumEl = document.getElementById('atmCardNumber');
   const accHolderEl = document.getElementById('atmCardHolder');
-  const dBank = document.getElementById('dataBankName')?.getAttribute('data-bank') || 'OPAY DIGITAL SERVICES';
-  const dAcc = document.getElementById('dataAccountNo')?.getAttribute('data-acc') || '9012345678';
-  const dName = document.getElementById('dataAccountName')?.getAttribute('data-name') || CURRENT_USER;
-
-  if (bNameEl && (!bNameEl.textContent || !bNameEl.textContent.trim())) {
-    bNameEl.textContent = dBank.toUpperCase();
-  }
-  if (accNumEl && (!accNumEl.textContent || !accNumEl.textContent.trim())) {
-    accNumEl.textContent = dAcc.replace(/(\d{4})/g, '$1  ').trim();
-  }
-  if (accHolderEl && (!accHolderEl.textContent || !accHolderEl.textContent.trim())) {
-    accHolderEl.textContent = dName.toUpperCase();
-  }
+  const dBank = (document.getElementById('dataBankName')?.getAttribute('data-bank') || '').trim();
+  const dAcc = (document.getElementById('dataAccountNo')?.getAttribute('data-acc') || '').trim();
+  const dName = (document.getElementById('dataAccountName')?.getAttribute('data-name') || '').trim();
 
   // Restore custom bank card details if saved in localStorage
-  const cachedBank = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name');
-  const cachedAcc = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc');
-  const cachedHolder = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder');
+  const cachedBank = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || dBank;
+  const cachedAcc = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || dAcc;
+  const cachedHolder = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || dName;
 
-  if (cachedBank) {
+  if (cachedBank && cachedBank !== 'Pending Setup' && cachedBank !== 'NOT CONFIGURED') {
     if (bNameEl) bNameEl.textContent = cachedBank.toUpperCase();
     const editB = document.getElementById('editBankName');
     if (editB) editB.value = cachedBank;
+  } else {
+    if (bNameEl) bNameEl.textContent = 'NOT CONFIGURED';
+    const editB = document.getElementById('editBankName');
+    if (editB) editB.value = '';
   }
-  if (cachedAcc) {
+
+  if (cachedAcc && cachedAcc !== '0801234567' && cachedAcc.length >= 9) {
     if (accNumEl) accNumEl.textContent = cachedAcc.replace(/(\d{4})/g, '$1  ').trim();
     const editA = document.getElementById('editAccountNumber');
     if (editA) editA.value = cachedAcc;
+  } else {
+    if (accNumEl) accNumEl.textContent = '••••  ••••  ••';
+    const editA = document.getElementById('editAccountNumber');
+    if (editA) editA.value = '';
   }
+
   if (cachedHolder) {
     if (accHolderEl) accHolderEl.textContent = cachedHolder.toUpperCase();
     const editH = document.getElementById('editAccountName');
     if (editH) editH.value = cachedHolder;
+  } else {
+    if (accHolderEl) accHolderEl.textContent = 'CARDHOLDER NAME';
+    const editH = document.getElementById('editAccountName');
+    if (editH) editH.value = '';
   }
 
   // Immediately synchronize withdrawal modal bank card display
@@ -3334,48 +3379,37 @@ function toast(msg, type = 'info') {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 3200);
 }
 
-function isUserBankAndPinConfigured() {
+function isUserBankConfigured() {
   const setupEl = document.getElementById('dataBankSetup');
   let bankConfigured = setupEl ? (setupEl.dataset.bankConfigured === '1') : false;
-  let pinConfigured = setupEl ? (setupEl.dataset.pinConfigured === '1') : false;
 
   const bName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || '';
   const bAcc = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || '';
-  const bPin = localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || '';
 
-  if (bName && bName !== 'Pending Setup' && bAcc && bAcc !== '0801234567' && bAcc.length >= 9) {
+  if (bName && bName !== 'Pending Setup' && bName !== 'NOT CONFIGURED' && bAcc && bAcc !== '0801234567' && bAcc.length >= 9) {
     bankConfigured = true;
-  }
-  if (bPin && /^\d{4}$/.test(bPin)) {
-    pinConfigured = true;
   }
 
   const editB = document.getElementById('editBankName')?.value?.trim();
   const editA = document.getElementById('editAccountNumber')?.value?.trim();
-  const editP = document.getElementById('editWithdrawalPin')?.value?.trim();
-  if (editB && editB !== 'Pending Setup' && editA && editA !== '0801234567' && editA.length >= 9) {
+  if (editB && editB !== 'Pending Setup' && editB !== 'NOT CONFIGURED' && editA && editA !== '0801234567' && editA.length >= 9) {
     bankConfigured = true;
   }
-  if (editP && /^\d{4}$/.test(editP)) {
-    pinConfigured = true;
-  }
 
-  return { bankConfigured, pinConfigured, ready: Boolean(bankConfigured && pinConfigured) };
+  return { bankConfigured, ready: Boolean(bankConfigured) };
+}
+
+function isUserBankAndPinConfigured() {
+  return isUserBankConfigured();
 }
 
 function openModal(id) { 
   const el = document.getElementById(id);
   if (!el) return;
   if (id === 'modalWithdraw') {
-    const { bankConfigured, pinConfigured, ready } = isUserBankAndPinConfigured();
+    const { bankConfigured, ready } = isUserBankConfigured();
     if (!ready) {
-      if (!bankConfigured && !pinConfigured) {
-        toast('Action required: Please configure your bank account and 4-digit withdrawal PIN before withdrawing.', 'error');
-      } else if (!bankConfigured) {
-        toast('Action required: Please configure your bank details before withdrawing.', 'error');
-      } else {
-        toast('Action required: Please set up your 4-digit security withdrawal PIN before withdrawing.', 'error');
-      }
+      toast('Action required: Please configure your bank details before withdrawing.', 'error');
       openModal('modalEditBank');
       return;
     }
@@ -3447,35 +3481,37 @@ function syncWithdrawalBankDetails() {
                 || localStorage.getItem('ix_bank_name') 
                 || (document.getElementById('editBankName') ? document.getElementById('editBankName').value.trim() : '')
                 || (document.getElementById('atmBankName') ? document.getElementById('atmBankName').textContent.trim() : '')
-                || (document.getElementById('wdModalBank') ? document.getElementById('wdModalBank').textContent.trim() : '')
-                || 'OPay Digital Services';
+                || '';
   const accNum = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) 
               || localStorage.getItem('ix_bank_acc') 
               || (document.getElementById('editAccountNumber') ? document.getElementById('editAccountNumber').value.trim() : '')
               || (document.getElementById('atmCardNumber') ? document.getElementById('atmCardNumber').textContent.replace(/\s+/g,'').trim() : '')
-              || (document.getElementById('wdModalAccount') ? document.getElementById('wdModalAccount').textContent.trim() : '')
-              || '0801234567';
+              || '';
   const accHolder = localStorage.getItem('ix_bank_holder_' + CURRENT_USER)
                  || localStorage.getItem('ix_bank_holder')
                  || (document.getElementById('editAccountName') ? document.getElementById('editAccountName').value.trim() : '')
                  || (document.getElementById('atmCardHolder') ? document.getElementById('atmCardHolder').textContent.trim() : '')
-                 || CURRENT_USER;
+                 || '';
 
   const wdCardText = document.getElementById('wdRegisteredCardText');
   if (wdCardText) {
-    wdCardText.innerHTML = `<span id="wdModalBank">${bankName}</span> — <span id="wdModalAccount">${accNum}</span>`;
+    if (bankName && accNum && bankName !== 'NOT CONFIGURED' && accNum !== '••••••••••' && accNum !== '••••••••') {
+      wdCardText.innerHTML = `<span id="wdModalBank">${bankName}</span> — <span id="wdModalAccount">${accNum}</span>`;
+    } else {
+      wdCardText.innerHTML = `<span id="wdModalBank" style="display:none;"></span><span id="wdModalAccount" style="display:none;"></span><span style="color:var(--txt-3);font-weight:500;">No bank account configured — Click "Edit Bank Card Details" to link</span>`;
+    }
   }
   const wdBankSpan = document.getElementById('wdModalBank');
-  if (wdBankSpan) wdBankSpan.textContent = bankName;
+  if (wdBankSpan && bankName && bankName !== 'NOT CONFIGURED') wdBankSpan.textContent = bankName;
   const wdAccSpan = document.getElementById('wdModalAccount');
-  if (wdAccSpan) wdAccSpan.textContent = accNum;
+  if (wdAccSpan && accNum && !accNum.includes('•')) wdAccSpan.textContent = accNum;
 
   const cfmBank = document.getElementById('confirmWdBank');
-  if (cfmBank) cfmBank.textContent = bankName;
+  if (cfmBank) cfmBank.textContent = (bankName && bankName !== 'NOT CONFIGURED') ? bankName : 'Not Configured';
   const cfmAcc = document.getElementById('confirmWdAccount');
-  if (cfmAcc) cfmAcc.textContent = accNum;
+  if (cfmAcc) cfmAcc.textContent = (accNum && !accNum.includes('•')) ? accNum : 'Not Configured';
   const cfmName = document.getElementById('confirmWdName');
-  if (cfmName) cfmName.textContent = accHolder;
+  if (cfmName) cfmName.textContent = (accHolder && accHolder !== 'CARDHOLDER NAME') ? accHolder : CURRENT_USER;
 }
 
 async function handleUpdateBank(e) {
@@ -3483,17 +3519,18 @@ async function handleUpdateBank(e) {
   const bankName = document.getElementById('editBankName').value.trim();
   const accNum = document.getElementById('editAccountNumber').value.trim();
   const accName = document.getElementById('editAccountName').value.trim();
-  const pinInput = document.getElementById('editWithdrawalPin');
-  const withdrawalPin = pinInput ? pinInput.value.trim() : '';
   const btn = document.getElementById('btnSaveBank');
 
-  if (!bankName || !accNum || accNum.length < 9) {
-    toast('Please enter a valid bank name and 10-digit account number.', 'error');
+  if (!bankName) {
+    toast('Please select your destination bank from the dropdown list.', 'error');
     return;
   }
-  if (!withdrawalPin || !/^\d{4}$/.test(withdrawalPin)) {
-    toast('Please enter a valid 4-digit numeric withdrawal PIN.', 'error');
-    if (pinInput) pinInput.focus();
+  if (!accNum || accNum.length < 9) {
+    toast('Please enter a valid 10-digit account number.', 'error');
+    return;
+  }
+  if (!accName) {
+    toast('Please enter your full account holder name.', 'error');
     return;
   }
 
@@ -3503,8 +3540,7 @@ async function handleUpdateBank(e) {
       username: CURRENT_USER,
       bank_name: bankName,
       account_number: accNum,
-      account_name: accName,
-      withdrawal_pin: withdrawalPin
+      account_name: accName
     };
     const r = await fetch(`api/users.php?action=update_bank_details&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
@@ -3513,7 +3549,7 @@ async function handleUpdateBank(e) {
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
-      toast('Bank details and withdrawal PIN saved successfully!', 'success');
+      toast('Bank details saved successfully!', 'success');
       const upperBank = bankName.toUpperCase();
       const formattedAcc = accNum.replace(/(\d{4})/g, '$1  ').trim();
       const finalHolder = (accName || CURRENT_USER).toUpperCase();
@@ -3528,27 +3564,24 @@ async function handleUpdateBank(e) {
       const editB = document.getElementById('editBankName');
       const editA = document.getElementById('editAccountNumber');
       const editH = document.getElementById('editAccountName');
-      const editP = document.getElementById('editWithdrawalPin');
       if (editB) editB.value = bankName;
       if (editA) editA.value = accNum;
       if (editH) editH.value = accName || finalHolder;
-      if (editP) editP.value = withdrawalPin;
 
       localStorage.setItem('ix_bank_name_' + CURRENT_USER, bankName);
       localStorage.setItem('ix_bank_acc_' + CURRENT_USER, accNum);
-      localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, withdrawalPin);
       localStorage.setItem('ix_bank_name', bankName);
       localStorage.setItem('ix_bank_acc', accNum);
       if (accName) {
         localStorage.setItem('ix_bank_holder_' + CURRENT_USER, accName);
         localStorage.setItem('ix_bank_holder', accName);
       }
+      localStorage.removeItem('ix_withdrawal_pin_' + CURRENT_USER);
+      localStorage.removeItem('ix_withdrawal_pin');
 
       const setupEl = document.getElementById('dataBankSetup');
       if (setupEl) {
         setupEl.dataset.bankConfigured = '1';
-        setupEl.dataset.pinConfigured = '1';
-        setupEl.dataset.hasPin = '1';
       }
 
       syncWithdrawalBankDetails();
@@ -4482,15 +4515,9 @@ function proceedToWithdrawalConfirm() {
     return;
   }
 
-  const { bankConfigured, pinConfigured, ready } = isUserBankAndPinConfigured();
+  const { bankConfigured, ready } = isUserBankConfigured();
   if (!ready) {
-    if (!bankConfigured && !pinConfigured) {
-      toast('Action required: Please configure your bank account and 4-digit withdrawal PIN before withdrawing.', 'error');
-    } else if (!bankConfigured) {
-      toast('Action required: Please configure your bank details before withdrawing.', 'error');
-    } else {
-      toast('Action required: Please set up your 4-digit security withdrawal PIN before withdrawing.', 'error');
-    }
+    toast('Action required: Please configure your bank details before withdrawing.', 'error');
     closeModal('modalWithdraw');
     openModal('modalEditBank');
     return;
@@ -4518,8 +4545,8 @@ function proceedToWithdrawalConfirm() {
   const amountStr = type === 'cash' 
     ? ('₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
     : (amount.toLocaleString('en-US') + ' PTS');
-  const bankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
-  const accNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
+  const bankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || '';
+  const accNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '';
   const accName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
 
   document.getElementById('confirmWdAmount').textContent = amountStr;
@@ -4527,9 +4554,6 @@ function proceedToWithdrawalConfirm() {
   document.getElementById('confirmWdBank').textContent = bankName;
   document.getElementById('confirmWdAccount').textContent = accNo;
   document.getElementById('confirmWdName').textContent = accName;
-
-  const pinConfirmInput = document.getElementById('confirmWithdrawalPin');
-  if (pinConfirmInput) pinConfirmInput.value = '';
 
   closeModal('modalWithdraw');
   openModal('modalWithdrawConfirm');
@@ -4539,19 +4563,11 @@ async function executeWithdrawalReq() {
   if (!pendingWithdrawalData) return;
   const { type, amount } = pendingWithdrawalData;
 
-  const pinInput = document.getElementById('confirmWithdrawalPin');
-  const pinVal = pinInput ? pinInput.value.trim() : '';
-  if (!pinVal || !/^\d{4}$/.test(pinVal)) {
-    toast('Please enter your 4-digit security withdrawal PIN.', 'error');
-    if (pinInput) pinInput.focus();
-    return;
-  }
-
   const btn = document.getElementById('btnAuthorizePayout');
   if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
 
-  const curBankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
-  const curAccNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
+  const curBankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || '';
+  const curAccNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '';
   const curAccName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
 
   try {
@@ -4563,7 +4579,6 @@ async function executeWithdrawalReq() {
         amount: amount,
         wallet: type,
         wallet_type: type,
-        withdrawal_pin: pinVal,
         client_points: getUserPoints(),
         client_cash: getUserCash(),
         bank_name: curBankName,
@@ -4584,8 +4599,8 @@ async function executeWithdrawalReq() {
 
       // Populate Digital Receipt with verified details
       const rc = d.receipt || {};
-      const bankName = rc.bank_name || rc.bank || localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent || 'OPay Digital Services';
-      const accNo = rc.account_number || rc.account || localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '0801234567';
+      const bankName = rc.bank_name || rc.bank || localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent || '';
+      const accNo = rc.account_number || rc.account || localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '';
       const accName = rc.account_name || rc.beneficiary_name || localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent || CURRENT_USER;
       const txnId = rc.txn_id || rc.id || ('IX-WD-' + Math.floor(100000 + Math.random() * 900000));
       const dateStr = rc.date_formatted || (new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' WAT');

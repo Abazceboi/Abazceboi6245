@@ -711,6 +711,9 @@ const server = http.createServer((req, res) => {
                         role: 'member',
                         role_label: isActivated ? 'Active Member' : 'Free Member',
                         is_activated: isActivated,
+                        bank_name: '',
+                        account_number: '',
+                        account_name: '',
                         welcome_shown: false,
                         remaining_cash: 0.00,
                         remaining_pts: isActivated ? 100 : 0,
@@ -3297,30 +3300,6 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     if (!isBankConfigured) {
                         res.end(JSON.stringify({ status: 'error', message: 'Action required: You must configure your verified bank details in wallet settings before requesting a withdrawal.' }));
                         return;
-                    }
-
-                    // Strict 4-Digit Withdrawal PIN Verification
-                    const configuredPin = String(user.withdrawal_pin || '').trim();
-                    const providedPin = String(parsed.withdrawal_pin || parsed.pin || '').trim();
-
-                    if (!configuredPin && !providedPin) {
-                        res.end(JSON.stringify({ status: 'error', message: 'Action required: You must set up a 4-digit security withdrawal PIN before withdrawing.' }));
-                        return;
-                    }
-                    if (configuredPin && !providedPin) {
-                        res.end(JSON.stringify({ status: 'error', message: 'Please enter your 4-digit withdrawal PIN to authorize this payout.' }));
-                        return;
-                    }
-                    if (configuredPin && providedPin !== configuredPin) {
-                        res.end(JSON.stringify({ status: 'error', message: 'Invalid withdrawal PIN. Please enter your correct 4-digit security PIN.' }));
-                        return;
-                    }
-                    if (!configuredPin && providedPin) {
-                        if (providedPin.length !== 4 || !/^\d{4}$/.test(providedPin)) {
-                            res.end(JSON.stringify({ status: 'error', message: 'Withdrawal PIN must be exactly 4 numeric digits.' }));
-                            return;
-                        }
-                        user.withdrawal_pin = providedPin;
                     }
 
                     if (targetWallet === 'affiliate') {
