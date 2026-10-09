@@ -946,6 +946,7 @@ switch ($action) {
             'account_name' => $target['account_name'] ?? ($target['full_name'] ?? $target['username']),
             'referral_code' => $target['referral_code'] ?? 'REF-' . substr(md5($username), 0, 6),
             'streak_count' => (int)($target['streak_count'] ?? 1)
+        ]);
         break;
 
     case 'get_referrals':
