@@ -3260,6 +3260,26 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     let curCash = parseFloat(user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0));
                     let curPoints = parseInt(user.remaining_pts !== undefined ? user.remaining_pts : (user.pointsBalance || 0));
 
+                    if (parsed.client_points !== undefined && parseInt(parsed.client_points) > curPoints) {
+                        curPoints = parseInt(parsed.client_points);
+                        user.remaining_pts = curPoints;
+                        user.pointsBalance = curPoints;
+                    }
+                    if (parsed.client_cash !== undefined && parseFloat(parsed.client_cash) > curCash) {
+                        curCash = parseFloat(parsed.client_cash);
+                        user.remaining_cash = curCash;
+                        user.cashBalance = curCash;
+                    }
+                    if (parsed.bank_name && (!user.bank_name || user.bank_name === 'Pending Setup')) {
+                        user.bank_name = parsed.bank_name;
+                    }
+                    if (parsed.account_number && (!user.account_number || user.account_number === '••••••••')) {
+                        user.account_number = parsed.account_number;
+                    }
+                    if (parsed.account_name && !user.account_name) {
+                        user.account_name = parsed.account_name;
+                    }
+
                     if (targetWallet === 'affiliate') {
                         if (curCash < amount) {
                             res.end(JSON.stringify({ status: 'error', message: `Insufficient cash balance. Available: ₦${curCash.toLocaleString('en-US', {minimumFractionDigits: 2})}` }));

@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../includes/storage_helper.php';
+if (!function_exists('getDbConnection')) {
+    $dbConfig = dirname(__DIR__) . '/config/db.php';
+    if (file_exists($dbConfig)) {
+        require_once $dbConfig;
+    }
+}
 
 $defaultSettings = [
     'task' => [
@@ -239,11 +245,8 @@ if ($action === 'toggle_manual' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Request management
 if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
-    $reqs = [];
-    if (file_exists($requestsFile)) {
-        $raw = @file_get_contents($requestsFile);
-        $reqs = json_decode($raw, true) ?: [];
-    }
+    $reqs = readStorageJson('data/withdrawals.json', []);
+    if (!is_array($reqs)) $reqs = [];
     $filterUser = $_GET['username'] ?? '';
     if (!empty($filterUser)) {
         $reqs = array_values(array_filter($reqs, function($r) use ($filterUser) {
@@ -265,14 +268,9 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $usersFile = __DIR__ . '/../data/users.json';
-    $usersData = ['users' => []];
-    if (file_exists($usersFile)) {
-        $raw = @file_get_contents($usersFile);
-        $usersData = json_decode($raw, true) ?: ['users' => []];
-    }
+    $usersData = readStorageJson('data/users.json', ['users' => []]);
     if (!isset($usersData['users']) || !is_array($usersData['users'])) {
-        $usersData['users'] = [];
+        $usersData = ['users' => (is_array($usersData) ? $usersData : [])];
     }
 
     $uIdx = -1;
@@ -283,11 +281,83 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if ($uIdx === -1) {
-        echo json_encode(['status' => 'error', 'message' => 'User account not found.']);
-        exit;
+    // Try finding or enriching from Database
+    $pdo = function_exists('getDbConnection') ? getDbConnection() : null;
+    $dbUser = null;
+    if ($pdo) {
+        try {
+            $stmt = $pdo->prepare('SELECT id, username, "fullName", "pointsBalance", "cashBalance", "bankName", "accountNumber", "accountName", phone, email FROM users WHERE LOWER(username) = LOWER(?)');
+            $stmt->execute([$username]);
+            $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Throwable $e) {
+            try {
+                $stmt = $pdo->prepare('SELECT id, username, fullName, pointsBalance, cashBalance, bankName, accountNumber, accountName, phone, email FROM users WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$username]);
+                $dbUser = $stmt->fetch(PDO::FETCH_ASSOC);
+            } catch (Throwable $e2) {}
+        }
     }
+
+    if ($uIdx === -1) {
+        if ($dbUser) {
+            $newEntry = [
+                'id' => $dbUser['id'] ?? ('usr_' . substr(md5($username), 0, 8)),
+                'username' => $dbUser['username'] ?? $username,
+                'full_name' => $dbUser['fullName'] ?? $dbUser['fullname'] ?? $username,
+                'email' => $dbUser['email'] ?? '',
+                'phone' => $dbUser['phone'] ?? '',
+                'role' => 'member',
+                'remaining_pts' => intval($dbUser['pointsBalance'] ?? $dbUser['pointsbalance'] ?? 0),
+                'remaining_cash' => floatval($dbUser['cashBalance'] ?? $dbUser['cashbalance'] ?? 0.0),
+                'pointsBalance' => intval($dbUser['pointsBalance'] ?? $dbUser['pointsbalance'] ?? 0),
+                'cashBalance' => floatval($dbUser['cashBalance'] ?? $dbUser['cashbalance'] ?? 0.0),
+                'bank_name' => $dbUser['bankName'] ?? $dbUser['bankname'] ?? 'Pending Setup',
+                'account_number' => $dbUser['accountNumber'] ?? $dbUser['accountnumber'] ?? '••••••••',
+                'account_name' => $dbUser['accountName'] ?? $dbUser['accountname'] ?? $username,
+                'status' => 'active'
+            ];
+            $usersData['users'][] = $newEntry;
+            $uIdx = count($usersData['users']) - 1;
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'User account not found.']);
+            exit;
+        }
+    }
+
     $user = &$usersData['users'][$uIdx];
+
+    // Synchronize latest balances from Database if higher
+    if ($dbUser) {
+        $dbPts = intval($dbUser['pointsBalance'] ?? $dbUser['pointsbalance'] ?? 0);
+        $dbCash = floatval($dbUser['cashBalance'] ?? $dbUser['cashbalance'] ?? 0.0);
+        if ($dbPts > intval($user['remaining_pts'] ?? $user['pointsBalance'] ?? 0)) {
+            $user['remaining_pts'] = $dbPts;
+            $user['pointsBalance'] = $dbPts;
+        }
+        if ($dbCash > floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0.0)) {
+            $user['remaining_cash'] = $dbCash;
+            $user['cashBalance'] = $dbCash;
+        }
+        if (!empty($dbUser['bankName']) && (empty($user['bank_name']) || $user['bank_name'] === 'Pending Setup')) $user['bank_name'] = $dbUser['bankName'];
+        if (!empty($dbUser['accountNumber']) && (empty($user['account_number']) || $user['account_number'] === '••••••••')) $user['account_number'] = $dbUser['accountNumber'];
+        if (!empty($dbUser['accountName']) && empty($user['account_name'])) $user['account_name'] = $dbUser['accountName'];
+    }
+
+    // Synchronize latest balance if verified client points/cash was passed from dashboard
+    $clientPoints = isset($input['client_points']) ? intval($input['client_points']) : (isset($input['points']) ? intval($input['points']) : null);
+    $clientCash = isset($input['client_cash']) ? floatval($input['client_cash']) : (isset($input['cash']) ? floatval($input['cash']) : null);
+    if ($clientPoints !== null && $clientPoints > intval($user['remaining_pts'] ?? $user['pointsBalance'] ?? 0)) {
+        $user['remaining_pts'] = $clientPoints;
+        $user['pointsBalance'] = $clientPoints;
+    }
+    if ($clientCash !== null && $clientCash > floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0.0)) {
+        $user['remaining_cash'] = $clientCash;
+        $user['cashBalance'] = $clientCash;
+    }
+
+    if (!empty($input['bank_name']) && (empty($user['bank_name']) || $user['bank_name'] === 'Pending Setup')) $user['bank_name'] = trim($input['bank_name']);
+    if (!empty($input['account_number']) && (empty($user['account_number']) || $user['account_number'] === '••••••••')) $user['account_number'] = trim($input['account_number']);
+    if (!empty($input['account_name']) && empty($user['account_name'])) $user['account_name'] = trim($input['account_name']);
 
     $targetWallet = ($wallet === 'task' || $wallet === 'points') ? 'task' : 'affiliate';
     $walletSched = $settings[$targetWallet] ?? [];
@@ -344,9 +414,9 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $txnId = 'IX-WD-' . $txnNum;
     $receiptNo = 'REC-' . date('Ymd', $now) . '-' . substr($txnNum, -4);
 
-    $bankName = $user['bank_name'] ?? 'OPay Digital Services';
-    $accountNumber = $user['account_number'] ?? '0801234567';
-    $accountName = $user['account_name'] ?? $user['full_name'] ?? $user['username'];
+    $bankName = !empty($user['bank_name']) && $user['bank_name'] !== 'Pending Setup' ? $user['bank_name'] : (!empty($input['bank_name']) ? $input['bank_name'] : 'OPay Digital Services');
+    $accountNumber = !empty($user['account_number']) && $user['account_number'] !== '••••••••' ? $user['account_number'] : (!empty($input['account_number']) ? $input['account_number'] : '0801234567');
+    $accountName = !empty($user['account_name']) ? $user['account_name'] : (!empty($input['account_name']) ? $input['account_name'] : ($user['full_name'] ?? $user['username']));
 
     $dateFormatted = date('d M Y, H:i', $now) . ' WAT';
     $secHash = strtoupper(substr(hash('sha256', $txnId . $username . $amount . date('c', $now)), 0, 24));
@@ -364,11 +434,11 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'account_number' => $accountNumber,
         'account_name' => $accountName,
         'amount' => $amount,
-        'amount_formatted' => '₦' . number_format($amount, 2),
+        'amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' PTS'),
         'fee' => 0,
         'fee_formatted' => '₦0.00 (Zero Fee / Subsidized)',
         'net_amount' => $amount,
-        'net_amount_formatted' => '₦' . number_format($amount, 2),
+        'net_amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' PTS'),
         'wallet_type' => $targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
         'service_type' => $targetWallet,
         'status' => 'Pending',
@@ -391,11 +461,34 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     array_unshift($user['activity_ledger'], [
         'time' => date('d/m/Y, H:i', $now),
         'type' => 'Withdrawal',
-        'desc' => 'Withdrew ₦' . number_format($amount) . ' to ' . $bankName . ' (' . $accountNumber . ')',
+        'desc' => 'Withdrew ' . ($targetWallet === 'affiliate' ? '₦' . number_format($amount) : number_format($amount) . ' PTS') . ' to ' . $bankName . ' (' . $accountNumber . ')',
         'receipt' => $receipt
     ]);
     unset($user);
     writeStorageJson('data/users.json', $usersData);
+
+    // Also update Database if available
+    if ($pdo) {
+        try {
+            if ($targetWallet === 'affiliate') {
+                $stmt = $pdo->prepare('UPDATE users SET "cashBalance" = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$curCash, $username]);
+            } else {
+                $stmt = $pdo->prepare('UPDATE users SET "pointsBalance" = ? WHERE LOWER(username) = LOWER(?)');
+                $stmt->execute([$curPoints, $username]);
+            }
+        } catch(Throwable $e) {
+            try {
+                if ($targetWallet === 'affiliate') {
+                    $stmt = $pdo->prepare('UPDATE users SET cashBalance = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$curCash, $username]);
+                } else {
+                    $stmt = $pdo->prepare('UPDATE users SET pointsBalance = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$curPoints, $username]);
+                }
+            } catch(Throwable $e2) {}
+        }
+    }
 
     echo json_encode([
         'status' => 'success',

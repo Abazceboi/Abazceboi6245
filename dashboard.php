@@ -4395,6 +4395,10 @@ async function executeWithdrawalReq() {
   const btn = document.getElementById('btnAuthorizePayout');
   if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
 
+  const curBankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || 'OPay Digital Services';
+  const curAccNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '0801234567';
+  const curAccName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
+
   try {
     const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
       method: 'POST',
@@ -4403,7 +4407,12 @@ async function executeWithdrawalReq() {
         username: CURRENT_USER,
         amount: amount,
         wallet: type,
-        wallet_type: type
+        wallet_type: type,
+        client_points: getUserPoints(),
+        client_cash: getUserCash(),
+        bank_name: curBankName,
+        account_number: curAccNo,
+        account_name: curAccName
       })
     });
     const d = await r.json();
