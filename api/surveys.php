@@ -156,7 +156,7 @@ function generateTopicQuestions(string $topic, int $count = 5, string $style = '
                 'correct_index' => 1
             ]
         ];
-    } elseif (preg_match('/vtu|airtime|data|telecom|network|mtn|airtel|glo|9mobile|recharge/i', $tLower)) {
+    } elseif (preg_match('/vtu|airtime|data|telecom|network|mtn|airtel|\bglo\b|globacom|9mobile|recharge/i', $tLower)) {
         $category = 'Telecom & VTU Services';
         $points = 120;
         $title = !empty($topic) ? "Telecom Survey: " . $cleanTopic : "VTU Airtime & Mobile Data Habits";
@@ -338,6 +338,216 @@ function generateTopicQuestions(string $topic, int $count = 5, string $style = '
             [
                 'question' => "What time of day do you most actively browse social media content?",
                 'options' => ["Evening hours (7:00 PM - 10:00 PM)", "Late afternoon break (2:00 PM - 5:00 PM)", "Early morning hours (6:00 AM - 9:00 AM)", "Consistently distributed across the full day"],
+                'correct_index' => 0
+            ]
+        ];
+    } elseif (preg_match('/alaska|arctic|anchorage|arctic ocean|greenland|yukon|polar|sub-zero/i', $tLower)) {
+        $category = 'Alaska & Arctic Affairs';
+        $points = 190;
+        $title = !empty($topic) ? "Alaska Arctic Study: " . $cleanTopic : "Alaska & Arctic Strategic Affairs Survey";
+        $description = "Assessing Arctic geopolitical security, Alaskan natural resource development, sub-zero logistics, and polar environmental preservation.";
+        $pool = [
+            [
+                'question' => "What strategic importance does the state of Alaska represent in contemporary global geopolitics?",
+                'options' => ["Crucial Arctic military defense post and NORAD early warning radar", "Vital source of natural gas, crude oil, and strategic mineral reserves", "Key gateway for emerging Arctic maritime shipping corridors", "Frontline observatory for global climate change and polar research"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How do extreme sub-zero weather conditions in Alaska and Northern territories impact regional economic logistics?",
+                'options' => ["Massively increases seasonal transportation and heating energy expenses", "Requires specialized icebreaker maritime support and winterized supply lines", "Creates unique opportunities for specialized arctic engineering and cold-weather tourism", "Restricts regular agricultural production, elevating reliance on food imports"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What balance should be struck regarding natural resource extraction (oil, natural gas, mining) in sensitive Alaskan Arctic regions?",
+                'options' => ["Strict conservation to protect pristine tundra ecosystems and native wildlife", "Sustainable extraction with rigorous environmental safeguards and native community dividends", "Prioritize domestic energy independence and strategic mineral security", "Gradual transition towards renewable Arctic wind, tidal and geothermal projects"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How do native Alaskan communities and Indigenous Arctic councils participate in regional economic governance?",
+                'options' => ["Through successful Alaska Native Corporations driving local enterprise and jobs", "Through customary subsistence hunting and environmental co-management", "Through active cultural preservation and sovereign tribal representation", "Through educational and community health leadership programs"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What impact is the seasonal melting of Arctic sea ice having on international maritime navigation around Alaska?",
+                'options' => ["Opening shorter Northwest Passage commercial shipping routes between continents", "Accelerating global competition for uncharted polar maritime territory", "Increasing risk of maritime accidents and environmental spills in remote waters", "Demanding larger investments in modern polar icebreaker fleets"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How critical is the Alaska Permanent Fund dividend model as a socio-economic blueprint for resource-wealth distribution?",
+                'options' => ["Exceptional model of direct citizen dividend sharing from oil revenues", "Helps offset high regional living costs for everyday Alaskan families", "Inspires universal basic income and sovereign wealth fund discussions globally", "A proven mechanism for ensuring multi-generational wealth preservation"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "Which emerging industry holds the greatest growth potential for Alaska's future diversification beyond petroleum?",
+                'options' => ["Eco-tourism and cruise expedition travel", "Sustainable commercial fisheries and cold-water mariculture", "Green hydrogen and clean geothermal/hydropower generation", "Aerospace research, polar satellite tracking and drone testing"],
+                'correct_index' => 0
+            ]
+        ];
+    } elseif (preg_match('/north america|canada|canadian|ottawa|toronto|vancouver|montreal|quebec|alberta|ontario|usa|united states|american economy/i', $tLower)) {
+        $category = 'North America & Canada Affairs';
+        $points = 170;
+        $title = !empty($topic) ? "North American Study: " . $cleanTopic : "North America & Canada Socio-Economic Outlook";
+        $description = "Examining North American economic dynamics, Canadian housing and immigration policies, healthcare delivery, and cross-border trade.";
+        $pool = [
+            [
+                'question' => "What do you consider the most pressing socio-economic challenge facing North American metropolitan centers?",
+                'options' => ["Surging housing costs and rental affordability crises", "Rising inflation and healthcare service costs", "Labor market shifts driven by artificial intelligence automation", "Aging public transportation and civil infrastructure"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How do you evaluate Canada's economic model balancing skilled immigration with housing and social services?",
+                'options' => ["Beneficial for long-term demographic and economic growth", "Requires better alignment with housing supply and healthcare capacity", "Effective in attracting global tech talent and academic professionals", "Needs deeper regional distribution beyond major cities"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How integrated are cross-border trade and labor movements between the United States and Canada under modern trade pacts?",
+                'options' => ["Deeply intertwined supply chains supporting millions of regional jobs", "Generally smooth with occasional tariff disputes on lumber and agriculture", "Resilient model of peaceful continental economic cooperation", "Facing new challenges from global supply chain reshoring trends"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What reform is most essential for sustaining the Canadian universal healthcare model?",
+                'options' => ["Expanding medical school quotas and accelerating foreign doctor accreditation", "Investing heavily in digital telemedicine and preventative community clinics", "Increasing federal healthcare funding transfers to provincial governments", "Addressing acute nursing and specialized paramedic shortages"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How are shifting interest rates impacting household mortgage debt and property ownership across North America?",
+                'options' => ["Significant strain on first-time buyers and renewing variable mortgagors", "Cooling speculative property flips while keeping home prices sticky", "Increasing demand for multi-family rental buildings and co-living", "Encouraging inter-provincial migration toward lower-cost regions"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What lessons can international economies learn from Canadian and North American clean energy and tech innovation ecosystems?",
+                'options' => ["High investment in research and development attracts premier global talent", "Venture capital backing accelerates commercialization of breakthrough solutions", "Public-private partnerships yield strong green energy infrastructure", "Regulatory clarity is vital for sustaining entrepreneurship"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How are North American manufacturing sectors adapting to near-shoring and green supply chain standards?",
+                'options' => ["Substantial capital re-investment in domestic electric vehicle and semiconductor plants", "Strengthening regional parts procurement across the US, Canada, and Mexico", "Automating assembly operations with advanced industrial robotics", "Prioritizing zero-emission logistics and low-carbon materials"],
+                'correct_index' => 0
+            ]
+        ];
+    } elseif (preg_match('/\bwars?\b|conflict|geopolitics|ukraine|russia|middle east|gaza|israel|iran|red sea|nato|taiwan|military|peacekeeping|sanction|world conflict|ceasefire|armed forces/i', $tLower)) {
+        $category = 'Global Geopolitics & World Conflicts';
+        $points = 200;
+        $title = !empty($topic) ? "Geopolitical Research: " . $cleanTopic : "World Conflicts, Global Security & International Relations";
+        $description = "Assessing citizen perceptions of ongoing international armed conflicts, diplomatic treaties, global security alliances, and economic sanctions.";
+        $pool = [
+            [
+                'question' => "How do you perceive the impact of major global armed conflicts on international commodity and energy prices?",
+                'options' => ["Direct cause of global oil, gas, and fertilizer price surges", "Disrupts critical international maritime trade routes", "Accelerates worldwide inflationary pressure on ordinary citizens", "All of the above combined"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What diplomatic approach is most effective for achieving lasting peace in modern international wars?",
+                'options' => ["Direct multilateral peace talks mediated by neutral international bodies", "Strict global economic sanctions and diplomatic isolation", "Bilateral ceasefires backed by enforceable peacekeeping forces", "Regional coalition agreements addressing root territorial disputes"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How concerned are you about the escalation of regional disputes into broader international conflicts?",
+                'options' => ["Deeply concerned about global security and nuclear proliferation", "Moderately concerned about economic and supply chain fallout", "Concerned primarily with localized humanitarian suffering", "Confident that diplomatic channels will prevent global escalation"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "Which international institution holds the greatest responsibility for protecting innocent civilians during armed warfare?",
+                'options' => ["United Nations Security Council and General Assembly", "International Red Cross and Red Crescent humanitarian agencies", "International Court of Justice and human rights watchdogs", "Regional security coalitions and neighboring sovereign nations"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How have conflicts in Eastern Europe and the Middle East altered global food security and grain supply?",
+                'options' => ["Severely constrained wheat, grain, and fertilizer shipments to developing countries", "Prompted nations to prioritize domestic agricultural self-reliance", "Created market volatility and speculative trading spikes", "Accelerated alternative maritime and overland trade corridors"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What is your perspective on the role of modern drone warfare and cyber combat in contemporary global wars?",
+                'options' => ["Radically transforms warfare dynamics with high civilian risk", "Reduces need for traditional ground forces but increases tech stakes", "Demands urgent updated international Geneva Convention treaties", "Levels asymmetric advantages between competing military powers"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How do global military spending increases affect social and economic development worldwide?",
+                'options' => ["Diverts trillions in vital capital from education and climate action", "Necessary expense to guarantee national sovereignty and deterrence", "Strains government budgets and deepens sovereign debt levels", "Spurs technological innovation that eventually filters to civilian use"],
+                'correct_index' => 0
+            ]
+        ];
+    } elseif (preg_match('/nigeria|naira|lagos|abuja|fuel subsidy|subsidy removal|power grid|national grid|\bjapa\b|nigerian|nepa|phcn|kidnapping|bad governance|economic hardship in nigeria/i', $tLower)) {
+        $category = 'Nigeria Affairs & Socio-Economics';
+        $points = 180;
+        $title = !empty($topic) ? "Nigeria Socio-Economic Survey: " . $cleanTopic : "Nigeria Socio-Economic Realities & Challenges";
+        $description = "Comprehensive opinion poll on critical challenges facing Nigerians, including inflation, fuel subsidy, electricity grid instability, and currency devaluation.";
+        $pool = [
+            [
+                'question' => "Which economic challenge currently exerts the heaviest financial pressure on your household?",
+                'options' => ["Surging food and commodity prices", "High transportation and fuel costs", "Erratic electricity supply and petrol/generator expenses", "Rental costs and housing expenses"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How has national electricity grid instability affected your productivity or business operations?",
+                'options' => ["Significantly increased expenditure on generator fuel and solar inverters", "Caused lost work hours and reduced business operations", "Moderate disruption with reliance on backup power", "Minor impact due to localized solar system"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What strategy are you primarily employing to hedge against Naira currency depreciation and inflation?",
+                'options' => ["Earning digital dollars and token rewards online", "Diversifying into agricultural commodities and physical assets", "Investing in high-yield fintech savings funds", "Strictly reducing non-essential household expenses"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What is your assessment of the ongoing 'Japa' trend (youth migration abroad for education/work)?",
+                'options' => ["An understandable response to limited domestic career opportunities", "A serious brain drain that deprives key sectors of talent", "A dual dynamic that provides future foreign remittances", "A personal choice driven by quality of life considerations"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "Which sector requires the most urgent government reform to stabilize the Nigerian economy?",
+                'options' => ["Local crude oil refining and energy infrastructure", "Agriculture, food security and rural transportation networks", "Youth employment programs and digital vocational training", "Transparent exchange rate management and anti-corruption"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How has the removal of the petrol fuel subsidy impacted your daily commuting and living arrangements?",
+                'options' => ["Tripled or quadrupled monthly transit spending", "Forced me to switch to remote work or reduced travel", "Prompted migration to public mass transit or carpooling", "Moderate impact managed through budget reorganization"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What role can digital micro-tasking and remote internet opportunities play in alleviating youth unemployment in Nigeria?",
+                'options' => ["Crucial safety net providing vital secondary income", "Scalable pathway to global freelance and tech careers", "Helpful supplement for students and job seekers", "Effective temporary relief while seeking full-time employment"],
+                'correct_index' => 0
+            ]
+        ];
+    } elseif (preg_match('/world|global|international|worldwide|macroeconomic|trade war|inflation|famine|climate change|united nations|\bun\b|\bwho\b|pandemic|global economy|world affairs/i', $tLower)) {
+        $category = 'Global Affairs & World Economy';
+        $points = 160;
+        $title = !empty($topic) ? "Global Assessment: " . $cleanTopic : "Global Economic Outlook & International Affairs";
+        $description = "Examining international inflation, global supply chains, green transition investments, and worldwide socio-economic trends.";
+        $pool = [
+            [
+                'question' => "What do you regard as the primary driver of persistent global consumer inflation across major economies?",
+                'options' => ["Central bank monetary policies and post-crisis liquidity expansion", "Geopolitical tensions driving up energy and shipping transport costs", "Global manufacturing bottlenecks and critical material shortages", "Corporate margin expansion and speculative pricing dynamics"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How is the worldwide push toward green energy and carbon neutrality impacting developing nations?",
+                'options' => ["Offers massive leapfrog opportunities in solar and distributed renewables", "Imposes heavy capital burdens without equitable climate finance from wealthy nations", "Creates surging demand for critical minerals like lithium, cobalt, and copper", "Requires a pragmatic transition balanced with transitional fossil fuels"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "Which international cooperation priority is most essential for global economic stability?",
+                'options' => ["Fair multilateral trade agreements and reduced tariff barriers", "Coordinated debt restructuring frameworks for heavily indebted nations", "Global standards for regulating artificial intelligence and digital assets", "Cross-border health security and pandemic prevention protocols"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How do fluctuating international crude oil and natural gas benchmarks affect average household budgets globally?",
+                'options' => ["Directly amplifies domestic electricity tariffs and daily fuel expenses", "Drives indirect price increases across agricultural food and consumer goods", "Encourages faster individual adoption of energy-saving technologies", "Creates sharp volatility in national currency exchange valuations"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What is your viewpoint on the shifting balance of global economic power toward emerging multipolar blocs (e.g. BRICS)?",
+                'options' => ["Encourages balanced global governance and alternative payment currencies", "Creates healthy competition with traditional Western financial systems", "Reflects natural economic growth across Asia, Africa, and Latin America", "May complicate international regulatory consensus on trade standards"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "How effectively do multilateral bodies like the United Nations address humanitarian and economic emergencies?",
+                'options' => ["Perform heroic emergency relief on the ground despite political gridlock", "Struggle with bureaucratic delays and veto deadlocks among major powers", "Essential forum for global dialogue that needs structural reform", "Provide indispensable data, health warnings, and refugee protection"],
+                'correct_index' => 0
+            ],
+            [
+                'question' => "What positive global trend offers the greatest hope for improving worldwide living standards over the coming decade?",
+                'options' => ["Democratization of knowledge through internet access and AI tools", "Exponential expansion of affordable solar and battery storage systems", "Growth of decentralized digital finance enabling unbanked inclusion", "Global youth collaboration on peace, innovation, and entrepreneurship"],
                 'correct_index' => 0
             ]
         ];
