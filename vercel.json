@@ -3,7 +3,7 @@
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.3",
-      "includeFiles": "{*.php,config/**,includes/**,controllers/**,models/**,database/**,data/**,api/**}"
+      "includeFiles": "{*.php,config/**,includes/**,controllers/**,models/**,database/**,data/**,api/**,public/**,assets/**}"
     }
   },
   "routes": [
@@ -14,6 +14,10 @@
     {
       "src": "/js/(.*)",
       "dest": "/js/$1"
+    },
+    {
+      "src": "/audio/(.*)",
+      "dest": "/audio/$1"
     },
     {
       "src": "/assets/(.*)",

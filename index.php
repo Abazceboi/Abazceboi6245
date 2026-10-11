@@ -582,6 +582,8 @@ h1, h2, h3, h4, .font-display {
 
         <!-- Real HTML5 Audio Element -->
         <audio id="tourAudioElement" preload="metadata">
+            <source src="audio.php" type="audio/mp4">
+            <source src="audio/intro.m4a" type="audio/mp4">
             <source src="assets/audio/intro.m4a" type="audio/mp4">
             <source src="assets/audio/intro.mp3.m4a" type="audio/mp4">
             <source src="assets/audio/intro.mp3" type="audio/mpeg">
