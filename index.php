@@ -219,21 +219,23 @@ h1, h2, h3, h4, .font-display {
 .cta-banner-card {
     position: relative;
     overflow: hidden;
-    border-radius: 1.75rem !important;
-    padding: 68px 24px 56px !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    border-radius: 1.25rem !important;
+    padding: 38px 24px 30px !important;
     text-align: center;
     border: 1px solid rgba(56, 189, 248, 0.28) !important;
     background: 
         radial-gradient(90% 90% at 50% -10%, rgba(56, 189, 248, 0.22) 0%, transparent 60%),
         radial-gradient(70% 60% at 90% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
         #0E172B !important;
-    box-shadow: 0 24px 70px -15px rgba(2, 132, 199, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+    box-shadow: 0 20px 50px -15px rgba(2, 132, 199, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
 }
 
 .cta-banner-card .cta-token-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
     display: flex;
     align-items: center;
@@ -241,46 +243,46 @@ h1, h2, h3, h4, .font-display {
     color: #FFFFFF;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.15rem;
-    margin: 0 auto 16px;
-    box-shadow: 0 10px 25px -4px rgba(56, 189, 248, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    font-size: 0.88rem;
+    margin: 0 auto 10px;
+    box-shadow: 0 8px 20px -4px rgba(56, 189, 248, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
     transition: transform 0.3s ease;
 }
 
 .cta-banner-card:hover .cta-token-icon {
-    transform: translateY(-3px) scale(1.05);
+    transform: translateY(-2px) scale(1.04);
 }
 
 .cta-banner-card .cta-pill-badge {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     border-radius: 9999px;
-    padding: 5px 14px;
-    font-size: 0.72rem;
+    padding: 3px 11px;
+    font-size: 0.67rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     background: rgba(56, 189, 248, 0.12);
     border: 1px solid rgba(56, 189, 248, 0.3);
     color: #38BDF8;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
 }
 
 .cta-banner-card .cta-pill-dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: #38BDF8;
-    box-shadow: 0 0 8px #38BDF8;
+    box-shadow: 0 0 6px #38BDF8;
 }
 
 .cta-banner-card .cta-banner-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.8vw, 2.85rem);
+    font-size: clamp(1.45rem, 2.6vw, 1.95rem);
     font-weight: 700;
-    line-height: 1.12;
-    letter-spacing: -0.025em;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     color: #FFFFFF;
     margin: 0;
 }
@@ -293,11 +295,11 @@ h1, h2, h3, h4, .font-display {
 }
 
 .cta-banner-card .cta-banner-desc {
-    margin-top: 14px;
-    font-size: 1.02rem;
-    line-height: 1.65;
-    color: rgba(255, 255, 255, 0.75);
-    max-width: 520px;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 440px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -306,41 +308,41 @@ h1, h2, h3, h4, .font-display {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    border-radius: 12px;
-    padding: 15px 36px;
-    font-size: 0.94rem;
+    gap: 8px;
+    border-radius: 10px;
+    padding: 11px 26px;
+    font-size: 0.86rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     color: #FFFFFF;
     text-decoration: none;
     background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-    box-shadow: 0 0 32px -4px rgba(56, 189, 248, 0.55), 0 8px 24px -6px rgba(2, 132, 199, 0.5);
+    box-shadow: 0 0 24px -4px rgba(56, 189, 248, 0.5), 0 6px 18px -4px rgba(2, 132, 199, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.25);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cta-banner-card .cta-action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 45px -2px rgba(56, 189, 248, 0.75), 0 12px 30px -4px rgba(2, 132, 199, 0.6);
+    box-shadow: 0 0 35px -2px rgba(56, 189, 248, 0.7), 0 8px 24px -2px rgba(2, 132, 199, 0.55);
 }
 
 .cta-banner-card .cta-trust-bar {
-    margin-top: 26px;
+    margin-top: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 14px;
-    font-size: 0.8rem;
+    gap: 12px;
+    font-size: 0.74rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .cta-banner-card .cta-trust-bar span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .cta-banner-card .cta-trust-bar svg {
@@ -349,7 +351,7 @@ h1, h2, h3, h4, .font-display {
 
 .cta-banner-card .cta-trust-sep {
     opacity: 0.35;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* Final CTA Banner in Light Mode (Ultra-Fancy, Modern & Sleek) */
@@ -358,7 +360,7 @@ h1, h2, h3, h4, .font-display {
         radial-gradient(100% 120% at 50% -20%, rgba(56, 189, 248, 0.18) 0%, rgba(16, 185, 129, 0.08) 45%, transparent 75%),
         linear-gradient(180deg, #FFFFFF 0%, #F8FAFD 100%) !important;
     border: 1px solid rgba(2, 132, 199, 0.22) !important;
-    box-shadow: 0 24px 60px -15px rgba(2, 132, 199, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
+    box-shadow: 0 16px 45px -12px rgba(2, 132, 199, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
 }
 
 [data-theme="light"] .cta-banner-card .cta-pill-badge {
@@ -374,7 +376,7 @@ h1, h2, h3, h4, .font-display {
 
 [data-theme="light"] .cta-banner-card .cta-token-icon {
     background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%) !important;
-    box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+    box-shadow: 0 8px 18px -4px rgba(2, 132, 199, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
 }
 
 [data-theme="light"] .cta-banner-card .cta-banner-title {
@@ -395,12 +397,12 @@ h1, h2, h3, h4, .font-display {
 [data-theme="light"] .cta-banner-card .cta-action-btn {
     background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 12px 28px -6px rgba(2, 132, 199, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
+    box-shadow: 0 10px 22px -5px rgba(2, 132, 199, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
     border: none !important;
 }
 
 [data-theme="light"] .cta-banner-card .cta-action-btn:hover {
-    box-shadow: 0 16px 36px -4px rgba(2, 132, 199, 0.6) !important;
+    box-shadow: 0 14px 28px -4px rgba(2, 132, 199, 0.55) !important;
 }
 
 [data-theme="light"] .cta-banner-card .cta-trust-bar {
@@ -412,7 +414,7 @@ h1, h2, h3, h4, .font-display {
 }
 
 [data-theme="light"] .cta-banner-card .bg-grid {
-    background-size: 32px 32px;
+    background-size: 28px 28px;
     background-image: 
         linear-gradient(to right, rgba(2, 132, 199, 0.08) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(2, 132, 199, 0.08) 1px, transparent 1px) !important;
@@ -1241,13 +1243,13 @@ h1, h2, h3, h4, .font-display {
     </section>
 
     <!-- ===== FINAL CALL TO ACTION BANNER (EVERMORE EXACT) ===== -->
-    <section class="ev-wrap" style="padding-bottom:70px;">
+    <section class="ev-wrap" style="padding-bottom:48px;">
         <div class="cta-banner-card">
             <!-- Background Cyber Grid & Ambient Glowing Aura Orbs -->
             <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
                 <div class="bg-grid" style="position:absolute;inset:0;mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);-webkit-mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);"></div>
-                <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:360px;border-radius:50%;background:radial-gradient(circle, rgba(56,189,248,0.22) 0%, transparent 70%);filter:blur(32px);"></div>
-                <div style="position:absolute;bottom:-60px;right:10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%);filter:blur(32px);"></div>
+                <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:220px;height:220px;border-radius:50%;background:radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 70%);filter:blur(28px);"></div>
+                <div style="position:absolute;bottom:-50px;right:10%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle, rgba(16,185,129,0.16) 0%, transparent 70%);filter:blur(28px);"></div>
             </div>
 
             <div style="position:relative;z-index:1;">
@@ -1273,7 +1275,7 @@ h1, h2, h3, h4, .font-display {
                 </p>
 
                 <!-- Modern Sleek Button -->
-                <div style="margin-top:28px;">
+                <div style="margin-top:18px;">
                     <a href="register.php" class="cta-action-btn">
                         <span>JOIN INNOVATIONX</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
