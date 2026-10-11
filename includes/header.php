@@ -46,7 +46,13 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
         (function() {
             var savedTheme = 'dark';
             try {
-                savedTheme = localStorage.getItem('ix_theme') || localStorage.getItem('theme') || 'dark';
+                var userSelected = localStorage.getItem('ix_theme_user_set');
+                if (userSelected === 'light') {
+                    savedTheme = 'light';
+                } else {
+                    savedTheme = 'dark';
+                    localStorage.setItem('ix_theme', 'dark');
+                }
                 document.documentElement.setAttribute('data-theme', savedTheme);
             } catch(e) {}
 
@@ -121,6 +127,7 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yi
                             document.body.setAttribute('data-theme', next);
                         }
                         try {
+                            localStorage.setItem('ix_theme_user_set', next);
                             localStorage.setItem('ix_theme', next);
                             localStorage.setItem('theme', next);
                         } catch(err) {}

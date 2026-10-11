@@ -37,6 +37,25 @@ if (!empty($_GET['ref'])) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
+<script>
+(function() {
+    // Strictly default to dark mode irrespective of device/OS preference
+    // Only use light mode if user explicitly chose it via the theme button
+    var userTheme = 'dark';
+    try {
+        var explicit = localStorage.getItem('ix_theme_user_set');
+        if (explicit === 'light') {
+            userTheme = 'light';
+        } else {
+            userTheme = 'dark';
+            localStorage.setItem('ix_theme', 'dark');
+        }
+    } catch(e) {}
+    document.documentElement.setAttribute('data-theme', userTheme);
+    if (document.body) document.body.setAttribute('data-theme', userTheme);
+})();
+</script>
+
 <style>
 /* ==========================================================================
    STREAMLINED EVERMORE STYLE SYSTEM (LUMINOUS MIDNIGHT EDITION)
@@ -68,8 +87,8 @@ if (!empty($_GET['ref'])) {
 [data-theme="light"] {
     --color-bg: #F4F7FC;
     --color-surface: #FFFFFF;
-    --color-card: rgba(255, 255, 255, 0.9);
-    --color-border: rgba(0, 0, 0, 0.08);
+    --color-card: rgba(255, 255, 255, 0.95);
+    --color-border: rgba(2, 132, 199, 0.14);
     
     --color-primary: #0284C7;
     --color-primary-light: #0369A1;
@@ -77,7 +96,7 @@ if (!empty($_GET['ref'])) {
     --color-emerald: #059669;
     --color-emerald-light: #10B981;
     
-    --color-navy: #FFFFFF;
+    --color-navy: #EDF3FA;
     --color-navy-foreground: #0F172A;
     
     --color-fg: #0F172A;
@@ -125,6 +144,107 @@ h1, h2, h3, h4, .font-display {
     background: radial-gradient(120% 90% at 85% 0%, rgba(56, 189, 248, 0.22) 0%, transparent 55%),
                 radial-gradient(90% 70% at 0% 100%, rgba(16, 185, 129, 0.16) 0%, transparent 60%),
                 #0E182D;
+}
+
+[data-theme="light"] .surface-navy {
+    color: #0F172A !important;
+    background: radial-gradient(120% 90% at 85% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 55%),
+                radial-gradient(90% 70% at 0% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 60%),
+                #EDF3FA !important;
+}
+
+[data-theme="light"] .surface-navy h2 {
+    color: #0F172A !important;
+}
+
+[data-theme="light"] .surface-navy p {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .surface-navy .step-card {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(2, 132, 199, 0.16) !important;
+    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.06) !important;
+}
+
+[data-theme="light"] .surface-navy .step-watermark {
+    color: rgba(2, 132, 199, 0.15) !important;
+}
+
+[data-theme="light"] .surface-navy .step-card-title {
+    color: #0F172A !important;
+}
+
+[data-theme="light"] .surface-navy .step-card-text {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .glass {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(2, 132, 199, 0.14) !important;
+    box-shadow: 0 2px 14px rgba(2, 132, 199, 0.05) !important;
+}
+
+[data-theme="light"] .glass-dark {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(2, 132, 199, 0.14) !important;
+    box-shadow: 0 2px 14px rgba(2, 132, 199, 0.05) !important;
+}
+
+/* Membership Card in Light Mode */
+[data-theme="light"] #subscriptions .surface-navy {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(2, 132, 199, 0.22) !important;
+    box-shadow: 0 12px 35px -8px rgba(2, 132, 199, 0.16) !important;
+    color: #0F172A !important;
+}
+
+[data-theme="light"] #subscriptions .surface-navy h3 {
+    color: #0F172A !important;
+}
+
+[data-theme="light"] #subscriptions .surface-navy span {
+    color: #0F172A !important;
+}
+
+[data-theme="light"] #subscriptions .surface-navy ul li {
+    color: #1E293B !important;
+}
+
+[data-theme="light"] #subscriptions .surface-navy ul li span {
+    color: #1E293B !important;
+}
+
+/* Final CTA Banner in Light Mode */
+[data-theme="light"] .cta-banner-card {
+    background: linear-gradient(135deg, #0284C7, #0369A1) !important;
+    box-shadow: 0 16px 40px -8px rgba(2, 132, 199, 0.35) !important;
+}
+
+[data-theme="light"] .cta-banner-card h2 {
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .cta-banner-card p {
+    color: rgba(255, 255, 255, 0.88) !important;
+}
+
+[data-theme="light"] .cta-banner-card .text-aqua-gradient {
+    background: linear-gradient(100deg, #BAE6FD, #FFFFFF) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
+/* Hero Terminal Preview in Light Mode */
+[data-theme="light"] .glow-primary {
+    background: #FFFFFF !important;
+    border-color: rgba(2, 132, 199, 0.18) !important;
+    box-shadow: 0 16px 36px -10px rgba(2, 132, 199, 0.15) !important;
+}
+
+[data-theme="light"] .glow-neon {
+    box-shadow: 0 0 16px rgba(2, 132, 199, 0.22) !important;
 }
 
 .glow-neon {
@@ -608,37 +728,37 @@ h1, h2, h3, h4, .font-display {
             <div style="margin-top:40px;display:grid;grid-template-columns:repeat(3, 1fr);gap:18px;" class="steps-grid-3">
                 
                 <!-- Step 01 -->
-                <div class="glass-dark" style="position:relative;border-radius:16px;padding:24px;">
-                    <span style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">01</span>
+                <div class="glass-dark step-card" style="position:relative;border-radius:16px;padding:24px;">
+                    <span class="step-watermark" style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">01</span>
                     <div class="glow-neon" style="width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                     </div>
-                    <h3 style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Create &amp; Activate PIN</h3>
-                    <p style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
+                    <h3 class="step-card-title" style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Create &amp; Activate PIN</h3>
+                    <p class="step-card-text" style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
                         Get your &#8358;<?= number_format($regFee) ?> lifetime membership PIN from verified vendors and unlock your terminal.
                     </p>
                 </div>
 
                 <!-- Step 02 -->
-                <div class="glass-dark" style="position:relative;border-radius:16px;padding:24px;">
-                    <span style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">02</span>
+                <div class="glass-dark step-card" style="position:relative;border-radius:16px;padding:24px;">
+                    <span class="step-watermark" style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">02</span>
                     <div class="glow-neon" style="width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     </div>
-                    <h3 style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Execute Tasks &amp; Surveys</h3>
-                    <p style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
+                    <h3 class="step-card-title" style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Execute Tasks &amp; Surveys</h3>
+                    <p class="step-card-text" style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
                         Complete sponsored video visits, answer world surveys, and share your referral link for instant cash.
                     </p>
                 </div>
 
                 <!-- Step 03 -->
-                <div class="glass-dark" style="position:relative;border-radius:16px;padding:24px;">
-                    <span style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">03</span>
+                <div class="glass-dark step-card" style="position:relative;border-radius:16px;padding:24px;">
+                    <span class="step-watermark" style="font-family:var(--font-display);position:absolute;right:18px;top:14px;font-size:2rem;font-weight:700;color:rgba(255,255,255,0.06);">03</span>
                     <div class="glow-neon" style="width:40px;height:40px;border-radius:10px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                     </div>
-                    <h3 style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Instant Bank Settlement</h3>
-                    <p style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
+                    <h3 class="step-card-title" style="font-family:var(--font-display);margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Instant Bank Settlement</h3>
+                    <p class="step-card-text" style="font-size:0.86rem;line-height:1.55;color:rgba(255,255,255,0.65);margin:0;">
                         Withdraw earnings directly into OPay, PalmPay, Kuda, GTBank, and any commercial Nigerian bank.
                     </p>
                 </div>
@@ -864,7 +984,7 @@ h1, h2, h3, h4, .font-display {
 
     <!-- ===== FINAL CALL TO ACTION BANNER (EVERMORE EXACT) ===== -->
     <section class="ev-wrap" style="padding-bottom:70px;">
-        <div class="surface-navy glow-neon" style="position:relative;overflow:hidden;border-radius:1.5rem;padding:56px 20px;text-align:center;">
+        <div class="surface-navy glow-neon cta-banner-card" style="position:relative;overflow:hidden;border-radius:1.5rem;padding:56px 20px;text-align:center;">
             <div style="position:absolute;inset:0;pointer-events:none;">
                 <div class="bg-grid" style="position:absolute;inset:0;mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);-webkit-mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);"></div>
             </div>
