@@ -54,9 +54,8 @@ if (!empty($_GET['ref'])) {
     --color-primary: #0284C7;
     --color-primary-light: #38BDF8;
     --color-aqua: #38BDF8;
-    --color-violet: #818CF8;
-    --color-emerald: #34D399;
-    --color-gold: #F59E0B;
+    --color-emerald: #10B981;
+    --color-emerald-light: #34D399;
     
     --color-navy: #0F1A30;
     --color-navy-foreground: #F8FAFC;
@@ -75,9 +74,8 @@ if (!empty($_GET['ref'])) {
     --color-primary: #0284C7;
     --color-primary-light: #0369A1;
     --color-aqua: #0284C7;
-    --color-violet: #6366F1;
     --color-emerald: #059669;
-    --color-gold: #D97706;
+    --color-emerald-light: #10B981;
     
     --color-navy: #FFFFFF;
     --color-navy-foreground: #0F172A;
@@ -125,7 +123,7 @@ h1, h2, h3, h4, .font-display {
 .surface-navy {
     color: var(--color-navy-foreground);
     background: radial-gradient(120% 90% at 85% 0%, rgba(56, 189, 248, 0.22) 0%, transparent 55%),
-                radial-gradient(90% 70% at 0% 100%, rgba(129, 140, 248, 0.18) 0%, transparent 60%),
+                radial-gradient(90% 70% at 0% 100%, rgba(16, 185, 129, 0.16) 0%, transparent 60%),
                 #0E182D;
 }
 
@@ -137,8 +135,8 @@ h1, h2, h3, h4, .font-display {
     box-shadow: 0 0 40px -10px var(--color-primary-light);
 }
 
-.glow-gold {
-    box-shadow: 0 0 32px -8px var(--color-gold);
+.glow-emerald {
+    box-shadow: 0 0 32px -8px #10B981;
 }
 
 .glow-accent {
@@ -155,13 +153,13 @@ h1, h2, h3, h4, .font-display {
 
 .text-brand-gradient {
     color: transparent;
-    background: linear-gradient(100deg, #FFFFFF 15%, var(--color-aqua) 65%, var(--color-violet) 100%);
+    background: linear-gradient(100deg, #FFFFFF 15%, var(--color-aqua) 65%, #34D399 100%);
     -webkit-background-clip: text;
     background-clip: text;
 }
 
 [data-theme="light"] .text-brand-gradient {
-    background: linear-gradient(100deg, #0F172A 15%, var(--color-primary) 65%, var(--color-violet) 100%);
+    background: linear-gradient(100deg, #0F172A 15%, var(--color-primary) 65%, #059669 100%);
     -webkit-background-clip: text;
     background-clip: text;
 }
@@ -198,10 +196,10 @@ h1, h2, h3, h4, .font-display {
     transform: scale(1.03);
 }
 
-.btn-gold {
-    color: #000000;
-    box-shadow: 0 0 0 1px #FCD34D inset, 0 8px 24px -8px #F59E0B;
-    background: linear-gradient(100deg, #FDE68A, #F59E0B);
+.btn-emerald {
+    color: #FFFFFF !important;
+    box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.5) inset, 0 8px 24px -8px #10B981;
+    background: linear-gradient(100deg, #10B981, #059669);
 }
 
 /* Background Grids */
@@ -238,15 +236,14 @@ h1, h2, h3, h4, .font-display {
     animation: spinSlow 30s linear infinite;
 }
 
-/* Floating Pill Navbar (Evermore Style - Compact & Sleek) */
+/* Pill Navbar (Evermore Style - Static, Stays at Top When Scrolling) */
 .ev-pill-header {
-    position: sticky;
-    top: 10px;
+    position: relative;
     z-index: 50;
     width: 100%;
     padding: 0 14px;
-    margin: 6px 0 0;
-    pointer-events: none;
+    margin: 12px 0 0;
+    pointer-events: auto;
 }
 
 .ev-pill-navbar {
@@ -263,7 +260,7 @@ h1, h2, h3, h4, .font-display {
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(56, 189, 248, 0.22);
     box-shadow: 0 8px 26px -6px rgba(0, 0, 0, 0.55), 0 0 16px -4px rgba(56, 189, 248, 0.15);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="light"] .ev-pill-navbar {
@@ -324,8 +321,9 @@ h1, h2, h3, h4, .font-display {
 
 <div class="relative min-h-screen overflow-x-clip">
 
-    <!-- ===== TOP NOTICE BAR (EVERMORE STANDARD) ===== -->
-    <div style="border-bottom:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.08);padding:7px 14px;text-align:center;font-size:0.78rem;font-weight:600;color:#FDE68A;">
+    <!-- ===== TOP NOTICE BAR (EVERMORE STANDARD - EMERALD ACCENT) ===== -->
+    <div style="border-bottom:1px solid rgba(16,185,129,0.22);background:rgba(16,185,129,0.06);padding:7px 14px;text-align:center;font-size:0.78rem;font-weight:600;color:#6EE7B7;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;"></span>
         <span>Automated Daily Task Drops &amp; Direct Bank Settlements Now Active Across Nigeria.</span>
     </div>
 
@@ -426,7 +424,7 @@ h1, h2, h3, h4, .font-display {
             <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(56,189,248,0.18) 0%, transparent 60%);"></div>
             <div class="bg-grid-light" style="position:absolute;inset:0;mask-image:radial-gradient(70% 60% at 50% 35%, black, transparent);-webkit-mask-image:radial-gradient(70% 60% at 50% 35%, black, transparent);"></div>
             <div style="position:absolute;left:50%;top:-22%;width:50rem;height:50rem;transform:translateX(-50%);border-radius:50%;background:rgba(56,189,248,0.14);filter:blur(130px);"></div>
-            <div style="position:absolute;right:-10%;top:20%;width:24rem;height:24rem;border-radius:50%;background:rgba(129,140,248,0.16);filter:blur(100px);"></div>
+            <div style="position:absolute;right:-10%;top:20%;width:24rem;height:24rem;border-radius:50%;background:rgba(16,185,129,0.14);filter:blur(100px);"></div>
         </div>
 
         <div class="ev-wrap" style="position:relative;">
@@ -527,8 +525,8 @@ h1, h2, h3, h4, .font-display {
                     </div>
 
                     <!-- Floating Card 1: Bottom Left (Evermore exact) -->
-                    <div class="glass glow-gold animate-float-slow" style="position:absolute;bottom:-16px;left:-14px;border-radius:14px;padding:12px 18px;">
-                        <p style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--color-gold);margin:0;line-height:1;">
+                    <div class="glass glow-emerald animate-float-slow" style="position:absolute;bottom:-16px;left:-14px;border-radius:14px;padding:12px 18px;border-color:rgba(16,185,129,0.3);">
+                        <p style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--color-emerald);margin:0;line-height:1;">
                             100% Automated
                         </p>
                         <p style="font-size:0.72rem;color:var(--color-muted);margin:3px 0 0;">
@@ -669,7 +667,7 @@ h1, h2, h3, h4, .font-display {
 
             <!-- Category 2 -->
             <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:14px;border-radius:16px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
-                <div style="width:38px;height:38px;border-radius:10px;background:rgba(129,140,248,0.12);color:var(--color-violet);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(56,189,248,0.12);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 </div>
                 <div style="flex:1;min-width:0;">
@@ -703,7 +701,7 @@ h1, h2, h3, h4, .font-display {
     <!-- ===== MEMBERSHIP PLAN (EVERMORE EXACT U CARD) ===== -->
     <section id="subscriptions" class="ev-wrap" style="scroll-margin-top:6rem;padding:20px 20px 60px;">
         <div style="text-align:center;">
-            <p style="font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.3em;color:var(--color-gold);text-transform:uppercase;margin:0;">
+            <p style="font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.3em;color:var(--color-emerald);text-transform:uppercase;margin:0;">
                 SUBSCRIPTION
             </p>
             <h2 style="font-family:var(--font-display);margin-top:8px;font-size:clamp(1.8rem, 3.2vw, 2.4rem);font-weight:700;color:var(--color-fg);">
@@ -715,7 +713,7 @@ h1, h2, h3, h4, .font-display {
         <div style="max-width:420px;margin:36px auto 0;">
             <div class="surface-navy glow-neon" style="position:relative;display:flex;flex-direction:column;border-radius:1.5rem;padding:30px;border:1px solid rgba(56,189,248,0.3);">
                 <!-- Best value tag -->
-                <span class="btn-gold" style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);border-radius:9999px;padding:3px 14px;font-size:0.72rem;font-weight:800;letter-spacing:0.15em;">
+                <span class="btn-emerald" style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);border-radius:9999px;padding:3px 14px;font-size:0.72rem;font-weight:800;letter-spacing:0.15em;">
                     BEST VALUE
                 </span>
 
@@ -913,7 +911,7 @@ h1, h2, h3, h4, .font-display {
     .footer-inner-row { flex-direction: row !important; }
 }
 @media (max-width: 767px) {
-    .ev-pill-header { top: 8px !important; padding: 0 10px !important; margin: 4px 0 0 !important; }
+    .ev-pill-header { position: relative !important; top: auto !important; padding: 0 10px !important; margin: 8px 0 0 !important; }
     .ev-pill-navbar { padding: 4px 6px 4px 10px !important; }
     .desktop-auth-btn { display: none !important; }
     .mobile-menu-btn { display: flex !important; }
