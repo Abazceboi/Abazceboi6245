@@ -1737,6 +1737,51 @@ input,textarea,select{font-family:var(--ff);}
           </form>
         </div>
 
+        <!-- Card 1C: One-Time Pop-Up Message for New Activated Users -->
+        <div class="card">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="card-title">One-Time Activation Pop-Up (New Users)</div>
+            <span class="badge" id="actPopupStatusBadge">Loading...</span>
+          </div>
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:16px;">
+            Configure a one-time welcome and onboarding modal displayed exclusively to each new member upon activating their account. Appears strictly once per user.
+          </p>
+          <form onsubmit="handleSaveActivationPopupSettings(event)">
+            <div class="form-group">
+              <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>Enable One-Time Activation Pop-Up</span>
+                <input type="checkbox" id="cfgActPopupEnabled" style="width:18px;height:18px;cursor:pointer;">
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Activation Pop-Up Title</label>
+              <input type="text" class="form-input" id="cfgActPopupTitle" placeholder="e.g. Account Activated Successfully! Welcome to InnovationX">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Activation Message / Onboarding Content</label>
+              <textarea class="form-input" id="cfgActPopupMessage" rows="4" placeholder="Enter custom message shown strictly once to every user upon activation..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Action Button Label</label>
+                <input type="text" class="form-input" id="cfgActPopupCtaLabel" placeholder="e.g. Start Earning Now">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Action Target URL / Tab</label>
+                <input type="text" class="form-input" id="cfgActPopupCtaUrl" placeholder="e.g. dashboard.php#tasks or dashboard.php#surveys">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dismiss Button Label</label>
+              <input type="text" class="form-input" id="cfgActPopupDismissLabel" placeholder="e.g. Continue to Dashboard">
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button type="submit" class="btn btn-primary" id="btnSaveActPopupSettings">Save Activation Pop-Up Settings</button>
+              <button type="button" class="btn btn-ghost" onclick="previewActivationPopupModal()">Preview Pop-Up</button>
+            </div>
+          </form>
+        </div>
+
         <!-- Card 2: In-App Notification Broadcaster -->
         <div class="card">
           <div class="card-header">
@@ -1843,6 +1888,25 @@ input,textarea,select{font-family:var(--ff);}
     </div>
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:center;">
       <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('modalPreviewActLock')">Close Preview</button>
+    </div>
+  </div>
+</div>
+
+<!-- One-Time Activation Pop-Up Preview Modal -->
+<div class="modal-backdrop" id="modalPreviewActPopup">
+  <div class="modal" style="max-width:500px;text-align:center;padding:32px 26px;border-radius:20px;border:1px solid rgba(16,185,129,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 40px rgba(16,185,129,0.12);background:var(--card);">
+    <div style="width:60px;height:60px;border-radius:50%;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--green);">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+    <span style="display:inline-block;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.8px;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:12px;margin-bottom:10px;border:1px solid rgba(16,185,129,0.25);">One-Time Activation Notice</span>
+    <div class="modal-title" id="prevActPopupTitle" style="font-size:18px;font-weight:800;margin-bottom:10px;color:var(--txt);">Account Activated Successfully!</div>
+    <div id="prevActPopupMessage" style="font-size:13.5px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">Congratulations on activating your account! Your member profile is now fully unlocked. Complete daily micro-tasks, take part in verified surveys, and withdraw your earnings directly to your bank account anytime.</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button type="button" class="btn btn-ghost" id="prevActPopupDismissBtn" onclick="closeModal('modalPreviewActPopup')">Continue to Dashboard</button>
+      <button type="button" class="btn btn-primary" id="prevActPopupCtaBtn" style="background:linear-gradient(135deg, #10B981, #059669);border-color:#10B981;font-weight:700;">Start Earning Now</button>
     </div>
   </div>
 </div>
@@ -4404,7 +4468,7 @@ async function handleSavePricing(e) {
 let adminNotifsList = [];
 
 async function loadAdminNotificationsTab() {
-  await Promise.all([loadPopupSettingsData(), loadActivationLockSettingsData(), loadAdminNotifsData()]);
+  await Promise.all([loadPopupSettingsData(), loadActivationLockSettingsData(), loadActivationPopupSettingsData(), loadAdminNotifsData()]);
 }
 
 async function loadPopupSettingsData() {
@@ -4549,6 +4613,95 @@ function previewActivationLockModal() {
   const cEl = document.getElementById('prevActLockCtaBtn');
   if (cEl) cEl.textContent = cta_label;
   openModal('modalPreviewActLock');
+}
+
+async function loadActivationPopupSettingsData() {
+  try {
+    const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`);
+    const d = await r.json();
+    const data = d.data || d;
+    const actPopup = data.activation_popup || {};
+    const enabledInput = document.getElementById('cfgActPopupEnabled');
+    if (enabledInput) enabledInput.checked = !!actPopup.enabled;
+    const titleInput = document.getElementById('cfgActPopupTitle');
+    if (titleInput) titleInput.value = actPopup.title || 'Account Activated Successfully!';
+    const msgInput = document.getElementById('cfgActPopupMessage');
+    if (msgInput) msgInput.value = actPopup.message || 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.';
+    const ctaLabelInput = document.getElementById('cfgActPopupCtaLabel');
+    if (ctaLabelInput) ctaLabelInput.value = actPopup.cta_label || 'Start Earning Now';
+    const ctaUrlInput = document.getElementById('cfgActPopupCtaUrl');
+    if (ctaUrlInput) ctaUrlInput.value = actPopup.cta_url || 'dashboard.php#tasks';
+    const dismissLabelInput = document.getElementById('cfgActPopupDismissLabel');
+    if (dismissLabelInput) dismissLabelInput.value = actPopup.dismiss_label || 'Continue to Dashboard';
+
+    const badge = document.getElementById('actPopupStatusBadge');
+    if (badge) {
+      if (actPopup.enabled) {
+        badge.className = 'badge badge-active';
+        badge.textContent = 'Active for New Users';
+      } else {
+        badge.className = 'badge badge-paused';
+        badge.textContent = 'Disabled';
+      }
+    }
+  } catch(e){}
+}
+
+async function handleSaveActivationPopupSettings(e) {
+  e.preventDefault();
+  const enabled = document.getElementById('cfgActPopupEnabled').checked;
+  const title = document.getElementById('cfgActPopupTitle').value.trim();
+  const message = document.getElementById('cfgActPopupMessage').value.trim();
+  const cta_label = document.getElementById('cfgActPopupCtaLabel').value.trim();
+  const cta_url = document.getElementById('cfgActPopupCtaUrl').value.trim();
+  const dismiss_label = document.getElementById('cfgActPopupDismissLabel').value.trim();
+
+  const btn = document.getElementById('btnSaveActPopupSettings');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  try {
+    const r = await fetch('/api/broadcasts.php?action=save_activation_popup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        activation_popup: {
+          enabled,
+          title: title || 'Account Activated Successfully!',
+          message: message || '',
+          cta_label: cta_label || 'Start Earning Now',
+          cta_url: cta_url || 'dashboard.php#tasks',
+          dismiss_label: dismiss_label || 'Continue to Dashboard'
+        }
+      })
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('One-time activation pop-up settings saved successfully!', 'success');
+      loadActivationPopupSettingsData();
+    } else {
+      toast(d.message || d.error || 'Failed to save activation pop-up settings', 'error');
+    }
+  } catch(e) {
+    toast('Network error saving activation pop-up settings', 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Save Activation Pop-Up Settings'; }
+}
+
+function previewActivationPopupModal() {
+  const title = document.getElementById('cfgActPopupTitle').value.trim() || 'Account Activated Successfully!';
+  const message = document.getElementById('cfgActPopupMessage').value.trim() || 'Congratulations on activating your account! Your member profile is now fully unlocked. Complete daily micro-tasks, take part in verified surveys, and withdraw your earnings directly to your bank account anytime.';
+  const cta_label = document.getElementById('cfgActPopupCtaLabel').value.trim() || 'Start Earning Now';
+  const dismiss_label = document.getElementById('cfgActPopupDismissLabel').value.trim() || 'Continue to Dashboard';
+
+  const tEl = document.getElementById('prevActPopupTitle');
+  if (tEl) tEl.textContent = title;
+  const mEl = document.getElementById('prevActPopupMessage');
+  if (mEl) mEl.textContent = message;
+  const cEl = document.getElementById('prevActPopupCtaBtn');
+  if (cEl) cEl.textContent = cta_label;
+  const dEl = document.getElementById('prevActPopupDismissBtn');
+  if (dEl) dEl.textContent = dismiss_label;
+  openModal('modalPreviewActPopup');
 }
 
 async function loadAdminNotifsData() {

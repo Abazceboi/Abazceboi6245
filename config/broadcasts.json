@@ -26,5 +26,13 @@
     "message": "Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.",
     "cta_label": "Contact Verified Vendors",
     "cta_url": "vendors.php"
+  },
+  "activation_popup": {
+    "enabled": true,
+    "title": "Account Activated Successfully!",
+    "message": "Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
+    "cta_label": "Start Earning Now",
+    "cta_url": "dashboard.php#tasks",
+    "dismiss_label": "Continue to Dashboard"
   }
 }

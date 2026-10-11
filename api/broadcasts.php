@@ -47,6 +47,15 @@ $defaults = [
         'cta_label' => 'Contact Verified Vendors',
         'cta_url' => 'vendors.php',
         'updated_at' => date('Y-m-d H:i:s')
+    ],
+    'activation_popup' => [
+        'enabled' => true,
+        'title' => 'Account Activated Successfully!',
+        'message' => "Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
+        'cta_label' => 'Start Earning Now',
+        'cta_url' => 'dashboard.php#tasks',
+        'dismiss_label' => 'Continue to Dashboard',
+        'updated_at' => date('Y-m-d H:i:s')
     ]
 ];
 
@@ -112,6 +121,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => trim($al['message'] ?? 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.'),
             'cta_label' => trim($al['cta_label'] ?? 'Contact Verified Vendors'),
             'cta_url' => trim($al['cta_url'] ?? 'vendors.php'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    if ($action === 'save_activation_popup' || isset($input['activation_popup'])) {
+        $ap = $input['activation_popup'] ?? $input;
+        $data['activation_popup'] = [
+            'enabled' => isset($ap['enabled']) ? (bool)$ap['enabled'] : false,
+            'title' => trim($ap['title'] ?? 'Account Activated Successfully!'),
+            'message' => trim($ap['message'] ?? ''),
+            'cta_label' => trim($ap['cta_label'] ?? 'Start Earning Now'),
+            'cta_url' => trim($ap['cta_url'] ?? 'dashboard.php#tasks'),
+            'dismiss_label' => trim($ap['dismiss_label'] ?? 'Continue to Dashboard'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
     }

@@ -195,6 +195,21 @@ $actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welco
 $actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Contact Verified Vendors';
 $actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'vendors.php';
 
+// Dynamic one-time new user activation pop-up configured from Admin HQ
+$actPopupConfig = $bcastConfig['activation_popup'] ?? [
+    'enabled' => true,
+    'title' => 'Account Activated Successfully!',
+    'message' => "Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
+    'cta_label' => 'Start Earning Now',
+    'cta_url' => 'dashboard.php#tasks',
+    'dismiss_label' => 'Continue to Dashboard'
+];
+$actPopupTitle = !empty($actPopupConfig['title']) ? $actPopupConfig['title'] : 'Account Activated Successfully!';
+$actPopupMessage = !empty($actPopupConfig['message']) ? $actPopupConfig['message'] : 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.';
+$actPopupCtaLabel = !empty($actPopupConfig['cta_label']) ? $actPopupConfig['cta_label'] : 'Start Earning Now';
+$actPopupCtaUrl = !empty($actPopupConfig['cta_url']) ? $actPopupConfig['cta_url'] : 'dashboard.php#tasks';
+$actPopupDismissLabel = !empty($actPopupConfig['dismiss_label']) ? $actPopupConfig['dismiss_label'] : 'Continue to Dashboard';
+
 // Pricing and withdrawal thresholds from central storage
 $pricing     = readStorageJson('config/app_pricing.json', []);
 $wdSettings  = readStorageJson('config/withdrawal_settings.json', []);
@@ -2935,8 +2950,27 @@ input,textarea,select{font-family:var(--ff);}
       <a href="https://t.me/InnovationXHQ" target="_blank" style="color:var(--txt-3);text-decoration:none;">Telegram Community</a>
     </div>
   </div>
-</div>
 <?php endif; ?>
+
+<!-- One-Time New User Account Activation Pop-Up Modal -->
+<div class="modal-backdrop" id="modalNewUserActivationPopup" style="z-index:99995;">
+  <div class="modal" style="max-width:500px;text-align:center;padding:32px 26px;border-radius:20px;border:1px solid rgba(16,185,129,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 40px rgba(16,185,129,0.12);background:var(--card);">
+    <button class="modal-close" onclick="dismissNewUserActivationPopup()" style="position:absolute;top:16px;right:18px;z-index:10;">&times;</button>
+    <div style="width:60px;height:60px;border-radius:50%;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--green);">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+    <span style="display:inline-block;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.8px;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:12px;margin-bottom:10px;border:1px solid rgba(16,185,129,0.25);">Account Verified &amp; Active</span>
+    <h3 id="newUserActPopupTitle" style="font-size:18px;font-weight:800;color:var(--txt);margin-bottom:10px;letter-spacing:-0.2px;"><?= htmlspecialchars($actPopupTitle) ?></h3>
+    <p id="newUserActPopupMessage" style="font-size:13.5px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;"><?= htmlspecialchars($actPopupMessage) ?></p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button type="button" class="btn btn-ghost" id="newUserActPopupDismissBtn" onclick="dismissNewUserActivationPopup()"><?= htmlspecialchars($actPopupDismissLabel) ?></button>
+      <a href="<?= htmlspecialchars($actPopupCtaUrl) ?>" class="btn btn-primary" id="newUserActPopupCtaBtn" onclick="dismissNewUserActivationPopup()" style="background:linear-gradient(135deg, #10B981, #059669);border-color:#10B981;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;"><?= htmlspecialchars($actPopupCtaLabel) ?></a>
+    </div>
+  </div>
+</div>
 
 <div id="toast-stack"></div>
 
@@ -3146,6 +3180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   syncLiveProfile();
   syncLivePricing();
   loadReferrals();
+  checkNewUserActivationPopup();
   checkAnnouncementPopup();
   updateEcoFeeBadges();
   loadEcosystem();
@@ -3386,6 +3421,57 @@ async function loadReferrals() {
       }
     }
   } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ONE-TIME NEW USER ACTIVATION POP-UP CHECK
+// ═══════════════════════════════════════════════════════════════════════════
+function dismissNewUserActivationPopup() {
+  try {
+    const user = (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) ? CURRENT_USER : 'member';
+    const key = 'ix_act_popup_seen_' + user;
+    localStorage.setItem(key, '1');
+    document.cookie = key + "=1; Path=/; Max-Age=31536000; SameSite=Lax";
+  } catch(e){}
+  closeModal('modalNewUserActivationPopup');
+}
+
+async function checkNewUserActivationPopup() {
+  <?php if (!$isActivated): ?>
+  return;
+  <?php else: ?>
+  try {
+    const user = (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) ? CURRENT_USER : 'member';
+    const key = 'ix_act_popup_seen_' + user;
+    if (localStorage.getItem(key)) return;
+    if (document.cookie.split(';').some(c => c.trim().startsWith(key + '='))) return;
+
+    const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    const data = d.data || d;
+    const actPopup = data.activation_popup;
+    if (!actPopup || !actPopup.enabled) return;
+
+    const titleEl = document.getElementById('newUserActPopupTitle');
+    if (titleEl && actPopup.title) titleEl.textContent = actPopup.title;
+    const msgEl = document.getElementById('newUserActPopupMessage');
+    if (msgEl && actPopup.message) msgEl.textContent = actPopup.message;
+    const ctaBtn = document.getElementById('newUserActPopupCtaBtn');
+    if (ctaBtn) {
+      if (actPopup.cta_label) ctaBtn.textContent = actPopup.cta_label;
+      if (actPopup.cta_url) ctaBtn.href = actPopup.cta_url;
+    }
+    const dismissBtn = document.getElementById('newUserActPopupDismissBtn');
+    if (dismissBtn && actPopup.dismiss_label) {
+      dismissBtn.textContent = actPopup.dismiss_label;
+    }
+
+    openModal('modalNewUserActivationPopup');
+  } catch(e){}
+  <?php endif; ?>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

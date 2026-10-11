@@ -2410,7 +2410,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
                     welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' },
                     popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Surveys', cta_url: 'dashboard.php#surveys', frequency: 'session' },
-                    activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' }
+                    activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' },
+                    activation_popup: { enabled: true, title: 'Account Activated Successfully!', message: 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.', cta_label: 'Start Earning Now', cta_url: 'dashboard.php#tasks', dismiss_label: 'Continue to Dashboard' }
                 };
                 if (fs.existsSync(bcastFile)) {
                     try { bcastData = Object.assign(bcastData, JSON.parse(fs.readFileSync(bcastFile, 'utf8'))); } catch(e){}
@@ -2436,6 +2437,17 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             message: String(al.message || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.').trim(),
                             cta_label: String(al.cta_label || 'Contact Verified Vendors').trim(),
                             cta_url: String(al.cta_url || 'vendors.php').trim(),
+                            updated_at: new Date().toISOString()
+                        };
+                    } else if (action === 'save_activation_popup' || parsed.activation_popup) {
+                        const ap = parsed.activation_popup || parsed;
+                        bcastData.activation_popup = {
+                            enabled: !!ap.enabled,
+                            title: String(ap.title || 'Account Activated Successfully!').trim(),
+                            message: String(ap.message || '').trim(),
+                            cta_label: String(ap.cta_label || 'Start Earning Now').trim(),
+                            cta_url: String(ap.cta_url || 'dashboard.php#tasks').trim(),
+                            dismiss_label: String(ap.dismiss_label || 'Continue to Dashboard').trim(),
                             updated_at: new Date().toISOString()
                         };
                     } else {
