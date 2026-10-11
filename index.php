@@ -580,10 +580,11 @@ h1, h2, h3, h4, .font-display {
             </div>
         </div>
 
-        <!-- Real HTML5 Audio Element (Drop intro.mp3 into assets/audio/) -->
+        <!-- Real HTML5 Audio Element -->
         <audio id="tourAudioElement" preload="metadata">
+            <source src="assets/audio/intro.m4a" type="audio/mp4">
+            <source src="assets/audio/intro.mp3.m4a" type="audio/mp4">
             <source src="assets/audio/intro.mp3" type="audio/mpeg">
-            <source src="assets/audio/intro.ogg" type="audio/ogg">
         </audio>
     </section>
 
