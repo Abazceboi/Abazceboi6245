@@ -25,7 +25,7 @@ function getEcosystemSettings(): array {
     $defaults = [
         'points_fee'         => 150,
         'cash_fee'           => 300,
-        'auto_approve'       => true,
+        'auto_approve'       => false,
         'allow_member_posts' => true
     ];
     $data = readStorageJson('data/ecosystem_settings.json', $defaults);
@@ -59,7 +59,9 @@ if ($action === 'get_items') {
         $userLiked = $username ? in_array($username, $likes) : false;
 
         if (!$isAdmin && ($item['status'] ?? 'active') !== 'active') {
-            continue;
+            if (!$username || strtolower($item['author'] ?? '') !== strtolower($username)) {
+                continue;
+            }
         }
 
         $formatted[] = [
@@ -310,13 +312,77 @@ if ($action === 'create_item') {
     array_unshift($items, $newItem);
     saveEcosystemItems($items);
 
+    $isLive = ($newItem['status'] === 'active');
+    $msg = $isLive
+        ? 'Opportunity published to the Innovation Ecosystem successfully!'
+        : 'Opportunity submitted successfully! Listing fee deducted. Your listing is pending admin review and approval before going live.';
+
     echo json_encode([
         'status'     => 'success',
-        'message'    => 'Opportunity published to the Innovation Ecosystem successfully!',
+        'message'    => $msg,
         'item'       => $newItem,
         'new_points' => $newPoints,
         'new_cash'   => $newCash
     ]);
+    exit;
+}
+
+// ── POST: Approve Item (Admin) ──────────────────────────────────────────────
+if ($action === 'approve_item') {
+    $id = trim($input['id'] ?? '');
+    if (!$id) {
+        echo json_encode(['status' => 'error', 'message' => 'Item ID is required']);
+        exit;
+    }
+
+    $items = getEcosystemItems();
+    $found = false;
+    foreach ($items as &$item) {
+        if (($item['id'] ?? '') === $id) {
+            $item['status'] = 'active';
+            $item['is_admin_verified'] = true;
+            $item['approved_at'] = date('Y-m-d H:i:s');
+            $found = true;
+            break;
+        }
+    }
+
+    if ($found) {
+        saveEcosystemItems($items);
+        echo json_encode(['status' => 'success', 'message' => 'Ecosystem listing approved and published live!']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Item not found']);
+    }
+    exit;
+}
+
+// ── POST: Reject Item (Admin) ───────────────────────────────────────────────
+if ($action === 'reject_item') {
+    $id = trim($input['id'] ?? '');
+    $reason = trim($input['reason'] ?? 'Listing did not meet content standards');
+    if (!$id) {
+        echo json_encode(['status' => 'error', 'message' => 'Item ID is required']);
+        exit;
+    }
+
+    $items = getEcosystemItems();
+    $found = false;
+    foreach ($items as &$item) {
+        if (($item['id'] ?? '') === $id) {
+            $item['status'] = 'rejected';
+            $item['reject_reason'] = $reason;
+            $item['rejected_at'] = date('Y-m-d H:i:s');
+            $found = true;
+            break;
+        }
+    }
+
+    if ($found) {
+        saveEcosystemItems($items);
+        echo json_encode(['status' => 'success', 'message' => 'Ecosystem listing rejected.']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Item not found']);
+    }
     exit;
 }
 

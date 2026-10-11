@@ -33,14 +33,39 @@ $adminUser = getenv('ADMIN_USERNAME') ?: 'admin';
 $userRole = strtolower($authUser['role'] ?? $_SESSION['role'] ?? '');
 $currentUsername = strtolower($authUser['username'] ?? '');
 
+$isSubAdmin = ($userRole === 'sub_admin') || !empty($_SESSION['is_sub_admin']) || !empty($authUser['is_sub_admin']);
+
 $isAuthorizedAdmin = !empty($_SESSION['is_admin'])
     || !empty($authUser['is_admin'])
     || in_array($currentUsername, [strtolower($adminUser), 'admin', 'abas6245', 'abazceboi'])
-    || in_array($userRole, ['admin', 'super_admin']);
+    || in_array($userRole, ['admin', 'super_admin', 'sub_admin'])
+    || $isSubAdmin;
 
 if (!$isAuthorizedAdmin) {
     header("HTTP/1.0 404 Not Found");
     die("<h1>404 Not Found</h1><p>The page that you have requested could not be found.</p>");
+}
+
+if ($isSubAdmin) {
+    $_SESSION['is_admin'] = true;
+    $_SESSION['admin_auth_step'] = 2;
+}
+
+$subAdminPermissions = $_SESSION['sub_admin_permissions'] ?? ($authUser['permissions'] ?? []);
+if ($isSubAdmin && empty($subAdminPermissions)) {
+    $subAdminsFile = __DIR__ . '/data/sub_admins.json';
+    if (file_exists($subAdminsFile)) {
+        $subAdminsData = @json_decode(@file_get_contents($subAdminsFile), true);
+        if (is_array($subAdminsData)) {
+            foreach ($subAdminsData as $sa) {
+                if (strtolower($sa['username'] ?? '') === $currentUsername) {
+                    $subAdminPermissions = $sa['permissions'] ?? [];
+                    $_SESSION['sub_admin_permissions'] = $subAdminPermissions;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 if (isset($_GET['logout_admin'])) {
@@ -77,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['master_pin'])) {
     }
 }
 
-$adminAuthStep = intval($_SESSION['admin_auth_step'] ?? ($authUser['admin_auth_step'] ?? 1));
+$adminAuthStep = $isSubAdmin ? 2 : intval($_SESSION['admin_auth_step'] ?? ($authUser['admin_auth_step'] ?? 1));
 if ($adminAuthStep < 2) {
     ?>
 <!DOCTYPE html>
@@ -493,44 +518,50 @@ input,textarea,select{font-family:var(--ff);}
 
   <nav class="nav-section">
     <div class="nav-label">Management</div>
-    <button class="nav-item active" onclick="switchAdminTab('overview', this)">
+    <button class="nav-item active" data-perm="overview" onclick="switchAdminTab('overview', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Overview
     </button>
-    <button class="nav-item" onclick="switchAdminTab('surveys', this)">
+    <button class="nav-item" data-perm="surveys" onclick="switchAdminTab('surveys', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
       Surveys
     </button>
-    <button class="nav-item" onclick="switchAdminTab('tasks', this)">
+    <button class="nav-item" data-perm="tasks" onclick="switchAdminTab('tasks', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Tasks & Gigs
     </button>
-    <button class="nav-item" onclick="switchAdminTab('ecosystem', this)">
+    <button class="nav-item" data-perm="ecosystem" onclick="switchAdminTab('ecosystem', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       Innovation Ecosystem
     </button>
-    <button class="nav-item" onclick="switchAdminTab('users', this)">
+    <button class="nav-item" data-perm="users" onclick="switchAdminTab('users', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Users
     </button>
-    <button class="nav-item" onclick="switchAdminTab('coupons', this)">
+    <button class="nav-item" data-perm="coupons" onclick="switchAdminTab('coupons', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
       Coupon PINs
     </button>
-    <button class="nav-item" onclick="switchAdminTab('withdrawals', this)">
+    <button class="nav-item" data-perm="withdrawals" onclick="switchAdminTab('withdrawals', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Withdrawals
     </button>
 
     <div class="nav-label">System</div>
-    <button class="nav-item" onclick="switchAdminTab('notifications', this)">
+    <button class="nav-item" data-perm="notifications" onclick="switchAdminTab('notifications', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Notifications
     </button>
-    <button class="nav-item" onclick="switchAdminTab('pricing', this)">
+    <button class="nav-item" data-perm="pricing" onclick="switchAdminTab('pricing', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
       Pricing & Rates
     </button>
+    <?php if (!$isSubAdmin): ?>
+    <button class="nav-item" data-perm="subadmins" onclick="switchAdminTab('subadmins', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Sub-Admins
+    </button>
+    <?php endif; ?>
   </nav>
 
   <div class="sidebar-footer">
@@ -1174,6 +1205,10 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-value" id="kpiEcoTotal" style="color:var(--accent);">0</div>
         </div>
         <div class="stat-card">
+          <div class="stat-label">Pending Approvals</div>
+          <div class="stat-value" id="kpiEcoPending" style="color:var(--amber);">0</div>
+        </div>
+        <div class="stat-card">
           <div class="stat-label">Official Posts</div>
           <div class="stat-value" id="kpiEcoOfficial" style="color:var(--blue);">0</div>
         </div>
@@ -1214,7 +1249,7 @@ input,textarea,select{font-family:var(--ff);}
               <span>Allow Member Uploads</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
-              <input type="checkbox" id="adminEcoAutoApprove" checked>
+              <input type="checkbox" id="adminEcoAutoApprove">
               <span>Auto-Approve Submissions</span>
             </label>
           </div>
@@ -1229,10 +1264,17 @@ input,textarea,select{font-family:var(--ff);}
         <div class="card-header" style="flex-wrap:wrap;gap:10px;">
           <div>
             <div class="card-title">All Opportunities &amp; Products</div>
-            <div class="card-sub">Active listings visible in member dashboard ecosystem.</div>
+            <div class="card-sub">Review member submissions, approve pending opportunities, and manage live listings.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="text" class="form-input" id="adminEcoSearch" placeholder="Search title or author..." oninput="filterAdminEcoTable()" style="width:200px;font-size:12.5px;">
+            <input type="text" class="form-input" id="adminEcoSearch" placeholder="Search title or author..." oninput="filterAdminEcoTable()" style="width:190px;font-size:12.5px;">
+            <select class="form-input" id="adminEcoStatusFilter" onchange="filterAdminEcoTable()" style="width:auto;font-size:12.5px;">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending Approval</option>
+              <option value="active">Active &amp; Approved</option>
+              <option value="paused">Paused</option>
+              <option value="rejected">Rejected</option>
+            </select>
             <select class="form-input" id="adminEcoCategoryFilter" onchange="filterAdminEcoTable()" style="width:auto;font-size:12.5px;">
               <option value="all">All Categories</option>
               <option value="Business Opportunity">Business Opportunity</option>
@@ -1845,6 +1887,73 @@ input,textarea,select{font-family:var(--ff);}
       </div>
     </div>
 
+    <!-- ══ TAB: SUB-ADMINS MANAGEMENT ════════════════════════════════════ -->
+    <div id="tab-subadmins" class="tab-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--txt);">Sub-Admin Management</div>
+          <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Create delegated staff moderator accounts with custom granular permissions and secure credentials.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="openCreateSubAdminModal()" style="display:flex;align-items:center;gap:6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Create Sub-Admin</span>
+          </button>
+          <button class="btn btn-ghost" onclick="loadSubAdminsData()">Refresh</button>
+        </div>
+      </div>
+
+      <!-- KPI stats grid -->
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Sub-Admins</div>
+          <div class="stat-value" id="kpiSubAdminsTotal" style="color:var(--accent);">0</div>
+          <div class="stat-sub">Configured delegation accounts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Moderators</div>
+          <div class="stat-value" id="kpiSubAdminsActive" style="color:var(--green);">0</div>
+          <div class="stat-sub">Accounts currently in service</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Suspended Accounts</div>
+          <div class="stat-value" id="kpiSubAdminsSuspended" style="color:var(--red);">0</div>
+          <div class="stat-sub">Temporarily deactivated</div>
+        </div>
+      </div>
+
+      <!-- Sub-Admins Table Card -->
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="card-title">Staff Moderator Accounts</div>
+            <div class="card-sub">Manage logins, granular module permissions, and account status.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" class="form-input" id="adminSubAdminsSearch" placeholder="Search name or username..." oninput="filterSubAdminsTable()" style="width:240px;font-size:12.5px;">
+          </div>
+        </div>
+
+        <div class="table-wrap-clean">
+          <table class="clean-table">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Staff Member / Name</th>
+                <th style="min-width:140px;">Username</th>
+                <th style="min-width:280px;">Assigned Permissions</th>
+                <th style="min-width:100px;">Status</th>
+                <th style="min-width:130px;">Last Login</th>
+                <th style="min-width:180px;text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="subAdminsTableBody">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt-3);">Loading sub-admins...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /layout -->
@@ -2130,6 +2239,110 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 </div>
 
+<!-- Modal: Create / Edit Sub-Admin Account -->
+<div class="modal-backdrop" id="modalSubAdmin">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div class="modal-title" id="modalSubAdminTitle">Create Sub-Admin Account</div>
+      <button class="modal-close" onclick="closeModal('modalSubAdmin')">&times;</button>
+    </div>
+    <form id="formSubAdmin" onsubmit="handleSaveSubAdmin(event)">
+      <input type="hidden" id="subAdminEditId" value="">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Full Name / Staff Designation</label>
+          <input type="text" class="form-input" id="subAdminFullName" required placeholder="e.g. John Doe (Support Lead)">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Username</span>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="generateSubAdminUsername()" style="padding:2px 8px;font-size:11.5px;color:var(--accent);">Generate Username</button>
+          </label>
+          <input type="text" class="form-input" id="subAdminUsername" required placeholder="e.g. moderator_481" autocomplete="off">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <span>Password</span>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="generateSubAdminPassword()" style="padding:2px 8px;font-size:11.5px;color:var(--accent);">Generate Password</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="copyGeneratedSubAdminPassword()" style="padding:2px 8px;font-size:11.5px;color:var(--green);">Copy</button>
+            </div>
+          </label>
+          <input type="text" class="form-input" id="subAdminPassword" placeholder="Enter password or click Generate" autocomplete="off">
+          <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;" id="subAdminPasswordHint">When creating a new sub-admin, password is required (min 4 chars). When editing, leave blank to keep existing password.</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Account Status</label>
+          <select class="form-input" id="subAdminStatus">
+            <option value="active">Active (Full access to granted modules)</option>
+            <option value="suspended">Suspended (Access temporarily revoked)</option>
+          </select>
+        </div>
+
+        <!-- Granular Permissions Section -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-size:12.5px;font-weight:700;color:var(--txt);">Granted Permissions</div>
+              <div style="font-size:11.5px;color:var(--txt-3);">Tick what this sub-admin is permitted to access and manage:</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllSubAdminPerms(true)" style="padding:2px 6px;font-size:11px;">Select All</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllSubAdminPerms(false)" style="padding:2px 6px;font-size:11px;">Clear All</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:8px 12px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermOverview" checked>
+              <span>Platform Overview &amp; Analytics</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermSurveys" checked>
+              <span>Surveys &amp; Submissions</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermTasks" checked>
+              <span>Tasks &amp; Gigs</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermEcosystem" checked>
+              <span>Innovation Ecosystem</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermUsers">
+              <span>Users &amp; Balances</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermCoupons">
+              <span>Coupon PINs</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermWithdrawals">
+              <span>Withdrawals &amp; Payouts</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermNotifications">
+              <span>Notifications &amp; Pop-Ups</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermPricing">
+              <span>Pricing &amp; Rates</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modalSubAdmin')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveSubAdmin">Save Sub-Admin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Clean Confirm Dialog Modal -->
 <div class="modal-backdrop" id="modalConfirm">
   <div class="modal" style="max-width:400px;">
@@ -2258,12 +2471,45 @@ function toggleTheme() {
 }
 applyTheme(localStorage.getItem('ix_theme') || 'dark');
 
+// Current Admin Role & Sub-Admin Permissions Context
+window.CURRENT_ADMIN_ROLE = '<?= addslashes($userRole) ?>';
+window.IS_SUB_ADMIN = <?= $isSubAdmin ? 'true' : 'false' ?>;
+window.SUB_ADMIN_PERMISSIONS = <?= json_encode($subAdminPermissions ?: (object)[]) ?>;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','pricing','notifications'];
+const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','pricing','notifications','subadmins'];
+
+function applySubAdminPermissions() {
+  if (!window.IS_SUB_ADMIN) return;
+  const perms = window.SUB_ADMIN_PERMISSIONS || {};
+
+  document.querySelectorAll('.nav-item[data-perm]').forEach(b => {
+    const perm = b.getAttribute('data-perm');
+    if (perm === 'subadmins' || perms[perm] === false) {
+      b.style.display = 'none';
+    }
+  });
+
+  const activeTab = sessionStorage.getItem('ix_admin_active_tab') || 'overview';
+  if (activeTab === 'subadmins' || perms[activeTab] === false) {
+    const firstAllowed = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','notifications','pricing'].find(t => perms[t] !== false);
+    if (firstAllowed) {
+      switchAdminTab(firstAllowed);
+    }
+  }
+}
 
 function switchAdminTab(tab, btn) {
+  if (window.IS_SUB_ADMIN) {
+    const perms = window.SUB_ADMIN_PERMISSIONS || {};
+    if (tab === 'subadmins' || perms[tab] === false) {
+      toast('Access restricted: You do not have permission to access this module.', 'warning');
+      return;
+    }
+  }
+
   if (!TABS.includes(tab)) tab = 'overview';
   TABS.forEach(t => {
     const el = document.getElementById('tab-' + t);
@@ -2286,7 +2532,8 @@ function switchAdminTab(tab, btn) {
     coupons: 'Coupon PINs',
     withdrawals: 'Withdrawals',
     pricing: 'Pricing & Rates',
-    notifications: 'Notifications'
+    notifications: 'Notifications',
+    subadmins: 'Sub-Admin Management'
   };
   const titleEl = document.getElementById('adminTopbarTitle');
   if (titleEl) titleEl.textContent = titles[tab] || 'Admin Panel';
@@ -2309,6 +2556,7 @@ function switchAdminTab(tab, btn) {
     if (tab === 'withdrawals') loadWithdrawalsData();
     if (tab === 'pricing') loadPricingData();
     if (tab === 'notifications') loadAdminNotificationsTab();
+    if (tab === 'subadmins') loadSubAdminsData();
   } catch(e) {
     console.error('Error loading tab content:', e);
   }
@@ -4873,16 +5121,19 @@ async function loadAdminEcosystem() {
       const total = adminEcoItems.length;
       const official = adminEcoItems.filter(x => x.is_official).length;
       const member = total - official;
+      const pending = adminEcoItems.filter(x => (x.status || '').toLowerCase() === 'pending').length;
       const views = adminEcoItems.reduce((acc, x) => acc + (parseInt(x.views) || 0), 0);
       const likes = adminEcoItems.reduce((acc, x) => acc + (parseInt(x.likes_count) || 0), 0);
 
       const kTotal = document.getElementById('kpiEcoTotal');
+      const kPending = document.getElementById('kpiEcoPending');
       const kOfficial = document.getElementById('kpiEcoOfficial');
       const kMember = document.getElementById('kpiEcoMember');
       const kViews = document.getElementById('kpiEcoViews');
       const kLikes = document.getElementById('kpiEcoLikes');
 
       if (kTotal) kTotal.textContent = total;
+      if (kPending) kPending.textContent = pending;
       if (kOfficial) kOfficial.textContent = official;
       if (kMember) kMember.textContent = member;
       if (kViews) kViews.textContent = views;
@@ -4904,10 +5155,14 @@ async function loadAdminEcosystem() {
 function filterAdminEcoTable() {
   const q = (document.getElementById('adminEcoSearch')?.value || '').toLowerCase().trim();
   const cat = document.getElementById('adminEcoCategoryFilter')?.value || 'all';
+  const status = document.getElementById('adminEcoStatusFilter')?.value || 'all';
 
   let list = adminEcoItems;
   if (cat !== 'all') {
     list = list.filter(it => (it.category || '').toLowerCase() === cat.toLowerCase());
+  }
+  if (status !== 'all') {
+    list = list.filter(it => (it.status || 'active').toLowerCase() === status.toLowerCase());
   }
   if (q) {
     list = list.filter(it =>
@@ -4939,6 +5194,42 @@ function renderAdminEcoTable(list) {
           ? `<strong style="color:var(--accent);">${item.fee_paid} PTS</strong>`
           : `<strong style="color:var(--green);">${item.fee_paid.toLocaleString()} NGN</strong>`);
 
+    let statusBadge = '';
+    const st = (item.status || 'active').toLowerCase();
+    if (st === 'pending') {
+      statusBadge = '<span class="badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);">Pending Approval</span>';
+    } else if (st === 'rejected') {
+      statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);">Rejected</span>';
+    } else if (st === 'paused') {
+      statusBadge = '<span class="badge badge-paused">Paused</span>';
+    } else {
+      statusBadge = '<span class="badge badge-active">Active</span>';
+    }
+
+    let actionsHtml = '';
+    if (st === 'pending') {
+      actionsHtml = `
+        <button class="btn btn-primary btn-sm" onclick="approveAdminEcoItem('${esc(item.id)}')" title="Approve and make listing live">Approve</button>
+        <button class="btn btn-ghost btn-sm" onclick="rejectAdminEcoItem('${esc(item.id)}')" style="color:var(--amber);" title="Reject submission">Reject</button>
+        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+      `;
+    } else if (st === 'rejected') {
+      actionsHtml = `
+        <button class="btn btn-primary btn-sm" onclick="approveAdminEcoItem('${esc(item.id)}')" title="Re-approve submission">Approve</button>
+        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+      `;
+    } else {
+      actionsHtml = `
+        <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
+          ${st === 'active' ? 'Pause' : 'Activate'}
+        </button>
+        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
+        <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+      `;
+    }
+
     return `
       <tr>
         <td>
@@ -4956,23 +5247,64 @@ function renderAdminEcoTable(list) {
             <strong>${item.views || 0}</strong> views / <strong>${item.likes_count || 0}</strong> likes
           </span>
         </td>
-        <td>
-          <span class="badge ${item.status === 'active' ? 'badge-active' : 'badge-paused'}" style="text-transform:capitalize;">
-            ${esc(item.status || 'active')}
-          </span>
-        </td>
+        <td>${statusBadge}</td>
         <td style="text-align:right;">
-          <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap;">
-            <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
-              ${item.status === 'active' ? 'Pause' : 'Activate'}
-            </button>
-            ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
-            <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
+          <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;">
+            ${actionsHtml}
           </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+async function approveAdminEcoItem(id) {
+  const ok = await confirmAction({
+    title: 'Approve Ecosystem Listing',
+    message: 'Are you sure you want to approve this listing and publish it live in the member Innovation Ecosystem?',
+    confirmText: 'Approve & Publish',
+    confirmClass: 'btn-primary'
+  });
+  if (!ok) return;
+
+  try {
+    const res = await fetch('/api/ecosystem.php?action=approve_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const d = await res.json();
+    if (d.status === 'success') {
+      toast(d.message || 'Listing approved and published successfully!', 'success');
+      loadAdminEcosystem();
+    } else {
+      toast(d.message || 'Error approving listing', 'error');
+    }
+  } catch(e) {
+    toast('Network error approving listing', 'error');
+  }
+}
+
+async function rejectAdminEcoItem(id) {
+  const reason = prompt('Please enter rejection reason:', 'Submission does not meet community content guidelines');
+  if (reason === null) return;
+
+  try {
+    const res = await fetch('/api/ecosystem.php?action=reject_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, reason: reason.trim() })
+    });
+    const d = await res.json();
+    if (d.status === 'success') {
+      toast(d.message || 'Listing rejected', 'info');
+      loadAdminEcosystem();
+    } else {
+      toast(d.message || 'Error rejecting listing', 'error');
+    }
+  } catch(e) {
+    toast('Network error rejecting listing', 'error');
+  }
 }
 
 async function handleSaveEcoSettings(e) {
@@ -5251,6 +5583,338 @@ async function loadAdminOverview() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SUB-ADMINS MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+let adminSubAdminsList = [];
+
+async function loadSubAdminsData() {
+  if (window.IS_SUB_ADMIN) return;
+  const tbody = document.getElementById('subAdminsTableBody');
+  try {
+    const res = await fetch('/api/sub_admins.php?action=get_sub_admins&_t=' + Date.now());
+    const data = await res.json();
+    if (data.status === 'success') {
+      adminSubAdminsList = Array.isArray(data.sub_admins) ? data.sub_admins : [];
+      
+      const total = adminSubAdminsList.length;
+      const active = adminSubAdminsList.filter(s => (s.status || 'active') === 'active').length;
+      const suspended = total - active;
+
+      const elTotal = document.getElementById('kpiSubAdminsTotal');
+      const elActive = document.getElementById('kpiSubAdminsActive');
+      const elSusp = document.getElementById('kpiSubAdminsSuspended');
+      if (elTotal) elTotal.textContent = total;
+      if (elActive) elActive.textContent = active;
+      if (elSusp) elSusp.textContent = suspended;
+
+      renderSubAdminsTable(adminSubAdminsList);
+    } else {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt-3);">${esc(data.message || 'Error loading sub-admins')}</td></tr>`;
+    }
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt-3);">Network error loading sub-admins.</td></tr>';
+  }
+}
+
+function filterSubAdminsTable() {
+  const q = (document.getElementById('adminSubAdminsSearch')?.value || '').toLowerCase().trim();
+  if (!q) {
+    renderSubAdminsTable(adminSubAdminsList);
+    return;
+  }
+  const filtered = adminSubAdminsList.filter(s => 
+    (s.username || '').toLowerCase().includes(q) ||
+    (s.full_name || '').toLowerCase().includes(q)
+  );
+  renderSubAdminsTable(filtered);
+}
+
+function renderSubAdminsTable(list) {
+  const tbody = document.getElementById('subAdminsTableBody');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt-3);">No sub-admin accounts configured yet. Click "+ Create Sub-Admin" to create one.</td></tr>';
+    return;
+  }
+
+  const permLabels = {
+    overview: 'Overview',
+    surveys: 'Surveys',
+    tasks: 'Tasks',
+    ecosystem: 'Ecosystem',
+    users: 'Users',
+    coupons: 'Coupons',
+    withdrawals: 'Withdrawals',
+    notifications: 'Notifications',
+    pricing: 'Pricing'
+  };
+
+  tbody.innerHTML = list.map(sa => {
+    const isAct = (sa.status || 'active') === 'active';
+    const statusBadge = isAct
+      ? '<span class="badge badge-active">Active</span>'
+      : '<span class="badge badge-paused">Suspended</span>';
+
+    const p = sa.permissions || {};
+    const grantedKeys = Object.keys(permLabels).filter(k => Boolean(p[k]));
+    let permHtml = '';
+    if (grantedKeys.length === Object.keys(permLabels).length) {
+      permHtml = '<span class="badge badge-active" style="font-size:11px;">Full Access (All Modules)</span>';
+    } else if (grantedKeys.length === 0) {
+      permHtml = '<span class="badge badge-paused" style="font-size:11px;">No Modules Granted</span>';
+    } else {
+      permHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;">' +
+        grantedKeys.map(k => `<span class="badge badge-neutral" style="font-size:11px;padding:2px 6px;">${permLabels[k]}</span>`).join('') +
+        '</div>';
+    }
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600;color:var(--txt);">${esc(sa.full_name || 'Staff Moderator')}</div>
+          <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Staff ID: ${esc(sa.id)}</div>
+        </td>
+        <td>
+          <span style="font-family:monospace;font-size:12.5px;color:var(--accent);font-weight:600;">@${esc(sa.username)}</span>
+        </td>
+        <td>${permHtml}</td>
+        <td>${statusBadge}</td>
+        <td><span style="font-size:12px;color:var(--txt-2);">${esc(sa.last_login || 'Never')}</span></td>
+        <td style="text-align:right;">
+          <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditSubAdminModal('${esc(sa.id)}')" title="Edit details & permissions">Edit</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleSubAdminStatus('${esc(sa.id)}')" title="${isAct ? 'Suspend access' : 'Activate access'}">
+              ${isAct ? 'Suspend' : 'Activate'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSubAdmin('${esc(sa.id)}')" title="Delete account">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function generateSubAdminUsername() {
+  const prefixes = ['staff_mod', 'moderator', 'admin_mod', 'ops_lead', 'agent'];
+  const pfx = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const num = Math.floor(100 + Math.random() * 900);
+  const uInput = document.getElementById('subAdminUsername');
+  if (uInput) {
+    uInput.value = `${pfx}_${num}`;
+  }
+}
+
+function generateSubAdminPassword() {
+  const charsUpper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const charsLower = 'abcdefghjkmnpqrstuvwxyz';
+  const charsNum   = '23456789';
+  const charsSpec  = '!@#$%*';
+
+  let pass = '';
+  pass += charsUpper.charAt(Math.floor(Math.random() * charsUpper.length));
+  pass += charsLower.charAt(Math.floor(Math.random() * charsLower.length));
+  pass += charsNum.charAt(Math.floor(Math.random() * charsNum.length));
+  pass += charsSpec.charAt(Math.floor(Math.random() * charsSpec.length));
+
+  const all = charsUpper + charsLower + charsNum + charsSpec;
+  for (let i = 0; i < 6; i++) {
+    pass += all.charAt(Math.floor(Math.random() * all.length));
+  }
+
+  // Shuffle string
+  pass = pass.split('').sort(() => 0.5 - Math.random()).join('');
+
+  const pInput = document.getElementById('subAdminPassword');
+  if (pInput) {
+    pInput.value = pass;
+    toast('Generated new strong password', 'info');
+  }
+}
+
+function copyGeneratedSubAdminPassword() {
+  const pInput = document.getElementById('subAdminPassword');
+  if (!pInput || !pInput.value) {
+    toast('No password to copy yet. Click Generate Password first.', 'warning');
+    return;
+  }
+  navigator.clipboard.writeText(pInput.value).then(() => {
+    toast('Sub-admin password copied to clipboard!', 'success');
+  }).catch(() => {
+    pInput.select();
+    document.execCommand('copy');
+    toast('Sub-admin password copied!', 'success');
+  });
+}
+
+function selectAllSubAdminPerms(checked) {
+  const ids = [
+    'subPermOverview',
+    'subPermSurveys',
+    'subPermTasks',
+    'subPermEcosystem',
+    'subPermUsers',
+    'subPermCoupons',
+    'subPermWithdrawals',
+    'subPermNotifications',
+    'subPermPricing'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(checked);
+  });
+}
+
+function openCreateSubAdminModal() {
+  document.getElementById('subAdminEditId').value = '';
+  document.getElementById('modalSubAdminTitle').textContent = 'Create Sub-Admin Account';
+  document.getElementById('subAdminFullName').value = '';
+  document.getElementById('subAdminStatus').value = 'active';
+  
+  const hint = document.getElementById('subAdminPasswordHint');
+  if (hint) hint.textContent = 'Password is required for new accounts. Click Generate Password or enter custom credentials.';
+  
+  generateSubAdminUsername();
+  generateSubAdminPassword();
+  
+  // Default checked permissions
+  selectAllSubAdminPerms(true);
+  
+  openModal('modalSubAdmin');
+}
+
+function openEditSubAdminModal(id) {
+  const sa = adminSubAdminsList.find(s => s.id === id);
+  if (!sa) {
+    toast('Sub-admin account not found', 'error');
+    return;
+  }
+
+  document.getElementById('subAdminEditId').value = sa.id;
+  document.getElementById('modalSubAdminTitle').textContent = `Edit Sub-Admin: @${sa.username}`;
+  document.getElementById('subAdminFullName').value = sa.full_name || '';
+  document.getElementById('subAdminUsername').value = sa.username || '';
+  document.getElementById('subAdminPassword').value = '';
+  document.getElementById('subAdminStatus').value = sa.status || 'active';
+
+  const hint = document.getElementById('subAdminPasswordHint');
+  if (hint) hint.textContent = 'Leave password blank to preserve existing password, or enter / generate a new one to reset.';
+
+  const p = sa.permissions || {};
+  document.getElementById('subPermOverview').checked = Boolean(p.overview);
+  document.getElementById('subPermSurveys').checked = Boolean(p.surveys);
+  document.getElementById('subPermTasks').checked = Boolean(p.tasks);
+  document.getElementById('subPermEcosystem').checked = Boolean(p.ecosystem);
+  document.getElementById('subPermUsers').checked = Boolean(p.users);
+  document.getElementById('subPermCoupons').checked = Boolean(p.coupons);
+  document.getElementById('subPermWithdrawals').checked = Boolean(p.withdrawals);
+  document.getElementById('subPermNotifications').checked = Boolean(p.notifications);
+  document.getElementById('subPermPricing').checked = Boolean(p.pricing);
+
+  openModal('modalSubAdmin');
+}
+
+async function handleSaveSubAdmin(e) {
+  e.preventDefault();
+  const editId = document.getElementById('subAdminEditId').value.trim();
+  const fullName = document.getElementById('subAdminFullName').value.trim();
+  const username = document.getElementById('subAdminUsername').value.trim();
+  const password = document.getElementById('subAdminPassword').value.trim();
+  const status = document.getElementById('subAdminStatus').value;
+
+  if (!editId && (!password || password.length < 4)) {
+    toast('Password is required and must be at least 4 characters', 'warning');
+    return;
+  }
+
+  const permissions = {
+    overview: document.getElementById('subPermOverview').checked,
+    surveys: document.getElementById('subPermSurveys').checked,
+    tasks: document.getElementById('subPermTasks').checked,
+    ecosystem: document.getElementById('subPermEcosystem').checked,
+    users: document.getElementById('subPermUsers').checked,
+    coupons: document.getElementById('subPermCoupons').checked,
+    withdrawals: document.getElementById('subPermWithdrawals').checked,
+    notifications: document.getElementById('subPermNotifications').checked,
+    pricing: document.getElementById('subPermPricing').checked
+  };
+
+  const btn = document.getElementById('btnSaveSubAdmin');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  try {
+    const action = editId ? 'update_sub_admin' : 'create_sub_admin';
+    const payload = editId
+      ? { id: editId, full_name: fullName, status, password, permissions }
+      : { full_name: fullName, username, password, status, permissions };
+
+    const res = await fetch(`/api/sub_admins.php?action=${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      toast(data.message || 'Sub-admin saved successfully!', 'success');
+      closeModal('modalSubAdmin');
+      loadSubAdminsData();
+    } else {
+      toast(data.message || 'Failed to save sub-admin', 'error');
+    }
+  } catch(err) {
+    toast('Network error saving sub-admin', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Sub-Admin'; }
+  }
+}
+
+async function toggleSubAdminStatus(id) {
+  try {
+    const res = await fetch('/api/sub_admins.php?action=toggle_status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      toast(data.message || 'Status updated', 'success');
+      loadSubAdminsData();
+    } else {
+      toast(data.message || 'Error updating status', 'error');
+    }
+  } catch(e) {
+    toast('Network error updating status', 'error');
+  }
+}
+
+async function deleteSubAdmin(id) {
+  const ok = await confirmAction({
+    title: 'Delete Sub-Admin Account',
+    message: 'Are you sure you want to permanently delete this sub-admin account? They will lose all access to the administrative dashboard.',
+    confirmText: 'Delete Account',
+    confirmClass: 'btn-danger'
+  });
+  if (!ok) return;
+
+  try {
+    const res = await fetch('/api/sub_admins.php?action=delete_sub_admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      toast(data.message || 'Sub-admin deleted', 'success');
+      loadSubAdminsData();
+    } else {
+      toast(data.message || 'Error deleting sub-admin', 'error');
+    }
+  } catch(e) {
+    toast('Network error deleting sub-admin', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════════════════════════
 function esc(str) {
@@ -5258,6 +5922,7 @@ function esc(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  applySubAdminPermissions();
   restoreAdminActiveTab();
   loadAdminOverview();
   loadPricingData();
@@ -5269,6 +5934,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCouponsData();
   loadVendorsDropdown();
   loadAdminNotificationsTab();
+  if (!window.IS_SUB_ADMIN) {
+    loadSubAdminsData();
+  }
 });
 </script>
 </body>

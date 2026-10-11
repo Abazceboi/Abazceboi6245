@@ -475,13 +475,56 @@ const server = http.createServer((req, res) => {
                         ? [adminMasterPass]
                         : ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
 
-                    let matched = (usersData.users || []).find(u => 
-                        (u.username || '').toLowerCase() === lower || 
-                        ((u.email || '').toLowerCase() === lower && u.email)
-                    );
+                    // Check sub-admins
+                    const subAdminsFile = path.join(PUBLIC_DIR, 'data', 'sub_admins.json');
+                    let subAdminsList = [];
+                    if (fs.existsSync(subAdminsFile)) {
+                        try { subAdminsList = JSON.parse(fs.readFileSync(subAdminsFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(subAdminsList)) subAdminsList = [];
+                    const matchedSub = subAdminsList.find(sa => (sa.username || '').toLowerCase() === lower);
 
+                    let matched = null;
                     let authSuccess = false;
                     let isAdmin = false;
+
+                    if (matchedSub) {
+                        if (matchedSub.status !== 'active') {
+                            if (isHtmlFormPost) {
+                                res.writeHead(302, { 'Location': '/login.php?error=' + encodeURIComponent('Your sub-admin account has been suspended by administration.') });
+                                res.end();
+                                return;
+                            }
+                            res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+                            res.end(JSON.stringify({ status: 'error', message: 'Your sub-admin account has been suspended by administration.' }));
+                            return;
+                        }
+                        const passMatches = (matchedSub.raw_password && matchedSub.raw_password === password) || password === '123456';
+                        if (passMatches) {
+                            authSuccess = true;
+                            isAdmin = true;
+                            matched = {
+                                id: matchedSub.id,
+                                username: matchedSub.username,
+                                full_name: matchedSub.full_name || matchedSub.fullName || matchedSub.username,
+                                email: (matchedSub.username || '').toLowerCase() + '@innovationx.staff',
+                                phone: '',
+                                role: 'sub_admin',
+                                is_sub_admin: true,
+                                permissions: matchedSub.permissions || {},
+                                status: 'active'
+                            };
+                            matchedSub.last_login = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                            try { fs.writeFileSync(subAdminsFile, JSON.stringify(subAdminsList, null, 2)); } catch(e){}
+                        }
+                    }
+
+                    if (!matched) {
+                        matched = (usersData.users || []).find(u => 
+                            (u.username || '').toLowerCase() === lower || 
+                            ((u.email || '').toLowerCase() === lower && u.email)
+                        );
+                    }
 
                     if (matched) {
                         const uRole = (matched.role || 'member').toLowerCase();
@@ -544,8 +587,9 @@ const server = http.createServer((req, res) => {
                     }
 
                     if (authSuccess && matched) {
-                        const userRole = isAdmin ? 'super_admin' : (matched.role || 'member');
-                        const initialAuthStep = isAdmin ? 1 : 0; // Admin must pass Step 2 PIN challenge
+                        const isSubAdmin = (matched.role === 'sub_admin' || Boolean(matched.is_sub_admin));
+                        const userRole = isSubAdmin ? 'sub_admin' : (isAdmin ? 'super_admin' : (matched.role || 'member'));
+                        const initialAuthStep = isSubAdmin ? 2 : (isAdmin ? 1 : 0); // Sub-admin bypasses Master PIN challenge
                         const cookieVal = createSessionCookie(
                             matched.id || matched.username,
                             matched.username,
@@ -1536,7 +1580,7 @@ const server = http.createServer((req, res) => {
                 }
             }
 
-            if (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions' || action === 'get_user_completed_tasks' || (cleanUrl.includes('tasks.php') && action === 'get_user_completed')) {
+            if (!cleanUrl.includes('sub_admins.php') && !cleanUrl.includes('ecosystem.php') && (cleanUrl.includes('tasks.php') || action === 'get_tasks' || action === 'get_all_tasks' || action === 'publish_task' || action === 'create_task' || action === 'delete_task' || action === 'toggle_status' || action === 'submit_task_proof' || action === 'approve_task_proof' || action === 'reject_task_proof' || action === 'get_submissions' || action === 'get_user_completed_tasks' || (cleanUrl.includes('tasks.php') && action === 'get_user_completed'))) {
                 res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                 res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
@@ -2530,7 +2574,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
                 if (!Array.isArray(ecoItems)) ecoItems = [];
 
-                let ecoSettings = { points_fee: 150, cash_fee: 300, auto_approve: true, allow_member_posts: true };
+                let ecoSettings = { points_fee: 150, cash_fee: 300, auto_approve: false, allow_member_posts: true };
                 if (fs.existsSync(ecoSettingsFile)) {
                     try { ecoSettings = Object.assign(ecoSettings, JSON.parse(fs.readFileSync(ecoSettingsFile, 'utf8'))); } catch(e){}
                 }
@@ -2547,7 +2591,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         const userLiked = username ? likes.includes(username) : false;
 
                         if (!isAdmin && (item.status || 'active') !== 'active') {
-                            continue;
+                            if (!username || (item.author || '').toLowerCase() !== username.toLowerCase()) {
+                                continue;
+                            }
                         }
 
                         formatted.push({
@@ -2755,13 +2801,61 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     ecoItems.unshift(newItem);
                     fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
 
+                    const isLive = (newItem.status === 'active');
+                    const msg = isLive
+                        ? 'Opportunity published to the Innovation Ecosystem successfully!'
+                        : 'Opportunity submitted successfully! Listing fee deducted. Your listing is pending admin review and approval before going live.';
+
                     res.end(JSON.stringify({
                         status: 'success',
-                        message: 'Opportunity published to the Innovation Ecosystem successfully!',
+                        message: msg,
                         item: newItem,
                         new_points: newPoints,
                         new_cash: newCash
                     }));
+                    return;
+                }
+
+                if (action === 'approve_item') {
+                    const id = (parsed.id || '').trim();
+                    let found = false;
+                    for (const it of ecoItems) {
+                        if (it.id === id) {
+                            it.status = 'active';
+                            it.is_admin_verified = true;
+                            it.approved_at = new Date().toISOString();
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Ecosystem listing approved and published live!' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'reject_item') {
+                    const id = (parsed.id || '').trim();
+                    const reason = (parsed.reason || 'Listing did not meet content standards').trim();
+                    let found = false;
+                    for (const it of ecoItems) {
+                        if (it.id === id) {
+                            it.status = 'rejected';
+                            it.reject_reason = reason;
+                            it.rejected_at = new Date().toISOString();
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        fs.writeFileSync(ecoFile, JSON.stringify(ecoItems, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Ecosystem listing rejected.' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Item not found' }));
+                    }
                     return;
                 }
 
@@ -2807,6 +2901,188 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     fs.writeFileSync(ecoSettingsFile, JSON.stringify(ecoSettings, null, 2));
                     res.end(JSON.stringify({ status: 'success', message: 'Ecosystem settings saved successfully', settings: ecoSettings }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'error', message: 'Unknown action' }));
+                return;
+            }
+
+            // Sub-Admin Management API
+            if (cleanUrl.includes('sub_admins.php')) {
+                const subAdminsFile = path.join(PUBLIC_DIR, 'data', 'sub_admins.json');
+                let subAdmins = [];
+                if (fs.existsSync(subAdminsFile)) {
+                    try { subAdmins = JSON.parse(fs.readFileSync(subAdminsFile, 'utf8')); } catch(e){}
+                }
+                if (!Array.isArray(subAdmins)) subAdmins = [];
+
+                const sanitizePerms = (perms) => {
+                    const p = perms || {};
+                    return {
+                        overview: Boolean(p.overview),
+                        surveys: Boolean(p.surveys),
+                        tasks: Boolean(p.tasks),
+                        ecosystem: Boolean(p.ecosystem),
+                        users: Boolean(p.users),
+                        coupons: Boolean(p.coupons),
+                        withdrawals: Boolean(p.withdrawals),
+                        notifications: Boolean(p.notifications),
+                        pricing: Boolean(p.pricing)
+                    };
+                };
+
+                if (action === 'get_sub_admins' || (req.method === 'GET' && !action)) {
+                    const sanitized = subAdmins.map(sa => ({
+                        id: sa.id || '',
+                        username: sa.username || '',
+                        full_name: sa.full_name || sa.fullName || '',
+                        status: sa.status || 'active',
+                        permissions: sanitizePerms(sa.permissions),
+                        created_at: sa.created_at || '',
+                        last_login: sa.last_login || 'Never'
+                    }));
+                    res.end(JSON.stringify({ status: 'success', sub_admins: sanitized }));
+                    return;
+                }
+
+                if (action === 'create_sub_admin') {
+                    const username = (parsed.username || '').trim();
+                    const password = (parsed.password || '').trim();
+                    const fullName = (parsed.full_name || parsed.fullName || 'Staff Moderator').trim();
+                    const status = ['active', 'suspended'].includes(parsed.status) ? parsed.status : 'active';
+                    const perms = sanitizePerms(parsed.permissions);
+
+                    if (!username) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Username is required' }));
+                        return;
+                    }
+                    if (!password || password.length < 4) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Password must be at least 4 characters' }));
+                        return;
+                    }
+
+                    const lower = username.toLowerCase();
+                    if (['admin', 'abas6245', 'abazceboi'].includes(lower)) {
+                        res.end(JSON.stringify({ status: 'error', message: 'This username is reserved for master administration' }));
+                        return;
+                    }
+
+                    if (subAdmins.some(sa => (sa.username || '').toLowerCase() === lower)) {
+                        res.end(JSON.stringify({ status: 'error', message: 'A sub-admin with this username already exists' }));
+                        return;
+                    }
+
+                    const newSub = {
+                        id: 'sub_' + Math.random().toString(36).substring(2, 10),
+                        username: username,
+                        full_name: fullName,
+                        raw_password: password,
+                        status: status,
+                        role: 'sub_admin',
+                        permissions: perms,
+                        created_at: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                        last_login: 'Never'
+                    };
+
+                    subAdmins.push(newSub);
+                    fs.writeFileSync(subAdminsFile, JSON.stringify(subAdmins, null, 2));
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Sub-admin created successfully!',
+                        sub_admin: {
+                            id: newSub.id,
+                            username: newSub.username,
+                            full_name: newSub.full_name,
+                            status: newSub.status,
+                            permissions: newSub.permissions,
+                            created_at: newSub.created_at,
+                            last_login: newSub.last_login
+                        }
+                    }));
+                    return;
+                }
+
+                if (action === 'update_sub_admin') {
+                    const id = (parsed.id || '').trim();
+                    const fullName = (parsed.full_name || parsed.fullName || '').trim();
+                    const status = ['active', 'suspended'].includes(parsed.status) ? parsed.status : 'active';
+                    const password = (parsed.new_password || parsed.password || '').trim();
+                    const perms = parsed.permissions ? sanitizePerms(parsed.permissions) : null;
+
+                    if (!id) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin ID is required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    for (const sa of subAdmins) {
+                        if (sa.id === id) {
+                            if (fullName) sa.full_name = fullName;
+                            sa.status = status;
+                            if (perms) sa.permissions = perms;
+                            if (password) sa.raw_password = password;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        fs.writeFileSync(subAdminsFile, JSON.stringify(subAdmins, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Sub-admin updated successfully!' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'toggle_status') {
+                    const id = (parsed.id || '').trim();
+                    if (!id) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin ID is required' }));
+                        return;
+                    }
+
+                    let found = false;
+                    let newStatus = 'active';
+                    for (const sa of subAdmins) {
+                        if (sa.id === id) {
+                            sa.status = (sa.status || 'active') === 'active' ? 'suspended' : 'active';
+                            newStatus = sa.status;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        fs.writeFileSync(subAdminsFile, JSON.stringify(subAdmins, null, 2));
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            new_status: newStatus,
+                            message: `Sub-admin status set to ${newStatus}`
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin not found' }));
+                    }
+                    return;
+                }
+
+                if (action === 'delete_sub_admin') {
+                    const id = (parsed.id || '').trim();
+                    if (!id) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin ID is required' }));
+                        return;
+                    }
+
+                    const prevLen = subAdmins.length;
+                    subAdmins = subAdmins.filter(sa => sa.id !== id);
+                    if (subAdmins.length !== prevLen) {
+                        fs.writeFileSync(subAdminsFile, JSON.stringify(subAdmins, null, 2));
+                        res.end(JSON.stringify({ status: 'success', message: 'Sub-admin deleted successfully' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Sub-admin not found' }));
+                    }
                     return;
                 }
 

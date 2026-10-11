@@ -5215,9 +5215,16 @@ function renderEcosystemList(list) {
 
   grid.innerHTML = list.map(item => {
     const isOfficial = Boolean(item.is_official);
-    const badgeHtml = isOfficial
-      ? '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;border-color:rgba(59,130,246,0.25);">Official Verified</span>'
-      : '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+    let badgeHtml = '';
+    if (isOfficial) {
+      badgeHtml = '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;border-color:rgba(59,130,246,0.25);">Official Verified</span>';
+    } else if (item.status === 'pending') {
+      badgeHtml = '<span class="item-tag" style="background:rgba(245,158,11,0.15);color:var(--amber);font-weight:700;border-color:rgba(245,158,11,0.35);">Pending Admin Review</span>';
+    } else if (item.status === 'rejected') {
+      badgeHtml = '<span class="item-tag" style="background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;border-color:rgba(239,68,68,0.35);">Rejected</span>';
+    } else {
+      badgeHtml = '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+    }
     const isLiked = Boolean(item.user_liked);
     const likesCount = item.likes_count || 0;
     const viewsCount = item.views || 0;
@@ -5450,7 +5457,7 @@ async function handlePostEcosystemSubmit(e) {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Opportunity published to the Innovation Ecosystem!', 'success');
+      toast(d.message || 'Opportunity submitted to the Innovation Ecosystem!', 'success');
       closeModal('modalPostEcosystemItem');
 
       if (d.item) {
