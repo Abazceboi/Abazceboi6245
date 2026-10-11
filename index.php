@@ -238,6 +238,63 @@ h1, h2, h3, h4, .font-display {
     animation: spinSlow 30s linear infinite;
 }
 
+/* Floating Pill Navbar (Evermore Style) */
+.ev-pill-header {
+    position: sticky;
+    top: 14px;
+    z-index: 50;
+    width: 100%;
+    padding: 0 16px;
+    margin: 10px 0 0;
+    pointer-events: none;
+}
+
+.ev-pill-navbar {
+    max-width: 1060px;
+    margin: 0 auto;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 8px 18px;
+    border-radius: 9999px;
+    background: rgba(15, 25, 46, 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6), 0 0 20px -4px rgba(56, 189, 248, 0.18);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] .ev-pill-navbar {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(2, 132, 199, 0.22);
+    box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+}
+
+.ev-pill-link {
+    color: var(--color-muted);
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
+}
+
+.ev-pill-link:hover {
+    color: var(--color-fg);
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.22);
+}
+
+[data-theme="light"] .ev-pill-link:hover {
+    color: #0F172A;
+    background: rgba(2, 132, 199, 0.08);
+    border-color: rgba(2, 132, 199, 0.18);
+}
+
 /* Drawer styles */
 .ev-drawer-backdrop {
     position: fixed; inset: 0;
@@ -271,40 +328,40 @@ h1, h2, h3, h4, .font-display {
         <span>Automated Daily Task Drops &amp; Direct Bank Settlements Now Active Across Nigeria.</span>
     </div>
 
-    <!-- ===== HEADER NAVBAR (EVERMORE EXACT GLASS) ===== -->
-    <header class="glass" style="position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
-        <nav style="max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+    <!-- ===== HEADER NAVBAR (EVERMORE FLOATING PILL BAR) ===== -->
+    <header class="ev-pill-header">
+        <nav class="ev-pill-navbar">
             <!-- Brand Logo -->
             <a href="index.php" style="display:flex;align-items:center;gap:10px;text-decoration:none;" aria-label="INNOVATIONX home">
-                <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.9rem;box-shadow:0 4px 12px rgba(56,189,248,0.4);">
+                <div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.86rem;box-shadow:0 0 14px rgba(56,189,248,0.5);">
                     IX
                 </div>
-                <span style="font-family:var(--font-display);font-weight:700;font-size:1.1rem;color:var(--color-fg);letter-spacing:-0.02em;">
+                <span style="font-family:var(--font-display);font-weight:700;font-size:1.06rem;color:var(--color-fg);letter-spacing:-0.02em;">
                     INNOVATIONX
                 </span>
             </a>
 
-            <!-- Nav Links (Desktop) -->
-            <div style="display:none;align-items:center;gap:24px;font-size:0.86rem;color:var(--color-muted);" class="desktop-menu">
-                <a href="#how" style="color:inherit;text-decoration:none;transition:color 0.15s;">How it works</a>
-                <a href="#features" style="color:inherit;text-decoration:none;transition:color 0.15s;">Ways to earn</a>
-                <a href="#subscriptions" style="color:inherit;text-decoration:none;transition:color 0.15s;">Membership</a>
-                <a href="vendors.php" style="color:inherit;text-decoration:none;transition:color 0.15s;">Vendors</a>
-                <a href="#faq" style="color:inherit;text-decoration:none;transition:color 0.15s;">FAQ</a>
+            <!-- Nav Links (Desktop Micro-Pills) -->
+            <div style="display:none;align-items:center;gap:4px;" class="desktop-menu">
+                <a href="#how" class="ev-pill-link">How it works</a>
+                <a href="#features" class="ev-pill-link">Ways to earn</a>
+                <a href="#subscriptions" class="ev-pill-link">Membership</a>
+                <a href="vendors.php" class="ev-pill-link">Vendors</a>
+                <a href="#faq" class="ev-pill-link">FAQ</a>
             </div>
 
             <!-- Actions -->
-            <div style="display:flex;align-items:center;gap:10px;">
-                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:34px;height:34px;border-radius:9px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:34px;height:34px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
-                <a href="login.php" style="text-decoration:none;padding:7px 12px;font-size:0.86rem;font-weight:600;color:var(--color-fg);" class="desktop-auth-btn">
+                <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:7px 14px;border-radius:9999px;font-size:0.84rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
                     Sign in
                 </a>
-                <a href="register.php" class="btn-cta" style="border-radius:9px;padding:8px 16px;font-size:0.86rem;font-weight:700;">
+                <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:8px 18px;font-size:0.84rem;font-weight:700;">
                     Get started
                 </a>
-                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:36px;height:36px;border-radius:9px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
+                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:36px;height:36px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
             </div>
