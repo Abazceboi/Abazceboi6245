@@ -1080,61 +1080,216 @@ input,textarea,select{font-family:var(--ff);}
   position: absolute;
   top: 48px;
   right: 0;
-  width: 320px;
-  max-height: 380px;
-  background: var(--card);
-  border: 1px solid var(--border-mid);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  width: 340px;
+  max-height: 420px;
+  background: #0d1527;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
   display: none;
   flex-direction: column;
   z-index: 1100;
   overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .notif-dropdown.open { display: flex; }
 .notif-header {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  background: rgba(13, 21, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.notif-list { overflow-y: auto; max-height: 320px; }
+.notif-header-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+.notif-count-badge {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94A3B8;
+}
+.notif-mark-btn {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px 9px;
+  line-height: 1.2;
+  border-radius: 6px;
+  color: #60A5FA;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.notif-mark-btn:hover {
+  background: rgba(59, 130, 246, 0.24);
+  color: #93C5FD;
+}
+.notif-list {
+  overflow-y: auto;
+  max-height: 350px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.notif-list::-webkit-scrollbar {
+  width: 5px;
+}
+.notif-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.notif-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+}
+.notif-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
 .notif-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  transition: background var(--trans), opacity var(--trans);
+  gap: 4px;
+  background: transparent;
+  transition: background 0.15s ease;
+  position: relative;
 }
-.notif-item:last-child { border-bottom: none; }
-.notif-item:hover { background: var(--card-hover); }
+.notif-item:last-child {
+  border-bottom: none;
+}
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
 .notif-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.notif-item-title { font-size: 12.5px; font-weight: 600; color: var(--txt); }
+.notif-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F8FAFC;
+  line-height: 1.35;
+}
 .notif-item-unread-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 5px var(--accent);
+  background: #38BDF8;
+  box-shadow: 0 0 8px #38BDF8;
   flex-shrink: 0;
 }
-.notif-item-msg { font-size: 11.5px; color: var(--txt-2); line-height: 1.4; }
-.notif-item-time { font-size: 10px; color: var(--txt-3); margin-top: 2px; }
+.notif-item-msg {
+  font-size: 12px;
+  color: #CBD5E1;
+  line-height: 1.48;
+  word-break: break-word;
+}
+.notif-item-time {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 2px;
+}
 
-/* Read State - items stay visible and gracefully muted */
+/* Unread item */
+.notif-item.unread {
+  background: rgba(59, 130, 246, 0.06);
+}
+.notif-item.unread .notif-item-title {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+.notif-item.unread .notif-item-msg {
+  color: #E2E8F0;
+}
+
+/* Read item - keep clean and legible, no washed-out low opacity */
 .notif-item.read {
-  opacity: 0.72;
+  opacity: 1;
+  background: transparent;
 }
 .notif-item.read .notif-item-title {
-  color: var(--txt-2);
-  font-weight: 500;
+  color: #F1F5F9;
+  font-weight: 600;
+}
+.notif-item.read .notif-item-msg {
+  color: #CBD5E1;
+}
+.notif-item.read .notif-item-time {
+  color: #94A3B8;
+}
+
+/* Light Theme Overrides */
+[data-theme="light"] .notif-dropdown {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+[data-theme="light"] .notif-header {
+  background: #F8FAFC;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+[data-theme="light"] .notif-header-title {
+  color: #0F172A;
+}
+[data-theme="light"] .notif-count-badge {
+  color: #64748B;
+}
+[data-theme="light"] .notif-mark-btn {
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+[data-theme="light"] .notif-mark-btn:hover {
+  background: rgba(37, 99, 235, 0.16);
+  color: #1D4ED8;
+}
+[data-theme="light"] .notif-list {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+[data-theme="light"] .notif-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+[data-theme="light"] .notif-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+[data-theme="light"] .notif-item {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .notif-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .notif-item-title {
+  color: #0F172A;
+}
+[data-theme="light"] .notif-item-msg {
+  color: #334155;
+}
+[data-theme="light"] .notif-item-time {
+  color: #64748B;
+}
+[data-theme="light"] .notif-item.read .notif-item-title {
+  color: #1E293B;
+}
+[data-theme="light"] .notif-item.read .notif-item-msg {
+  color: #475569;
+}
+[data-theme="light"] .notif-item.read .notif-item-time {
+  color: #64748B;
+}
+[data-theme="light"] .notif-item.unread {
+  background: rgba(59, 130, 246, 0.05);
+}
+[data-theme="light"] .notif-item.unread .notif-item-title {
+  color: #0F172A;
+}
+[data-theme="light"] .notif-item.unread .notif-item-msg {
+  color: #1E293B;
 }
 
 /* ═══════════════════════════ FANCY CUSTOM DROPDOWN ════════════════════ */
@@ -1766,7 +1921,7 @@ input,textarea,select{font-family:var(--ff);}
     height: 18px;
   }
   .stats-grid{grid-template-columns:1fr 1fr;}
-  .notif-dropdown{right:-50px;width:290px;}
+  .notif-dropdown{right:-30px;width:min(320px, calc(100vw - 28px));}
 }
 </style>
 </head>
@@ -1812,14 +1967,14 @@ input,textarea,select{font-family:var(--ff);}
         <!-- Notification Dropdown -->
         <div id="notifDropdown" class="notif-dropdown">
           <div class="notif-header">
-            <span style="font-weight:700;font-size:13px;">Notifications</span>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span id="notifCountText" style="font-size:11px;color:var(--txt-3);">0 updates</span>
-              <button class="btn btn-ghost btn-sm" onclick="markAllNotificationsRead()" style="font-size:10px;padding:3px 7px;line-height:1;border-radius:6px;">Mark all read</button>
+            <span class="notif-header-title">Notifications</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="notifCountText" class="notif-count-badge">0 updates</span>
+              <button class="notif-mark-btn" onclick="markAllNotificationsRead()">Mark all read</button>
             </div>
           </div>
           <div id="notifList" class="notif-list">
-            <div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">Loading notifications...</div>
+            <div style="text-align:center;padding:28px 16px;font-size:12px;color:#94a3b8;">Loading notifications...</div>
           </div>
         </div>
       </div>
@@ -3066,7 +3221,7 @@ async function loadNotifications() {
       if (countEl) countEl.textContent = isMarkedRead ? '0 unread' : `${list.length} update${list.length > 1 ? 's' : ''}`;
       if (listEl) {
         listEl.innerHTML = list.map(n => `
-          <div class="notif-item ${isMarkedRead ? 'read' : ''}">
+          <div class="notif-item ${isMarkedRead ? 'read' : 'unread'}">
             <div class="notif-item-header">
               <span class="notif-item-title">${esc(n.title || 'Platform Notice')}</span>
               ${!isMarkedRead ? '<span class="notif-item-unread-dot"></span>' : ''}
@@ -3080,7 +3235,7 @@ async function loadNotifications() {
       if (badge) badge.style.display = 'none';
       if (countEl) countEl.textContent = '0 updates';
       if (listEl) {
-        listEl.innerHTML = '<div style="text-align:center;padding:24px;font-size:12px;color:var(--txt-3);">No notifications right now.</div>';
+        listEl.innerHTML = '<div style="text-align:center;padding:28px 16px;font-size:12px;color:#94a3b8;">No notifications right now.</div>';
       }
     }
   } catch(e) {}
@@ -3104,7 +3259,10 @@ async function markAllNotificationsRead() {
 
   // Keep all notifications visible in the list, just style as read
   const items = document.querySelectorAll('.notif-item');
-  items.forEach(it => it.classList.add('read'));
+  items.forEach(it => {
+    it.classList.remove('unread');
+    it.classList.add('read');
+  });
   const dots = document.querySelectorAll('.notif-item-unread-dot');
   dots.forEach(dot => dot.remove());
 
