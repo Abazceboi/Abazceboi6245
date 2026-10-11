@@ -431,55 +431,96 @@ h1, h2, h3, h4, .font-display {
     box-shadow: 0 0 16px rgba(2, 132, 199, 0.22) !important;
 }
 
-/* Hero Live Badge */
-.hero-live-badge {
+/* Hero Announcement Chip (Human-Crafted, Interactive) */
+.hero-announcement-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     border-radius: 9999px;
-    padding: 6px 14px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.28);
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #6EE7B7;
-    margin-bottom: 14px;
+    padding: 4px 12px 4px 5px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-.hero-live-dot {
+.hero-announcement-chip:hover {
+    transform: translateY(-1px);
+    border-color: rgba(56, 189, 248, 0.35);
+    background: rgba(56, 189, 248, 0.08);
+}
+
+.hero-announcement-chip .chip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34D399;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 9999px;
+}
+
+.hero-announcement-chip .chip-tag::before {
+    content: '';
     display: inline-block;
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: #10B981;
-    box-shadow: 0 0 8px #10B981;
 }
 
-.hero-live-text {
-    color: inherit;
+.hero-announcement-chip .chip-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-fg);
 }
 
-[data-theme="light"] .hero-live-badge {
+.hero-announcement-chip .chip-arrow {
+    color: var(--color-muted);
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.hero-announcement-chip:hover .chip-arrow {
+    transform: translateX(2px);
+    color: var(--color-aqua);
+}
+
+/* Light Mode Chip Overrides */
+[data-theme="light"] .hero-announcement-chip {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(2, 132, 199, 0.18) !important;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06) !important;
+}
+
+[data-theme="light"] .hero-announcement-chip:hover {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(2, 132, 199, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1) !important;
+}
+
+[data-theme="light"] .hero-announcement-chip .chip-tag {
     background: rgba(16, 185, 129, 0.12) !important;
-    border: 1px solid rgba(5, 150, 105, 0.35) !important;
+    border-color: rgba(5, 150, 105, 0.28) !important;
     color: #047857 !important;
-    font-weight: 700 !important;
 }
 
-[data-theme="light"] .hero-live-dot {
+[data-theme="light"] .hero-announcement-chip .chip-tag::before {
     background: #059669 !important;
-    box-shadow: 0 0 6px rgba(5, 150, 105, 0.6) !important;
 }
 
-[data-theme="light"] .hero-live-text {
-    color: #047857 !important;
+[data-theme="light"] .hero-announcement-chip .chip-text {
+    color: #334155 !important;
+    font-weight: 600 !important;
 }
 
-[data-theme="light"] .hero-platform-tag {
-    background: #FFFFFF !important;
-    border-color: rgba(2, 132, 199, 0.22) !important;
+[data-theme="light"] .hero-announcement-chip .chip-arrow {
     color: #0284C7 !important;
-    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.08) !important;
 }
 
 [data-theme="light"] .terminal-sub-box {
@@ -616,7 +657,7 @@ h1, h2, h3, h4, .font-display {
     animation: spinSlow 30s linear infinite;
 }
 
-/* Floating Pill Navbar (Evermore Style - Fixed Floating Island) */
+/* Floating Pill Navbar (Standalone Brand + Translucent Micro-Island) */
 .ev-pill-header {
     position: fixed;
     top: 14px;
@@ -624,31 +665,109 @@ h1, h2, h3, h4, .font-display {
     right: 0;
     z-index: 90;
     width: 100%;
-    padding: 0 14px;
+    padding: 0 16px;
     pointer-events: none;
 }
 
-.ev-pill-navbar {
-    max-width: 790px;
+.ev-header-container {
+    max-width: 1100px;
     margin: 0 auto;
-    pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+}
+
+/* Standalone Brand Logo (outside pill bar) */
+.ev-brand-standalone {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    padding: 6px 14px 6px 7px;
+    border-radius: 9999px;
+    background: rgba(11, 17, 32, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.ev-brand-standalone:hover {
+    transform: translateY(-1px);
+    border-color: rgba(56, 189, 248, 0.35);
+}
+
+.ev-brand-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #0284C7, #38BDF8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.75rem;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+}
+
+.ev-brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--color-fg);
+    letter-spacing: -0.02em;
+}
+
+[data-theme="light"] .ev-brand-standalone {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(2, 132, 199, 0.18);
+    box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.12);
+}
+
+/* Translucent Pill Navbar */
+.ev-pill-navbar {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 5px 6px 5px 12px;
     border-radius: 9999px;
-    background: rgba(11, 17, 32, 0.86);
+    background: rgba(11, 17, 32, 0.45);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.7), 0 0 20px -4px rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 0 18px -4px rgba(56, 189, 248, 0.15);
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="light"] .ev-pill-navbar {
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(2, 132, 199, 0.22);
-    box-shadow: 0 10px 28px -5px rgba(2, 132, 199, 0.16);
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-color: rgba(2, 132, 199, 0.18) !important;
+    box-shadow: 0 10px 28px -5px rgba(2, 132, 199, 0.12) !important;
+}
+
+.ev-theme-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.ev-theme-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
 }
 
 .ev-pill-link {
@@ -703,44 +822,43 @@ h1, h2, h3, h4, .font-display {
 
 <div class="relative min-h-screen overflow-x-clip">
 
-    <!-- ===== HEADER NAVBAR (EVERMORE COMPACT FLOATING PILL BAR) ===== -->
+    <!-- ===== HEADER NAVBAR (STANDALONE BRAND + TRANSLUCENT PILL BAR) ===== -->
     <header class="ev-pill-header">
-        <nav class="ev-pill-navbar">
-            <!-- Brand Logo -->
-            <a href="index.php" style="display:flex;align-items:center;gap:8px;text-decoration:none;" aria-label="INNOVATIONX home">
-                <div style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.75rem;box-shadow:0 0 10px rgba(56,189,248,0.45);">
-                    IX
-                </div>
-                <span style="font-family:var(--font-display);font-weight:700;font-size:0.92rem;color:var(--color-fg);letter-spacing:-0.02em;">
-                    INNOVATIONX
-                </span>
+        <div class="ev-header-container">
+            <!-- Standalone Brand Logo (Outside Pill Bar) -->
+            <a href="index.php" class="ev-brand-standalone" aria-label="INNOVATIONX home">
+                <div class="ev-brand-badge">IX</div>
+                <span class="ev-brand-name">INNOVATIONX</span>
             </a>
 
-            <!-- Nav Links (Desktop Micro-Pills) -->
-            <div style="display:none;align-items:center;gap:2px;" class="desktop-menu">
-                <a href="#how" class="ev-pill-link">How it works</a>
-                <a href="#features" class="ev-pill-link">Ways to earn</a>
-                <a href="#subscriptions" class="ev-pill-link">Membership</a>
-                <a href="vendors.php" class="ev-pill-link">Vendors</a>
-                <a href="#faq" class="ev-pill-link">FAQ</a>
-            </div>
+            <!-- Translucent Floating Pill Bar -->
+            <nav class="ev-pill-navbar">
+                <!-- Nav Links (Desktop Micro-Pills) -->
+                <div style="display:none;align-items:center;gap:2px;" class="desktop-menu">
+                    <a href="#how" class="ev-pill-link">How it works</a>
+                    <a href="#features" class="ev-pill-link">Ways to earn</a>
+                    <a href="#subscriptions" class="ev-pill-link">Membership</a>
+                    <a href="vendors.php" class="ev-pill-link">Vendors</a>
+                    <a href="#faq" class="ev-pill-link">FAQ</a>
+                </div>
 
-            <!-- Actions -->
-            <div style="display:flex;align-items:center;gap:6px;">
-                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:28px;height:28px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                </button>
-                <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:5px 11px;border-radius:9999px;font-size:0.78rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
-                    Sign in
-                </a>
-                <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">
-                    Get started
-                </a>
-                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:30px;height:30px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                </button>
-            </div>
-        </nav>
+                <!-- Actions -->
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" class="ev-theme-btn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </button>
+                    <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:5px 11px;border-radius:9999px;font-size:0.78rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
+                        Sign in
+                    </a>
+                    <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">
+                        Get started
+                    </a>
+                    <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:30px;height:30px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <!-- ===== MOBILE SLIDE-OUT DRAWER (EVERMORE EXACT) ===== -->
@@ -808,10 +926,11 @@ h1, h2, h3, h4, .font-display {
                 
                 <!-- Left: Hero Text Content -->
                 <div style="text-align:left;">
-                    <div class="hero-live-badge">
-                        <span class="hero-live-dot"></span>
-                        <span class="hero-live-text">Daily Task Drops &amp; Direct Bank Settlements Active</span>
-                    </div>
+                    <a href="#how" class="hero-announcement-chip">
+                        <span class="chip-tag">Live</span>
+                        <span class="chip-text">Daily task drops &amp; direct bank settlements active</span>
+                        <svg class="chip-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
 
                     <h1 style="font-family:var(--font-display);margin-top:18px;font-size:clamp(2.3rem, 4.6vw, 3.8rem);font-weight:700;line-height:1.08;letter-spacing:-0.03em;color:var(--color-fg);">
                         Digital Tasks.<br>
@@ -1322,13 +1441,21 @@ h1, h2, h3, h4, .font-display {
 }
 @media (max-width: 767px) {
     .ev-pill-header { top: 10px !important; padding: 0 10px !important; }
-    .ev-pill-navbar { padding: 4px 6px 4px 10px !important; }
+    .ev-header-container { gap: 8px !important; }
+    .ev-brand-standalone { padding: 5px 11px 5px 6px !important; gap: 7px !important; }
+    .ev-pill-navbar { padding: 4px 6px 4px 8px !important; }
     .hero-section { padding-top: 80px !important; }
     .desktop-auth-btn { display: none !important; }
     .mobile-menu-btn { display: flex !important; }
     .hero-split-grid { grid-template-columns: 1fr !important; }
     .steps-grid-3 { grid-template-columns: 1fr !important; }
     .categories-grid-3 { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 480px) {
+    .ev-header-container { padding: 0 2px !important; gap: 6px !important; }
+    .ev-brand-standalone { padding: 4px 8px 4px 5px !important; gap: 6px !important; }
+    .ev-brand-name { font-size: 0.8rem !important; }
+    .ev-pill-navbar { padding: 3px 5px !important; gap: 4px !important; }
 }
 </style>
 
