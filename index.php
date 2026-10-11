@@ -812,11 +812,6 @@ h1, h2, h3, h4, .font-display {
                         <span class="hero-live-dot"></span>
                         <span class="hero-live-text">Daily Task Drops &amp; Direct Bank Settlements Active</span>
                     </div>
-                    <br>
-                    <span class="glass hero-platform-tag" style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:5px 14px;font-size:0.74rem;font-weight:700;letter-spacing:0.1em;color:var(--color-aqua);text-transform:uppercase;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        DIGITAL EARNING PLATFORM
-                    </span>
 
                     <h1 style="font-family:var(--font-display);margin-top:18px;font-size:clamp(2.3rem, 4.6vw, 3.8rem);font-weight:700;line-height:1.08;letter-spacing:-0.03em;color:var(--color-fg);">
                         Digital Tasks.<br>
@@ -1256,12 +1251,6 @@ h1, h2, h3, h4, .font-display {
                 <!-- Glowing IX Emblem Token -->
                 <div class="cta-token-icon">
                     IX
-                </div>
-
-                <!-- Sleek Micro Pill Badge -->
-                <div class="cta-pill-badge">
-                    <span class="cta-pill-dot"></span>
-                    <span>INSTANT LIFETIME ACCESS</span>
                 </div>
 
                 <!-- Dynamic Modern Headline -->

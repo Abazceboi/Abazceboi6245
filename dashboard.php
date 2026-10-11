@@ -1363,203 +1363,278 @@ input,textarea,select{font-family:var(--ff);}
   display: flex;
 }
 
-/* ═══════════════════════════ WITHDRAWAL TRANSACTION RECEIPT ═══════════ */
+/* ═══════════════════════════ DIGITAL BANKING WITHDRAWAL & RECEIPT ═══════════ */
+.withdraw-confirm-box {
+  max-width: 440px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  padding: 0;
+  overflow: hidden;
+}
+
+.withdraw-confirm-header {
+  padding: 20px 22px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.withdraw-confirm-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--txt);
+}
+
+.withdraw-confirm-body {
+  padding: 20px 22px;
+}
+
+.withdraw-amount-card {
+  text-align: center;
+  padding: 16px;
+  background: rgba(2, 132, 199, 0.04);
+  border: 1px solid rgba(2, 132, 199, 0.14);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.withdraw-amount-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-3);
+  margin-bottom: 4px;
+}
+
+.withdraw-amount-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--txt);
+  letter-spacing: -0.5px;
+}
+
+.withdraw-bank-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.withdraw-bank-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284C7, #38BDF8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.withdraw-bank-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.withdraw-bank-holder {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--txt);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.withdraw-bank-sub {
+  font-size: 12px;
+  color: var(--txt-3);
+  margin-top: 2px;
+}
+
+.withdraw-details-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.withdraw-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.withdraw-detail-row span:first-child {
+  color: var(--txt-3);
+}
+
+.withdraw-detail-row span:last-child {
+  color: var(--txt);
+  font-weight: 600;
+}
+
 .receipt-modal-box {
   max-width: 440px;
-  background: linear-gradient(135deg, #131A27 0%, #0B1019 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 20px;
-  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   position: relative;
   padding: 0;
 }
+
 [data-theme="light"] .receipt-modal-box {
   background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
 }
 
 .receipt-header {
-  padding: 24px 24px 18px;
+  padding: 24px 22px 18px;
   text-align: center;
   position: relative;
-  background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
 }
 
 .receipt-brand-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
+
 .receipt-logo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
+
 .rcpt-logo-mark {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  background: linear-gradient(135deg, #0284C7, #38BDF8);
   font-weight: 800;
-  font-size: 10px;
+  font-size: 10.5px;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .rcpt-logo-text {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 800;
-  letter-spacing: 1px;
-}
-.rcpt-logo-text span { color: var(--accent); }
-.receipt-official-pill {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--txt-3);
+  letter-spacing: 0.5px;
+  color: var(--txt);
 }
 
-/* Pulsing Verified Graphic */
-.receipt-status-graphic {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.rcpt-type-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 6px;
 }
-.receipt-pulse-ring {
-  position: absolute;
-  inset: -6px;
+
+.receipt-success-icon {
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 2px solid rgba(16, 185, 129, 0.4);
-  animation: receiptPulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-}
-@keyframes receiptPulse {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  70% { transform: scale(1.25); opacity: 0; }
-  100% { transform: scale(1.25); opacity: 0; }
-}
-.receipt-check-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #10B981;
   color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
 }
-.receipt-check-circle svg {
-  width: 28px;
-  height: 28px;
+
+.receipt-success-icon svg {
+  width: 26px;
+  height: 26px;
 }
 
 .receipt-title {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
+  font-size: 17px;
+  font-weight: 700;
   color: var(--txt);
   margin-bottom: 4px;
 }
+
 .receipt-sub {
   font-size: 12px;
   color: var(--txt-3);
-  max-width: 300px;
-  margin: 0 auto 14px;
-  line-height: 1.4;
+  margin: 0 auto 12px;
 }
 
 .receipt-amount-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
   margin-top: 4px;
 }
+
 .receipt-amount-val {
-  font-size: 32px;
+  font-size: 30px;
   font-weight: 800;
-  letter-spacing: -1px;
-  color: var(--green);
-  text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+  color: var(--txt);
+  letter-spacing: -0.5px;
 }
-.receipt-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
+
+.receipt-status-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="light"] .receipt-status-badge {
+  color: #047857;
   background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #34D399;
-}
-.status-pulse-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10B981;
-  box-shadow: 0 0 6px #10B981;
+  border-color: rgba(5, 150, 105, 0.25);
 }
 
-/* Perforated Divider */
-.receipt-perforated-line {
-  position: relative;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  margin: 4px 0;
-}
-.receipt-notch {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--bg);
-  box-shadow: 0 0 0 1px var(--border) inset;
-}
-.notch-left { left: -9px; }
-.notch-right { right: -9px; }
-.receipt-dash-line {
-  width: calc(100% - 36px);
-  margin: 0 auto;
-  border-bottom: 2px dashed rgba(255, 255, 255, 0.12);
-}
-[data-theme="light"] .receipt-dash-line {
-  border-bottom-color: rgba(0, 0, 0, 0.12);
+.receipt-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 22px;
 }
 
-/* Receipt Body */
 .receipt-body {
-  padding: 10px 24px 18px;
+  padding: 16px 22px;
 }
+
 .receipt-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 16px;
 }
+
 [data-theme="light"] .receipt-grid {
   background: #F8FAFC;
   border-color: rgba(0, 0, 0, 0.06);
 }
+
 .receipt-row {
   display: flex;
   align-items: center;
@@ -1567,27 +1642,33 @@ input,textarea,select{font-family:var(--ff);}
   gap: 10px;
   font-size: 12.5px;
 }
+
 .rcpt-label {
   color: var(--txt-3);
   font-weight: 500;
 }
+
 .rcpt-val {
   color: var(--txt);
   font-weight: 600;
   text-align: right;
 }
+
 .rcpt-val.mono-val {
   font-family: var(--mono);
   font-size: 12px;
 }
+
 .rcpt-val.bold-val {
   font-weight: 700;
 }
+
 .rcpt-val.free-val {
-  color: var(--green);
+  color: #10B981;
 }
-.rcpt-val.eta-val {
-  color: #38BDF8;
+
+[data-theme="light"] .rcpt-val.free-val {
+  color: #047857;
 }
 
 .rcpt-val-copy {
@@ -1595,6 +1676,7 @@ input,textarea,select{font-family:var(--ff);}
   align-items: center;
   gap: 6px;
 }
+
 .rcpt-copy-btn {
   background: transparent;
   border: none;
@@ -1606,44 +1688,36 @@ input,textarea,select{font-family:var(--ff);}
   justify-content: center;
   transition: color 0.18s ease;
 }
+
 .rcpt-copy-btn:hover {
   color: var(--accent);
 }
+
 .rcpt-copy-btn svg {
   width: 14px;
   height: 14px;
 }
 
-.receipt-security-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10.5px;
+.receipt-footer-note {
+  font-size: 11px;
   color: var(--txt-3);
+  text-align: center;
   margin-top: 14px;
-  line-height: 1.4;
-  padding: 0 4px;
-}
-.receipt-security-footer svg {
-  width: 16px;
-  height: 16px;
-  color: var(--green);
-  flex-shrink: 0;
+  line-height: 1.45;
+  padding: 0 6px;
 }
 
 .receipt-actions {
-  padding: 16px 24px 22px;
+  padding: 14px 22px 20px;
   display: flex;
   gap: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border);
 }
-[data-theme="light"] .receipt-actions {
-  border-top-color: rgba(0, 0, 0, 0.08);
-}
+
 .rcpt-btn {
   flex: 1;
   justify-content: center;
-  padding: 11px 16px;
+  padding: 10px 16px;
   font-size: 13px;
   border-radius: 10px;
 }
@@ -2491,119 +2565,95 @@ input,textarea,select{font-family:var(--ff);}
   </div>
 </div>
 
-<!-- Modern Withdrawal Settlement Confirmation Modal -->
+<!-- Digital Banking Withdrawal Settlement Confirmation Modal -->
 <div class="modal-backdrop" id="modalWithdrawConfirm">
-  <div class="modal" style="max-width: 480px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.28); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 45px rgba(56, 189, 248, 0.12);">
-    <div class="modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 14px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.3);color:#38BDF8;display:flex;align-items:center;justify-content:center;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="modal-title" style="font-size:16px;font-weight:800;color:var(--txt);">Confirm Payout Settlement</div>
-          <div style="font-size:11px;color:var(--txt-3);">Review authorization details prior to execution</div>
-        </div>
-      </div>
+  <div class="modal withdraw-confirm-box">
+    <div class="withdraw-confirm-header">
+      <div class="withdraw-confirm-title">Confirm Transfer</div>
       <button class="modal-close" onclick="closeModal('modalWithdrawConfirm')">&times;</button>
     </div>
-    <div class="modal-body" style="padding-top:16px;">
-      <!-- Payout Amount Banner -->
-      <div style="text-align:center;padding:18px 14px;background:linear-gradient(135deg, rgba(56,189,248,0.08), rgba(2,132,199,0.04));border:1px solid rgba(56,189,248,0.22);border-radius:14px;margin-bottom:16px;">
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:#7DD3FC;margin-bottom:4px;">Net Settlement Amount</div>
-        <div id="confirmWdAmount" style="font-size:2rem;font-weight:900;color:var(--txt);font-variant-numeric:tabular-nums;letter-spacing:-0.5px;">₦0.00</div>
-        <div style="display:inline-block;margin-top:6px;font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(34,197,94,0.12);color:#22C55E;font-weight:700;border:1px solid rgba(34,197,94,0.25);">Direct Bank Settlement</div>
+
+    <div class="withdraw-confirm-body">
+      <!-- Amount display -->
+      <div class="withdraw-amount-card">
+        <div class="withdraw-amount-label">Amount to Send</div>
+        <div class="withdraw-amount-number" id="confirmWdAmount">₦0.00</div>
       </div>
 
-      <!-- Detail rows -->
-      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Source Wallet:</span>
-          <span id="confirmWdWallet" style="font-weight:700;color:var(--txt);">Referral Cash Wallet</span>
+      <!-- Destination Account Card -->
+      <div class="withdraw-bank-card">
+        <div class="withdraw-bank-avatar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Destination Bank:</span>
-          <span id="confirmWdBank" style="font-weight:700;color:var(--txt);"><?= htmlspecialchars($bankName) ?></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Account Number:</span>
-          <span id="confirmWdAccount" style="font-weight:800;letter-spacing:0.5px;color:var(--txt);font-family:monospace;"><?= htmlspecialchars($accountNumber) ?></span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Beneficiary Name:</span>
-          <span id="confirmWdName" style="font-weight:700;color:var(--txt);"><?= htmlspecialchars($accountName) ?></span>
-        </div>
-        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Transfer Fee:</span>
-          <span style="color:#22C55E;font-weight:800;">₦0.00 (Zero Fee / Subsidized)</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:var(--txt-3);">Settlement Channel:</span>
-          <span style="color:var(--txt);font-weight:600;">NIBSS Instant Payment (NIP)</span>
+        <div class="withdraw-bank-meta">
+          <div class="withdraw-bank-holder" id="confirmWdName"><?= htmlspecialchars($accountName) ?></div>
+          <div class="withdraw-bank-sub">
+            <span id="confirmWdBank"><?= htmlspecialchars($bankName) ?></span> &bull; <span id="confirmWdAccount" style="font-family:var(--mono);"><?= htmlspecialchars($accountNumber) ?></span>
+          </div>
         </div>
       </div>
 
-      <div style="font-size:11px;color:var(--txt-3);line-height:1.55;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.16);padding:10px 12px;border-radius:10px;">
-        <strong style="color:var(--txt);">Authorization Agreement:</strong>
-        Please review and accept these settlement details. By confirming, you authorize INNOVATIONX to debit your wallet and transfer funds directly to your verified bank account. Once confirmed, your official transaction receipt will be generated.
+      <!-- Summary Breakdown -->
+      <div class="withdraw-details-table">
+        <div class="withdraw-detail-row">
+          <span>Debit Wallet</span>
+          <span id="confirmWdWallet">Referral Cash Wallet</span>
+        </div>
+        <div class="withdraw-detail-row">
+          <span>Transfer Fee</span>
+          <span style="color:#10B981;font-weight:700;">Free</span>
+        </div>
+        <div class="withdraw-detail-row">
+          <span>Processing Time</span>
+          <span>Instant</span>
+        </div>
       </div>
     </div>
-    <div class="modal-footer" style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;">
-      <button type="button" class="btn btn-ghost" onclick="closeModal('modalWithdrawConfirm'); openModal('modalWithdraw');" style="flex:1;">Cancel / Edit</button>
-      <button type="button" class="btn btn-primary" id="btnAuthorizePayout" onclick="executeWithdrawalReq()" style="flex:1.4;background:linear-gradient(135deg, #0284C7, #38BDF8);font-weight:700;">
-        Accept &amp; Authorize Payout
+
+    <div class="modal-footer" style="padding:14px 22px 18px;border-top:1px solid var(--border);display:flex;gap:10px;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalWithdrawConfirm'); openModal('modalWithdraw');" style="flex:1;">Back</button>
+      <button type="button" class="btn btn-primary" id="btnAuthorizePayout" onclick="executeWithdrawalReq()" style="flex:1.5;background:linear-gradient(135deg, #0284C7, #38BDF8);font-weight:700;">
+        Confirm Transfer
       </button>
     </div>
   </div>
 </div>
 
-<!-- Modern Digital Banking Withdrawal Receipt Modal -->
+<!-- Digital Banking Withdrawal Receipt Modal -->
 <div class="modal-backdrop" id="modalWithdrawReceipt">
   <div class="modal receipt-modal-box">
     <!-- Close Button -->
     <button class="modal-close" onclick="closeModal('modalWithdrawReceipt')" style="position:absolute;top:16px;right:18px;z-index:10;">&times;</button>
     
-    <!-- Receipt Header with Watermark & Security Seal -->
+    <!-- Receipt Header -->
     <div class="receipt-header">
       <div class="receipt-brand-row">
         <div class="receipt-logo">
           <span class="rcpt-logo-mark">IX</span>
-          <span class="rcpt-logo-text">INNOVATION<span>X</span></span>
+          <span class="rcpt-logo-text">INNOVATIONX</span>
         </div>
-        <div class="receipt-official-pill">OFFICIAL RECEIPT</div>
+        <span class="rcpt-type-tag">Transfer Receipt</span>
       </div>
 
-      <!-- Animated Pulse Checkmark -->
-      <div class="receipt-status-graphic">
-        <div class="receipt-pulse-ring"></div>
-        <div class="receipt-check-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
+      <!-- Clean Emerald Success Icon -->
+      <div class="receipt-success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
       </div>
 
-      <div class="receipt-title">Withdrawal Dispatched</div>
-      <div class="receipt-sub">Your payment request has been securely queued for instant settlement.</div>
+      <div class="receipt-title">Transfer Submitted</div>
+      <div class="receipt-sub">Your payout request has been sent for bank settlement.</div>
 
-      <!-- Prominent Amount Display -->
+      <!-- Amount Display -->
       <div class="receipt-amount-display">
-        <span class="receipt-amount-val" id="rcptAmount">₦0.00</span>
-        <div class="receipt-status-pill">
-          <span class="status-pulse-dot"></span>
-          <span id="rcptStatusText">QUEUED FOR INSTANT SETTLEMENT</span>
-        </div>
+        <div class="receipt-amount-val" id="rcptAmount">₦0.00</div>
+        <div class="receipt-status-badge" id="rcptStatusText">Processing</div>
       </div>
     </div>
 
-    <!-- Perforated Cut Line Divider -->
-    <div class="receipt-perforated-line">
-      <div class="receipt-notch notch-left"></div>
-      <div class="receipt-dash-line"></div>
-      <div class="receipt-notch notch-right"></div>
-    </div>
+    <!-- Clean Divider -->
+    <div class="receipt-divider"></div>
 
     <!-- Receipt Breakdown Body -->
     <div class="receipt-body">
@@ -2619,8 +2669,8 @@ input,textarea,select{font-family:var(--ff);}
         </div>
 
         <div class="receipt-row">
-          <span class="rcpt-label">Beneficiary Bank</span>
-          <span class="rcpt-val bold-val" id="rcptBank">OPay Digital Services</span>
+          <span class="rcpt-label">Destination Bank</span>
+          <span class="rcpt-val bold-val" id="rcptBank">OPay</span>
         </div>
 
         <div class="receipt-row">
@@ -2629,42 +2679,36 @@ input,textarea,select{font-family:var(--ff);}
         </div>
 
         <div class="receipt-row">
-          <span class="rcpt-label">Account Name</span>
+          <span class="rcpt-label">Recipient Name</span>
           <span class="rcpt-val" id="rcptName">Member</span>
         </div>
 
         <div class="receipt-row">
           <span class="rcpt-label">Source Wallet</span>
-          <span class="rcpt-val" id="rcptWallet">Task Points Wallet</span>
+          <span class="rcpt-val" id="rcptWallet">Referral Cash Wallet</span>
         </div>
 
         <div class="receipt-row">
-          <span class="rcpt-label">Date & Time</span>
+          <span class="rcpt-label">Date &amp; Time</span>
           <span class="rcpt-val" id="rcptDate">Just now</span>
         </div>
 
         <div class="receipt-row">
           <span class="rcpt-label">Transfer Fee</span>
-          <span class="rcpt-val free-val">₦0.00 (Zero Fee / Subsidized)</span>
-        </div>
-
-        <div class="receipt-row">
-          <span class="rcpt-label">Estimated Delivery</span>
-          <span class="rcpt-val eta-val">Within 5 - 15 Minutes</span>
+          <span class="rcpt-val free-val">₦0.00 (Free)</span>
         </div>
       </div>
 
-      <div class="receipt-security-footer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Cryptographically signed & routed through automated banking settlement engine.</span>
+      <div class="receipt-footer-note">
+        Official receipt for your records. For inquiries, quote your Reference ID.
       </div>
     </div>
 
     <!-- Receipt Action Buttons -->
     <div class="receipt-actions">
       <button type="button" class="btn btn-secondary rcpt-btn" onclick="printReceipt()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Save / Print
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Save Receipt
       </button>
       <button type="button" class="btn btn-primary rcpt-btn" onclick="closeModal('modalWithdrawReceipt')">
         Done
@@ -4614,11 +4658,11 @@ async function executeWithdrawalReq() {
       document.getElementById('rcptName').textContent = accName;
       document.getElementById('rcptWallet').textContent = walletLabel;
       document.getElementById('rcptDate').textContent = dateStr;
-      document.getElementById('rcptStatusText').textContent = rc.status_label || 'QUEUED FOR INSTANT SETTLEMENT';
+      document.getElementById('rcptStatusText').textContent = rc.status_label || 'Processing';
 
       // Open official withdrawal receipt modal
       openModal('modalWithdrawReceipt');
-      toast('Withdrawal settlement successfully authorized & queued!', 'success');
+      toast('Withdrawal submitted successfully!', 'success');
 
       // Clear input and pending data
       pendingWithdrawalData = null;
@@ -4630,7 +4674,7 @@ async function executeWithdrawalReq() {
   } catch(e) {
     toast('Network error processing settlement request', 'error');
   }
-  if (btn) { btn.disabled = false; btn.textContent = 'Accept & Authorize Payout'; }
+  if (btn) { btn.disabled = false; btn.textContent = 'Confirm Transfer'; }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
