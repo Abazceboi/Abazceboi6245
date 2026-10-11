@@ -619,8 +619,8 @@ input,textarea,select{font-family:var(--ff);}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
             <div>
-              <div class="card-title" style="font-size:15px;font-weight:700;">Topic Question Templates</div>
-              <div class="card-sub">Select or enter a topic to auto-fill standardized survey questions, options, and participant slot targets.</div>
+              <div class="card-title" style="font-size:15px;font-weight:700;">Automated Survey &amp; Question Generator</div>
+              <div class="card-sub">Generate and publish standardized surveys automatically with customizable topics, available participant slots, rewards, and question verification.</div>
             </div>
           </div>
         </div>
@@ -641,9 +641,17 @@ input,textarea,select{font-family:var(--ff);}
                 <option value="10">10 Questions (Comprehensive Survey)</option>
               </select>
             </div>
-            <div class="form-group" style="flex:1;">
-              <label class="form-label" style="font-size:12px;font-weight:700;">Target Persons (Slots)</label>
-              <input type="number" class="form-input" id="genSurveySlots" value="100" min="1" placeholder="e.g. 50">
+            <div class="form-group" style="flex:1.1;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Available Slots</label>
+              <input type="number" class="form-input" id="genSurveySlots" value="100" min="1" placeholder="e.g. 100" oninput="if(typeof updateGeneratedPlanSlots === 'function') updateGeneratedPlanSlots(this.value)">
+              <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(25)">25</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(50)">50</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(100)">100</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(250)">250</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(500)">500</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(1000)">1k</button>
+              </div>
             </div>
             <div class="form-group" style="flex:1.1;">
               <label class="form-label" style="font-size:12px;font-weight:700;">Format Style</label>
@@ -678,7 +686,7 @@ input,textarea,select{font-family:var(--ff);}
           <div style="display:flex;gap:10px;align-items:center;">
             <button type="button" class="btn btn-primary" id="btnRunSurveyGen" onclick="generateSurveyFromTopic()" style="font-weight:700;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Load Topic Questions</span>
+              <span>Generate Survey Questions</span>
             </button>
             <span id="genSurveyStatusMsg" style="font-size:12px;color:var(--txt-3);"></span>
           </div>
@@ -687,9 +695,9 @@ input,textarea,select{font-family:var(--ff);}
           <div id="genSurveyResultsBox" style="display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border-mid);border-radius:12px;padding:16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;">
               <div>
-                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Questions Preview</span>
+                <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Survey Plan Ready</span>
                 <h4 id="genResultTitleDisplay" style="font-size:15px;font-weight:700;color:var(--txt);margin-top:2px;">Survey Preview</h4>
-                <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Suggested Reward: 150 PTS</div>
+                <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Reward: 150 PTS | Available Slots: 100</div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button type="button" class="btn btn-primary btn-sm" onclick="applyAndPublishGeneratedSurvey()" style="background:#0284C7;border-color:#0284C7;color:#fff;font-weight:700;">
@@ -707,9 +715,28 @@ input,textarea,select{font-family:var(--ff);}
               </div>
             </div>
 
+            <!-- Dedicated Slot & Reward Control Bar in Results Box -->
+            <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <label style="font-size:12px;font-weight:700;color:var(--txt);">Available Slots:</label>
+                <input type="number" id="genPreviewSlots" class="form-input" min="1" style="width:100px;padding:5px 8px;font-size:13px;font-weight:700;" oninput="updateGeneratedPlanSlots(this.value)">
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(25)">25</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(50)">50</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(100)">100</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(250)">250</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(500)">500</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(1000)">1k</button>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <label style="font-size:12px;font-weight:700;color:var(--txt);">Reward (PTS):</label>
+                <input type="number" id="genPreviewReward" class="form-input" min="10" style="width:90px;padding:5px 8px;font-size:13px;font-weight:700;" oninput="updateGeneratedPlanReward(this.value)">
+              </div>
+            </div>
+
             <!-- Preview of Generated Questions -->
             <div style="font-size:12px;font-weight:600;color:var(--txt-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Question Preview &amp; Designated Answers</div>
-            <div id="genQuestionsPreviewList" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;padding-right:4px;"></div>
           </div>
         </div>
       </div>
@@ -2502,17 +2529,69 @@ function generateTopicQuestionsClient(topic, count, style, slots = 100) {
   };
 }
 
+function setGenSlots(val) {
+  const el = document.getElementById('genSurveySlots');
+  if (el) el.value = val;
+  if (lastGeneratedSurveyPlan) {
+    updateGeneratedPlanSlots(val);
+  }
+}
+
+function setPreviewSlots(val) {
+  const pEl = document.getElementById('genPreviewSlots');
+  if (pEl) pEl.value = val;
+  const gEl = document.getElementById('genSurveySlots');
+  if (gEl) gEl.value = val;
+  updateGeneratedPlanSlots(val);
+}
+
+function updateGeneratedPlanSlots(val) {
+  const num = Math.max(1, parseInt(val) || 100);
+  if (lastGeneratedSurveyPlan) {
+    lastGeneratedSurveyPlan.total_slots = num;
+  }
+  const pEl = document.getElementById('genPreviewSlots');
+  if (pEl && parseInt(pEl.value) !== num) pEl.value = num;
+  const gEl = document.getElementById('genSurveySlots');
+  if (gEl && parseInt(gEl.value) !== num) gEl.value = num;
+  const metaDisplay = document.getElementById('genResultMetaDisplay');
+  if (metaDisplay && lastGeneratedSurveyPlan) {
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${lastGeneratedSurveyPlan.reward_points} PTS | Available Slots: ${num}`;
+  }
+}
+
+function updateGeneratedPlanReward(val) {
+  const num = Math.max(10, parseInt(val) || 150);
+  if (lastGeneratedSurveyPlan) {
+    lastGeneratedSurveyPlan.reward_points = num;
+  }
+  const pEl = document.getElementById('genPreviewReward');
+  if (pEl && parseInt(pEl.value) !== num) pEl.value = num;
+  const metaDisplay = document.getElementById('genResultMetaDisplay');
+  if (metaDisplay && lastGeneratedSurveyPlan) {
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${num} PTS | Available Slots: ${lastGeneratedSurveyPlan.total_slots}`;
+  }
+}
+
 function renderGeneratedSurveyResults(plan) {
   const box = document.getElementById('genSurveyResultsBox');
   const titleDisplay = document.getElementById('genResultTitleDisplay');
   const metaDisplay = document.getElementById('genResultMetaDisplay');
   const list = document.getElementById('genQuestionsPreviewList');
+  const previewSlots = document.getElementById('genPreviewSlots');
+  const previewReward = document.getElementById('genPreviewReward');
 
   if (!box || !titleDisplay || !list) return;
 
+  const currentSlots = parseInt(document.getElementById('genSurveySlots')?.value) || plan.total_slots || 100;
+  plan.total_slots = currentSlots;
+
+  if (previewSlots) previewSlots.value = plan.total_slots;
+  if (previewReward) previewReward.value = plan.reward_points || 150;
+
   titleDisplay.textContent = plan.title || 'Official Survey';
   if (metaDisplay) {
-    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Suggested Reward: ${plan.reward_points} PTS | Slots: ${plan.total_slots}`;
+    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Reward: ${plan.reward_points} PTS | Available Slots: ${plan.total_slots}`;
   }
 
   list.innerHTML = plan.questions.map((q, qIdx) => `
@@ -2540,17 +2619,25 @@ function renderGeneratedSurveyResults(plan) {
 
 async function applyAndPublishGeneratedSurvey() {
   if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions || !lastGeneratedSurveyPlan.questions.length) {
-    toast('No questions loaded yet. Click load topic questions above.', 'error');
+    toast('No questions loaded yet. Click generate survey questions above.', 'error');
     return;
   }
+
+  const currentSlots = parseInt(document.getElementById('genPreviewSlots')?.value)
+    || parseInt(document.getElementById('genSurveySlots')?.value)
+    || parseInt(lastGeneratedSurveyPlan.total_slots)
+    || 100;
+  const currentReward = parseInt(document.getElementById('genPreviewReward')?.value)
+    || parseInt(lastGeneratedSurveyPlan.reward_points)
+    || 150;
 
   const payload = {
     title: lastGeneratedSurveyPlan.title || 'Platform Feedback Survey',
     category: lastGeneratedSurveyPlan.category || 'General',
     format_type: 'word',
     video_url: '',
-    reward_points: parseInt(lastGeneratedSurveyPlan.reward_points) || 150,
-    total_slots: Math.max(1, parseInt(lastGeneratedSurveyPlan.total_slots) || 100),
+    reward_points: Math.max(10, currentReward),
+    total_slots: Math.max(1, currentSlots),
     expires_at: '',
     description: lastGeneratedSurveyPlan.description || '',
     require_screenshot: false,
@@ -2566,7 +2653,7 @@ async function applyAndPublishGeneratedSurvey() {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast('Survey published successfully and is now live on the user dashboard!', 'success');
+      toast(`Survey published successfully with ${payload.total_slots} participant slots!`, 'success');
       const createdSurvey = d.survey || Object.assign({
         id: 'SRV-' + Date.now(),
         total_slots: payload.total_slots,
@@ -2595,9 +2682,17 @@ async function applyAndPublishGeneratedSurvey() {
 
 function applyGeneratedSurveyToForm(fullApply = true) {
   if (!lastGeneratedSurveyPlan || !lastGeneratedSurveyPlan.questions) {
-    toast('No questions loaded yet. Click load topic questions above.', 'error');
+    toast('No questions loaded yet. Click generate survey questions above.', 'error');
     return;
   }
+
+  const currentSlots = parseInt(document.getElementById('genPreviewSlots')?.value)
+    || parseInt(document.getElementById('genSurveySlots')?.value)
+    || parseInt(lastGeneratedSurveyPlan.total_slots)
+    || 100;
+  const currentReward = parseInt(document.getElementById('genPreviewReward')?.value)
+    || parseInt(lastGeneratedSurveyPlan.reward_points)
+    || 150;
 
   if (fullApply) {
     const titleEl = document.getElementById('svTitle');
@@ -2608,8 +2703,8 @@ function applyGeneratedSurveyToForm(fullApply = true) {
 
     if (titleEl) titleEl.value = lastGeneratedSurveyPlan.title;
     if (catEl) catEl.value = lastGeneratedSurveyPlan.category;
-    if (rewardEl) rewardEl.value = lastGeneratedSurveyPlan.reward_points;
-    if (slotsEl) slotsEl.value = lastGeneratedSurveyPlan.total_slots;
+    if (rewardEl) rewardEl.value = currentReward;
+    if (slotsEl) slotsEl.value = currentSlots;
     if (descEl) descEl.value = lastGeneratedSurveyPlan.description;
 
     surveyQuestions = JSON.parse(JSON.stringify(lastGeneratedSurveyPlan.questions));
