@@ -61,65 +61,174 @@ if (!empty($_GET['error'])) {
         })();
     </script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
         .auth-wrapper {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 40px 20px;
-            position: relative;
-            background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.15), transparent 70%), var(--bg-body, #0A0A0F);
+            justify-content: center;
+            padding: 40px 16px;
+            background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%), #0A0E17;
+            color: #F1F5F9;
+            transition: background 0.25s ease;
         }
         .auth-card {
             width: 100%;
-            max-width: 460px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(16, 17, 28, 0.96) 100%);
+            max-width: 440px;
+            background: rgba(15, 23, 42, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 3px solid #38BDF8;
-            border-radius: 18px;
-            padding: 42px 36px;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.12);
+            border-radius: 20px;
+            padding: 36px 32px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             position: relative;
-            z-index: 10;
         }
-        .auth-header {
-            text-align: center;
-            margin-bottom: 28px;
+        .auth-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
-        .auth-logo {
+        .auth-brand {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
-            margin-bottom: 18px;
+        }
+        .auth-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #0284C7;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: -0.02em;
+        }
+        .auth-brand-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #FFFFFF;
+        }
+        .auth-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .auth-icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94A3B8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+        .auth-icon-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auth-home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94A3B8;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .auth-home-link:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auth-header {
+            margin-bottom: 24px;
         }
         .auth-title {
-            font-size: 1.7rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             color: #FFFFFF;
-            margin-bottom: 6px;
+            margin: 0 0 6px;
         }
         .auth-subtitle {
             font-size: 0.88rem;
             color: #94A3B8;
+            margin: 0;
             line-height: 1.4;
         }
-        .form-group {
-            margin-bottom: 20px;
+        .auth-alert {
+            display: none;
+            margin-bottom: 18px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            line-height: 1.4;
         }
-        .form-group label {
+        .auth-alert.is-error {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #FFFFFF;
-            margin-bottom: 7px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #FCA5A5;
+        }
+        .auth-alert.is-success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #6EE7B7;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #E2E8F0;
+        }
+        .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .forgot-link {
+            font-size: 0.78rem;
+            color: #38BDF8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
         }
         .input-wrap-relative {
             position: relative;
@@ -128,148 +237,136 @@ if (!empty($_GET['error'])) {
         }
         .form-input {
             width: 100%;
-            padding: 13px 16px;
+            height: 44px;
+            padding: 0 14px;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #FFFFFF;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             font-family: inherit;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
+            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+        .form-input::placeholder {
+            color: #64748B;
         }
         .form-input:focus {
             outline: none;
             border-color: #38BDF8;
             background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
         .pass-toggle-btn {
             position: absolute;
-            right: 12px;
-            background: none;
+            right: 8px;
+            width: 32px;
+            height: 32px;
             border: none;
+            background: none;
             color: #94A3B8;
             cursor: pointer;
-            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 6px;
             transition: color 0.15s ease;
         }
         .pass-toggle-btn:hover {
             color: #FFFFFF;
         }
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #94A3B8;
+            margin-bottom: 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .remember-row input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            border-radius: 4px;
+            accent-color: #0284C7;
+            cursor: pointer;
+            margin: 0;
+        }
         .btn-login-submit {
             width: 100%;
-            max-width: 260px;
-            margin: 14px auto 0;
-            padding: 10px 22px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.86rem;
-            background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+            height: 46px;
+            background: #0284C7;
             color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+            transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
         .btn-login-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.55);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: #0369A1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
         }
         .btn-login-submit:disabled {
-            opacity: 0.65;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
-        .auth-footer-links {
+        .auth-footer {
+            margin-top: 22px;
             text-align: center;
-            margin-top: 24px;
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             color: #94A3B8;
         }
-        .auth-footer-links a {
-            color: #7DD3FC;
-            font-weight: 700;
+        .auth-footer a {
+            color: #38BDF8;
             text-decoration: none;
+            font-weight: 600;
         }
-        .auth-footer-links a:hover {
+        .auth-footer a:hover {
             text-decoration: underline;
         }
-
-        /* Light Theme Overrides */
-        [data-theme="light"] .auth-wrapper {
-            background: #F8FAFC !important;
+        .auth-directory-link {
+            margin-top: 10px;
+            display: block;
+            font-size: 0.78rem;
+            color: #64748B;
+            text-decoration: none;
         }
-        [data-theme="light"] .auth-card {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            border-top: 3px solid #38BDF8 !important;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.06) !important;
-        }
-        [data-theme="light"] .auth-title {
-            color: #0F172A !important;
-        }
-        [data-theme="light"] .auth-subtitle {
-            color: #64748B !important;
-        }
-        [data-theme="light"] .form-group label {
-            color: #0F172A !important;
-        }
-        [data-theme="light"] .form-input {
-            background: #FFFFFF !important;
-            border: 1px solid #CBD5E1 !important;
-            color: #0F172A !important;
-        }
-        [data-theme="light"] .form-input:focus {
-            background: #FFFFFF !important;
-            border-color: #38BDF8 !important;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
-        }
-        [data-theme="light"] .pass-toggle-btn {
-            color: #64748B !important;
-        }
-        [data-theme="light"] .pass-toggle-btn:hover {
-            color: #0F172A !important;
-        }
-        [data-theme="light"] .auth-footer-links {
-            color: #64748B !important;
-        }
-        [data-theme="light"] .auth-footer-links a {
-            color: #0284C7 !important;
+        .auth-directory-link:hover {
+            color: #94A3B8;
         }
 
-        /* Dynamic Sign-Out Toast Pop-Up Notification */
+        /* Sign-Out Toast Notification */
         .logout-toast-popup {
             position: fixed;
-            top: 24px;
+            top: 20px;
             left: 50%;
-            transform: translateX(-50%) translateY(-25px);
+            transform: translateX(-50%) translateY(-20px);
             z-index: 999999;
             display: none;
             align-items: center;
-            gap: 12px;
-            padding: 13px 20px;
-            border-radius: 14px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: #7DD3FC;
-            background: rgba(15, 23, 42, 0.94);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(56, 189, 248, 0.2);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #F1F5F9;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             opacity: 0;
-            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
             max-width: 90vw;
         }
@@ -283,140 +380,217 @@ if (!empty($_GET['error'])) {
             border: none;
             color: #94A3B8;
             cursor: pointer;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             line-height: 1;
-            padding: 2px 6px;
-            margin-left: 6px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
+            padding: 0 4px;
+            margin-left: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .logout-toast-close:hover {
             color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Light mode */
+        [data-theme="light"] .auth-wrapper {
+            background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 60%), #F8FAFC;
+            color: #0F172A;
+        }
+        [data-theme="light"] .auth-card {
+            background: #FFFFFF;
+            border-color: #E2E8F0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+        [data-theme="light"] .auth-brand-name,
+        [data-theme="light"] .auth-title {
+            color: #0F172A;
+        }
+        [data-theme="light"] .auth-subtitle {
+            color: #64748B;
+        }
+        [data-theme="light"] .auth-icon-btn,
+        [data-theme="light"] .auth-home-link {
+            background: #F1F5F9;
+            border-color: #E2E8F0;
+            color: #475569;
+        }
+        [data-theme="light"] .auth-icon-btn:hover,
+        [data-theme="light"] .auth-home-link:hover {
+            background: #E2E8F0;
+            color: #0F172A;
+        }
+        [data-theme="light"] .form-label {
+            color: #334155;
+        }
+        [data-theme="light"] .form-input {
+            background: #F8FAFC;
+            border-color: #CBD5E1;
+            color: #0F172A;
+        }
+        [data-theme="light"] .form-input:focus {
+            background: #FFFFFF;
+            border-color: #0284C7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+        [data-theme="light"] .form-input::placeholder {
+            color: #94A3B8;
+        }
+        [data-theme="light"] .pass-toggle-btn {
+            color: #64748B;
+        }
+        [data-theme="light"] .pass-toggle-btn:hover {
+            color: #0F172A;
+        }
+        [data-theme="light"] .remember-row {
+            color: #64748B;
+        }
+        [data-theme="light"] .auth-footer {
+            color: #64748B;
+        }
+        [data-theme="light"] .auth-footer a {
+            color: #0284C7;
+        }
+        [data-theme="light"] .forgot-link {
+            color: #0284C7;
         }
         [data-theme="light"] .logout-toast-popup {
-            background: rgba(255, 255, 255, 0.96);
-            border-color: rgba(2, 132, 199, 0.35);
-            color: #0369A1;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(2, 132, 199, 0.1);
+            background: #FFFFFF;
+            border-color: #E2E8F0;
+            color: #0F172A;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
         [data-theme="light"] .logout-toast-close {
             color: #64748B;
         }
         [data-theme="light"] .logout-toast-close:hover {
             color: #0F172A;
-            background: rgba(0, 0, 0, 0.05);
+        }
+        [data-theme="light"] .auth-alert.is-error {
+            background: #FEF2F2;
+            border-color: #FECACA;
+            color: #991B1B;
+        }
+        [data-theme="light"] .auth-alert.is-success {
+            background: #ECFDF5;
+            border-color: #A7F3D0;
+            color: #065F46;
         }
 
         @media (max-width: 520px) {
             .auth-card {
-                padding: 30px 20px;
-                border-radius: 14px;
+                padding: 28px 20px;
+                border-radius: 16px;
             }
             .auth-title {
-                font-size: 1.45rem;
+                font-size: 1.35rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Floating Sign-Out Pop-Up Notification (only pops up immediately upon sign out) -->
+    <!-- Floating Sign-Out Pop-Up Notification -->
     <div id="logoutToast" class="logout-toast-popup" role="alert" aria-live="assertive">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-        <span>You have been safely signed out.</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        <span>You have been signed out.</span>
         <button type="button" class="logout-toast-close" onclick="dismissLogoutToast()" aria-label="Dismiss">&times;</button>
     </div>
 
     <div class="auth-wrapper">
         <div class="auth-card">
-            <div class="auth-header">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
-                    <a href="index.php" class="auth-logo" style="margin-bottom:0">
-                        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem">IX</div>
-                        <span style="font-size:1.35rem;font-weight:900;letter-spacing:1px;color:var(--white-pure, #FFF)"><?= htmlspecialchars(APP_NAME) ?></span>
-                    </a>
-                    <a href="index.php" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);color:#7DD3FC;font-size:0.78rem;font-weight:700;text-decoration:none;transition:all 0.2s ease" onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        Home
-                    </a>
+            <!-- Top bar -->
+            <div class="auth-topbar">
+                <a href="index.php" class="auth-brand" aria-label="Home">
+                    <div class="auth-badge">IX</div>
+                    <span class="auth-brand-name"><?= htmlspecialchars(APP_NAME) ?></span>
+                </a>
+                <div class="auth-top-actions">
+                    <button type="button" onclick="toggleAuthTheme()" class="auth-icon-btn" title="Toggle theme" aria-label="Toggle theme">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </button>
+                    <a href="index.php" class="auth-home-link">Home</a>
                 </div>
             </div>
 
-            <div id="loginStatusAlert" style="<?= !empty($loginError) ? 'display:block;background:rgba(239, 68, 68, 0.12);border:1px solid rgba(239, 68, 68, 0.35);color:#FCA5A5;' : 'display:none;' ?>margin-bottom:18px;padding:12px 14px;border-radius:10px;font-size:0.84rem;font-weight:600"><?= htmlspecialchars($loginError ?? '') ?></div>
+            <!-- Header -->
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-subtitle">Sign in to access your dashboard.</p>
+            </div>
 
+            <!-- Status Alert -->
+            <div id="loginStatusAlert" class="auth-alert <?= !empty($loginError) ? 'is-error' : '' ?>">
+                <?= htmlspecialchars($loginError ?? '') ?>
+            </div>
+
+            <!-- Form -->
             <form id="loginForm" method="POST" action="login.php" onsubmit="event.preventDefault(); handleLoginSubmit(event); return false;">
                 <div class="form-group">
-                    <label for="loginUser">Username or Email</label>
+                    <label for="loginUser" class="form-label">Username or email</label>
                     <input type="text" id="loginUser" name="user" class="form-input" placeholder="Your username or email" required autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('loginPass').focus();}">
                 </div>
 
                 <div class="form-group">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-                        <label for="loginPass" style="margin-bottom:0">Password</label>
-                        <a href="mailto:<?= htmlspecialchars(SUPPORT_EMAIL) ?>?subject=Password%20Reset%20Request" style="font-size:0.75rem;color:#7DD3FC;text-decoration:none;font-weight:700">Forgot Password?</a>
+                    <div class="label-row">
+                        <label for="loginPass" class="form-label">Password</label>
+                        <a href="mailto:<?= htmlspecialchars(SUPPORT_EMAIL) ?>?subject=Password%20Reset%20Request" class="forgot-link">Forgot password?</a>
                     </div>
                     <div class="input-wrap-relative">
-                        <input type="password" id="loginPass" name="pass" class="form-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-right:42px" onkeydown="if(event.key==='Enter'){event.preventDefault();handleLoginSubmit(event);}">
+                        <input type="password" id="loginPass" name="pass" class="form-input" placeholder="Enter password" required autocomplete="current-password" style="padding-right:42px" onkeydown="if(event.key==='Enter'){event.preventDefault();handleLoginSubmit(event);}">
                         <button type="button" class="pass-toggle-btn" onclick="togglePassVisibility('loginPass', this)" aria-label="Toggle password visibility">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>
                 </div>
 
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:0.82rem;color:#94A3B8">
-                    <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;font-weight:400;color:inherit;text-transform:none">
-                        <input type="checkbox" checked style="accent-color: #0284C7">
-                        <span>Remember this device</span>
-                    </label>
-                </div>
+                <label class="remember-row">
+                    <input type="checkbox" checked>
+                    <span>Remember this device</span>
+                </label>
 
                 <button type="button" class="btn-login-submit" id="btnLoginSubmit" onclick="handleLoginSubmit(event)">
-                    <span>Sign In to Dashboard</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <span>Sign in</span>
                 </button>
             </form>
 
-            <div class="auth-footer-links">
-                Don't have an account yet? <a href="register.php">Sign Up</a>
-                <div style="margin-top:10px">
-                    <a href="vendors.php" style="color:#7DD3FC;font-size:0.82rem">Verified Coupon Vendors Directory</a>
-                </div>
+            <!-- Footer -->
+            <div class="auth-footer">
+                Don't have an account? <a href="register.php">Create an account</a>
+                <a href="vendors.php" class="auth-directory-link">Verified coupon vendors directory</a>
             </div>
         </div>
     </div>
 
     <script>
+    function toggleAuthTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+            localStorage.setItem('ix_theme', next);
+        } catch(e) {}
+    }
+
     function togglePassVisibility(inputId, btn) {
         const inp = document.getElementById(inputId);
         if (!inp) return;
         if (inp.type === 'password') {
             inp.type = 'text';
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-            btn.setAttribute('aria-label', 'Hide Password');
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+            btn.setAttribute('aria-label', 'Hide password');
         } else {
             inp.type = 'password';
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-            btn.setAttribute('aria-label', 'Show Password');
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+            btn.setAttribute('aria-label', 'Show password');
         }
     }
 
     function showLoginAlert(msg, isSuccess = false) {
         const box = document.getElementById('loginStatusAlert');
         if (!box) return;
-        box.style.display = 'block';
-        if (isSuccess) {
-            box.style.background = 'rgba(56, 189, 248, 0.12)';
-            box.style.border = '1px solid rgba(56, 189, 248, 0.35)';
-            box.style.color = '#7DD3FC';
-        } else {
-            box.style.background = 'rgba(239, 68, 68, 0.12)';
-            box.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-            box.style.color = '#FCA5A5';
-        }
         box.textContent = msg;
+        box.className = 'auth-alert ' + (isSuccess ? 'is-success' : 'is-error');
+        box.style.display = 'block';
     }
 
     function handleLoginSubmit(e) {
@@ -433,7 +607,7 @@ if (!empty($_GET['error'])) {
         }
 
         btn.disabled = true;
-        btn.innerHTML = `<span>Signing In...</span>`;
+        btn.innerHTML = `<span>Signing in...</span>`;
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 7000);
@@ -490,7 +664,7 @@ if (!empty($_GET['error'])) {
             } else {
                 showLoginAlert(data.message || 'Invalid username or password.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+                btn.innerHTML = `<span>Sign in</span>`;
             }
         })
         .catch(err => {
@@ -502,7 +676,7 @@ if (!empty($_GET['error'])) {
             } else {
                 showLoginAlert('Unable to complete login. Please verify your connection or try again.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Sign In to Dashboard</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+                btn.innerHTML = `<span>Sign in</span>`;
             }
         });
     }
@@ -536,17 +710,14 @@ if (!empty($_GET['error'])) {
             const toast = document.getElementById('logoutToast');
             if (toast) {
                 toast.style.display = 'flex';
-                // Trigger smooth pop-up slide animation
                 requestAnimationFrame(() => {
                     setTimeout(() => {
                         toast.classList.add('show');
                     }, 50);
                 });
-                // Automatically dismiss after 4 seconds
                 setTimeout(dismissLogoutToast, 4000);
             }
 
-            // Remove the logged_out param so page refresh doesn't trigger it again
             if (window.history && window.history.replaceState) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }

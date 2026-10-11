@@ -241,6 +241,34 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         .pass-toggle-btn:hover {
             color: #E2E8F0;
         }
+        .username-feedback {
+            font-size: 0.76rem;
+            font-weight: 500;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 18px;
+            line-height: 1.2;
+            transition: all 0.15s ease;
+        }
+        .username-feedback.is-error {
+            color: #F87171;
+        }
+        .username-feedback.is-success {
+            color: #34D399;
+        }
+        .username-feedback.is-checking {
+            color: #94A3B8;
+        }
+        .form-input.is-taken {
+            border-color: #EF4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        }
+        .form-input.is-available {
+            border-color: #10B981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+        }
         .terms-row {
             margin: 16px 0 20px;
             display: flex;
@@ -369,6 +397,12 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         [data-theme="light"] .pass-toggle-btn:hover {
             color: #0F172A !important;
         }
+        [data-theme="light"] .username-feedback.is-error {
+            color: #DC2626 !important;
+        }
+        [data-theme="light"] .username-feedback.is-success {
+            color: #059669 !important;
+        }
 
         @media (max-width: 540px) {
             .form-grid {
@@ -425,7 +459,11 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
 
                     <div class="form-group">
                         <label for="regUsername" class="form-label">Username</label>
-                        <input type="text" id="regUsername" name="username" class="form-input" placeholder="Choose username" required autocomplete="username">
+                        <div class="input-wrap-relative">
+                            <input type="text" id="regUsername" name="username" class="form-input" placeholder="Choose username" required autocomplete="username" style="padding-right:38px">
+                            <span id="usernameStatusIcon" style="position:absolute;right:12px;display:none;align-items:center;justify-content:center;pointer-events:none;"></span>
+                        </div>
+                        <div id="usernameStatus" class="username-feedback" style="display:none;"></div>
                     </div>
 
                     <div class="form-group full">
@@ -503,6 +541,9 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
     </div>
 
     <script>
+    let usernameCheckTimer = null;
+    let usernameAvailableStatus = null;
+
     function toggleAuthTheme() {
         const current = document.documentElement.getAttribute('data-theme') || 'dark';
         const next = current === 'dark' ? 'light' : 'dark';
@@ -510,6 +551,93 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         try {
             localStorage.setItem('ix_theme', next);
         } catch(e) {}
+    }
+
+    function checkUsernameAvailability(val) {
+        const feedback = document.getElementById('usernameStatus');
+        const input = document.getElementById('regUsername');
+        const icon = document.getElementById('usernameStatusIcon');
+        if (!feedback || !input) return;
+
+        val = (val || '').trim();
+        if (!val) {
+            feedback.style.display = 'none';
+            feedback.className = 'username-feedback';
+            feedback.textContent = '';
+            input.classList.remove('is-taken', 'is-available');
+            if (icon) { icon.style.display = 'none'; icon.innerHTML = ''; }
+            usernameAvailableStatus = null;
+            return;
+        }
+
+        if (val.length < 3) {
+            feedback.style.display = 'flex';
+            feedback.className = 'username-feedback is-checking';
+            feedback.textContent = 'Username must be at least 3 characters.';
+            input.classList.remove('is-taken', 'is-available');
+            if (icon) { icon.style.display = 'none'; icon.innerHTML = ''; }
+            usernameAvailableStatus = false;
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+            feedback.style.display = 'flex';
+            feedback.className = 'username-feedback is-error';
+            feedback.textContent = 'Only letters, numbers, and underscores allowed.';
+            input.classList.add('is-taken');
+            input.classList.remove('is-available');
+            if (icon) {
+                icon.style.display = 'flex';
+                icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+            }
+            usernameAvailableStatus = false;
+            return;
+        }
+
+        feedback.style.display = 'flex';
+        feedback.className = 'username-feedback is-checking';
+        feedback.textContent = 'Checking availability...';
+        if (icon) {
+            icon.style.display = 'flex';
+            icon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5" style="animation:ixSpin 0.8s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>`;
+        }
+
+        fetch('api/auth.php?action=check_username&username=' + encodeURIComponent(val))
+            .then(res => res.json())
+            .then(data => {
+                if (input.value.trim().toLowerCase() !== val.toLowerCase()) return;
+
+                if (data.status === 'taken' || data.available === false) {
+                    feedback.className = 'username-feedback is-error';
+                    feedback.textContent = 'Username is already taken. Please choose another.';
+                    input.classList.add('is-taken');
+                    input.classList.remove('is-available');
+                    if (icon) {
+                        icon.style.display = 'flex';
+                        icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+                    }
+                    usernameAvailableStatus = false;
+                } else if (data.status === 'available' || data.available === true) {
+                    feedback.className = 'username-feedback is-success';
+                    feedback.textContent = 'Username is available.';
+                    input.classList.remove('is-taken');
+                    input.classList.add('is-available');
+                    if (icon) {
+                        icon.style.display = 'flex';
+                        icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+                    }
+                    usernameAvailableStatus = true;
+                } else {
+                    feedback.className = 'username-feedback is-checking';
+                    feedback.textContent = data.message || '';
+                    usernameAvailableStatus = null;
+                }
+            })
+            .catch(() => {
+                feedback.style.display = 'none';
+                if (icon) icon.style.display = 'none';
+                usernameAvailableStatus = null;
+            });
     }
 
     function togglePassVisibility(inputId, btn) {
@@ -538,6 +666,13 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         
         if (username.length < 3 || !/^[a-zA-Z0-9_]+$/.test(username)) {
             alert('Username must be 3-20 characters long and contain only letters and numbers.');
+            document.getElementById('regUsername').focus();
+            return;
+        }
+
+        if (usernameAvailableStatus === false) {
+            alert('This username is already taken. Please choose another username.');
+            document.getElementById('regUsername').focus();
             return;
         }
 
@@ -700,6 +835,24 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             if (banner && userEl) {
                 userEl.textContent = activeUser;
                 banner.style.display = 'block';
+            }
+        }
+
+        const usernameInput = document.getElementById('regUsername');
+        if (usernameInput) {
+            usernameInput.addEventListener('input', function() {
+                clearTimeout(usernameCheckTimer);
+                const val = this.value;
+                usernameCheckTimer = setTimeout(() => {
+                    checkUsernameAvailability(val);
+                }, 300);
+            });
+            usernameInput.addEventListener('blur', function() {
+                clearTimeout(usernameCheckTimer);
+                checkUsernameAvailability(this.value);
+            });
+            if (usernameInput.value.trim()) {
+                checkUsernameAvailability(usernameInput.value.trim());
             }
         }
     });

@@ -440,8 +440,8 @@ const server = http.createServer((req, res) => {
                 return;
             }
 
-            // Dedicated Authentication API (Login, Register, Logout) and direct form POSTs
-            if (cleanUrl.includes('auth.php') || cleanUrl.includes('login') || action === 'login' || action === 'register' || action === 'logout') {
+            // Dedicated Authentication API (Login, Register, Logout, Check Username) and direct form POSTs
+            if (cleanUrl.includes('auth.php') || cleanUrl.includes('login') || action === 'login' || action === 'register' || action === 'check_username' || action === 'logout') {
                 const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
                 const couponsFile = path.join(PUBLIC_DIR, 'data', 'coupons.json');
 
@@ -599,6 +599,26 @@ const server = http.createServer((req, res) => {
 
                     res.setHeader('Content-Type', 'application/json; charset=UTF-8');
                     res.end(JSON.stringify({ status: 'error', message: 'Invalid username or password.' }));
+                    return;
+                }
+
+                if (action === 'check_username') {
+                    const rawUser = (parsed.username || urlObj.searchParams.get('username') || '').trim();
+                    res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+                    if (rawUser.length < 3) {
+                        res.end(JSON.stringify({ status: 'error', available: false, message: 'Username must be at least 3 characters.' }));
+                        return;
+                    }
+                    if (!/^[a-zA-Z0-9_]+$/.test(rawUser)) {
+                        res.end(JSON.stringify({ status: 'error', available: false, message: 'Username can only contain letters, numbers, and underscores.' }));
+                        return;
+                    }
+                    const taken = (usersData.users || []).some(u => (u.username || '').toLowerCase() === rawUser.toLowerCase());
+                    if (taken) {
+                        res.end(JSON.stringify({ status: 'taken', available: false, message: 'Username is already taken.' }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'available', available: true, message: 'Username is available.' }));
+                    }
                     return;
                 }
 

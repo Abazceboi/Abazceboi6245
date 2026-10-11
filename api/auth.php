@@ -21,6 +21,68 @@ function saveJsonUsers(array $usersList): bool {
     return writeStorageJson('data/users.json', ['users' => $usersList]);
 }
 
+if ($action === 'check_username') {
+    $rawUser = trim($_GET['username'] ?? ($_POST['username'] ?? ''));
+    if (empty($rawUser)) {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (is_array($input)) {
+            $rawUser = trim($input['username'] ?? '');
+        }
+    }
+
+    if (strlen($rawUser) < 3) {
+        echo json_encode([
+            'status' => 'error',
+            'available' => false,
+            'message' => 'Username must be at least 3 characters.'
+        ]);
+        exit;
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $rawUser)) {
+        echo json_encode([
+            'status' => 'error',
+            'available' => false,
+            'message' => 'Username can only contain letters, numbers, and underscores.'
+        ]);
+        exit;
+    }
+
+    $taken = false;
+    $jsonUsers = loadJsonUsers();
+    foreach ($jsonUsers as $u) {
+        if (strtolower($u['username'] ?? '') === strtolower($rawUser)) {
+            $taken = true;
+            break;
+        }
+    }
+
+    if (!$taken && $pdo) {
+        try {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?)");
+            $stmt->execute([$rawUser]);
+            if ($stmt->fetch()) {
+                $taken = true;
+            }
+        } catch (Exception $e) {}
+    }
+
+    if ($taken) {
+        echo json_encode([
+            'status' => 'taken',
+            'available' => false,
+            'message' => 'Username is already taken.'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'available',
+            'available' => true,
+            'message' => 'Username is available.'
+        ]);
+    }
+    exit;
+}
+
 if ($action === 'register') {
     $data = json_decode(file_get_contents('php://input'), true);
     
