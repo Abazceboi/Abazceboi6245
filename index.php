@@ -1,8 +1,9 @@
 <?php
 /**
  * INNOVATIONX — Ultra-Slick, Modern & Minimalist Landing Page
- * Designed with generous whitespace, high-end hairline glassmorphism,
- * crisp typography, and uncluttered concise copy.
+ * Colors precisely matched to the user dashboard:
+ * Pitch Obsidian (#07090F), Royal Electric Blue (#3B82F6),
+ * Emerald Green (#10B981), Card Dark (#111827), and Crisp Slate (#F0F4FA).
  * Zero emojis in accordance with strict platform guidelines.
  */
 
@@ -30,54 +31,57 @@ if (!empty($_GET['ref'])) {
 
 <style>
 /* ==========================================================================
-   ULTRA-SLICK & MODERN MINIMALIST FINTECH SYSTEM
-   Clean whitespace, hairline borders, refined typography, zero clutter
+   EXACT DASHBOARD COLOR PALETTE INTEGRATION
+   --bg: #07090F, --surface: #0D1117, --card: #111827, --accent: #3B82F6
    ========================================================================== */
 
 :root {
-    --bg-dark: #07090E;
-    --bg-surface: #0D111A;
-    --bg-glass: rgba(18, 24, 38, 0.55);
-    --bg-glass-hover: rgba(26, 34, 52, 0.75);
+    --bg-dark: #07090F;
+    --bg-surface: #0D1117;
+    --bg-card: #111827;
+    --bg-card-hover: #161E2E;
     
-    --primary: #38BDF8;
-    --primary-deep: #0284C7;
-    --primary-glow: rgba(56, 189, 248, 0.2);
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --primary-glow: rgba(59, 130, 246, 0.28);
     
-    --emerald: #10B981;
-    --emerald-glow: rgba(16, 185, 129, 0.18);
+    --green: #10B981;
+    --green-glow: rgba(16, 185, 129, 0.25);
     
     --border-hairline: rgba(255, 255, 255, 0.08);
-    --border-active: rgba(56, 189, 248, 0.3);
+    --border-mid: rgba(255, 255, 255, 0.14);
+    --border-active: rgba(59, 130, 246, 0.35);
     
-    --text-white: #FFFFFF;
-    --text-slate: #E2E8F0;
-    --text-muted: #94A3B8;
-    --text-dim: #64748B;
+    --text-white: #F0F4FA;
+    --text-slate: #F0F4FA;
+    --text-muted: #8B9AB0;
+    --text-dim: #4E5F73;
     
-    --font: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
 }
 
 [data-theme="light"] {
-    --bg-dark: #F8FAFC;
+    --bg-dark: #F4F6FB;
     --bg-surface: #FFFFFF;
-    --bg-glass: rgba(255, 255, 255, 0.85);
-    --bg-glass-hover: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #F8FAFF;
     
-    --primary: #0284C7;
-    --primary-deep: #0369A1;
-    --primary-glow: rgba(2, 132, 199, 0.12);
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --primary-glow: rgba(37, 99, 235, 0.15);
     
-    --emerald: #059669;
-    --emerald-glow: rgba(5, 150, 105, 0.12);
+    --green: #059669;
+    --green-glow: rgba(5, 150, 105, 0.15);
     
-    --border-hairline: rgba(0, 0, 0, 0.07);
-    --border-active: rgba(2, 132, 199, 0.25);
+    --border-hairline: rgba(0, 0, 0, 0.08);
+    --border-mid: rgba(0, 0, 0, 0.14);
+    --border-active: rgba(37, 99, 235, 0.3);
     
-    --text-white: #0F172A;
-    --text-slate: #1E293B;
-    --text-muted: #475569;
-    --text-dim: #64748B;
+    --text-white: #0D1117;
+    --text-slate: #0D1117;
+    --text-muted: #4B5563;
+    --text-dim: #9CA3AF;
 }
 
 body {
@@ -91,26 +95,26 @@ body {
 }
 
 .wrap {
-    max-width: 1080px;
+    max-width: 1040px;
     margin: 0 auto;
     padding: 0 24px;
 }
 
-/* Ambient Subtle Radial Glow */
+/* Subtle ambient backdrop matching dashboard */
 .ambient-glow {
     position: fixed;
-    top: -200px;
+    top: -150px;
     left: 50%;
     transform: translateX(-50%);
-    width: 800px;
-    height: 600px;
-    background: radial-gradient(ellipse, rgba(56, 189, 248, 0.12) 0%, transparent 65%);
+    width: 750px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
 }
 
 [data-theme="light"] .ambient-glow {
-    background: radial-gradient(ellipse, rgba(2, 132, 199, 0.07) 0%, transparent 65%);
+    background: radial-gradient(ellipse, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
 }
 
 .content {
@@ -119,11 +123,11 @@ body {
 }
 
 /* ==========================================================================
-   SLICK FLOATING PILL NAVBAR
+   DASHBOARD-MATCHED FLOATING PILL NAVBAR
    ========================================================================== */
 .nav-holder {
     position: sticky;
-    top: 24px;
+    top: 18px;
     z-index: 100;
     display: flex;
     justify-content: center;
@@ -134,14 +138,21 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 7px 10px 7px 16px;
-    background: var(--bg-glass);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--border-hairline);
+    height: 54px;
+    padding: 0 14px 0 18px;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.88) 0%, rgba(10, 14, 23, 0.96) 100%);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid var(--border-mid);
     border-radius: 9999px;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
     transition: all 0.25s ease;
+}
+
+[data-theme="light"] .nav-pill {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(244, 246, 251, 0.98) 100%);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 14px 32px -6px rgba(0, 0, 0, 0.1);
 }
 
 .brand-link {
@@ -151,22 +162,22 @@ body {
     text-decoration: none;
     color: var(--text-white);
     font-weight: 800;
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     letter-spacing: -0.02em;
-    padding-right: 12px;
+    padding-right: 14px;
     border-right: 1px solid var(--border-hairline);
 }
 
 .brand-icon {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 7px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     font-weight: 900;
 }
 
@@ -188,7 +199,7 @@ body {
 
 .nav-item:hover {
     color: var(--text-white);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 [data-theme="light"] .nav-item:hover {
@@ -198,7 +209,7 @@ body {
 .nav-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin-left: 6px;
 }
 
@@ -207,7 +218,7 @@ body {
     height: 32px;
     border-radius: 50%;
     border: 1px solid var(--border-hairline);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-slate);
     display: flex;
     align-items: center;
@@ -219,6 +230,7 @@ body {
 .btn-theme:hover {
     color: var(--text-white);
     border-color: var(--border-active);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .btn-auth-link {
@@ -235,7 +247,7 @@ body {
 }
 
 .btn-pill-cta {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+    background: var(--primary);
     color: #FFFFFF !important;
     font-size: 0.82rem;
     font-weight: 700;
@@ -251,15 +263,16 @@ body {
 }
 
 .btn-pill-cta:hover {
+    background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 /* ==========================================================================
-   MINIMALIST HERO SECTION
+   MINIMAL HERO SECTION
    ========================================================================== */
 .hero {
-    padding: 100px 0 60px;
+    padding: 90px 0 60px;
     text-align: center;
 }
 
@@ -268,7 +281,7 @@ body {
     align-items: center;
     gap: 8px;
     padding: 5px 14px;
-    background: rgba(56, 189, 248, 0.08);
+    background: rgba(59, 130, 246, 0.1);
     border: 1px solid var(--border-active);
     border-radius: 9999px;
     font-size: 0.75rem;
@@ -282,12 +295,12 @@ body {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--emerald);
-    box-shadow: 0 0 8px var(--emerald);
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
 }
 
 .hero-title {
-    font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+    font-size: clamp(2.4rem, 5.2vw, 4rem);
     font-weight: 900;
     line-height: 1.08;
     letter-spacing: -0.035em;
@@ -297,14 +310,14 @@ body {
 }
 
 .gradient-phrase {
-    background: linear-gradient(135deg, #FFFFFF 20%, var(--primary) 100%);
+    background: linear-gradient(135deg, #FFFFFF 20%, #60A5FA 70%, var(--primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 [data-theme="light"] .gradient-phrase {
-    background: linear-gradient(135deg, #0F172A 20%, var(--primary) 100%);
+    background: linear-gradient(135deg, #0D1117 20%, var(--primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -313,8 +326,8 @@ body {
 .hero-subtitle {
     font-size: clamp(1rem, 1.8vw, 1.15rem);
     color: var(--text-muted);
-    max-width: 540px;
-    margin: 0 auto 36px;
+    max-width: 520px;
+    margin: 0 auto 34px;
     line-height: 1.6;
 }
 
@@ -324,18 +337,18 @@ body {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 56px;
+    margin-bottom: 52px;
 }
 
 .btn-hero-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+    background: var(--primary);
     color: #FFFFFF;
     font-size: 0.95rem;
     font-weight: 800;
-    padding: 14px 30px;
+    padding: 13px 28px;
     border-radius: 9999px;
     text-decoration: none;
-    box-shadow: 0 8px 25px var(--primary-glow);
+    box-shadow: 0 8px 24px var(--primary-glow);
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -343,36 +356,37 @@ body {
 }
 
 .btn-hero-primary:hover {
+    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.45);
     color: #FFFFFF;
 }
 
 .btn-hero-outline {
-    background: transparent;
+    background: var(--bg-surface);
     color: var(--text-white);
     border: 1px solid var(--border-hairline);
     font-size: 0.95rem;
     font-weight: 700;
-    padding: 14px 26px;
+    padding: 13px 24px;
     border-radius: 9999px;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .btn-hero-outline:hover {
-    border-color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border-mid);
+    background: var(--bg-card-hover);
 }
 
-/* Luxury Showcase Card (Single Centerpiece) */
+/* Centerpiece Card Styled Exactly like Dashboard Cards */
 .centerpiece-card {
-    background: var(--bg-glass);
+    background: var(--bg-card);
     border: 1px solid var(--border-hairline);
-    border-radius: 24px;
-    padding: 30px 32px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
-    max-width: 600px;
+    border-radius: 20px;
+    padding: 28px 30px;
+    box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.5);
+    max-width: 580px;
     margin: 0 auto;
     text-align: left;
     backdrop-filter: blur(20px);
@@ -382,11 +396,11 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .card-title-sm {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -399,7 +413,7 @@ body {
     gap: 6px;
     font-size: 0.72rem;
     font-weight: 700;
-    color: var(--emerald);
+    color: var(--green);
     background: rgba(16, 185, 129, 0.1);
     border: 1px solid rgba(16, 185, 129, 0.2);
     padding: 3px 10px;
@@ -408,21 +422,21 @@ body {
 
 .balance-num {
     font-size: 2.5rem;
-    font-weight: 900;
+    font-weight: 800;
     color: var(--text-white);
     letter-spacing: -0.03em;
     line-height: 1;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .card-split-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    padding: 16px 0;
+    padding: 14px 0;
     border-top: 1px solid var(--border-hairline);
     border-bottom: 1px solid var(--border-hairline);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .stat-label-dim {
@@ -434,7 +448,6 @@ body {
 .stat-val-bold {
     font-size: 1rem;
     font-weight: 800;
-    color: var(--text-white);
 }
 
 .card-settle-notice {
@@ -446,15 +459,15 @@ body {
 }
 
 /* ==========================================================================
-   THE 3 CORE FEATURES (SPACIOUS, SLICK & MINIMAL)
+   THE 3 CORE FEATURES
    ========================================================================== */
 .section {
-    padding: 90px 0 60px;
+    padding: 80px 0 50px;
 }
 
 .section-head {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 44px;
 }
 
 .section-tag {
@@ -463,13 +476,13 @@ body {
     letter-spacing: 0.8px;
     text-transform: uppercase;
     color: var(--primary);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: inline-block;
 }
 
 .section-title {
     font-size: clamp(1.8rem, 3.2vw, 2.4rem);
-    font-weight: 900;
+    font-weight: 800;
     color: var(--text-white);
     letter-spacing: -0.025em;
     margin: 0;
@@ -478,14 +491,14 @@ body {
 .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 18px;
 }
 
 .feature-card {
-    background: var(--bg-glass);
+    background: var(--bg-card);
     border: 1px solid var(--border-hairline);
-    border-radius: 20px;
-    padding: 32px 26px;
+    border-radius: 18px;
+    padding: 30px 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -493,7 +506,8 @@ body {
 }
 
 .feature-card:hover {
-    border-color: var(--border-active);
+    border-color: var(--border-mid);
+    background: var(--bg-card-hover);
     transform: translateY(-3px);
 }
 
@@ -501,16 +515,16 @@ body {
     align-self: flex-start;
     font-size: 0.72rem;
     font-weight: 800;
-    color: var(--emerald);
+    color: var(--green);
     background: rgba(16, 185, 129, 0.1);
     border: 1px solid rgba(16, 185, 129, 0.2);
     padding: 4px 10px;
     border-radius: 9999px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .feature-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
     color: var(--text-white);
     margin: 0 0 10px;
@@ -518,7 +532,7 @@ body {
 }
 
 .feature-desc {
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: var(--text-muted);
     line-height: 1.6;
     margin: 0;
@@ -530,26 +544,26 @@ body {
 .steps-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 18px;
 }
 
 .step-card {
-    background: var(--bg-glass);
+    background: var(--bg-card);
     border: 1px solid var(--border-hairline);
-    border-radius: 20px;
-    padding: 30px 24px;
+    border-radius: 18px;
+    padding: 28px 24px;
     transition: all 0.2s ease;
 }
 
 .step-card:hover {
-    border-color: var(--border-active);
+    border-color: var(--border-mid);
 }
 
 .step-num {
     font-size: 0.75rem;
     font-weight: 800;
     color: var(--primary);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     display: inline-block;
 }
 
@@ -576,11 +590,11 @@ body {
     justify-content: center;
     gap: 8px;
     max-width: 680px;
-    margin: 32px auto 0;
+    margin: 28px auto 0;
 }
 
 .bank-tag {
-    background: var(--bg-glass);
+    background: var(--bg-card);
     border: 1px solid var(--border-hairline);
     border-radius: 9999px;
     padding: 8px 18px;
@@ -591,7 +605,7 @@ body {
 }
 
 .bank-tag:hover {
-    border-color: var(--border-active);
+    border-color: var(--border-mid);
 }
 
 /* ==========================================================================
@@ -606,7 +620,7 @@ body {
 }
 
 .faq-card {
-    background: var(--bg-glass);
+    background: var(--bg-card);
     border: 1px solid var(--border-hairline);
     border-radius: 16px;
     padding: 20px 24px;
@@ -650,17 +664,17 @@ body {
    SLICK FINAL CTA & FOOTER
    ========================================================================== */
 .cta-banner {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%), var(--bg-glass);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%), var(--bg-card);
     border: 1px solid var(--border-active);
-    border-radius: 28px;
-    padding: 56px 24px;
+    border-radius: 24px;
+    padding: 52px 24px;
     text-align: center;
-    margin: 60px 0 80px;
+    margin: 50px 0 70px;
 }
 
 .cta-title {
     font-size: clamp(1.8rem, 3.4vw, 2.5rem);
-    font-weight: 900;
+    font-weight: 800;
     color: var(--text-white);
     letter-spacing: -0.025em;
     margin: 0 0 12px;
@@ -701,7 +715,7 @@ body {
     .features-grid { grid-template-columns: 1fr; }
     .steps-grid { grid-template-columns: 1fr; }
     .balance-num { font-size: 2.1rem; }
-    .hero { padding: 70px 0 40px; }
+    .hero { padding: 60px 0 40px; }
 }
 </style>
 
@@ -762,7 +776,7 @@ body {
                 </a>
             </div>
 
-            <!-- Single Luxury Showcase Centerpiece -->
+            <!-- Dashboard-Matched Centerpiece Card -->
             <div class="centerpiece-card">
                 <div class="card-top">
                     <span class="card-title-sm">Member Wallet Balance</span>
@@ -774,17 +788,17 @@ body {
                 <div class="card-split-stats">
                     <div>
                         <div class="stat-label-dim">Task Points</div>
-                        <div class="stat-val-bold">2,450 PTS</div>
+                        <div class="stat-val-bold" style="color:var(--primary);">2,450 PTS</div>
                     </div>
                     <div>
                         <div class="stat-label-dim">Referral Cash</div>
-                        <div class="stat-val-bold">&#8358;16,000.00</div>
+                        <div class="stat-val-bold" style="color:var(--green);">&#8358;16,000.00</div>
                     </div>
                 </div>
 
                 <div class="card-settle-notice">
                     <span>Direct Clearing: GTBank / OPay / Kuda</span>
-                    <span style="color:var(--emerald);font-weight:700;">100% Automated</span>
+                    <span style="color:var(--green);font-weight:700;">100% Automated</span>
                 </div>
             </div>
         </div>
@@ -813,7 +827,7 @@ body {
                 <!-- Feature 2 -->
                 <div class="feature-card">
                     <div>
-                        <span class="feature-pill-badge">Up to 200 PTS / Survey</span>
+                        <span class="feature-pill-badge" style="color:var(--primary);border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.1);">Up to 200 PTS / Survey</span>
                         <h3 class="feature-title">World Surveys</h3>
                         <p class="feature-desc">
                             Share verified demographic opinions across Nigeria affairs, global geopolitics, and world economic trends.
