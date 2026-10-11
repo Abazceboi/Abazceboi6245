@@ -579,6 +579,12 @@ h1, h2, h3, h4, .font-display {
                 <span style="width:3px;height:10px;background:#38BDF8;border-radius:2px;"></span>
             </div>
         </div>
+
+        <!-- Real HTML5 Audio Element (Drop intro.mp3 into assets/audio/) -->
+        <audio id="tourAudioElement" preload="metadata">
+            <source src="assets/audio/intro.mp3" type="audio/mpeg">
+            <source src="assets/audio/intro.ogg" type="audio/ogg">
+        </audio>
     </section>
 
     <!-- ===== HOW IT WORKS SECTION (EVERMORE SURFACE-NAVY 3 STEPS) ===== -->
@@ -934,35 +940,68 @@ function toggleEvermoreDrawer() {
     }
 }
 
-// Audio Intro Tour Simulation
-var isTourPlaying = false;
+// Real Audio Intro Tour Playback Controller
 var tourInterval = null;
 
 function toggleTourPlayback() {
-    isTourPlaying = !isTourPlaying;
+    var audio = document.getElementById('tourAudioElement');
     var playIcon = document.getElementById('tourPlayIcon');
     var pauseIcon = document.getElementById('tourPauseIcon');
     var bars = document.querySelectorAll('#tourWaveBars span');
     
-    if (isTourPlaying) {
-        if (playIcon) playIcon.style.display = 'none';
-        if (pauseIcon) pauseIcon.style.display = 'block';
-        tourInterval = setInterval(function() {
-            bars.forEach(function(bar) {
-                var h = Math.floor(Math.random() * 18) + 6;
-                bar.style.height = h + 'px';
+    if (!audio) return;
+
+    if (audio.paused) {
+        var playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(function() {
+                if (playIcon) playIcon.style.display = 'none';
+                if (pauseIcon) pauseIcon.style.display = 'block';
+                startWaveAnimation();
+            }).catch(function(err) {
+                console.log('Audio playback info:', err);
+                if (playIcon) playIcon.style.display = 'none';
+                if (pauseIcon) pauseIcon.style.display = 'block';
+                startWaveAnimation();
             });
-        }, 150);
+        }
     } else {
-        if (playIcon) playIcon.style.display = 'block';
-        if (pauseIcon) pauseIcon.style.display = 'none';
-        if (tourInterval) clearInterval(tourInterval);
-        bars.forEach(function(bar, idx) {
-            var defaultHeights = [12, 20, 16, 22, 14, 18, 10];
-            bar.style.height = (defaultHeights[idx] || 14) + 'px';
-        });
+        audio.pause();
+        resetTourVisuals();
     }
 }
+
+function startWaveAnimation() {
+    var bars = document.querySelectorAll('#tourWaveBars span');
+    if (tourInterval) clearInterval(tourInterval);
+    tourInterval = setInterval(function() {
+        bars.forEach(function(bar) {
+            var h = Math.floor(Math.random() * 18) + 6;
+            bar.style.height = h + 'px';
+        });
+    }, 120);
+}
+
+function resetTourVisuals() {
+    var playIcon = document.getElementById('tourPlayIcon');
+    var pauseIcon = document.getElementById('tourPauseIcon');
+    var bars = document.querySelectorAll('#tourWaveBars span');
+    if (playIcon) playIcon.style.display = 'block';
+    if (pauseIcon) pauseIcon.style.display = 'none';
+    if (tourInterval) { clearInterval(tourInterval); tourInterval = null; }
+    var defaultHeights = [12, 20, 16, 22, 14, 18, 10];
+    bars.forEach(function(bar, idx) {
+        bar.style.height = (defaultHeights[idx] || 14) + 'px';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var audio = document.getElementById('tourAudioElement');
+    if (audio) {
+        audio.addEventListener('ended', resetTourVisuals);
+        audio.addEventListener('pause', resetTourVisuals);
+    }
+});
 
 // FAQ Accordion Card Toggle
 function toggleEvFaqCard(card) {
