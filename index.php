@@ -215,25 +215,207 @@ h1, h2, h3, h4, .font-display {
     color: #1E293B !important;
 }
 
-/* Final CTA Banner in Light Mode */
+/* Final CTA Banner (Evermore Sleek & Modern) */
+.cta-banner-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.75rem !important;
+    padding: 68px 24px 56px !important;
+    text-align: center;
+    border: 1px solid rgba(56, 189, 248, 0.28) !important;
+    background: 
+        radial-gradient(90% 90% at 50% -10%, rgba(56, 189, 248, 0.22) 0%, transparent 60%),
+        radial-gradient(70% 60% at 90% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 60%),
+        #0E172B !important;
+    box-shadow: 0 24px 70px -15px rgba(2, 132, 199, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+}
+
+.cta-banner-card .cta-token-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    margin: 0 auto 16px;
+    box-shadow: 0 10px 25px -4px rgba(56, 189, 248, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    transition: transform 0.3s ease;
+}
+
+.cta-banner-card:hover .cta-token-icon {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.cta-banner-card .cta-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9999px;
+    padding: 5px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38BDF8;
+    margin-bottom: 18px;
+}
+
+.cta-banner-card .cta-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #38BDF8;
+    box-shadow: 0 0 8px #38BDF8;
+}
+
+.cta-banner-card .cta-banner-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.8vw, 2.85rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.cta-banner-card .cta-title-gradient {
+    background: linear-gradient(110deg, #FFFFFF 15%, #38BDF8 60%, #34D399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.cta-banner-card .cta-banner-desc {
+    margin-top: 14px;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.75);
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-banner-card .cta-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 12px;
+    padding: 15px 36px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #FFFFFF;
+    text-decoration: none;
+    background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+    box-shadow: 0 0 32px -4px rgba(56, 189, 248, 0.55), 0 8px 24px -6px rgba(2, 132, 199, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-banner-card .cta-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 45px -2px rgba(56, 189, 248, 0.75), 0 12px 30px -4px rgba(2, 132, 199, 0.6);
+}
+
+.cta-banner-card .cta-trust-bar {
+    margin-top: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.cta-banner-card .cta-trust-bar span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cta-banner-card .cta-trust-bar svg {
+    color: #34D399;
+}
+
+.cta-banner-card .cta-trust-sep {
+    opacity: 0.35;
+    font-size: 0.9rem;
+}
+
+/* Final CTA Banner in Light Mode (Ultra-Fancy, Modern & Sleek) */
 [data-theme="light"] .cta-banner-card {
-    background: linear-gradient(135deg, #0284C7, #0369A1) !important;
-    box-shadow: 0 16px 40px -8px rgba(2, 132, 199, 0.35) !important;
+    background: 
+        radial-gradient(100% 120% at 50% -20%, rgba(56, 189, 248, 0.18) 0%, rgba(16, 185, 129, 0.08) 45%, transparent 75%),
+        linear-gradient(180deg, #FFFFFF 0%, #F8FAFD 100%) !important;
+    border: 1px solid rgba(2, 132, 199, 0.22) !important;
+    box-shadow: 0 24px 60px -15px rgba(2, 132, 199, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.9) inset !important;
 }
 
-[data-theme="light"] .cta-banner-card h2 {
-    color: #FFFFFF !important;
+[data-theme="light"] .cta-banner-card .cta-pill-badge {
+    background: rgba(2, 132, 199, 0.08) !important;
+    border: 1px solid rgba(2, 132, 199, 0.24) !important;
+    color: #0284C7 !important;
 }
 
-[data-theme="light"] .cta-banner-card p {
-    color: rgba(255, 255, 255, 0.88) !important;
+[data-theme="light"] .cta-banner-card .cta-pill-dot {
+    background: #0284C7 !important;
+    box-shadow: 0 0 6px rgba(2, 132, 199, 0.5) !important;
 }
 
-[data-theme="light"] .cta-banner-card .text-aqua-gradient {
-    background: linear-gradient(100deg, #BAE6FD, #FFFFFF) !important;
+[data-theme="light"] .cta-banner-card .cta-token-icon {
+    background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%) !important;
+    box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-banner-title {
+    color: #0F172A !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-title-gradient {
+    background: linear-gradient(110deg, #0284C7 0%, #06B6D4 50%, #059669 100%) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     color: transparent !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-banner-desc {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-action-btn {
+    background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 12px 28px -6px rgba(2, 132, 199, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
+    border: none !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-action-btn:hover {
+    box-shadow: 0 16px 36px -4px rgba(2, 132, 199, 0.6) !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-trust-bar {
+    color: #64748B !important;
+}
+
+[data-theme="light"] .cta-banner-card .cta-trust-bar svg {
+    color: #059669 !important;
+}
+
+[data-theme="light"] .cta-banner-card .bg-grid {
+    background-size: 32px 32px;
+    background-image: 
+        linear-gradient(to right, rgba(2, 132, 199, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(2, 132, 199, 0.08) 1px, transparent 1px) !important;
 }
 
 /* Hero Terminal Preview in Light Mode */
@@ -1060,29 +1242,60 @@ h1, h2, h3, h4, .font-display {
 
     <!-- ===== FINAL CALL TO ACTION BANNER (EVERMORE EXACT) ===== -->
     <section class="ev-wrap" style="padding-bottom:70px;">
-        <div class="surface-navy glow-neon cta-banner-card" style="position:relative;overflow:hidden;border-radius:1.5rem;padding:56px 20px;text-align:center;">
-            <div style="position:absolute;inset:0;pointer-events:none;">
+        <div class="cta-banner-card">
+            <!-- Background Cyber Grid & Ambient Glowing Aura Orbs -->
+            <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
                 <div class="bg-grid" style="position:absolute;inset:0;mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);-webkit-mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);"></div>
+                <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:360px;border-radius:50%;background:radial-gradient(circle, rgba(56,189,248,0.22) 0%, transparent 70%);filter:blur(32px);"></div>
+                <div style="position:absolute;bottom:-60px;right:10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%);filter:blur(32px);"></div>
             </div>
 
-            <div style="position:relative;">
-                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:1.1rem;margin:0 auto 16px;box-shadow:0 4px 16px rgba(56,189,248,0.5);">
+            <div style="position:relative;z-index:1;">
+                <!-- Glowing IX Emblem Token -->
+                <div class="cta-token-icon">
                     IX
                 </div>
 
-                <h2 style="font-family:var(--font-display);font-size:clamp(1.9rem, 3.4vw, 2.6rem);font-weight:700;color:var(--color-navy-foreground);margin:0;">
-                    Your future is <span class="text-aqua-gradient">already loading.</span>
+                <!-- Sleek Micro Pill Badge -->
+                <div class="cta-pill-badge">
+                    <span class="cta-pill-dot"></span>
+                    <span>INSTANT LIFETIME ACCESS</span>
+                </div>
+
+                <!-- Dynamic Modern Headline -->
+                <h2 class="cta-banner-title">
+                    Your future is <span class="cta-title-gradient">already loading.</span>
                 </h2>
 
-                <p style="margin-top:14px;font-size:0.98rem;color:rgba(255,255,255,0.7);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6;">
-                    Create your account, activate your lifetime membership and start building your verified daily income with automated bank payouts.
+                <!-- Refined High-Contrast Description -->
+                <p class="cta-banner-desc">
+                    Create your account, activate your lifetime membership, and start building your verified daily income with automated Nigerian bank payouts.
                 </p>
 
+                <!-- Modern Sleek Button -->
                 <div style="margin-top:28px;">
-                    <a href="register.php" class="btn-neon" style="border-radius:11px;padding:14px 34px;font-size:0.92rem;font-weight:700;letter-spacing:0.02em;">
+                    <a href="register.php" class="cta-action-btn">
                         <span>JOIN INNOVATIONX</span>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><polyline points="9 18 15 12 9 6"/></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                     </a>
+                </div>
+
+                <!-- Sleek Trust Micro-Indicators Row -->
+                <div class="cta-trust-bar">
+                    <span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Instant PIN Activation
+                    </span>
+                    <span class="cta-trust-sep">&bull;</span>
+                    <span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Zero Monthly Charges
+                    </span>
+                    <span class="cta-trust-sep">&bull;</span>
+                    <span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Automated Bank Settlements
+                    </span>
                 </div>
             </div>
         </div>
