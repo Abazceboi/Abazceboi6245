@@ -28,371 +28,488 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         })();
     </script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
         .auth-wrapper {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 40px 20px;
-            position: relative;
-            background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.15), transparent 70%), var(--bg-body, #0A0A0F);
+            justify-content: center;
+            padding: 40px 16px;
+            background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%), #0A0E17;
+            color: #F1F5F9;
+            transition: background 0.25s ease;
         }
         .auth-card {
             width: 100%;
-            max-width: 580px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(16, 17, 28, 0.96) 100%);
+            max-width: 480px;
+            background: rgba(15, 23, 42, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 3px solid #38BDF8;
-            border-radius: 18px;
-            padding: 42px 36px;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.12);
-            position: relative;
-            z-index: 10;
+            border-radius: 20px;
+            padding: 34px 28px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
         }
-        .auth-header {
-            text-align: center;
-            margin-bottom: 28px;
+        .auth-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
-        .auth-logo {
+        .auth-brand {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
-            margin-bottom: 0;
+            color: #FFFFFF;
+        }
+        .auth-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: -0.02em;
+        }
+        .auth-brand-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: -0.02em;
+        }
+        .auth-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .auth-icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .auth-icon-btn:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auth-home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94A3B8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .auth-home-link:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auth-header {
+            margin-bottom: 24px;
         }
         .auth-title {
-            font-size: 1.7rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
             color: #FFFFFF;
-            margin-bottom: 6px;
+            margin: 0 0 6px;
         }
-        .auth-plan-badge {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 12px;
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            gap: 12px;
-        }
-        .auth-plan-info strong {
-            color: #7DD3FC;
-            font-size: 0.92rem;
-            display: block;
-            margin-bottom: 2px;
-        }
-        .auth-plan-info span {
+        .auth-subtitle {
+            font-size: 0.88rem;
             color: #94A3B8;
-            font-size: 0.78rem;
+            margin: 0;
             line-height: 1.4;
-            display: block;
         }
-        .auth-plan-price {
-            font-size: 1.35rem;
-            font-weight: 900;
-            color: #FFFFFF;
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
+        .auth-notice-bar {
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            color: #BAE6FD;
+            margin-bottom: 20px;
+        }
+        .auth-notice-bar a {
+            color: #38BDF8;
+            font-weight: 600;
+            text-decoration: underline;
         }
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 14px;
         }
         .form-group {
-            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
         .form-group.full {
             grid-column: 1 / -1;
         }
-        .form-group label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #E2E8F0;
+        }
+        .form-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #FFFFFF;
-            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+        .form-input::placeholder {
+            color: #64748B;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #38BDF8;
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 38px;
+        }
+        select.form-input option {
+            background-color: #0F172A;
+            color: #FFFFFF;
         }
         .input-wrap-relative {
             position: relative;
             display: flex;
             align-items: center;
         }
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #FFFFFF;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: #38BDF8;
-            background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-        }
-        select.form-input option {
-            background-color: #0f172a;
-            color: #ffffff;
+        .input-wrap-relative .form-input {
+            padding-right: 42px;
         }
         .pass-toggle-btn {
             position: absolute;
-            right: 12px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
             background: none;
             border: none;
-            color: #94A3B8;
+            color: #64748B;
             cursor: pointer;
-            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 6px;
             transition: color 0.15s ease;
         }
         .pass-toggle-btn:hover {
-            color: #FFFFFF;
+            color: #E2E8F0;
+        }
+        .terms-row {
+            margin: 16px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 0.82rem;
+            color: #94A3B8;
+        }
+        .terms-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #0284C7;
+            cursor: pointer;
+            margin: 0;
+        }
+        .terms-row a {
+            color: #38BDF8;
+            text-decoration: none;
+        }
+        .terms-row a:hover {
+            text-decoration: underline;
         }
         .btn-register-submit {
             width: 100%;
-            max-width: 260px;
-            margin: 14px auto 0;
-            padding: 10px 22px;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.86rem;
-            background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+            height: 46px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            border: none;
             color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-family: inherit;
+            font-size: 0.94rem;
+            font-weight: 700;
             cursor: pointer;
             box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
         .btn-register-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.55);
-            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
         }
         .btn-register-submit:disabled {
             opacity: 0.65;
             cursor: not-allowed;
             transform: none;
         }
-        .auth-footer-links {
+        .auth-footer {
             text-align: center;
             margin-top: 22px;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             color: #94A3B8;
         }
-        .auth-footer-links a {
-            color: #7DD3FC;
-            font-weight: 700;
+        .auth-footer a {
+            color: #38BDF8;
+            font-weight: 600;
             text-decoration: none;
         }
-        .auth-footer-links a:hover {
+        .auth-footer a:hover {
             text-decoration: underline;
         }
 
-        /* Light Theme Overrides */
+        /* Light Mode Styling (Clean, Crisp, Human SaaS) */
         [data-theme="light"] .auth-wrapper {
             background: #F8FAFC !important;
+            color: #0F172A !important;
         }
         [data-theme="light"] .auth-card {
             background: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
-            border-top: 3px solid #38BDF8 !important;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.06) !important;
+            box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        }
+        [data-theme="light"] .auth-brand {
+            color: #0F172A !important;
         }
         [data-theme="light"] .auth-title {
             color: #0F172A !important;
         }
-        [data-theme="light"] .auth-plan-badge {
-            background: #F8FAFC !important;
-            border: 1px solid #E2E8F0 !important;
-        }
-        [data-theme="light"] .auth-plan-info strong {
-            color: #0284C7 !important;
-        }
-        [data-theme="light"] .auth-plan-info span {
+        [data-theme="light"] .auth-subtitle {
             color: #64748B !important;
         }
-        [data-theme="light"] .auth-plan-price {
-            color: #0F172A !important;
-        }
-        [data-theme="light"] .form-group label {
-            color: #0F172A !important;
+        [data-theme="light"] .form-label {
+            color: #334155 !important;
         }
         [data-theme="light"] .form-input {
             background: #FFFFFF !important;
             border: 1px solid #CBD5E1 !important;
             color: #0F172A !important;
         }
+        [data-theme="light"] .form-input::placeholder {
+            color: #94A3B8 !important;
+        }
         [data-theme="light"] .form-input:focus {
-            background: #FFFFFF !important;
-            border-color: #38BDF8 !important;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+            border-color: #0284C7 !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12) !important;
+        }
+        [data-theme="light"] select.form-input option {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        [data-theme="light"] .auth-icon-btn,
+        [data-theme="light"] .auth-home-link {
+            background: #F1F5F9 !important;
+            border-color: #E2E8F0 !important;
+            color: #475569 !important;
+        }
+        [data-theme="light"] .auth-icon-btn:hover,
+        [data-theme="light"] .auth-home-link:hover {
+            background: #E2E8F0 !important;
+            color: #0F172A !important;
+        }
+        [data-theme="light"] .terms-row {
+            color: #64748B !important;
+        }
+        [data-theme="light"] .auth-footer {
+            color: #64748B !important;
+        }
+        [data-theme="light"] .auth-footer a {
+            color: #0284C7 !important;
         }
         [data-theme="light"] .pass-toggle-btn {
-            color: #64748B !important;
+            color: #94A3B8 !important;
         }
         [data-theme="light"] .pass-toggle-btn:hover {
             color: #0F172A !important;
         }
-        [data-theme="light"] .auth-footer-links {
-            color: #64748B !important;
-        }
-        [data-theme="light"] .auth-footer-links a {
-            color: #0284C7 !important;
-        }
 
-        @media (max-width: 640px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .auth-card { padding: 30px 20px; border-radius: 14px; }
-            .auth-title { font-size: 1.45rem; }
-            .form-input { padding: 12px 14px; font-size: 0.9rem; }
-            .btn-register-submit { padding: 14px; font-size: 0.95rem; }
+        @media (max-width: 540px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .auth-card {
+                padding: 26px 20px;
+                border-radius: 16px;
+            }
+            .auth-title {
+                font-size: 1.35rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
         <div class="auth-card">
-            <div class="auth-header">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-                    <a href="index.php" class="auth-logo" style="margin-bottom:0">
-                        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem">IX</div>
-                        <span style="font-size:1.35rem;font-weight:900;letter-spacing:1px;color:var(--white-pure, #FFF)"><?= htmlspecialchars(APP_NAME) ?></span>
-                    </a>
-                    <a href="index.php" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;background:rgba(56, 189, 248, 0.08);border:1px solid rgba(56, 189, 248, 0.25);color:#7DD3FC;font-size:0.78rem;font-weight:700;text-decoration:none;transition:all 0.2s ease" onmouseover="this.style.background='rgba(56, 189, 248, 0.18)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.08)'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <!-- Top bar -->
+            <div class="auth-topbar">
+                <a href="index.php" class="auth-brand" aria-label="Home">
+                    <div class="auth-badge">IX</div>
+                    <span class="auth-brand-name"><?= htmlspecialchars(APP_NAME) ?></span>
+                </a>
+                <div class="auth-top-actions">
+                    <button type="button" onclick="toggleAuthTheme()" class="auth-icon-btn" title="Toggle theme" aria-label="Toggle theme">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    </button>
+                    <a href="index.php" class="auth-home-link">
                         Home
                     </a>
                 </div>
-                <h1 class="auth-title">Sign Up</h1>
             </div>
 
-            <div id="alreadyLoggedInBanner" style="display:none;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:0.82rem;color:#BAE6FD;">
-                <span>You are currently signed in as <strong id="loggedInUsername" style="color:#FFF;"></strong>. If you are registering a new referred earner, you can proceed below or <a href="javascript:void(0)" onclick="signoutForNewRegistration()" style="color:#38BDF8;font-weight:700;text-decoration:underline;margin-left:4px;">Sign Out to start fresh</a>.</span>
+            <!-- Header -->
+            <div class="auth-header">
+                <h1 class="auth-title">Create an account</h1>
+                <p class="auth-subtitle">Join thousands of verified members earning daily.</p>
             </div>
 
+            <!-- Logged-in subtle notice -->
+            <div id="alreadyLoggedInBanner" class="auth-notice-bar" style="display:none;">
+                <span>Signed in as <strong id="loggedInUsername" style="color:inherit;"></strong> &bull; <a href="javascript:void(0)" onclick="signoutForNewRegistration()">Sign out to register a new user</a></span>
+            </div>
+
+            <!-- Registration form -->
             <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="fullName">Full Name</label>
-                        <input type="text" id="fullName" name="fullName" class="form-input" placeholder="e.g. Chukwuma Obi" required autocomplete="name">
+                        <label for="fullName" class="form-label">Full name</label>
+                        <input type="text" id="fullName" name="fullName" class="form-input" placeholder="Your name" required autocomplete="name">
                     </div>
 
                     <div class="form-group">
-                        <label for="regUsername">Username</label>
-                        <input type="text" id="regUsername" name="username" class="form-input" placeholder="e.g. chukwuma99" required autocomplete="username">
+                        <label for="regUsername" class="form-label">Username</label>
+                        <input type="text" id="regUsername" name="username" class="form-input" placeholder="Choose username" required autocomplete="username">
                     </div>
 
-                    <div class="form-group">
-                        <label for="regEmail">Email Address (@gmail.com only)</label>
+                    <div class="form-group full">
+                        <label for="regEmail" class="form-label">Email address (@gmail.com)</label>
                         <input type="email" id="regEmail" name="email" class="form-input" placeholder="name@gmail.com" required autocomplete="email">
                     </div>
 
                     <div class="form-group">
-                        <label for="regCountry">Country</label>
-                        <select id="regCountry" name="country" class="form-input" onchange="updateCountryPrefix(this)" style="cursor:pointer">
-                            <option value="NG" data-prefix="+234" selected>Nigeria (+234)</option>
-                            <option value="GH" data-prefix="+233">Ghana (+233)</option>
-                            <option value="KE" data-prefix="+254">Kenya (+254)</option>
-                            <option value="ZA" data-prefix="+27">South Africa (+27)</option>
-                            <option value="UG" data-prefix="+256">Uganda (+256)</option>
-                            <option value="CM" data-prefix="+237">Cameroon (+237)</option>
-                            <option value="US" data-prefix="+1">United States (+1)</option>
-                            <option value="GB" data-prefix="+44">United Kingdom (+44)</option>
-                            <option value="CA" data-prefix="+1">Canada (+1)</option>
-                            <option value="OTHER" data-prefix="">Other Country</option>
+                        <label for="regCountry" class="form-label">Country</label>
+                        <select id="regCountry" name="country" class="form-input">
+                            <option value="NG" selected>Nigeria</option>
+                            <option value="GH">Ghana</option>
+                            <option value="KE">Kenya</option>
+                            <option value="ZA">South Africa</option>
+                            <option value="UG">Uganda</option>
+                            <option value="CM">Cameroon</option>
+                            <option value="US">United States</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <option value="OTHER">Other country</option>
                         </select>
                     </div>
 
-                    <div class="form-group full">
-                        <label for="regPhone">Phone Number</label>
-                        <div style="display:flex;align-items:center;gap:8px">
-                            <span id="countryDialCode" style="display:inline-flex;align-items:center;padding:12px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-size:0.88rem;font-weight:700;color:#38BDF8;min-width:64px;justify-content:center">+234</span>
-                            <input type="tel" id="regPhone" name="phone" class="form-input" placeholder="e.g. 08012345678, 09012345678, or 1234567890" required autocomplete="tel" style="flex:1">
-                        </div>
-                        <div style="font-size:0.75rem;color:#64748B;margin-top:4px">Accepts Nigerian numbers starting with 07, 08, 09 or international numbers starting with 1 or country code.</div>
+                    <div class="form-group">
+                        <label for="regPhone" class="form-label">Phone number</label>
+                        <input type="tel" id="regPhone" name="phone" class="form-input" placeholder="08012345678" required autocomplete="tel">
                     </div>
 
                     <div class="form-group">
-                        <label for="regPassword">Password</label>
+                        <label for="regPassword" class="form-label">Password</label>
                         <div class="input-wrap-relative">
-                            <input type="password" id="regPassword" name="password" class="form-input" placeholder="Min 6 chars (A-Z, 0-9)" required autocomplete="new-password" style="padding-right:42px">
+                            <input type="password" id="regPassword" name="password" class="form-input" placeholder="At least 6 characters" required autocomplete="new-password">
                             <button type="button" class="pass-toggle-btn" onclick="togglePassVisibility('regPassword', this)" aria-label="Toggle password visibility">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="regConfirmPassword">Confirm Password</label>
+                        <label for="regConfirmPassword" class="form-label">Confirm password</label>
                         <div class="input-wrap-relative">
-                            <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-input" placeholder="Re-enter password" required autocomplete="new-password" style="padding-right:42px">
+                            <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-input" placeholder="Repeat password" required autocomplete="new-password">
                             <button type="button" class="pass-toggle-btn" onclick="togglePassVisibility('regConfirmPassword', this)" aria-label="Toggle confirm password visibility">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group full">
-                        <label for="referralCode">Referral Username (Optional)</label>
-                        <div style="position:relative;">
-                            <input type="text" id="referralCode" name="ref" class="form-input" value="<?= htmlspecialchars($refFromQuery) ?>" placeholder="Referrer username if any" <?= !empty($refFromQuery) ? 'style="border-color:rgba(56,189,248,0.5);background:rgba(56,189,248,0.05);color:#38BDF8;font-weight:700;"' : '' ?>>
-                            <div id="refBadgeIndicator" style="<?= !empty($refFromQuery) ? 'display:flex;' : 'display:none;' ?>font-size:0.75rem;color:#10B981;font-weight:700;margin-top:6px;align-items:center;gap:4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                Referred by @<span id="refBadgeUsername"><?= htmlspecialchars($refFromQuery) ?></span>
-                            </div>
+                        <label for="referralCode" class="form-label">Referral username (optional)</label>
+                        <input type="text" id="referralCode" name="ref" class="form-input" value="<?= htmlspecialchars($refFromQuery) ?>" placeholder="Referrer username if any">
+                        <div id="refBadgeIndicator" style="<?= !empty($refFromQuery) ? 'display:flex;' : 'display:none;' ?>font-size:0.78rem;color:#10B981;font-weight:600;margin-top:4px;align-items:center;gap:4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            Referred by @<span id="refBadgeUsername"><?= htmlspecialchars($refFromQuery) ?></span>
                         </div>
                     </div>
                 </div>
 
-                <div style="margin: 14px 0 20px; font-size: 0.82rem; color: #94A3B8; display: flex; align-items: flex-start; gap: 8px;">
-                    <input type="checkbox" id="termsCheck" required style="margin-top: 3px; accent-color: #0284C7">
-                    <label for="termsCheck" style="font-size:0.82rem;color:inherit;text-transform:none;letter-spacing:normal;font-weight:400;margin:0;cursor:pointer">
-                        I agree to the <a href="index.php#terms" style="color:#7DD3FC">Terms of Service</a> &amp; <a href="index.php#privacy" style="color:#7DD3FC">Privacy Policy</a>.
+                <div class="terms-row">
+                    <input type="checkbox" id="termsCheck" required>
+                    <label for="termsCheck" style="margin:0;cursor:pointer;">
+                        I agree to the <a href="index.php#terms" target="_blank">Terms of Service</a> &amp; <a href="index.php#privacy" target="_blank">Privacy Policy</a>
                     </label>
                 </div>
 
                 <button type="submit" class="btn-register-submit" id="btnSubmitRegister">
-                    <span>Create Free Account</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    Create account
                 </button>
             </form>
 
-            <div class="auth-footer-links">
-                Already have an account? <a href="login.php">Log In here</a>
+            <div class="auth-footer">
+                Already have an account? <a href="login.php">Sign in</a>
             </div>
         </div>
     </div>
 
     <script>
-    function updateCountryPrefix(sel) {
-        const opt = sel.options[sel.selectedIndex];
-        const prefix = opt ? opt.getAttribute('data-prefix') : '';
-        const dialEl = document.getElementById('countryDialCode');
-        if (dialEl) {
-            dialEl.textContent = prefix || 'Code';
-        }
+    function toggleAuthTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+            localStorage.setItem('ix_theme', next);
+        } catch(e) {}
     }
 
     function togglePassVisibility(inputId, btn) {
@@ -430,10 +547,9 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             return;
         }
 
-        // Flexible phone number validation: allows Nigerian (07, 08, 09) and international (1 or country codes)
         const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
         if (cleanPhone.length < 7 || cleanPhone.length > 16 || !/^\d+$/.test(cleanPhone)) {
-            alert('Please enter a valid phone number (accepts Nigerian numbers starting with 07, 08, 09 or international numbers starting with 1).');
+            alert('Please enter a valid phone number.');
             return;
         }
 
@@ -511,14 +627,15 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;
-                btn.innerHTML = `<span>Create Free Account</span>`;
+                btn.innerHTML = `<span>Create account</span>`;
             }
         })
         .catch(err => {
             alert('A network error occurred. Please try again.');
             btn.disabled = false;
-            btn.innerHTML = `<span>Create Free Account</span>`;
+            btn.innerHTML = `<span>Create account</span>`;
         });
+    }
     }
 
     function signoutForNewRegistration() {
