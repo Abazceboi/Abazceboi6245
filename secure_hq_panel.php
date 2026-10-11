@@ -688,7 +688,7 @@ input,textarea,select{font-family:var(--ff);}
           <div style="display:flex;gap:10px;align-items:center;">
             <button type="button" class="btn btn-primary" id="btnRunSurveyGen" onclick="generateSurveyFromTopic()" style="font-weight:700;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Generate Survey Questions</span>
+              <span>Load Topic Questions</span>
             </button>
             <span id="genSurveyStatusMsg" style="font-size:12px;color:var(--txt-3);"></span>
           </div>
@@ -740,6 +740,7 @@ input,textarea,select{font-family:var(--ff);}
 
             <!-- Preview of Generated Questions -->
             <div style="font-size:12px;font-weight:600;color:var(--txt-3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Question Preview &amp; Designated Answers</div>
+            <div id="genQuestionsPreviewList" style="display:flex;flex-direction:column;gap:10px;"></div>
           </div>
         </div>
       </div>
@@ -2598,11 +2599,25 @@ function renderGeneratedSurveyResults(plan) {
   const box = document.getElementById('genSurveyResultsBox');
   const titleDisplay = document.getElementById('genResultTitleDisplay');
   const metaDisplay = document.getElementById('genResultMetaDisplay');
-  const list = document.getElementById('genQuestionsPreviewList');
+  let list = document.getElementById('genQuestionsPreviewList');
   const previewSlots = document.getElementById('genPreviewSlots');
   const previewReward = document.getElementById('genPreviewReward');
 
-  if (!box || !titleDisplay || !list) return;
+  if (!box) return;
+
+  // Make box visible immediately
+  box.style.display = 'block';
+
+  // Ensure questions container exists
+  if (!list) {
+    list = document.getElementById('genQuestionsPreviewList');
+    if (!list) {
+      list = document.createElement('div');
+      list.id = 'genQuestionsPreviewList';
+      list.style.cssText = 'display:flex;flex-direction:column;gap:10px;margin-top:10px;';
+      box.appendChild(list);
+    }
+  }
 
   const currentSlots = parsePositiveSlots(document.getElementById('genSurveySlots')?.value, plan.total_slots || 1);
   plan.total_slots = currentSlots;
@@ -2610,31 +2625,39 @@ function renderGeneratedSurveyResults(plan) {
   if (previewSlots) previewSlots.value = plan.total_slots;
   if (previewReward) previewReward.value = plan.reward_points || 150;
 
-  titleDisplay.textContent = plan.title || 'Official Survey';
-  if (metaDisplay) {
-    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Reward: ${plan.reward_points} PTS | Available Slots: ${plan.total_slots} ${plan.total_slots === 1 ? 'user' : 'users'}`;
+  if (titleDisplay) {
+    titleDisplay.textContent = plan.title || 'Official Survey';
   }
 
-  list.innerHTML = plan.questions.map((q, qIdx) => `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:12px;font-weight:700;color:var(--accent);">Question ${qIdx + 1}</span>
-        <span style="font-size:10.5px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600;">Verified Option</span>
-      </div>
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;line-height:1.4;">${esc(q.question)}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:6px;">
-        ${q.options.map((opt, oIdx) => `
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:6px;background:${q.correct_index === oIdx ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)'};border:1px solid ${q.correct_index === oIdx ? 'rgba(16,185,129,0.3)' : 'var(--border)'};color:${q.correct_index === oIdx ? 'var(--green)' : 'var(--txt-2)'};">
-            <span style="width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${q.correct_index === oIdx ? 'var(--green)' : 'var(--border)'};color:#fff;font-size:9px;font-weight:700;">${String.fromCharCode(65 + oIdx)}</span>
-            <span>${esc(opt)}</span>
-            ${q.correct_index === oIdx ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--green);">Correct</span>' : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  const qList = Array.isArray(plan.questions) ? plan.questions : [];
 
-  box.style.display = 'block';
+  if (metaDisplay) {
+    metaDisplay.textContent = `Category: ${plan.category || 'General'} | Questions: ${qList.length} | Reward: ${plan.reward_points || 150} PTS | Available Slots: ${plan.total_slots} ${plan.total_slots === 1 ? 'user' : 'users'}`;
+  }
+
+  if (qList.length === 0) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--txt-3);padding:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;">No questions loaded for this topic yet. Click "Refresh Questions" or type another topic.</div>`;
+  } else {
+    list.innerHTML = qList.map((q, qIdx) => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--accent);">Question ${qIdx + 1}</span>
+          <span style="font-size:10.5px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600;">Verified Option</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;line-height:1.4;">${esc(q.question || '')}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:6px;">
+          ${(Array.isArray(q.options) ? q.options : []).map((opt, oIdx) => `
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:6px;background:${q.correct_index === oIdx ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)'};border:1px solid ${q.correct_index === oIdx ? 'rgba(16,185,129,0.3)' : 'var(--border)'};color:${q.correct_index === oIdx ? 'var(--green)' : 'var(--txt-2)'};">
+              <span style="width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${q.correct_index === oIdx ? 'var(--green)' : 'var(--border)'};color:#fff;font-size:9px;font-weight:700;">${String.fromCharCode(65 + oIdx)}</span>
+              <span>${esc(opt)}</span>
+              ${q.correct_index === oIdx ? '<span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--green);">Correct</span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
   box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
