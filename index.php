@@ -104,6 +104,10 @@ if (!empty($_GET['ref'])) {
     --color-dim: #64748B;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     background-color: var(--color-bg) !important;
     color: var(--color-fg) !important;
@@ -1245,7 +1249,7 @@ h1, h2, h3, h4, .font-display {
                     </p>
 
                     <!-- Hero Action Buttons -->
-                    <div style="margin-top:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="margin-top:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;" class="hero-cta-row">
                         <a href="register.php" class="btn-cta" style="border-radius:11px;padding:14px 28px;font-size:0.92rem;font-weight:700;">
                             <span>CREATE ACCOUNT</span>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1322,7 +1326,7 @@ h1, h2, h3, h4, .font-display {
                     </div>
 
                     <!-- Floating Card 1: Bottom Left (Evermore exact) -->
-                    <div class="glass glow-emerald animate-float-slow" style="position:absolute;bottom:-16px;left:-14px;border-radius:14px;padding:12px 18px;border-color:rgba(16,185,129,0.3);">
+                    <div class="glass glow-emerald animate-float-slow hero-float-bottom" style="position:absolute;bottom:-16px;left:-14px;border-radius:14px;padding:12px 18px;border-color:rgba(16,185,129,0.3);">
                         <p style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--color-emerald);margin:0;line-height:1;">
                             100% Automated
                         </p>
@@ -1332,7 +1336,7 @@ h1, h2, h3, h4, .font-display {
                     </div>
 
                     <!-- Floating Card 2: Top Right (Evermore exact) -->
-                    <div class="glass glow-accent animate-float-slow" style="position:absolute;top:24px;right:-14px;border-radius:14px;padding:12px 18px;animation-delay:1.2s;">
+                    <div class="glass glow-accent animate-float-slow hero-float-top" style="position:absolute;top:24px;right:-14px;border-radius:14px;padding:12px 18px;animation-delay:1.2s;">
                         <p style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;color:var(--color-aqua);margin:0;">
                             INNOVATIONX
                         </p>
@@ -1745,6 +1749,8 @@ h1, h2, h3, h4, .font-display {
     .desktop-menu { display: flex !important; }
     .footer-inner-row { flex-direction: row !important; }
 }
+
+/* Tablet breakpoint */
 @media (max-width: 960px) {
     .ev-header-container {
         display: flex !important;
@@ -1758,24 +1764,165 @@ h1, h2, h3, h4, .font-display {
     .ev-theme-in-pill {
         display: flex !important;
     }
+    .hero-split-grid {
+        gap: 28px !important;
+    }
 }
+
+/* Mobile breakpoint */
 @media (max-width: 767px) {
+    /* Header */
     .ev-pill-header { top: 10px !important; padding: 0 10px !important; }
     .ev-header-container { gap: 8px !important; }
     .ev-brand-standalone { padding: 5px 11px 5px 6px !important; gap: 7px !important; }
     .ev-pill-navbar { padding: 4px 6px 4px 8px !important; }
-    .hero-section { padding-top: 80px !important; }
     .desktop-auth-btn { display: none !important; }
     .mobile-menu-btn { display: flex !important; }
-    .hero-split-grid { grid-template-columns: 1fr !important; }
-    .steps-grid-3 { grid-template-columns: 1fr !important; }
-    .categories-grid-3 { grid-template-columns: 1fr !important; }
+
+    /* Hero section */
+    .hero-section {
+        padding-top: 88px !important;
+        padding-bottom: 36px !important;
+    }
+    .hero-split-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+    }
+    .hero-split-grid > div:first-child {
+        text-align: center !important;
+    }
+    .hero-split-grid h1 {
+        font-size: clamp(1.95rem, 8vw, 2.4rem) !important;
+        margin-top: 12px !important;
+    }
+    .hero-split-grid > div:first-child > p {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        font-size: 0.96rem !important;
+    }
+    /* Hero CTA buttons: stacked and full-width */
+    .hero-cta-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+    }
+    .hero-cta-row .btn-cta,
+    .hero-cta-row a.glass {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 14px 20px !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+    /* Trust checks */
+    .hero-trust-check {
+        font-size: 0.82rem !important;
+    }
+    /* Floating badge cards: pull back negative offsets to stop overflow */
+    .hero-float-bottom {
+        bottom: -8px !important;
+        left: 6px !important;
+        padding: 9px 12px !important;
+    }
+    .hero-float-top {
+        top: 10px !important;
+        right: 6px !important;
+        padding: 9px 12px !important;
+    }
+    .hero-float-bottom p:first-child {
+        font-size: 1rem !important;
+    }
+    .hero-float-top p:first-child {
+        font-size: 0.78rem !important;
+    }
+
+    /* Grid sections */
+    .steps-grid-3 { grid-template-columns: 1fr !important; gap: 14px !important; }
+    .categories-grid-3 { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+    /* Section vertical padding */
+    #how.surface-navy { padding: 50px 0 !important; }
+    #features.ev-wrap { padding: 44px 16px !important; }
+    #subscriptions.ev-wrap { padding: 12px 16px 44px !important; }
+    #banks.ev-wrap { padding-bottom: 36px !important; }
+    #faq.ev-wrap {
+        padding-bottom: 44px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* Step cards */
+    .step-card { padding: 20px !important; }
+
+    /* Membership CTA */
+    #subscriptions .btn-cta {
+        padding: 14px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Bank pills */
+    #banks span {
+        padding: 7px 14px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Ways to earn category cards */
+    .categories-grid-3 a.glass {
+        padding: 16px !important;
+    }
+
+    /* CTA Banner */
+    .cta-banner-card {
+        padding: 30px 18px 24px !important;
+        margin: 0 4px !important;
+    }
+    .cta-banner-card .cta-action-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 13px 20px !important;
+    }
+    .cta-banner-card .cta-trust-bar {
+        gap: 8px !important;
+        font-size: 0.72rem !important;
+    }
+
+    /* Footer */
+    footer { padding: 24px 0 !important; }
+    footer .ev-wrap { gap: 14px !important; text-align: center !important; }
+
+    /* Audio tour bar section */
+    .audio-tour-section-wrap { padding-bottom: 30px !important; }
 }
+
+/* Small phone breakpoint */
 @media (max-width: 480px) {
     .ev-header-container { padding: 0 2px !important; gap: 6px !important; }
     .ev-brand-standalone { padding: 4px 8px 4px 5px !important; gap: 6px !important; }
     .ev-brand-name { font-size: 0.8rem !important; }
     .ev-pill-navbar { padding: 3px 5px !important; gap: 4px !important; }
+
+    .hero-section {
+        padding-top: 80px !important;
+        padding-bottom: 28px !important;
+    }
+    .hero-split-grid h1 {
+        font-size: clamp(1.75rem, 9vw, 2.1rem) !important;
+    }
+    .ev-wrap {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+    .step-card { padding: 18px !important; }
+    .categories-grid-3 a.glass { padding: 14px !important; }
+    #subscriptions > div > div.surface-navy {
+        padding: 24px 18px !important;
+    }
+    .cta-banner-card {
+        padding: 26px 14px 20px !important;
+    }
+    .cta-banner-card .cta-banner-title {
+        font-size: 1.3rem !important;
+    }
 }
 </style>
 
