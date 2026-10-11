@@ -836,11 +836,13 @@ h1, h2, h3, h4, .font-display {
     align-items: center;
     gap: 16px;
     width: 100%;
+    height: 44px;
 }
 
 .ev-header-side {
     display: flex;
     align-items: center;
+    height: 44px;
 }
 
 .ev-header-left {
@@ -855,6 +857,7 @@ h1, h2, h3, h4, .font-display {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 44px;
 }
 
 /* Standalone Brand Logo (Glass Capsule) */
@@ -864,7 +867,9 @@ h1, h2, h3, h4, .font-display {
     align-items: center;
     gap: 9px;
     text-decoration: none;
-    padding: 6px 14px 6px 7px;
+    height: 44px;
+    box-sizing: border-box;
+    padding: 0 16px 0 8px;
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px) saturate(180%);
@@ -922,7 +927,9 @@ h1, h2, h3, h4, .font-display {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 5px 6px 5px 12px;
+    height: 44px;
+    box-sizing: border-box;
+    padding: 0 6px 0 12px;
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px) saturate(180%);
@@ -992,20 +999,34 @@ h1, h2, h3, h4, .font-display {
 /* Standalone Theme Button (Desktop Right Side) */
 .ev-theme-standalone {
     pointer-events: auto;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
     color: var(--color-fg);
     cursor: pointer;
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.ev-theme-standalone svg {
+    display: block;
+    margin: auto;
 }
 
 .ev-theme-standalone:hover {
