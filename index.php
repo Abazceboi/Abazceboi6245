@@ -548,6 +548,165 @@ h1, h2, h3, h4, .font-display {
     background: #0284C7 !important;
 }
 
+/* Streamlined Audio Tour Card */
+.audio-tour-card {
+    border-radius: 16px;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: nowrap;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="light"] .audio-tour-card {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(2, 132, 199, 0.18) !important;
+    box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.1), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.audio-tour-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    flex: 1;
+}
+
+.audio-tour-btn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0284C7, #38BDF8);
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+}
+
+.audio-tour-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(56, 189, 248, 0.55);
+}
+
+.audio-tour-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.audio-tour-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.audio-tour-title {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tour-title-short {
+    display: none;
+}
+
+.audio-tour-duration {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-aqua);
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    padding: 1px 7px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.audio-tour-desc {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    margin: 2px 0 0;
+    line-height: 1.35;
+}
+
+.audio-tour-wave {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+    .audio-tour-card {
+        padding: 9px 12px !important;
+        gap: 10px !important;
+        border-radius: 14px !important;
+        flex-wrap: nowrap !important;
+    }
+    .audio-tour-content {
+        gap: 10px !important;
+    }
+    .audio-tour-btn {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        border-radius: 10px !important;
+    }
+    .audio-tour-btn svg {
+        width: 13px !important;
+        height: 13px !important;
+    }
+    .audio-tour-title {
+        font-size: 0.85rem !important;
+        line-height: 1.2 !important;
+    }
+    .audio-tour-desc {
+        display: none !important;
+    }
+    .audio-tour-wave {
+        gap: 3px !important;
+        height: 18px !important;
+    }
+    .audio-tour-wave span {
+        width: 2.5px !important;
+    }
+}
+
+@media (max-width: 440px) {
+    .tour-title-full {
+        display: none !important;
+    }
+    .tour-title-short {
+        display: inline !important;
+    }
+    .audio-tour-card {
+        padding: 8px 10px !important;
+        gap: 8px !important;
+    }
+    .audio-tour-duration {
+        display: none !important;
+    }
+}
+
 .glow-neon {
     box-shadow: 0 0 30px -6px var(--color-aqua), 0 0 60px -15px var(--color-primary);
 }
@@ -1115,26 +1274,30 @@ h1, h2, h3, h4, .font-display {
         </div>
     </section>
 
-    <!-- ===== AUDIO TOUR BAR (EVERMORE EXACT WIDGET H) ===== -->
-    <section class="ev-wrap" style="padding-bottom:50px;">
-        <div class="glass" style="border-radius:16px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:14px;">
-                <button type="button" id="tourPlayBtn" onclick="toggleTourPlayback()" style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg, #0284C7, #38BDF8);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(56,189,248,0.4);">
+    <!-- ===== AUDIO TOUR BAR (STREAMLINED RESPONSIVE) ===== -->
+    <section class="ev-wrap" style="padding-bottom:45px;">
+        <div class="glass audio-tour-card">
+            <div class="audio-tour-content">
+                <button type="button" id="tourPlayBtn" onclick="toggleTourPlayback()" class="audio-tour-btn" aria-label="Play audio introduction">
                     <svg id="tourPlayIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     <svg id="tourPauseIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                 </button>
-                <div>
-                    <h4 style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--color-fg);margin:0 0 2px;">
-                        Hear the INNOVATIONX introduction
-                    </h4>
-                    <p style="font-size:0.82rem;color:var(--color-muted);margin:0;">
+                <div class="audio-tour-info">
+                    <div class="audio-tour-title-wrap">
+                        <h4 class="audio-tour-title">
+                            <span class="tour-title-full">Hear the INNOVATIONX introduction</span>
+                            <span class="tour-title-short">Hear audio intro</span>
+                        </h4>
+                        <span class="audio-tour-duration">2 min</span>
+                    </div>
+                    <p class="audio-tour-desc">
                         A two-minute interactive audio walkthrough of everything inside INNOVATIONX.
                     </p>
                 </div>
             </div>
 
             <!-- Soundwave visual animation -->
-            <div style="display:flex;align-items:center;gap:4px;height:22px;" id="tourWaveBars">
+            <div class="audio-tour-wave" id="tourWaveBars">
                 <span style="width:3px;height:12px;background:#38BDF8;border-radius:2px;"></span>
                 <span style="width:3px;height:20px;background:#38BDF8;border-radius:2px;"></span>
                 <span style="width:3px;height:16px;background:#38BDF8;border-radius:2px;"></span>
