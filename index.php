@@ -1,15 +1,15 @@
 <?php
 /**
- * INNOVATIONX — Premier Digital Earning Platform
- * Inspired by Evermore design architecture:
- * High-end typography (Space Grotesk + DM Sans), clean structured cards,
- * slide-out mobile drawer, multi-column footer, and focused concise copy.
- * Powered by INNOVATIONX content and brand colors.
+ * INNOVATIONX — Exact Evermore Platform Architecture
+ * Built identical to evermoreai.africa layout, components, and structure:
+ * Space Grotesk + DM Sans typography, glass navigation, hero with floating stat cards,
+ * interactive audio intro bar, 6-step roadmap, split spotlight cards, 6-module earning grid,
+ * surface-navy subscription card, accordion FAQ, high-impact CTA banner, and footer.
  * Zero emojis in accordance with strict platform guidelines.
  */
 
 $pageTitle = 'INNOVATIONX | Digital Tasks, Market Surveys & Direct Bank Settlement';
-$pageDesc = 'Monetize your daily screen time with verified sponsored tasks and global opinion surveys. Automated settlements to any Nigerian bank account.';
+$pageDesc = 'The premier digital earning platform in Nigeria. Complete daily sponsored tasks and world opinion surveys with automated bank settlements.';
 
 $hideNavbar = true;
 $hideFooter = true;
@@ -32,1625 +32,975 @@ if (!empty($_GET['ref'])) {
 }
 ?>
 
-<!-- Google Fonts: Space Grotesk & DM Sans -->
+<!-- Google Fonts: Space Grotesk & DM Sans (Evermore Standard) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* ==========================================================================
-   EVERMORE-INSPIRED MODERN DESIGN SYSTEM
-   Typography: Space Grotesk (Display) + DM Sans (Body)
-   Palette: Rich Navy / Obsidian with Electric Sky & Emerald Highlights
+   EXACT EVERMORE DESIGN SYSTEM & UTILITIES
    ========================================================================== */
-
 :root {
-    --ev-bg: #070D18;
-    --ev-surface: #0C1527;
-    --ev-surface-alt: #101D36;
-    --ev-card: rgba(12, 21, 39, 0.75);
-    --ev-card-hover: rgba(16, 29, 54, 0.95);
+    --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     
-    --ev-primary: #0284C7;
-    --ev-primary-light: #38BDF8;
-    --ev-primary-glow: rgba(56, 189, 248, 0.25);
+    --color-background: #060c18;
+    --color-foreground: #f1f5f9;
+    --color-muted: #101c33;
+    --color-muted-foreground: #94a3b8;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-secondary: #0d172a;
     
-    --ev-emerald: #10B981;
-    --ev-emerald-glow: rgba(16, 185, 129, 0.22);
+    --color-primary: #0284c7;
+    --color-primary-foreground: #ffffff;
+    --color-accent: #38bdf8;
+    --color-aqua: #38bdf8;
+    --color-gold: #f59e0b;
+    --color-gold-foreground: #000000;
     
-    --ev-border: rgba(255, 255, 255, 0.09);
-    --ev-border-focus: rgba(56, 189, 248, 0.35);
-    --ev-border-emerald: rgba(16, 185, 129, 0.35);
-    
-    --ev-text-white: #FFFFFF;
-    --ev-text-main: #E2E8F0;
-    --ev-text-muted: #94A3B8;
-    --ev-text-dim: #64748B;
-    
-    --font-heading: 'Space Grotesk', -apple-system, sans-serif;
-    --font-body: 'DM Sans', -apple-system, sans-serif;
+    --color-navy: #081124;
+    --color-navy-foreground: #f8fafc;
 }
 
 [data-theme="light"] {
-    --ev-bg: #F8FAFC;
-    --ev-surface: #FFFFFF;
-    --ev-surface-alt: #F1F5F9;
-    --ev-card: rgba(255, 255, 255, 0.92);
-    --ev-card-hover: #FFFFFF;
+    --color-background: #f8fafc;
+    --color-foreground: #0f172a;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #475569;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-secondary: #ffffff;
     
-    --ev-primary: #0284C7;
-    --ev-primary-light: #0369A1;
-    --ev-primary-glow: rgba(2, 132, 199, 0.12);
+    --color-primary: #0284c7;
+    --color-primary-foreground: #ffffff;
+    --color-accent: #0284c7;
+    --color-aqua: #0284c7;
     
-    --ev-emerald: #059669;
-    --ev-emerald-glow: rgba(5, 150, 105, 0.12);
-    
-    --ev-border: rgba(0, 0, 0, 0.08);
-    --ev-border-focus: rgba(2, 132, 199, 0.25);
-    --ev-border-emerald: rgba(5, 150, 105, 0.25);
-    
-    --ev-text-white: #0F172A;
-    --ev-text-main: #1E293B;
-    --ev-text-muted: #475569;
-    --ev-text-dim: #64748B;
+    --color-navy: #0f172a;
+    --color-navy-foreground: #ffffff;
 }
 
 body {
-    background-color: var(--ev-bg) !important;
-    color: var(--ev-text-main) !important;
-    font-family: var(--font-body);
-    line-height: 1.6;
-    overflow-x: hidden;
+    background-color: var(--color-background) !important;
+    color: var(--color-foreground) !important;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    overflow-x: clip;
     padding-bottom: 0 !important;
-}
-
-.ev-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
-
-/* Ambient glow accents */
-.ev-ambient-bg {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background: 
-        radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.14) 0%, transparent 60%),
-        radial-gradient(circle at 90% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 45%);
-}
-
-[data-theme="light"] .ev-ambient-bg {
-    background: 
-        radial-gradient(circle at 50% -10%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
-        radial-gradient(circle at 90% 40%, rgba(5, 150, 105, 0.05) 0%, transparent 45%);
-}
-
-.ev-content-layer {
-    position: relative;
-    z-index: 1;
-}
-
-/* ==========================================================================
-   NAVIGATION BAR
-   ========================================================================== */
-.ev-navbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(7, 13, 24, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--ev-border);
-    padding: 16px 0;
-    transition: all 0.25s ease;
-}
-
-[data-theme="light"] .ev-navbar {
-    background: rgba(255, 255, 255, 0.9);
-}
-
-.ev-nav-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.ev-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--ev-text-white);
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 1.2rem;
-    letter-spacing: -0.02em;
-}
-
-.ev-brand-mark {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    background: linear-gradient(135deg, var(--ev-primary-light), var(--ev-primary));
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    box-shadow: 0 4px 14px var(--ev-primary-glow);
-}
-
-.ev-brand-tag {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--ev-emerald);
-    padding: 2px 7px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    border-radius: 999px;
-}
-
-.ev-nav-menu {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    list-style: none;
     margin: 0;
-    padding: 0;
 }
 
-.ev-nav-link {
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--ev-text-muted);
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 10px;
-    transition: all 0.2s ease;
+h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
 }
 
-.ev-nav-link:hover {
-    color: var(--ev-text-white);
-    background: rgba(255, 255, 255, 0.05);
+/* Glass & Surface styles (Evermore exact) */
+.glass {
+    background: rgba(12, 22, 42, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border);
 }
 
-[data-theme="light"] .ev-nav-link:hover {
-    background: rgba(0, 0, 0, 0.05);
+[data-theme="light"] .glass {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.07);
 }
 
-.ev-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.glass-dark {
+    background: rgba(8, 17, 36, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.ev-theme-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    border: 1px solid var(--ev-border);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--ev-text-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
+.surface-navy {
+    color: var(--color-navy-foreground);
+    background: radial-gradient(120% 90% at 85% 0%, rgba(2, 132, 199, 0.35) 0%, transparent 55%),
+                radial-gradient(90% 70% at 0% 100%, rgba(16, 185, 129, 0.25) 0%, transparent 60%),
+                #071126;
 }
 
-.ev-theme-btn:hover {
-    border-color: var(--ev-border-focus);
-    color: var(--ev-text-white);
+.glow-neon {
+    box-shadow: 0 0 30px -6px var(--color-aqua), 0 0 70px -20px var(--color-primary);
 }
 
-.ev-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 11px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    white-space: nowrap;
+.glow-primary {
+    box-shadow: 0 0 40px -10px var(--color-primary);
 }
 
-.ev-btn-ghost {
-    color: var(--ev-text-white);
-    background: transparent;
+.glow-gold {
+    box-shadow: 0 0 35px -8px var(--color-gold);
 }
 
-.ev-btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
+.glow-accent {
+    box-shadow: 0 0 35px -8px var(--color-accent);
 }
 
-.ev-btn-primary {
-    background: linear-gradient(135deg, var(--ev-primary-light) 0%, var(--ev-primary) 100%);
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 16px var(--ev-primary-glow);
-}
-
-.ev-btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 22px rgba(56, 189, 248, 0.45);
-}
-
-.ev-btn-outline {
-    background: transparent;
-    color: var(--ev-text-white);
-    border: 1px solid var(--ev-border);
-}
-
-.ev-btn-outline:hover {
-    border-color: var(--ev-primary-light);
-    color: var(--ev-primary-light);
-    background: rgba(56, 189, 248, 0.05);
-}
-
-.ev-menu-trigger {
-    display: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    border: 1px solid var(--ev-border);
-    background: transparent;
-    color: var(--ev-text-white);
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-/* ==========================================================================
-   MOBILE DRAWER (LIKE EVERMORE)
-   ========================================================================== */
-.ev-drawer-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(7, 13, 24, 0.65);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-    z-index: 200;
-}
-
-.ev-drawer-backdrop.open {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.ev-drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 320px;
-    max-width: 85vw;
-    background: var(--ev-surface);
-    border-left: 1px solid var(--ev-border);
-    transform: translateX(100%);
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 201;
-    display: flex;
-    flex-direction: column;
-    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
-}
-
-.ev-drawer.open {
-    transform: translateX(0);
-}
-
-.ev-drawer-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    border-bottom: 1px solid var(--ev-border);
-}
-
-.ev-drawer-close {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    border: 1px solid var(--ev-border);
-    background: transparent;
-    color: var(--ev-text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.ev-drawer-nav {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.ev-drawer-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    color: var(--ev-text-main);
-    text-decoration: none;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
-}
-
-.ev-drawer-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--ev-text-white);
-}
-
-.ev-drawer-bottom {
-    padding: 20px;
-    border-top: 1px solid var(--ev-border);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* ==========================================================================
-   HERO SECTION
-   ========================================================================== */
-.ev-hero {
-    padding: 80px 0 60px;
-}
-
-.ev-hero-grid {
-    display: grid;
-    grid-template-columns: 1.15fr 0.95fr;
-    gap: 48px;
-    align-items: center;
-}
-
-.ev-pill-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid var(--ev-border-focus);
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--ev-primary-light);
-    letter-spacing: 0.5px;
-    margin-bottom: 20px;
-}
-
-.ev-pill-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--ev-emerald);
-    box-shadow: 0 0 8px var(--ev-emerald);
-}
-
-.ev-hero-h1 {
-    font-family: var(--font-heading);
-    font-size: clamp(2.4rem, 4.4vw, 3.8rem);
-    font-weight: 700;
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    color: var(--ev-text-white);
-    margin-bottom: 18px;
-}
-
-.ev-gradient-word {
-    background: linear-gradient(135deg, var(--ev-primary-light) 0%, #BAE6FD 100%);
+/* Evermore exact text gradients */
+.text-aqua-gradient {
+    color: transparent;
+    background: linear-gradient(100deg, #7dd3fc, #38bdf8 55%, #0284c7);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.ev-hero-desc {
-    font-size: 1.05rem;
-    color: var(--ev-text-muted);
-    line-height: 1.65;
-    max-width: 520px;
-    margin-bottom: 32px;
+.text-brand-gradient {
+    color: transparent;
+    background: linear-gradient(100deg, #ffffff 15%, #38bdf8 65%, #0284c7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
 }
 
-.ev-hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-bottom: 36px;
+[data-theme="light"] .text-brand-gradient {
+    background: linear-gradient(100deg, #0f172a 15%, #0284c7 65%, #0369a1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
 }
 
-.ev-metrics-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    padding-top: 24px;
-    border-top: 1px solid var(--ev-border);
-    max-width: 500px;
-}
-
-.ev-metric-item h4 {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    margin-bottom: 2px;
-}
-
-.ev-metric-item p {
-    font-size: 0.78rem;
-    color: var(--ev-text-dim);
-}
-
-/* Hero Showcase Card */
-.ev-hero-card {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 24px;
-    padding: 30px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
-    position: relative;
-    overflow: hidden;
-}
-
-.ev-hero-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--ev-primary-light), transparent);
-}
-
-.ev-card-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-}
-
-.ev-card-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--ev-emerald);
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    padding: 4px 10px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.ev-wallet-preview {
-    background: var(--ev-surface-alt);
-    border: 1px solid var(--ev-border);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.ev-wallet-label {
-    font-size: 0.75rem;
-    color: var(--ev-text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-}
-
-.ev-wallet-amount {
-    font-family: var(--font-heading);
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-}
-
-.ev-wallet-sub-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--ev-border);
-}
-
-.ev-sub-stat-lbl {
-    font-size: 0.72rem;
-    color: var(--ev-text-dim);
-}
-
-.ev-sub-stat-val {
-    font-family: var(--font-heading);
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--ev-primary-light);
-}
-
-.ev-activity-stream {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.ev-stream-item {
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid var(--ev-border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.ev-stream-title {
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: var(--ev-text-main);
-}
-
-.ev-stream-reward {
-    font-family: var(--font-heading);
-    font-size: 0.84rem;
-    font-weight: 700;
-    color: var(--ev-emerald);
-    white-space: nowrap;
-}
-
-/* ==========================================================================
-   FEATURE CATEGORIES (6-CARD GRID LIKE EVERMORE)
-   ========================================================================== */
-.ev-section {
-    padding: 70px 0;
-}
-
-.ev-section-header {
-    margin-bottom: 44px;
-}
-
-.ev-section-tag {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--ev-primary-light);
-    margin-bottom: 10px;
-    display: inline-block;
-}
-
-.ev-section-title {
-    font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 3.2vw, 2.5rem);
-    font-weight: 700;
-    color: var(--ev-text-white);
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-}
-
-.ev-section-desc {
-    font-size: 0.98rem;
-    color: var(--ev-text-muted);
-    max-width: 580px;
-    margin-top: 10px;
-}
-
-.ev-categories-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-}
-
-.ev-card-feature {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 18px;
-    padding: 28px 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.25s ease;
-}
-
-.ev-card-feature:hover {
-    border-color: var(--ev-border-focus);
-    transform: translateY(-3px);
-}
-
-.ev-feature-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-}
-
-.ev-feature-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid var(--ev-border-focus);
-    color: var(--ev-primary-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.ev-feature-rate {
-    font-family: var(--font-heading);
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--ev-emerald);
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    padding: 3px 9px;
-    border-radius: 999px;
-}
-
-.ev-feature-title {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    margin-bottom: 10px;
-    letter-spacing: -0.01em;
-}
-
-.ev-feature-p {
-    font-size: 0.88rem;
-    color: var(--ev-text-muted);
-    line-height: 1.6;
-    margin-bottom: 20px;
-}
-
-.ev-feature-link {
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: var(--ev-primary-light);
+/* Evermore exact buttons */
+.btn-cta {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px -4px rgba(56, 189, 248, 0.5);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: gap 0.2s;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.ev-feature-link:hover {
-    gap: 10px;
+.btn-cta:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 28px -4px rgba(56, 189, 248, 0.65);
 }
 
-/* ==========================================================================
-   HOW IT WORKS (STEP-BY-STEP PROCESS LIKE EVERMORE)
-   ========================================================================== */
-.ev-steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-}
-
-.ev-step-card {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 20px;
-    padding: 32px 26px;
-    position: relative;
-    transition: all 0.25s ease;
-}
-
-.ev-step-card:hover {
-    border-color: var(--ev-border-focus);
-    transform: translateY(-3px);
-}
-
-.ev-step-num {
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--ev-primary-light);
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid var(--ev-border-focus);
-    padding: 4px 12px;
-    border-radius: 8px;
-    display: inline-block;
-    margin-bottom: 16px;
-}
-
-.ev-step-title {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    margin-bottom: 10px;
-    letter-spacing: -0.01em;
-}
-
-.ev-step-desc {
-    font-size: 0.9rem;
-    color: var(--ev-text-muted);
-    line-height: 1.6;
-}
-
-/* ==========================================================================
-   SUPPORTED NIGERIAN BANKS
-   ========================================================================== */
-.ev-banks-box {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 24px;
-    padding: 36px 30px;
-    text-align: center;
-}
-
-.ev-banks-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-    margin-top: 24px;
-}
-
-.ev-bank-pill {
-    background: var(--ev-surface-alt);
-    border: 1px solid var(--ev-border);
-    border-radius: 12px;
-    padding: 12px 10px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    text-align: center;
-    transition: all 0.2s;
-}
-
-.ev-bank-pill:hover {
-    border-color: var(--ev-border-focus);
-    color: var(--ev-primary-light);
-}
-
-/* ==========================================================================
-   ABOUT SECTION: ACCURATE & SIMPLE
-   ========================================================================== */
-.ev-about-box {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 24px;
-    padding: clamp(32px, 5vw, 50px);
-}
-
-.ev-about-grid {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 40px;
-    align-items: center;
-}
-
-.ev-about-lead {
-    font-family: var(--font-heading);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    line-height: 1.35;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-}
-
-.ev-about-p {
-    font-size: 0.95rem;
-    color: var(--ev-text-muted);
-    line-height: 1.65;
-    margin-bottom: 16px;
-}
-
-.ev-about-checklist {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.ev-check-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-size: 0.88rem;
-    color: var(--ev-text-main);
-}
-
-.ev-check-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: var(--ev-emerald);
-    display: flex;
+.btn-neon {
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+    color: #ffffff !important;
+    box-shadow: 0 0 25px -4px rgba(56, 189, 248, 0.6);
+    text-decoration: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
+    transition: transform 0.2s ease;
 }
 
-/* ==========================================================================
-   FAQ SECTION (LIKE EVERMORE ACCORDION)
-   ========================================================================== */
-.ev-faq-container {
-    max-width: 820px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.btn-neon:hover {
+    transform: scale(1.03);
 }
 
-.ev-faq-card {
-    background: var(--ev-surface);
-    border: 1px solid var(--ev-border);
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.2s;
+.btn-gold {
+    color: #000000;
+    box-shadow: 0 0 0 1px #fcd34d inset, 0 8px 26px -10px #f59e0b;
+    background: linear-gradient(100deg, #fde68a, #f59e0b);
 }
 
-.ev-faq-card.open {
-    border-color: var(--ev-border-focus);
+/* Background Grids */
+.bg-grid {
+    background-size: 40px 40px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
-.ev-faq-q {
-    padding: 18px 22px;
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--ev-text-white);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
+.bg-grid-light {
+    background-size: 48px 48px;
+    background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
 }
 
-.ev-faq-icon {
-    font-size: 1.1rem;
-    color: var(--ev-text-dim);
-    transition: transform 0.25s ease;
+/* Animations */
+@keyframes floatSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
-.ev-faq-card.open .ev-faq-icon {
-    transform: rotate(45deg);
-    color: var(--ev-primary-light);
+.animate-float-slow {
+    animation: floatSlow 4s ease-in-out infinite;
 }
 
-.ev-faq-a {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.25s ease;
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.ev-faq-card.open .ev-faq-a {
-    max-height: 220px;
-    padding: 0 22px 18px;
+.animate-spin-slow {
+    animation: spinSlow 30s linear infinite;
 }
 
-.ev-faq-a p {
-    font-size: 0.9rem;
-    color: var(--ev-text-muted);
-    line-height: 1.6;
-    margin: 0;
+/* Drawer styles */
+.ev-drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(6, 12, 24, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    z-index: 100;
 }
+.ev-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
 
-/* ==========================================================================
-   CONVERSION BANNER
-   ========================================================================== */
-.ev-cta-banner {
-    background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%), var(--ev-surface);
-    border: 1px solid var(--ev-border-focus);
-    border-radius: 28px;
-    padding: clamp(40px, 6vw, 64px) 24px;
-    text-align: center;
-    margin: 40px auto 70px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+.ev-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 310px; max-width: 88vw;
+    background: var(--color-background);
+    border-left: 1px solid var(--color-border);
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 101;
+    display: flex; flex-direction: column;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
 }
-
-.ev-cta-h2 {
-    font-family: var(--font-heading);
-    font-size: clamp(1.9rem, 3.6vw, 2.7rem);
-    font-weight: 700;
-    color: var(--ev-text-white);
-    letter-spacing: -0.025em;
-    margin-bottom: 12px;
-}
-
-.ev-cta-p {
-    font-size: 1rem;
-    color: var(--ev-text-muted);
-    max-width: 520px;
-    margin: 0 auto 28px;
-    line-height: 1.6;
-}
-
-/* ==========================================================================
-   MULTI-COLUMN FOOTER (LIKE EVERMORE)
-   ========================================================================== */
-.ev-footer {
-    background: #050A14;
-    border-top: 1px solid var(--ev-border);
-    padding: 60px 0 32px;
-}
-
-[data-theme="light"] .ev-footer {
-    background: #F1F5F9;
-}
-
-.ev-footer-cols {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 50px;
-}
-
-.ev-footer-col h4 {
-    font-family: var(--font-heading);
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--ev-text-white);
-    margin-bottom: 18px;
-    letter-spacing: -0.01em;
-}
-
-.ev-footer-col ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.ev-footer-col a {
-    font-size: 0.88rem;
-    color: var(--ev-text-muted);
-    text-decoration: none;
-    transition: color 0.15s;
-}
-
-.ev-footer-col a:hover {
-    color: var(--ev-primary-light);
-}
-
-.ev-footer-bottom {
-    padding-top: 24px;
-    border-top: 1px solid var(--ev-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-size: 0.82rem;
-    color: var(--ev-text-dim);
-}
-
-/* ==========================================================================
-   RESPONSIVE MEDIA QUERIES
-   ========================================================================== */
-@media (max-width: 1024px) {
-    .ev-hero-grid { grid-template-columns: 1fr; gap: 40px; }
-    .ev-categories-grid { grid-template-columns: repeat(2, 1fr); }
-    .ev-banks-grid { grid-template-columns: repeat(3, 1fr); }
-    .ev-about-grid { grid-template-columns: 1fr; }
-    .ev-footer-cols { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 768px) {
-    .ev-nav-menu { display: none; }
-    .ev-nav-actions .ev-btn-ghost { display: none; }
-    .ev-menu-trigger { display: flex; }
-    .ev-categories-grid { grid-template-columns: 1fr; }
-    .ev-steps-grid { grid-template-columns: 1fr; }
-    .ev-banks-grid { grid-template-columns: repeat(2, 1fr); }
-    .ev-metrics-bar { grid-template-columns: 1fr 1fr; }
-    .ev-footer-cols { grid-template-columns: 1fr; }
-}
+.ev-drawer.open { transform: translateX(0); }
 </style>
 
-<div class="ev-ambient-bg"></div>
+<div class="relative min-h-screen overflow-x-clip">
 
-<div class="ev-content-layer">
+    <!-- ===== TOP NOTICE BAR (EVERMORE STANDARD) ===== -->
+    <div style="border-bottom:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.1);padding:10px 16px;text-align:center;font-size:0.85rem;font-weight:600;color:#fde68a;">
+        <span>Automated Daily Task Drops &amp; Direct Bank Settlements Now Active Across Nigeria.</span>
+    </div>
 
-    <!-- ===== NAVIGATION BAR ===== -->
-    <header class="ev-navbar">
-        <div class="ev-container ev-nav-inner">
-            <a href="index.php" class="ev-brand">
-                <div class="ev-brand-mark">IX</div>
-                <span>INNOVATIONX</span>
-                <span class="ev-brand-tag">Verified</span>
+    <!-- ===== HEADER NAVBAR (EVERMORE EXACT) ===== -->
+    <header class="glass" style="position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
+        <nav style="max-width:1152px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;">
+            <!-- Brand Logo -->
+            <a href="index.php" style="display:flex;align-items:center;gap:10px;text-decoration:none;" aria-label="INNOVATIONX home">
+                <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg, #0284c7, #38bdf8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.95rem;box-shadow:0 4px 12px rgba(56,189,248,0.4);">
+                    IX
+                </div>
+                <span style="font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--color-foreground);letter-spacing:-0.02em;">
+                    INNOVATIONX
+                </span>
             </a>
 
-            <nav class="ev-nav-menu">
-                <a href="#features" class="ev-nav-link">Earning Tasks</a>
-                <a href="#surveys" class="ev-nav-link">World Surveys</a>
-                <a href="#how" class="ev-nav-link">How It Works</a>
-                <a href="#banks" class="ev-nav-link">Bank Clearing</a>
-                <a href="vendors.php" class="ev-nav-link">Verified Vendors</a>
-                <a href="#about" class="ev-nav-link">About</a>
-                <a href="#faq" class="ev-nav-link">FAQ</a>
-            </nav>
+            <!-- Nav Links (Desktop) -->
+            <div style="display:none;align-items:center;gap:28px;font-size:0.88rem;color:var(--color-muted-foreground);" class="desktop-menu">
+                <a href="#how" style="color:inherit;text-decoration:none;transition:color 0.15s;">How it works</a>
+                <a href="#features" style="color:inherit;text-decoration:none;transition:color 0.15s;">Ways to earn</a>
+                <a href="#subscriptions" style="color:inherit;text-decoration:none;transition:color 0.15s;">Membership</a>
+                <a href="vendors.php" style="color:inherit;text-decoration:none;transition:color 0.15s;">Vendors</a>
+                <a href="#faq" style="color:inherit;text-decoration:none;transition:color 0.15s;">FAQ</a>
+            </div>
 
-            <div class="ev-nav-actions">
-                <button type="button" class="ev-theme-btn" onclick="togglePlatformTheme(event)" title="Toggle Theme" aria-label="Toggle Theme">
+            <!-- Actions -->
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:36px;height:36px;border-radius:9px;border:1px solid var(--color-border);background:transparent;color:var(--color-foreground);display:flex;align-items:center;justify-content:center;cursor:pointer;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
-                <a href="login.php" class="ev-btn ev-btn-ghost">Sign In</a>
-                <a href="register.php" class="ev-btn ev-btn-primary">
-                    <span>Get Started</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                <a href="login.php" style="text-decoration:none;padding:8px 14px;font-size:0.88rem;font-weight:600;color:var(--color-foreground);" class="desktop-auth-btn">
+                    Sign in
                 </a>
-                <button type="button" class="ev-menu-trigger" onclick="toggleEvDrawer()" aria-label="Open Navigation">
+                <a href="register.php" class="btn-cta" style="border-radius:10px;padding:9px 18px;font-size:0.88rem;font-weight:700;">
+                    Get started
+                </a>
+                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:38px;height:38px;border-radius:9px;border:1px solid var(--color-border);background:transparent;color:var(--color-foreground);align-items:center;justify-content:center;cursor:pointer;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- ===== MOBILE DRAWER (EVERMORE STYLE) ===== -->
-    <div class="ev-drawer-backdrop" id="evDrawerBackdrop" onclick="toggleEvDrawer()"></div>
+    <!-- ===== MOBILE SLIDE-OUT DRAWER (EVERMORE EXACT) ===== -->
+    <div class="ev-drawer-backdrop" id="evDrawerBackdrop" onclick="toggleEvermoreDrawer()"></div>
     <aside class="ev-drawer" id="evDrawer">
-        <div class="ev-drawer-head">
-            <div class="ev-brand">
-                <div class="ev-brand-mark">IX</div>
-                <span>INNOVATIONX</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--color-border);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg, #0284c7, #38bdf8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.8rem;">
+                    IX
+                </div>
+                <span style="font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--color-foreground);">INNOVATIONX</span>
             </div>
-            <button type="button" class="ev-drawer-close" onclick="toggleEvDrawer()" aria-label="Close Navigation">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button type="button" onclick="toggleEvermoreDrawer()" style="width:34px;height:34px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-muted-foreground);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
 
-        <nav class="ev-drawer-nav">
-            <a href="#features" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>Earning Tasks</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="#surveys" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>World Surveys</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="#how" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>How It Works</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="#banks" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>Bank Clearing</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="vendors.php" class="ev-drawer-item">
-                <span>Verified Vendors</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="#about" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>About Platform</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-            <a href="#faq" class="ev-drawer-item" onclick="toggleEvDrawer()">
-                <span>FAQ</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-        </nav>
+        <div style="flex:1;overflow-y:auto;padding:16px;">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <a href="#how" onclick="toggleEvermoreDrawer()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--color-foreground);font-size:0.95rem;font-weight:500;">
+                    <span>How it works</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#features" onclick="toggleEvermoreDrawer()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--color-foreground);font-size:0.95rem;font-weight:500;">
+                    <span>Ways to earn</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#subscriptions" onclick="toggleEvermoreDrawer()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--color-foreground);font-size:0.95rem;font-weight:500;">
+                    <span>Membership</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="vendors.php" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--color-foreground);font-size:0.95rem;font-weight:500;">
+                    <span>Verified Vendors</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="#faq" onclick="toggleEvermoreDrawer()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--color-foreground);font-size:0.95rem;font-weight:500;">
+                    <span>FAQ</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+        </div>
 
-        <div class="ev-drawer-bottom">
-            <a href="register.php" class="ev-btn ev-btn-primary" style="width:100%;">Create Account</a>
-            <a href="login.php" class="ev-btn ev-btn-outline" style="width:100%;">Sign In</a>
+        <div style="padding:18px;border-top:1px solid var(--color-border);display:flex;flex-direction:column;gap:10px;">
+            <a href="register.php" class="btn-cta" style="border-radius:10px;padding:12px;font-size:0.95rem;font-weight:700;width:100%;">
+                Create Account
+            </a>
+            <a href="login.php" style="border-radius:10px;padding:11px;font-size:0.95rem;font-weight:600;text-align:center;border:1px solid var(--color-border);text-decoration:none;color:var(--color-foreground);">
+                Sign in
+            </a>
         </div>
     </aside>
 
-    <!-- ===== HERO SECTION ===== -->
-    <section class="ev-hero" id="home">
-        <div class="ev-container">
-            <div class="ev-hero-grid">
-                
-                <!-- Left Column -->
-                <div>
-                    <div class="ev-pill-tag">
-                        <span class="ev-pill-dot"></span>
-                        <span>Nigeria Digital Earning Ecosystem</span>
-                    </div>
+    <!-- ===== HERO SECTION (EVERMORE EXACT GRID & FLOATING CARDS) ===== -->
+    <section style="position:relative;overflow:hidden;padding:50px 0 70px;">
+        <!-- Background Effects -->
+        <div style="position:absolute;inset:0;pointer-events:none;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(56,189,248,0.18) 0%, transparent 60%);"></div>
+            <div class="bg-grid-light" style="position:absolute;inset:0;mask-image:radial-gradient(70% 60% at 50% 35%, black, transparent);-webkit-mask-image:radial-gradient(70% 60% at 50% 35%, black, transparent);"></div>
+            <div style="position:absolute;left:50%;top:-22%;width:58rem;height:58rem;transform:translateX(-50%);border-radius:50%;background:rgba(2,132,199,0.12);filter:blur(140px);"></div>
+            <div style="position:absolute;right:-12%;top:24%;width:26rem;height:26rem;border-radius:50%;background:rgba(56,189,248,0.15);filter:blur(110px);"></div>
+        </div>
 
-                    <h1 class="ev-hero-h1">
-                        Monetize Your Time.<br>
-                        Verify World Surveys.<br>
-                        <span class="ev-gradient-word">Direct Bank Settlement.</span>
+        <div style="position:relative;max-width:1152px;margin:0 auto;padding:0 20px;">
+            <div style="display:grid;grid-template-columns:1.05fr 0.95fr;gap:48px;align-items:center;" class="hero-split-grid">
+                
+                <!-- Left: Hero Text Content -->
+                <div style="text-align:left;">
+                    <span class="glass" style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:6px 16px;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--color-accent);text-transform:uppercase;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        DIGITAL EARNING PLATFORM
+                    </span>
+
+                    <h1 style="font-family:var(--font-display);margin-top:22px;font-size:clamp(2.5rem, 5vw, 4.1rem);font-weight:700;line-height:1.06;letter-spacing:-0.03em;color:var(--color-foreground);">
+                        Digital Tasks.<br>
+                        Verified Surveys.<br>
+                        <span class="text-brand-gradient">Direct Bank Payouts.</span>
                     </h1>
 
-                    <p class="ev-hero-desc">
-                        INNOVATIONX brings sponsored micro-tasks, world research surveys, and affiliate rewards together on one platform. Complete daily activities and withdraw directly to your commercial bank.
+                    <p style="margin-top:20px;font-size:1.1rem;line-height:1.65;color:var(--color-muted-foreground);max-width:520px;">
+                        INNOVATIONX brings verified corporate sponsor tasks, world research surveys, and affiliate rewards together in one place. Complete activities daily and withdraw directly to your Nigerian bank.
                     </p>
 
-                    <div class="ev-hero-actions">
-                        <a href="register.php" class="ev-btn ev-btn-primary" style="padding:13px 26px;font-size:0.95rem;">
-                            <span>Activate Account (&#8358;<?= number_format($regFee) ?>)</span>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    <!-- Hero Action Buttons -->
+                    <div style="margin-top:32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                        <a href="register.php" class="btn-cta" style="border-radius:12px;padding:15px 32px;font-size:0.95rem;font-weight:700;letter-spacing:0.02em;">
+                            <span>CREATE ACCOUNT</span>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><polyline points="9 18 15 12 9 6"/></svg>
                         </a>
-                        <a href="vendors.php" class="ev-btn ev-btn-outline" style="padding:13px 22px;font-size:0.95rem;">
-                            <span>Official Vendors</span>
+                        <a href="#subscriptions" class="glass" style="border-radius:12px;padding:15px 28px;font-size:0.95rem;font-weight:600;color:var(--color-foreground);text-decoration:none;transition:border-color 0.2s;">
+                            View membership
                         </a>
                     </div>
 
-                    <div class="ev-metrics-bar">
-                        <div class="ev-metric-item">
-                            <h4>24/7</h4>
-                            <p>Daily Task Feeds</p>
-                        </div>
-                        <div class="ev-metric-item">
-                            <h4>&#8358;<?= number_format($refBonus) ?></h4>
-                            <p>Cash per Invite</p>
-                        </div>
-                        <div class="ev-metric-item">
-                            <h4>Automated</h4>
-                            <p>Bank Dispatches</p>
-                        </div>
+                    <!-- 3 Trust Checks (Evermore exact) -->
+                    <div style="margin-top:36px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;font-size:0.86rem;color:var(--color-muted-foreground);">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Direct Bank Settlements
+                        </span>
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Verified Vendor PINs
+                        </span>
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            100% Automated Dispatches
+                        </span>
                     </div>
                 </div>
 
-                <!-- Right Column: Dashboard Preview Card -->
+                <!-- Right: Hero Visual Frame & Floating Cards (Evermore exact) -->
+                <div style="position:relative;">
+                    <div class="animate-spin-slow" aria-hidden="true" style="position:absolute;inset:-24px;border-radius:50%;border:1px solid rgba(56,189,248,0.2);mask-image:linear-gradient(to bottom, black, transparent 75%);-webkit-mask-image:linear-gradient(to bottom, black, transparent 75%);"></div>
+                    
+                    <div class="glow-primary" style="position:relative;overflow:hidden;border-radius:2rem;border:1px solid rgba(56,189,248,0.25);background:var(--color-secondary);">
+                        <div style="padding:28px 24px;">
+                            <!-- Header inside card -->
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="width:28px;height:28px;border-radius:8px;background:#0284c7;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.75rem;">IX</div>
+                                    <span style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;color:var(--color-foreground);">Member Terminal</span>
+                                </div>
+                                <span style="font-size:0.7rem;font-weight:700;color:#10b981;background:rgba(16,185,129,0.12);padding:3px 8px;border-radius:999px;border:1px solid rgba(16,185,129,0.3);">
+                                    LIVE REWARDS
+                                </span>
+                            </div>
+
+                            <!-- Balance block -->
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:16px;padding:20px;margin-bottom:18px;">
+                                <div style="font-size:0.75rem;color:var(--color-muted-foreground);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Available Cash Balance</div>
+                                <div style="font-family:var(--font-display);font-size:2.3rem;font-weight:700;color:var(--color-foreground);line-height:1;margin-bottom:14px;">
+                                    &#8358;18,450<span style="font-size:1.2rem;color:var(--color-muted-foreground);">.00</span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px;border-top:1px solid var(--color-border);">
+                                    <div>
+                                        <div style="font-size:0.72rem;color:var(--color-muted-foreground);">Task Points</div>
+                                        <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--color-accent);">2,450 PTS</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:0.72rem;color:var(--color-muted-foreground);">Referral Cash</div>
+                                        <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:#10b981;">&#8358;16,000.00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mini activity items -->
+                            <div style="display:flex;flex-direction:column;gap:9px;">
+                                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.82rem;font-weight:600;color:var(--color-foreground);">Nigeria Socio-Economics Survey</span>
+                                    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:var(--color-accent);">+180 PTS</span>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.82rem;font-weight:600;color:var(--color-foreground);">Sponsored Brand Video Visit</span>
+                                    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:var(--color-accent);">+150 PTS</span>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.82rem;font-weight:600;color:var(--color-foreground);">Direct Affiliate Cash Bonus</span>
+                                    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:#10b981;">+&#8358;<?= number_format($refBonus) ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Card 1: Bottom Left (Evermore exact) -->
+                    <div class="glass glow-gold animate-float-slow" style="position:absolute;bottom:-20px;left:-16px;border-radius:16px;padding:14px 20px;">
+                        <p style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--color-gold);margin:0;line-height:1;">
+                            100% Automated
+                        </p>
+                        <p style="font-size:0.75rem;color:var(--color-muted-foreground);margin:4px 0 0;">
+                            Direct Nigerian bank clearing
+                        </p>
+                    </div>
+
+                    <!-- Floating Card 2: Top Right (Evermore exact) -->
+                    <div class="glass glow-accent animate-float-slow" style="position:absolute;top:28px;right:-18px;border-radius:16px;padding:14px 20px;animation-delay:1.2s;">
+                        <p style="font-family:var(--font-display);font-size:0.88rem;font-weight:700;color:var(--color-accent);margin:0;">
+                            INNOVATIONX
+                        </p>
+                        <p style="font-size:0.75rem;color:var(--color-muted-foreground);margin:2px 0 0;">
+                            Instant task credit verification
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== AUDIO TOUR BAR (EVERMORE EXACT WIDGET H) ===== -->
+    <section style="max-width:1152px;margin:0 auto;padding:0 20px 60px;">
+        <div class="glass" style="border-radius:18px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <button type="button" id="tourPlayBtn" onclick="toggleTourPlayback()" style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg, #0284c7, #38bdf8);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(56,189,248,0.4);">
+                    <svg id="tourPlayIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg id="tourPauseIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
                 <div>
-                    <div class="ev-hero-card">
-                        <div class="ev-card-top-row">
-                            <span style="font-family:var(--font-heading);font-weight:700;font-size:0.9rem;color:var(--ev-text-white);">Member Dashboard</span>
-                            <span class="ev-card-badge">
-                                <span class="ev-pill-dot"></span>
-                                Live Account
-                            </span>
-                        </div>
-
-                        <div class="ev-wallet-preview">
-                            <div class="ev-wallet-label">Withdrawable Balance</div>
-                            <div class="ev-wallet-amount">&#8358;18,450.00</div>
-                            <div class="ev-wallet-sub-grid">
-                                <div>
-                                    <div class="ev-sub-stat-lbl">Task Points</div>
-                                    <div class="ev-sub-stat-val">2,450 PTS</div>
-                                </div>
-                                <div>
-                                    <div class="ev-sub-stat-lbl">Referral Cash</div>
-                                    <div class="ev-sub-stat-val">&#8358;16,000.00</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ev-activity-stream">
-                            <div class="ev-stream-item">
-                                <div class="ev-stream-title">Nigeria Socio-Economics &amp; Fuel Subsidy Survey</div>
-                                <span class="ev-stream-reward">+180 PTS</span>
-                            </div>
-                            <div class="ev-stream-item">
-                                <div class="ev-stream-title">Sponsored Brand Promotion Verification</div>
-                                <span class="ev-stream-reward">+150 PTS</span>
-                            </div>
-                            <div class="ev-stream-item">
-                                <div class="ev-stream-title">Global Geopolitics &amp; World Conflicts Survey</div>
-                                <span class="ev-stream-reward">+200 PTS</span>
-                            </div>
-                            <div class="ev-stream-item">
-                                <div class="ev-stream-title">Direct Affiliate Referral Commission</div>
-                                <span class="ev-stream-reward">&#8358;<?= number_format($refBonus) ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== EARNING CATEGORIES (EVERMORE 6-CARD GRID) ===== -->
-    <section class="ev-section" id="features">
-        <div class="ev-container">
-            <div class="ev-section-header">
-                <span class="ev-section-tag">Earning Channels</span>
-                <h2 class="ev-section-title">Six Integrated Earning Modules</h2>
-                <p class="ev-section-desc">
-                    A focused infrastructure built for verifiable micro-tasks, research surveys, and rapid bank settlements.
-                </p>
-            </div>
-
-            <div class="ev-categories-grid">
-                
-                <!-- Category 1 -->
-                <div class="ev-card-feature">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">+<?= $taskRate ?> PTS / Task</span>
-                        </div>
-                        <h3 class="ev-feature-title">Sponsored Micro-Tasks</h3>
-                        <p class="ev-feature-p">
-                            Complete daily sponsored campaigns for corporate advertisers. Review videos, visit destination links, and verify social engagement with automated crediting.
-                        </p>
-                    </div>
-                    <a href="register.php" class="ev-feature-link">
-                        <span>Start Tasks</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-                <!-- Category 2 -->
-                <div class="ev-card-feature" id="surveys">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">+180 PTS / Survey</span>
-                        </div>
-                        <h3 class="ev-feature-title">Nigeria Socio-Economics</h3>
-                        <p class="ev-feature-p">
-                            Share valuable demographic insights on fuel subsidy, currency dynamics, national power supply, and youth entrepreneurship in Nigeria.
-                        </p>
-                    </div>
-                    <a href="register.php" class="ev-feature-link">
-                        <span>Answer Surveys</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-                <!-- Category 3 -->
-                <div class="ev-card-feature">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">+200 PTS / Survey</span>
-                        </div>
-                        <h3 class="ev-feature-title">Global Geopolitics</h3>
-                        <p class="ev-feature-p">
-                            Contribute perspectives on international conflicts, security alliances, drone technology, cyber warfare, and diplomatic peace agreements worldwide.
-                        </p>
-                    </div>
-                    <a href="register.php" class="ev-feature-link">
-                        <span>Submit Research</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-                <!-- Category 4 -->
-                <div class="ev-card-feature">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">+170 - 190 PTS</span>
-                        </div>
-                        <h3 class="ev-feature-title">North America &amp; Arctic</h3>
-                        <p class="ev-feature-p">
-                            Participate in research regarding North American trade routes, immigration trends, Alaska sub-zero logistics, and Arctic maritime passages.
-                        </p>
-                    </div>
-                    <a href="register.php" class="ev-feature-link">
-                        <span>Explore Topics</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-                <!-- Category 5 -->
-                <div class="ev-card-feature">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">&#8358;<?= number_format($refBonus) ?> Cash / Invite</span>
-                        </div>
-                        <h3 class="ev-feature-title">Affiliate Referral Network</h3>
-                        <p class="ev-feature-p">
-                            Recruit earners with your personal referral link. Earn instant cash commissions whenever a downline activates their lifetime membership PIN.
-                        </p>
-                    </div>
-                    <a href="register.php" class="ev-feature-link">
-                        <span>Invite &amp; Earn</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-                <!-- Category 6 -->
-                <div class="ev-card-feature">
-                    <div>
-                        <div class="ev-feature-top">
-                            <div class="ev-feature-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                            </div>
-                            <span class="ev-feature-rate">Automated Payout</span>
-                        </div>
-                        <h3 class="ev-feature-title">Direct Bank Settlements</h3>
-                        <p class="ev-feature-p">
-                            Transfer your cash earnings straight to your Nigerian bank. Payouts are dispatched automatically to commercial and microfinance banks.
-                        </p>
-                    </div>
-                    <a href="#banks" class="ev-feature-link">
-                        <span>View Banks</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== HOW IT WORKS (EVERMORE 3-STEP PIPELINE) ===== -->
-    <section class="ev-section" id="how" style="padding-top:20px;">
-        <div class="ev-container">
-            <div class="ev-section-header">
-                <span class="ev-section-tag">Workflow</span>
-                <h2 class="ev-section-title">How INNOVATIONX Works</h2>
-                <p class="ev-section-desc">
-                    Get started in minutes with simple vendor activation and direct bank settlements.
-                </p>
-            </div>
-
-            <div class="ev-steps-grid">
-                <div class="ev-step-card">
-                    <span class="ev-step-num">Step 01</span>
-                    <h3 class="ev-step-title">Get Vendor PIN</h3>
-                    <p class="ev-step-desc">
-                        Connect with an official verified vendor to purchase your &#8358;<?= number_format($regFee) ?> lifetime membership PIN. No recurring subscription fees.
-                    </p>
-                </div>
-
-                <div class="ev-step-card">
-                    <span class="ev-step-num">Step 02</span>
-                    <h3 class="ev-step-title">Engage Daily</h3>
-                    <p class="ev-step-desc">
-                        Log in daily to execute sponsored tasks and share opinions on world surveys. Share your referral link for &#8358;<?= number_format($refBonus) ?> instant cash bonus.
-                    </p>
-                </div>
-
-                <div class="ev-step-card">
-                    <span class="ev-step-num">Step 03</span>
-                    <h3 class="ev-step-title">Automated Bank Settlement</h3>
-                    <p class="ev-step-desc">
-                        Link your commercial bank account or microfinance bank. Request withdrawal and receive automated settlements directly with zero manual delays.
+                    <h4 style="font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--color-foreground);margin:0 0 2px;">
+                        Hear the INNOVATIONX introduction
+                    </h4>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);margin:0;">
+                        A two-minute interactive audio walkthrough of everything inside INNOVATIONX.
                     </p>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- ===== SUPPORTED BANKS ===== -->
-    <section class="ev-section" id="banks" style="padding-top:20px;">
-        <div class="ev-container">
-            <div class="ev-banks-box">
-                <span class="ev-section-tag">Supported Clearings</span>
-                <h3 style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--ev-text-white);margin-bottom:8px;">
-                    Settlements to Any Nigerian Bank
-                </h3>
-                <p style="font-size:0.92rem;color:var(--ev-text-muted);max-width:520px;margin:0 auto;">
-                    Withdraw your earnings directly to your existing account. No extra third-party wallet apps required.
-                </p>
-
-                <div class="ev-banks-grid">
-                    <div class="ev-bank-pill">GTBank</div>
-                    <div class="ev-bank-pill">OPay</div>
-                    <div class="ev-bank-pill">Kuda Bank</div>
-                    <div class="ev-bank-pill">PalmPay</div>
-                    <div class="ev-bank-pill">Access Bank</div>
-                    <div class="ev-bank-pill">Zenith Bank</div>
-                    <div class="ev-bank-pill">Moniepoint</div>
-                    <div class="ev-bank-pill">UBA</div>
-                    <div class="ev-bank-pill">FirstBank</div>
-                    <div class="ev-bank-pill">Fidelity Bank</div>
-                    <div class="ev-bank-pill">Wema / ALAT</div>
-                    <div class="ev-bank-pill">Stanbic IBTC</div>
-                </div>
+            <!-- Soundwave visual animation -->
+            <div style="display:flex;align-items:center;gap:4px;height:24px;" id="tourWaveBars">
+                <span style="width:3px;height:12px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:20px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:16px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:24px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:14px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:18px;background:#38bdf8;border-radius:2px;"></span>
+                <span style="width:3px;height:10px;background:#38bdf8;border-radius:2px;"></span>
             </div>
         </div>
     </section>
 
-    <!-- ===== ABOUT SECTION ===== -->
-    <section class="ev-section" id="about" style="padding-top:20px;">
-        <div class="ev-container">
-            <div class="ev-about-box">
-                <div class="ev-about-grid">
-                    <div>
-                        <span class="ev-section-tag">About Platform</span>
-                        <h2 class="ev-about-lead">
-                            An Authentic Digital Earning Bridge Connecting Sponsors &amp; Active Nigerian Earners.
-                        </h2>
-                        <p class="ev-about-p">
-                            INNOVATIONX connects institutional advertisers and global survey researchers with real demographic audiences across Nigeria. Instead of spending large budgets on tech monopolies, sponsors channel verified task rewards directly to members.
-                        </p>
-                        <p class="ev-about-p">
-                            Members dedicate daily screen time to evaluate content, submit opinions on national and world topics, and grow their affiliate networks with predictable daily returns.
-                        </p>
-                    </div>
-
-                    <div class="ev-about-checklist">
-                        <div class="ev-check-item">
-                            <div class="ev-check-icon">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <div>
-                                <strong style="color:var(--ev-text-white);display:block;margin-bottom:2px;">No Gambling or Wheel Games</strong>
-                                <span style="color:var(--ev-text-muted);">All earnings are derived from real tasks and survey submissions.</span>
-                            </div>
-                        </div>
-
-                        <div class="ev-check-item">
-                            <div class="ev-check-icon">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <div>
-                                <strong style="color:var(--ev-text-white);display:block;margin-bottom:2px;">Certified Vendor Network</strong>
-                                <span style="color:var(--ev-text-muted);">Activation codes are distributed through verified local agents for payment safety.</span>
-                            </div>
-                        </div>
-
-                        <div class="ev-check-item">
-                            <div class="ev-check-icon">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <div>
-                                <strong style="color:var(--ev-text-white);display:block;margin-bottom:2px;">Automated Bank Settlement</strong>
-                                <span style="color:var(--ev-text-muted);">Request withdrawals and receive direct settlements into your Nigerian account.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- ===== HOW IT WORKS SECTION (EVERMORE EXACT 6 STEPS) ===== -->
+    <section id="how" class="surface-navy" style="position:relative;scroll-margin-top:6rem;overflow:hidden;padding:80px 0;">
+        <!-- Background Grid & Neon Rings -->
+        <div style="position:absolute;inset:0;pointer-events:none;">
+            <div class="bg-grid" style="position:absolute;inset:0;mask-image:radial-gradient(75% 65% at 50% 40%, black, transparent);-webkit-mask-image:radial-gradient(75% 65% at 50% 40%, black, transparent);"></div>
+            <div style="position:absolute;right:-10rem;top:-10rem;width:30rem;height:30rem;border-radius:50%;border:1px solid rgba(56,189,248,0.2);opacity:0.7;"></div>
+            <div style="position:absolute;left:-10%;bottom:-20%;width:26rem;height:26rem;border-radius:50%;background:rgba(2,132,199,0.2);filter:blur(120px);"></div>
         </div>
-    </section>
 
-    <!-- ===== FAQ ACCORDION ===== -->
-    <section class="ev-section" id="faq" style="padding-top:20px;">
-        <div class="ev-container">
-            <div class="ev-section-header" style="text-align:center;">
-                <span class="ev-section-tag">Frequently Asked Questions</span>
-                <h2 class="ev-section-title">Clear &amp; Transparent Inquiries</h2>
-                <p class="ev-section-desc" style="margin:10px auto 0;">
-                    Everything you need to know about activation, earning, and settlements.
-                </p>
-            </div>
-
-            <div class="ev-faq-container">
-                <div class="ev-faq-card open" onclick="toggleEvFaq(this)">
-                    <div class="ev-faq-q">
-                        <span>What is the registration fee and what does it cover?</span>
-                        <span class="ev-faq-icon">+</span>
-                    </div>
-                    <div class="ev-faq-a">
-                        <p>Joining INNOVATIONX requires a one-time lifetime membership activation fee of &#8358;<?= number_format($regFee) ?> via an authorized vendor coupon code. There are zero recurring monthly charges or maintenance fees.</p>
-                    </div>
-                </div>
-
-                <div class="ev-faq-card" onclick="toggleEvFaq(this)">
-                    <div class="ev-faq-q">
-                        <span>Can I withdraw my earnings without referring anyone?</span>
-                        <span class="ev-faq-icon">+</span>
-                    </div>
-                    <div class="ev-faq-a">
-                        <p>Yes, absolutely. Referrals are 100% optional. You can accumulate and cash out earnings purely by completing daily sponsored tasks and world surveys.</p>
-                    </div>
-                </div>
-
-                <div class="ev-faq-card" onclick="toggleEvFaq(this)">
-                    <div class="ev-faq-q">
-                        <span>How do I get an activation coupon PIN?</span>
-                        <span class="ev-faq-icon">+</span>
-                    </div>
-                    <div class="ev-faq-a">
-                        <p>Visit our Verified Vendors page to contact authorized code distributors on WhatsApp or Telegram. After purchasing your PIN, input it on the registration form to immediately unlock your lifetime dashboard.</p>
-                    </div>
-                </div>
-
-                <div class="ev-faq-card" onclick="toggleEvFaq(this)">
-                    <div class="ev-faq-q">
-                        <span>What is the minimum withdrawal threshold?</span>
-                        <span class="ev-faq-icon">+</span>
-                    </div>
-                    <div class="ev-faq-a">
-                        <p>For affiliate referral cash earnings, the minimum withdrawal is &#8358;<?= number_format($minCashWd) ?>. For task points, the threshold is <?= number_format($minPtsWd) ?> PTS.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== FINAL CALL TO ACTION BANNER ===== -->
-    <div class="ev-container">
-        <div class="ev-cta-banner">
-            <span class="ev-section-tag">Start Today</span>
-            <h2 class="ev-cta-h2">Join Nigeria's Premier Earning Portal</h2>
-            <p class="ev-cta-p">
-                Unlock lifetime access for &#8358;<?= number_format($regFee) ?> and start earning from sponsored tasks and world surveys today.
+        <div style="position:relative;max-width:1152px;margin:0 auto;padding:0 20px;">
+            <p style="font-family:var(--font-display);text-align:center;font-size:0.75rem;font-weight:700;letter-spacing:0.3em;color:var(--color-aqua);margin:0;text-transform:uppercase;">
+                HOW IT WORKS
             </p>
-            <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-                <a href="register.php" class="ev-btn ev-btn-primary" style="padding:14px 28px;font-size:0.95rem;">
-                    <span>Create Account</span>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-                <a href="vendors.php" class="ev-btn ev-btn-outline" style="padding:14px 24px;font-size:0.95rem;">
-                    <span>Contact Vendors</span>
-                </a>
-            </div>
-        </div>
-    </div>
+            <h2 style="font-family:var(--font-display);margin-top:12px;text-align:center;font-size:clamp(1.9rem, 3.4vw, 2.7rem);font-weight:700;color:var(--color-navy-foreground);">
+                Six steps to your <span class="text-aqua-gradient">new reality</span>
+            </h2>
 
-    <!-- ===== MULTI-COLUMN FOOTER (LIKE EVERMORE) ===== -->
-    <footer class="ev-footer">
-        <div class="ev-container">
-            <div class="ev-footer-cols">
+            <div style="margin-top:48px;display:grid;grid-template-columns:repeat(3, 1fr);gap:20px;" class="steps-grid-3">
                 
-                <!-- Col 1: Brand -->
-                <div>
-                    <div class="ev-brand" style="margin-bottom:14px;">
-                        <div class="ev-brand-mark">IX</div>
-                        <span>INNOVATIONX</span>
+                <!-- Step 01 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">01</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                     </div>
-                    <p style="font-size:0.88rem;color:var(--ev-text-dim);line-height:1.6;max-width:280px;">
-                        The verified digital earning and market survey terminal for Nigerian earners. Automated settlements directly to your bank account.
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Create your account</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Register in under a minute with your username, email and WhatsApp phone number.
                     </p>
                 </div>
 
-                <!-- Col 2: Earning Modules -->
-                <div class="ev-footer-col">
-                    <h4>Earning Modules</h4>
-                    <ul>
-                        <li><a href="#features">Sponsored Tasks</a></li>
-                        <li><a href="#surveys">Nigeria Surveys</a></li>
-                        <li><a href="#surveys">World Geopolitics</a></li>
-                        <li><a href="#features">Affiliate Network</a></li>
-                    </ul>
+                <!-- Step 02 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">02</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Get vendor activation PIN</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Purchase your &#8358;<?= number_format($regFee) ?> lifetime coupon code from certified official distributors.
+                    </p>
                 </div>
 
-                <!-- Col 3: Quick Links -->
-                <div class="ev-footer-col">
-                    <h4>Platform</h4>
-                    <ul>
-                        <li><a href="register.php">Create Account</a></li>
-                        <li><a href="login.php">Member Sign In</a></li>
-                        <li><a href="vendors.php">Verified Vendors</a></li>
-                        <li><a href="#how">How It Works</a></li>
-                    </ul>
+                <!-- Step 03 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">03</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Activate securely</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Input your PIN to verify and unlock your full member earning console instantly.
+                    </p>
                 </div>
 
-                <!-- Col 4: Support -->
-                <div class="ev-footer-col">
-                    <h4>Support &amp; Legal</h4>
-                    <ul>
-                        <li><a href="mailto:<?= htmlspecialchars(defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'Supportinnovationx@gmail.com') ?>">Official Email Support</a></li>
-                        <li><a href="#about">About INNOVATIONX</a></li>
-                        <li><a href="#faq">Frequently Asked Questions</a></li>
-                        <li><a href="javascript:void(0)" onclick="openTelegramCommunityModal()">Telegram Community</a></li>
-                    </ul>
+                <!-- Step 04 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">04</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Claim welcome bonus</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Receive an immediate 100 PTS welcome bonus credited directly into your new wallet.
+                    </p>
+                </div>
+
+                <!-- Step 05 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">05</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Engage with tasks &amp; surveys</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Earn 150 PTS on tasks, 160 to 200 PTS on world surveys, and &#8358;<?= number_format($refBonus) ?> per invite.
+                    </p>
+                </div>
+
+                <!-- Step 06 -->
+                <div class="glass-dark" style="position:relative;border-radius:18px;padding:26px;transition:border-color 0.2s;">
+                    <span style="font-family:var(--font-display);position:absolute;right:20px;top:16px;font-size:2.2rem;font-weight:700;color:rgba(255,255,255,0.06);">06</span>
+                    <div class="glow-neon" style="width:44px;height:44px;border-radius:12px;background:rgba(56,189,248,0.15);color:var(--color-aqua);display:flex;align-items:center;justify-content:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    </div>
+                    <h3 style="font-family:var(--font-display);margin-top:18px;font-size:1.15rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:6px;">Automated bank settlement</h3>
+                    <p style="font-size:0.88rem;line-height:1.6;color:rgba(255,255,255,0.65);margin:0;">
+                        Request cash out straight to any commercial or microfinance Nigerian bank account.
+                    </p>
                 </div>
 
             </div>
+        </div>
+    </section>
 
-            <div class="ev-footer-bottom">
-                <div>
-                    &copy; <?= date('Y') ?> INNOVATIONX Platform. All rights reserved. Stress-free digital earnings.
+    <!-- ===== TWO SPOTLIGHT FEATURE BANNERS (EVERMORE EXACT SPLIT) ===== -->
+    <section style="max-width:1152px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:60px 20px;" class="spotlight-split-2">
+        
+        <!-- Banner 1: Sponsored Tasks -->
+        <div class="glass glow-accent" style="position:relative;overflow:hidden;border-radius:24px;padding:32px;border:1px solid var(--color-border);background:var(--color-secondary);">
+            <div style="display:inline-block;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent);margin-bottom:12px;">
+                DAILY SPONSOR ENGAGEMENT
+            </div>
+            <h3 style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--color-foreground);margin:0 0 10px;">
+                Sponsored Micro-Tasks &amp; Video Visits
+            </h3>
+            <p style="font-size:0.92rem;color:var(--color-muted-foreground);line-height:1.6;margin-bottom:20px;">
+                Corporate sponsors pay for authenticated human attention. Watch brand clips, review destination websites, and get credited with 150 PTS on each verified completion.
+            </p>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;color:#10b981;">Rate: 150 PTS / Task</span>
+                <span style="font-size:0.8rem;color:var(--color-muted-foreground);">&bull; Instant Crediting</span>
+            </div>
+        </div>
+
+        <!-- Banner 2: Research Surveys -->
+        <div class="glass glow-gold" style="position:relative;overflow:hidden;border-radius:24px;padding:32px;border:1px solid var(--color-border);background:var(--color-secondary);">
+            <div style="display:inline-block;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-gold);margin-bottom:12px;">
+                GLOBAL OPINION RESEARCH
+            </div>
+            <h3 style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--color-foreground);margin:0 0 10px;">
+                World &amp; National Opinion Surveys
+            </h3>
+            <p style="font-size:0.92rem;color:var(--color-muted-foreground);line-height:1.6;margin-bottom:20px;">
+                Share your demographic sentiment on Nigerian socio-economic challenges, global armed conflicts, North American trade, and Arctic logistics for high-yield survey points.
+            </p>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-family:var(--font-display);font-size:0.9rem;font-weight:700;color:var(--color-gold);">Rate: 160 to 200 PTS / Survey</span>
+                <span style="font-size:0.8rem;color:var(--color-muted-foreground);">&bull; 5 World Categories</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== WAYS TO EARN (EVERMORE EXACT B.MAP 6 CATEGORIES) ===== -->
+    <section id="features" style="max-width:1152px;margin:0 auto;padding:20px 20px 80px;">
+        <div style="text-align:center;margin-bottom:44px;">
+            <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.3em;color:var(--color-primary);text-transform:uppercase;margin:0;">
+                WAYS TO EARN
+            </p>
+            <h2 style="font-family:var(--font-display);margin-top:10px;font-size:clamp(1.8rem, 3.2vw, 2.5rem);font-weight:700;color:var(--color-foreground);">
+                Real activities, real rewards
+            </h2>
+            <p style="margin-top:10px;font-size:0.98rem;color:var(--color-muted-foreground);max-width:580px;margin-left:auto;margin-right:auto;">
+                Explore all verified earning channels available inside your member console.
+            </p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;" class="categories-grid-3">
+            
+            <!-- Category 1 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.12);color:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 </div>
-                <div style="display:flex;gap:18px;">
-                    <a href="#home" style="color:var(--ev-text-dim);text-decoration:none;">Back to Top</a>
-                    <a href="vendors.php" style="color:var(--ev-text-dim);text-decoration:none;">Vendor Directory</a>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        Sponsored Tasks — 150 PTS
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Engage with sponsor videos and promotional links with automated visit verification.
+                    </p>
                 </div>
+            </a>
+
+            <!-- Category 2 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.12);color:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        Nigeria Surveys — 180 PTS
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Answer demographic opinion polls on fuel subsidy, national power grid, and inflation.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Category 3 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.12);color:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        World Conflicts — 200 PTS
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Share verified perspectives on international defense, drone warfare, and ceasefires.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Category 4 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.12);color:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        North America &amp; Arctic — 190 PTS
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Research Canadian economic dynamics and Alaska sub-zero northern logistics.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Category 5 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.12);color:#10b981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        Affiliate Cash — &#8358;<?= number_format($refBonus) ?> / Invite
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Earn instant real cash for every friend who activates their lifetime membership.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Category 6 -->
+            <a href="register.php" class="glass" style="display:flex;align-items:flex-start;gap:16px;border-radius:18px;padding:20px;text-decoration:none;transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.12);color:var(--color-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="font-family:var(--font-display);font-size:0.92rem;font-weight:700;color:var(--color-foreground);margin:0 0 4px;">
+                        Direct Bank Settlement — Automated
+                    </h3>
+                    <p style="font-size:0.84rem;color:var(--color-muted-foreground);line-height:1.5;margin:0;">
+                        Withdraw earnings directly into GTBank, OPay, Kuda, PalmPay, and 30+ Nigerian banks.
+                    </p>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- ===== MEMBERSHIP PLAN (EVERMORE EXACT U CARD) ===== -->
+    <section id="subscriptions" style="max-width:1024px;margin:0 auto;scroll-margin-top:6rem;padding:70px 20px;">
+        <div style="text-align:center;">
+            <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.3em;color:var(--color-gold);text-transform:uppercase;margin:0;">
+                SUBSCRIPTION
+            </p>
+            <h2 style="font-family:var(--font-display);margin-top:10px;font-size:clamp(1.8rem, 3.2vw, 2.6rem);font-weight:700;color:var(--color-foreground);">
+                One activation, everything included
+            </h2>
+            <p style="margin-top:10px;font-size:0.98rem;color:var(--color-muted-foreground);max-width:540px;margin-left:auto;margin-right:auto;">
+                Your activation fee includes registration, welcome bonus, and permanent lifetime platform access with zero recurring charges.
+            </p>
+        </div>
+
+        <!-- Evermore U Card -->
+        <div style="max-width:440px;margin:44px auto 0;">
+            <div class="surface-navy glow-neon" style="position:relative;display:flex;flex-direction:column;border-radius:1.5rem;padding:32px;border:1px solid rgba(56,189,248,0.25);">
+                <!-- Best value tag -->
+                <span class="btn-gold" style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);border-radius:9999px;padding:4px 16px;font-size:0.75rem;font-weight:800;letter-spacing:0.15em;">
+                    BEST VALUE
+                </span>
+
+                <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;color:var(--color-aqua);margin:0;text-transform:uppercase;">
+                    LIFETIME ACCESS
+                </p>
+                <h3 style="font-family:var(--font-display);margin-top:8px;font-size:1.35rem;font-weight:700;color:var(--color-navy-foreground);margin-bottom:0;">
+                    Lifetime Membership Access
+                </h3>
+
+                <div style="margin-top:16px;display:flex;align-items:flex-end;gap:8px;">
+                    <span style="font-family:var(--font-display);font-size:2.4rem;font-weight:700;color:var(--color-navy-foreground);line-height:1;">
+                        &#8358;<?= number_format($regFee) ?>
+                    </span>
+                    <span style="padding-bottom:4px;font-size:0.85rem;color:rgba(255,255,255,0.6);">
+                        / One-time fee
+                    </span>
+                </div>
+
+                <!-- Features list -->
+                <ul style="list-style:none;margin:24px 0 28px;padding:0;display:flex;flex-direction:column;gap:12px;">
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Immediate 100 PTS Welcome Bonus</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Daily High-Reward Tasks (150 PTS / Task)</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>World &amp; National Opinion Surveys (Up to 200 PTS)</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Direct Referral Cash (&#8358;<?= number_format($refBonus) ?> Real Cash / Invite)</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Automated Direct Bank Settlements</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:rgba(255,255,255,0.85);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Zero Monthly Renewals or Maintenance Fees</span>
+                    </li>
+                </ul>
+
+                <a href="register.php" class="btn-cta" style="border-radius:12px;padding:14px;font-size:0.95rem;font-weight:700;width:100%;text-align:center;">
+                    ACTIVATE MEMBERSHIP
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SUPPORTED NIGERIAN FINANCIAL INSTITUTIONS ===== -->
+    <section style="max-width:1152px;margin:0 auto;padding:20px 20px 60px;">
+        <div class="glass" style="border-radius:24px;padding:34px 28px;text-align:center;">
+            <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.25em;color:var(--color-accent);text-transform:uppercase;margin:0 0 6px;">
+                SETTLEMENT CLEARING
+            </p>
+            <h3 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--color-foreground);margin:0 0 8px;">
+                Direct Bank Transfer to 30+ Nigerian Banks
+            </h3>
+            <p style="font-size:0.9rem;color:var(--color-muted-foreground);max-width:520px;margin:0 auto 24px;">
+                No specialized wallet or conversion required. Receive automated credits into your existing bank account.
+            </p>
+
+            <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:10px;" class="banks-grid-6">
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">GTBank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">OPay</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Kuda Bank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">PalmPay</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Access Bank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Zenith Bank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Moniepoint</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">UBA</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">FirstBank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Fidelity Bank</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Wema / ALAT</div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;color:var(--color-foreground);">Stanbic IBTC</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ SECTION (EVERMORE EXACT ACCORDION) ===== -->
+    <section id="faq" style="max-width:768px;margin:0 auto;scroll-margin-top:6rem;padding:40px 20px 80px;">
+        <div style="text-align:center;">
+            <p style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.3em;color:var(--color-primary);text-transform:uppercase;margin:0;">
+                FAQ
+            </p>
+            <h2 style="font-family:var(--font-display);margin-top:10px;font-size:clamp(1.8rem, 3.2vw, 2.5rem);font-weight:700;color:var(--color-foreground);">
+                Questions, answered
+            </h2>
+        </div>
+
+        <div style="margin-top:36px;display:flex;flex-direction:column;gap:12px;">
+            <div class="glass" style="border-radius:14px;padding:18px 22px;cursor:pointer;" onclick="toggleEvFaqCard(this)">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:600;color:var(--color-foreground);">
+                        What is INNOVATIONX?
+                    </span>
+                    <span class="faq-chevron" style="color:var(--color-muted-foreground);font-size:1.1rem;transition:transform 0.2s;">+</span>
+                </div>
+                <div class="faq-answer" style="display:none;margin-top:10px;font-size:0.88rem;color:var(--color-muted-foreground);line-height:1.6;">
+                    INNOVATIONX is a verified digital micro-earning platform in Nigeria. Brands and research bodies channel their promotional tasks and survey questionnaires directly to our active members, allowing you to earn daily cash and points for your screen time.
+                </div>
+            </div>
+
+            <div class="glass" style="border-radius:14px;padding:18px 22px;cursor:pointer;" onclick="toggleEvFaqCard(this)">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:600;color:var(--color-foreground);">
+                        How much is the activation fee?
+                    </span>
+                    <span class="faq-chevron" style="color:var(--color-muted-foreground);font-size:1.1rem;transition:transform 0.2s;">+</span>
+                </div>
+                <div class="faq-answer" style="display:none;margin-top:10px;font-size:0.88rem;color:var(--color-muted-foreground);line-height:1.6;">
+                    Lifetime account activation requires a one-time fee of &#8358;<?= number_format($regFee) ?> paid via an official vendor coupon code. There are zero monthly charges or recurring maintenance fees.
+                </div>
+            </div>
+
+            <div class="glass" style="border-radius:14px;padding:18px 22px;cursor:pointer;" onclick="toggleEvFaqCard(this)">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:600;color:var(--color-foreground);">
+                        Can I withdraw without referring anyone?
+                    </span>
+                    <span class="faq-chevron" style="color:var(--color-muted-foreground);font-size:1.1rem;transition:transform 0.2s;">+</span>
+                </div>
+                <div class="faq-answer" style="display:none;margin-top:10px;font-size:0.88rem;color:var(--color-muted-foreground);line-height:1.6;">
+                    Yes, absolutely! Referrals are 100% optional. You can accumulate points purely by completing your daily sponsored micro-tasks and answering world research surveys.
+                </div>
+            </div>
+
+            <div class="glass" style="border-radius:14px;padding:18px 22px;cursor:pointer;" onclick="toggleEvFaqCard(this)">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:600;color:var(--color-foreground);">
+                        How do I receive my withdrawal?
+                    </span>
+                    <span class="faq-chevron" style="color:var(--color-muted-foreground);font-size:1.1rem;transition:transform 0.2s;">+</span>
+                </div>
+                <div class="faq-answer" style="display:none;margin-top:10px;font-size:0.88rem;color:var(--color-muted-foreground);line-height:1.6;">
+                    Withdrawals are processed directly into your registered Nigerian commercial or microfinance bank account (GTBank, OPay, Kuda, PalmPay, Moniepoint, etc.) with transparent automated clearing.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CALL TO ACTION BANNER (EVERMORE EXACT) ===== -->
+    <section style="padding:0 20px 80px;">
+        <div class="surface-navy glow-neon" style="position:relative;max-width:1152px;margin:0 auto;overflow:hidden;border-radius:1.5rem;padding:64px 24px;text-align:center;">
+            <div style="position:absolute;inset:0;pointer-events:none;">
+                <div class="bg-grid" style="position:absolute;inset:0;mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);-webkit-mask-image:radial-gradient(70% 70% at 50% 50%, black, transparent);"></div>
+                <div style="position:absolute;left:-8rem;top:-8rem;width:24rem;height:24rem;border-radius:50%;border:1px solid rgba(56,189,248,0.2);opacity:0.6;"></div>
+            </div>
+
+            <div style="position:relative;">
+                <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg, #0284c7, #38bdf8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:1.2rem;margin:0 auto 20px;box-shadow:0 4px 18px rgba(56,189,248,0.5);">
+                    IX
+                </div>
+
+                <h2 style="font-family:var(--font-display);font-size:clamp(2rem, 3.6vw, 2.8rem);font-weight:700;color:var(--color-navy-foreground);margin:0;">
+                    Your future is <span class="text-aqua-gradient">already loading.</span>
+                </h2>
+
+                <p style="margin-top:16px;font-size:1rem;color:rgba(255,255,255,0.7);max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;">
+                    Create your account, activate your lifetime membership and start building your verified daily income with automated bank payouts.
+                </p>
+
+                <div style="margin-top:32px;">
+                    <a href="register.php" class="btn-neon" style="border-radius:12px;padding:15px 36px;font-size:0.95rem;font-weight:700;letter-spacing:0.02em;">
+                        <span>JOIN INNOVATIONX</span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER (EVERMORE EXACT MULTI-ROW BAR) ===== -->
+    <footer style="border-top:1px solid var(--color-border);background:rgba(13,23,42,0.4);padding:36px 0;">
+        <div style="max-width:1152px;margin:0 auto;display:flex;flex-direction:column;gap:20px;padding:0 20px;align-items:center;justify-content:space-between;" class="footer-inner-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg, #0284c7, #38bdf8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.7rem;">IX</div>
+                <span style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;color:var(--color-foreground);">INNOVATIONX</span>
+            </div>
+
+            <p style="font-size:0.8rem;color:var(--color-muted-foreground);margin:0;text-align:center;">
+                &copy; <?= date('Y') ?> INNOVATIONX Platform &mdash; Digital tasks, world research surveys, and direct Nigerian bank settlements.
+            </p>
+
+            <div style="display:flex;align-items:center;gap:18px;font-size:0.85rem;color:var(--color-muted-foreground);">
+                <a href="vendors.php" style="color:inherit;text-decoration:none;">Vendors</a>
+                <a href="javascript:void(0)" onclick="openTelegramCommunityModal()" style="color:inherit;text-decoration:none;">Telegram</a>
+                <a href="login.php" style="color:inherit;text-decoration:none;">Sign in</a>
             </div>
         </div>
     </footer>
 
 </div>
 
+<!-- Responsive styling overrides -->
+<style>
+@media (min-width: 768px) {
+    .desktop-menu { display: flex !important; }
+    .footer-inner-row { flex-direction: row !important; }
+}
+@media (max-width: 767px) {
+    .desktop-auth-btn { display: none !important; }
+    .mobile-menu-btn { display: flex !important; }
+    .hero-split-grid { grid-template-columns: 1fr !important; }
+    .steps-grid-3 { grid-template-columns: 1fr !important; }
+    .spotlight-split-2 { grid-template-columns: 1fr !important; }
+    .categories-grid-3 { grid-template-columns: 1fr !important; }
+    .banks-grid-6 { grid-template-columns: repeat(3, 1fr) !important; }
+}
+</style>
+
 <script>
 // Mobile Drawer Toggle
-function toggleEvDrawer() {
+function toggleEvermoreDrawer() {
     var drawer = document.getElementById('evDrawer');
     var backdrop = document.getElementById('evDrawerBackdrop');
     if (drawer && backdrop) {
@@ -1659,13 +1009,52 @@ function toggleEvDrawer() {
     }
 }
 
-// FAQ Accordion Toggle
-function toggleEvFaq(card) {
-    var wasOpen = card.classList.contains('open');
-    document.querySelectorAll('.ev-faq-card').forEach(function(c) {
-        c.classList.remove('open');
-    });
-    if (!wasOpen) card.classList.add('open');
+// Audio Intro Tour Simulation
+var isTourPlaying = false;
+var tourInterval = null;
+
+function toggleTourPlayback() {
+    isTourPlaying = !isTourPlaying;
+    var playIcon = document.getElementById('tourPlayIcon');
+    var pauseIcon = document.getElementById('tourPauseIcon');
+    var bars = document.querySelectorAll('#tourWaveBars span');
+    
+    if (isTourPlaying) {
+        if (playIcon) playIcon.style.display = 'none';
+        if (pauseIcon) pauseIcon.style.display = 'block';
+        tourInterval = setInterval(function() {
+            bars.forEach(function(bar) {
+                var h = Math.floor(Math.random() * 20) + 6;
+                bar.style.height = h + 'px';
+            });
+        }, 150);
+    } else {
+        if (playIcon) playIcon.style.display = 'block';
+        if (pauseIcon) pauseIcon.style.display = 'none';
+        if (tourInterval) clearInterval(tourInterval);
+        bars.forEach(function(bar, idx) {
+            var defaultHeights = [12, 20, 16, 24, 14, 18, 10];
+            bar.style.height = (defaultHeights[idx] || 14) + 'px';
+        });
+    }
+}
+
+// FAQ Accordion Card Toggle
+function toggleEvFaqCard(card) {
+    var ans = card.querySelector('.faq-answer');
+    var chevron = card.querySelector('.faq-chevron');
+    if (!ans) return;
+    
+    var isOpen = ans.style.display === 'block';
+    
+    // Close other FAQ cards
+    document.querySelectorAll('.faq-answer').forEach(function(a) { a.style.display = 'none'; });
+    document.querySelectorAll('.faq-chevron').forEach(function(c) { c.style.transform = 'rotate(0deg)'; });
+    
+    if (!isOpen) {
+        ans.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(45deg)';
+    }
 }
 </script>
 
