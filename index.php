@@ -236,14 +236,16 @@ h1, h2, h3, h4, .font-display {
     animation: spinSlow 30s linear infinite;
 }
 
-/* Pill Navbar (Evermore Style - Static, Stays at Top When Scrolling) */
+/* Floating Pill Navbar (Evermore Style - Fixed Floating Island) */
 .ev-pill-header {
-    position: relative;
-    z-index: 50;
+    position: fixed;
+    top: 14px;
+    left: 0;
+    right: 0;
+    z-index: 90;
     width: 100%;
     padding: 0 14px;
-    margin: 12px 0 0;
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 .ev-pill-navbar {
@@ -255,18 +257,18 @@ h1, h2, h3, h4, .font-display {
     justify-content: space-between;
     padding: 5px 6px 5px 12px;
     border-radius: 9999px;
-    background: rgba(15, 25, 46, 0.85);
+    background: rgba(11, 17, 32, 0.86);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(56, 189, 248, 0.22);
-    box-shadow: 0 8px 26px -6px rgba(0, 0, 0, 0.55), 0 0 16px -4px rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.7), 0 0 20px -4px rgba(56, 189, 248, 0.2);
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="light"] .ev-pill-navbar {
     background: rgba(255, 255, 255, 0.92);
     border-color: rgba(2, 132, 199, 0.22);
-    box-shadow: 0 8px 24px -5px rgba(2, 132, 199, 0.12);
+    box-shadow: 0 10px 28px -5px rgba(2, 132, 199, 0.16);
 }
 
 .ev-pill-link {
@@ -320,12 +322,6 @@ h1, h2, h3, h4, .font-display {
 </style>
 
 <div class="relative min-h-screen overflow-x-clip">
-
-    <!-- ===== TOP NOTICE BAR (EVERMORE STANDARD - EMERALD ACCENT) ===== -->
-    <div style="border-bottom:1px solid rgba(16,185,129,0.22);background:rgba(16,185,129,0.06);padding:7px 14px;text-align:center;font-size:0.78rem;font-weight:600;color:#6EE7B7;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;"></span>
-        <span>Automated Daily Task Drops &amp; Direct Bank Settlements Now Active Across Nigeria.</span>
-    </div>
 
     <!-- ===== HEADER NAVBAR (EVERMORE COMPACT FLOATING PILL BAR) ===== -->
     <header class="ev-pill-header">
@@ -418,7 +414,7 @@ h1, h2, h3, h4, .font-display {
     </aside>
 
     <!-- ===== HERO SECTION (EVERMORE STYLE: GRID WITH DUAL FLOATING BADGES) ===== -->
-    <section style="position:relative;overflow:hidden;padding:60px 0 60px;">
+    <section class="hero-section" style="position:relative;overflow:hidden;padding:100px 0 60px;">
         <!-- Background Effects -->
         <div style="position:absolute;inset:0;pointer-events:none;">
             <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(56,189,248,0.18) 0%, transparent 60%);"></div>
@@ -432,6 +428,11 @@ h1, h2, h3, h4, .font-display {
                 
                 <!-- Left: Hero Text Content -->
                 <div style="text-align:left;">
+                    <div style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:6px 14px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.22);font-size:0.78rem;font-weight:600;color:#6EE7B7;margin-bottom:14px;">
+                        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;"></span>
+                        <span>Daily Task Drops &amp; Direct Bank Settlements Active</span>
+                    </div>
+                    <br>
                     <span class="glass" style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:5px 14px;font-size:0.74rem;font-weight:700;letter-spacing:0.1em;color:var(--color-aqua);text-transform:uppercase;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         DIGITAL EARNING PLATFORM
@@ -911,8 +912,9 @@ h1, h2, h3, h4, .font-display {
     .footer-inner-row { flex-direction: row !important; }
 }
 @media (max-width: 767px) {
-    .ev-pill-header { position: relative !important; top: auto !important; padding: 0 10px !important; margin: 8px 0 0 !important; }
+    .ev-pill-header { top: 10px !important; padding: 0 10px !important; }
     .ev-pill-navbar { padding: 4px 6px 4px 10px !important; }
+    .hero-section { padding-top: 80px !important; }
     .desktop-auth-btn { display: none !important; }
     .mobile-menu-btn { display: flex !important; }
     .hero-split-grid { grid-template-columns: 1fr !important; }
