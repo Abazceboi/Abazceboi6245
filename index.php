@@ -996,13 +996,13 @@ h1, h2, h3, h4, .font-display {
     border-color: rgba(2, 132, 199, 0.4);
 }
 
-/* Standalone Theme Button (Desktop Right Side) */
+/* Standalone Theme Button (Desktop Right Side - Sleek Micro-Control) */
 .ev-theme-standalone {
     pointer-events: auto;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -1013,7 +1013,7 @@ h1, h2, h3, h4, .font-display {
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1041,7 +1041,7 @@ h1, h2, h3, h4, .font-display {
     backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 10px 28px -4px rgba(2, 132, 199, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 14px -2px rgba(2, 132, 199, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
     color: #0F172A;
 }
 
