@@ -80,13 +80,40 @@ $settings['referral_max'] = $settings['affiliate']['max_amount'];
 $settings['task_status'] = $settings['task']['status'];
 $settings['referral_status'] = $settings['affiliate']['status'];
 
-function evaluateWalletSchedule($w, $walletLabel = 'Task Points') {
+function evaluateWalletSchedule($w, $walletLabel = 'Task Points', $userBalance = null) {
+    $isTask = (stripos($walletLabel, 'task') !== false || stripos($walletLabel, 'point') !== false);
+    
+    // Auto-open on minimum threshold reached (TASK ONLY!)
+    if ($isTask && !empty($w['auto_open_on_min_reached'])) {
+        $minPts = floatval($w['min_amount'] ?? 1000);
+        if ($userBalance !== null) {
+            $hasReached = ($userBalance >= $minPts);
+            return [
+                'is_open' => $hasReached,
+                'mode' => 'auto_min_reached',
+                'auto_open_on_min_reached' => true,
+                'status_badge' => $hasReached ? 'OPEN' : 'LOCKED',
+                'status_text' => $hasReached
+                    ? "Task withdrawals unlocked: your points balance meets the minimum payout requirement."
+                    : "Task withdrawals unlock automatically once your balance reaches " . number_format($minPts) . " PTS (Current: " . number_format($userBalance) . " PTS)."
+            ];
+        }
+        return [
+            'is_open' => true,
+            'mode' => 'auto_min_reached',
+            'auto_open_on_min_reached' => true,
+            'status_badge' => 'AUTO (BY BALANCE)',
+            'status_text' => "Task withdrawals open automatically for members who reach " . number_format($minPts) . " PTS."
+        ];
+    }
+
     $mode = $w['mode'] ?? 'manual';
     if ($mode === 'manual') {
         $isOpen = ($w['manual_status'] ?? 'open') === 'open';
         return [
             'is_open' => $isOpen,
             'mode' => 'manual',
+            'auto_open_on_min_reached' => false,
             'status_badge' => $isOpen ? 'OPEN' : 'CLOSED',
             'status_text' => $isOpen 
                 ? "Manual Mode: {$walletLabel} withdrawals are currently OPEN" 
@@ -94,7 +121,7 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points') {
         ];
     }
 
-    // Automatic Mode
+    // Automatic / Schedule Mode
     $schedType = $w['auto_schedule_type'] ?? 'recurring_days';
     $now = time();
     $currentDay = strtolower(date('D'));
@@ -116,6 +143,7 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points') {
             'is_open' => $isOpen,
             'mode' => 'automatic',
             'schedule_type' => 'recurring_days',
+            'auto_open_on_min_reached' => false,
             'status_badge' => $isOpen ? 'OPEN' : 'CLOSED',
             'status_text' => $isOpen
                 ? "Automatic Schedule: {$walletLabel} OPEN (Closes at {$tEnd} today)"
@@ -143,6 +171,7 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points') {
             'is_open' => $isOpen,
             'mode' => 'automatic',
             'schedule_type' => 'date_window',
+            'auto_open_on_min_reached' => false,
             'status_badge' => $isOpen ? 'OPEN' : 'CLOSED',
             'status_text' => $msg
         ];
@@ -152,8 +181,23 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points') {
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_settings';
 
 if ($action === 'get_settings' || $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $taskEval = evaluateWalletSchedule($settings['task'], 'Task Points');
-    $affEval = evaluateWalletSchedule($settings['affiliate'], 'Affiliate Cash');
+    $userPts = null;
+    $userCash = null;
+    if (!empty($_GET['username'])) {
+        $uName = strtolower(trim($_GET['username']));
+        $uList = readStorageJson('data/users.json', ['users' => []]);
+        $usersArr = $uList['users'] ?? (is_array($uList) ? $uList : []);
+        foreach ($usersArr as $u) {
+            if (strtolower($u['username'] ?? '') === $uName) {
+                $userPts = intval($u['remaining_pts'] ?? $u['pointsBalance'] ?? 0);
+                $userCash = floatval($u['remaining_cash'] ?? $u['cashBalance'] ?? 0);
+                break;
+            }
+        }
+    }
+
+    $taskEval = evaluateWalletSchedule($settings['task'], 'Task Points', $userPts);
+    $affEval = evaluateWalletSchedule($settings['affiliate'], 'Affiliate Cash', $userCash);
 
     echo json_encode([
         'status' => 'success',
@@ -194,6 +238,9 @@ if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Ensure status is active for both
+    $settings['task']['status'] = 'active';
+    $settings['affiliate']['status'] = 'active';
     $settings['updated_at'] = date('Y-m-d H:i:s');
     $settings['task_min'] = $settings['task']['min_amount'];
     $settings['task_max'] = $settings['task']['max_amount'];
@@ -201,6 +248,15 @@ if ($action === 'save_settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $settings['referral_max'] = $settings['affiliate']['max_amount'];
 
     writeStorageJson('config/withdrawal_settings.json', $settings);
+
+    // Sync minimums with app_pricing.json
+    $pricing = readStorageJson('config/app_pricing.json', []);
+    if (is_array($pricing)) {
+        $pricing['min_points_withdrawal'] = floatval($settings['task']['min_amount']);
+        $pricing['min_cash_withdrawal'] = floatval($settings['affiliate']['min_amount']);
+        $pricing['min_withdrawal'] = floatval($settings['affiliate']['min_amount']);
+        writeStorageJson('config/app_pricing.json', $pricing);
+    }
 
     $taskEval = evaluateWalletSchedule($settings['task'], 'Task Points');
     $affEval = evaluateWalletSchedule($settings['affiliate'], 'Affiliate Cash');
@@ -369,9 +425,11 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $targetWallet = ($wallet === 'task' || $wallet === 'points') ? 'task' : 'affiliate';
-    $walletSched = $settings[$targetWallet] ?? [];
-    $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
+    $curCash = floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0);
+    $curPoints = intval($user['remaining_pts'] ?? $user['pointsBalance'] ?? 0);
+    $checkBal = ($targetWallet === 'task') ? $curPoints : $curCash;
+
+    $evalResult = evaluateWalletSchedule($walletSched, $targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points', $checkBal);
     if (!$evalResult['is_open']) {
         echo json_encode(['status' => 'error', 'message' => $evalResult['status_text'] ?? 'Withdrawals are currently closed for this wallet source.']);
         exit;

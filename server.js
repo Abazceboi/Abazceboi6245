@@ -3147,13 +3147,38 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     } catch(e){}
                 }
 
-                function evaluateWalletSchedule(w, walletLabel) {
+                function evaluateWalletSchedule(w, walletLabel, userBalance) {
+                    const isTask = (walletLabel.toLowerCase().includes('task') || walletLabel.toLowerCase().includes('point'));
+                    if (isTask && w.auto_open_on_min_reached) {
+                        const minPts = Number(w.min_amount || 1000);
+                        if (userBalance !== undefined && userBalance !== null) {
+                            const hasReached = (Number(userBalance) >= minPts);
+                            return {
+                                is_open: hasReached,
+                                mode: 'auto_min_reached',
+                                auto_open_on_min_reached: true,
+                                status_badge: hasReached ? 'OPEN' : 'LOCKED',
+                                status_text: hasReached
+                                    ? "Task withdrawals unlocked: your points balance meets the minimum payout requirement."
+                                    : `Task withdrawals unlock automatically once your balance reaches ${minPts.toLocaleString()} PTS (Current: ${Number(userBalance).toLocaleString()} PTS).`
+                            };
+                        }
+                        return {
+                            is_open: true,
+                            mode: 'auto_min_reached',
+                            auto_open_on_min_reached: true,
+                            status_badge: 'AUTO (BY BALANCE)',
+                            status_text: `Task withdrawals open automatically for members who reach ${minPts.toLocaleString()} PTS.`
+                        };
+                    }
+
                     const mode = w.mode || 'manual';
                     if (mode === 'manual') {
                         const isOpen = (w.manual_status || 'open') === 'open';
                         return {
                             is_open: isOpen,
                             mode: 'manual',
+                            auto_open_on_min_reached: false,
                             status_badge: isOpen ? 'OPEN' : 'CLOSED',
                             status_text: isOpen 
                                 ? `Manual Mode: ${walletLabel} withdrawals are currently OPEN` 
@@ -3183,6 +3208,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             is_open: isOpen,
                             mode: 'automatic',
                             schedule_type: 'recurring_days',
+                            auto_open_on_min_reached: false,
                             status_badge: isOpen ? 'OPEN' : 'CLOSED',
                             status_text: isOpen
                                 ? `Automatic Schedule: ${walletLabel} OPEN (Closes at ${tEnd} today)`
@@ -3207,6 +3233,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             is_open: isOpen,
                             mode: 'automatic',
                             schedule_type: 'date_window',
+                            auto_open_on_min_reached: false,
                             status_badge: isOpen ? 'OPEN' : 'CLOSED',
                             status_text: text
                         };
@@ -3244,6 +3271,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         if (parsed.affiliate && typeof parsed.affiliate === 'object') s.affiliate = Object.assign(s.affiliate, parsed.affiliate);
                     }
 
+                    s.task.status = 'active';
+                    s.affiliate.status = 'active';
                     s.updated_at = new Date().toISOString();
                     s.task_min = s.task.min_amount;
                     s.task_max = s.task.max_amount;
@@ -3330,9 +3359,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
                     const user = usersData.users[uIdx];
 
-                    const targetWallet = (wallet === 'task' || wallet === 'points') ? 'task' : 'affiliate';
-                    const walletSched = s[targetWallet] || {};
-                    const evalResult = evaluateWalletSchedule(walletSched, targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points');
+                    const curPts = parseInt(parsed.client_points !== undefined ? parsed.client_points : (user.remaining_pts !== undefined ? user.remaining_pts : (user.pointsBalance || 0)));
+                    const curCsh = parseFloat(parsed.client_cash !== undefined ? parsed.client_cash : (user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0)));
+                    const chkBal = (targetWallet === 'task') ? curPts : curCsh;
+                    const evalResult = evaluateWalletSchedule(walletSched, targetWallet === 'affiliate' ? 'Affiliate Cash' : 'Task Points', chkBal);
                     if (!evalResult.is_open) {
                         res.end(JSON.stringify({ status: 'error', message: evalResult.status_text || 'Withdrawals are currently closed for this wallet source.' }));
                         return;

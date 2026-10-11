@@ -1,6 +1,7 @@
 {
   "task": {
     "mode": "manual",
+    "auto_open_on_min_reached": true,
     "manual_status": "open",
     "manual_closed_message": "Task Points withdrawals are currently closed by administration. Please check back later.",
     "auto_schedule_type": "recurring_days",
@@ -9,8 +10,8 @@
     ],
     "auto_time_start": "14:00",
     "auto_time_end": "18:00",
-    "auto_window_start": "2026-09-27T14:00",
-    "auto_window_end": "2026-09-27T18:00",
+    "auto_window_start": "2026-10-11T14:00",
+    "auto_window_end": "2026-10-11T18:00",
     "min_amount": 1000,
     "max_amount": 100000,
     "status": "active"
@@ -26,11 +27,11 @@
     ],
     "auto_time_start": "08:00",
     "auto_time_end": "22:00",
-    "auto_window_start": "2026-09-27T08:00",
-    "auto_window_end": "2026-09-28T22:00",
+    "auto_window_start": "2026-10-11T08:00",
+    "auto_window_end": "2026-10-12T22:00",
     "min_amount": 5000,
     "max_amount": 100000,
     "status": "active"
   },
-  "updated_at": "2026-09-27T19:18:26.279Z"
+  "updated_at": "2026-10-11T19:55:00.000Z"
 }

@@ -2543,6 +2543,16 @@ input,textarea,select{font-family:var(--ff);}
           </div>
         </div>
       </div>
+      <!-- Withdrawal Portal Status Banner -->
+      <div id="wdPortalStatusBanner" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.45;border:1px solid transparent;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="wdPortalStatusDot" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+          <div style="flex:1;">
+            <div id="wdPortalStatusTitle" style="font-weight:600;"></div>
+            <div id="wdPortalStatusDesc" style="font-size:11.5px;margin-top:2px;opacity:0.85;"></div>
+          </div>
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label">Withdrawal Amount</label>
         <input type="number" class="form-input" id="wdAmount" placeholder="e.g. 5000">
@@ -3461,6 +3471,9 @@ function openModal(id) {
     if (typeof syncLiveProfile === 'function') syncLiveProfile();
     if (typeof syncWithdrawalBankDetails === 'function') {
       syncWithdrawalBankDetails();
+    }
+    if (typeof syncWithdrawalPortalStatus === 'function') {
+      syncWithdrawalPortalStatus();
     }
   }
   if (id === 'modalWithdrawConfirm') {
@@ -4527,6 +4540,10 @@ function selectFancyOption(dropdownId, optEl) {
   container.classList.remove('open');
   const trigger = container.querySelector('.fancy-dropdown-trigger');
   if (trigger) trigger.setAttribute('aria-expanded', 'false');
+
+  if (container.id === 'wdWalletDropdown' && typeof syncWithdrawalPortalStatus === 'function') {
+    syncWithdrawalPortalStatus(val);
+  }
 }
 
 // Close fancy dropdowns on outside click
@@ -4544,9 +4561,87 @@ document.addEventListener('click', (e) => {
 // WITHDRAWALS & RECEIPT (WITH MANDATORY CONFIRMATION STEP)
 // ═══════════════════════════════════════════════════════════════════════════
 let pendingWithdrawalData = null;
+let currentWdPortalState = {
+  task: { is_open: true, status_text: '' },
+  affiliate: { is_open: true, status_text: '' }
+};
+
+async function syncWithdrawalPortalStatus(forcedWallet) {
+  const walletType = forcedWallet || document.getElementById('wdWalletType')?.value || 'task';
+  const targetKey = (walletType === 'cash' || walletType === 'affiliate') ? 'affiliate' : 'task';
+  const banner = document.getElementById('wdPortalStatusBanner');
+  const dot = document.getElementById('wdPortalStatusDot');
+  const title = document.getElementById('wdPortalStatusTitle');
+  const desc = document.getElementById('wdPortalStatusDesc');
+
+  try {
+    const user = (typeof CURRENT_USER !== 'undefined' ? CURRENT_USER : '');
+    const r = await fetch(`/api/withdrawals.php?action=get_settings&username=${encodeURIComponent(user)}&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const d = await r.json();
+    if (d && d.status === 'success' && d.schedule_status) {
+      currentWdPortalState.task = d.schedule_status.task || { is_open: true };
+      currentWdPortalState.affiliate = d.schedule_status.affiliate || { is_open: true };
+    }
+  } catch(e) {
+    // Keep existing state
+  }
+
+  if (!banner || !dot || !title || !desc) return;
+
+  const st = currentWdPortalState[targetKey] || { is_open: true, status_text: '' };
+  banner.style.display = 'block';
+
+  if (targetKey === 'task' && st.mode === 'auto_min_reached') {
+    if (st.is_open) {
+      banner.style.background = 'rgba(16, 185, 129, 0.08)';
+      banner.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+      dot.style.background = '#10b981';
+      title.style.color = 'var(--txt)';
+      title.textContent = 'Portal Active (Threshold Reached)';
+      desc.style.color = 'var(--txt-2)';
+      desc.textContent = st.status_text || 'Task withdrawals unlocked: your points balance meets the minimum payout requirement.';
+    } else {
+      banner.style.background = 'rgba(245, 158, 11, 0.08)';
+      banner.style.borderColor = 'rgba(245, 158, 11, 0.25)';
+      dot.style.background = '#f59e0b';
+      title.style.color = 'var(--txt)';
+      title.textContent = 'Portal Locked (Balance Threshold)';
+      desc.style.color = 'var(--txt-2)';
+      desc.textContent = st.status_text || 'Task withdrawals unlock automatically once you reach the minimum balance.';
+    }
+  } else {
+    if (st.is_open) {
+      banner.style.background = 'rgba(16, 185, 129, 0.08)';
+      banner.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+      dot.style.background = '#10b981';
+      title.style.color = 'var(--txt)';
+      title.textContent = 'Portal Active';
+      desc.style.color = 'var(--txt-2)';
+      desc.textContent = st.status_text || 'Withdrawals are currently open for this wallet source.';
+    } else {
+      banner.style.background = 'rgba(239, 68, 68, 0.08)';
+      banner.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+      dot.style.background = '#ef4444';
+      title.style.color = 'var(--txt)';
+      title.textContent = 'Portal Closed';
+      desc.style.color = 'var(--txt-2)';
+      desc.textContent = st.status_text || 'Withdrawals are currently closed for this wallet source.';
+    }
+  }
+}
 
 function proceedToWithdrawalConfirm() {
   const type = document.getElementById('wdWalletType').value;
+  const targetKey = (type === 'cash' || type === 'affiliate') ? 'affiliate' : 'task';
+  const portalSt = currentWdPortalState[targetKey];
+  if (portalSt && portalSt.is_open === false) {
+    toast(portalSt.status_text || 'Withdrawals are currently closed for this wallet source.', 'error');
+    return;
+  }
+
   const amount = parseFloat(document.getElementById('wdAmount').value);
   const minCash = parseFloat(document.getElementById('dataMinCashWd')?.dataset.min || 5000);
   const minTask = parseFloat(document.getElementById('dataMinTaskWd')?.dataset.min || 1000);

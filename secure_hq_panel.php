@@ -1352,6 +1352,201 @@ input,textarea,select{font-family:var(--ff);}
 
     <!-- ══ TAB: WITHDRAWALS ════════════════════════════════════════════════ -->
     <div id="tab-withdrawals" class="tab-content">
+      
+      <!-- Section: Withdrawal Portals & Schedule Controls -->
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:1.15rem;font-weight:800;color:var(--txt);margin:0 0 4px;">Withdrawal Portals & Rules</h2>
+            <p style="font-size:12px;color:var(--txt-3);margin:0;">Configure automated opening thresholds, settlement schedules, and manual access for all payout methods.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btnSaveWdSettings" onclick="saveWithdrawalSettings(event)">Save Portal Settings</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;">
+          
+          <!-- Card 1: Task Points Wallet (Tasks & Surveys) -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="card-title">Task Points Wallet</div>
+                <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Earnings from tasks and surveys</div>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span class="badge badge-active">Method Active</span>
+                <span class="badge" id="taskPortalBadge">Checking...</span>
+              </div>
+            </div>
+
+            <!-- Auto-open when minimum is reached (TASK ONLY!) -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+              <div style="padding-right:12px;">
+                <div style="font-weight:600;font-size:13px;color:var(--txt);">Auto-Open When Minimum Reached</div>
+                <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Automatically unlock task withdrawals once a member's points balance reaches the minimum threshold.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="taskAutoMinToggle" onchange="handleTaskAutoMinToggle(this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Minimum & Maximum Payout Limits -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Minimum Payout (PTS)</label>
+                <input type="number" class="form-input" id="taskMinAmount" value="1000" min="100">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Maximum Payout (PTS)</label>
+                <input type="number" class="form-input" id="taskMaxAmount" value="100000" min="500">
+              </div>
+            </div>
+
+            <!-- Opening Mode Selection -->
+            <div id="taskSecondaryModeWrap" style="border-top:1px solid var(--border);padding-top:14px;">
+              <label class="form-label" style="margin-bottom:8px;">Portal Opening Mode (When Auto-Open by Minimum is Disabled)</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt);">
+                  <input type="radio" name="taskMode" value="manual" id="taskModeManual" onchange="toggleTaskModeFields()">
+                  <span>Manual Control</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt);">
+                  <input type="radio" name="taskMode" value="schedule" id="taskModeSchedule" onchange="toggleTaskModeFields()">
+                  <span>Scheduled Time</span>
+                </label>
+              </div>
+
+              <!-- Manual Mode Options -->
+              <div id="taskManualSection">
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+                  <div>
+                    <div style="font-weight:600;font-size:12px;color:var(--txt);">Manual Portal Status</div>
+                    <div style="font-size:11px;color:var(--txt-3);">Instantly open or close task withdrawals</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="taskManualStatusToggle">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Closed Notice Message</label>
+                  <input type="text" class="form-input" id="taskClosedMsg" placeholder="Task Points withdrawals are currently closed by administration. Please check back later.">
+                </div>
+              </div>
+
+              <!-- Scheduled Mode Options -->
+              <div id="taskScheduleSection" style="display:none;">
+                <label class="form-label" style="margin-bottom:6px;">Opening Days</label>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="mon"> Mon</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="tue"> Tue</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="wed"> Wed</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="thu"> Thu</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="fri"> Fri</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="sat"> Sat</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="taskDays" value="sun"> Sun</label>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-input" id="taskTimeStart" value="14:00">
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-input" id="taskTimeEnd" value="18:00">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Affiliate Cash Wallet (Referrals & Commissions) -->
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div class="card-title">Affiliate Cash Wallet</div>
+                <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Earnings from referral commissions</div>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span class="badge badge-active">Method Active</span>
+                <span class="badge" id="affPortalBadge">Checking...</span>
+              </div>
+            </div>
+
+            <!-- Minimum & Maximum Payout Limits -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Minimum Payout (₦)</label>
+                <input type="number" class="form-input" id="affMinAmount" value="5000" min="500">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Maximum Payout (₦)</label>
+                <input type="number" class="form-input" id="affMaxAmount" value="100000" min="1000">
+              </div>
+            </div>
+
+            <!-- Opening Mode Selection (Manual vs Scheduled ONLY - NO auto on minimum for affiliate!) -->
+            <div style="border-top:1px solid var(--border);padding-top:14px;">
+              <label class="form-label" style="margin-bottom:8px;">Portal Opening Mode</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt);">
+                  <input type="radio" name="affMode" value="manual" id="affModeManual" checked onchange="toggleAffModeFields()">
+                  <span>Manual Control</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt);">
+                  <input type="radio" name="affMode" value="schedule" id="affModeSchedule" onchange="toggleAffModeFields()">
+                  <span>Scheduled Time</span>
+                </label>
+              </div>
+
+              <!-- Manual Mode Options -->
+              <div id="affManualSection">
+                <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+                  <div>
+                    <div style="font-weight:600;font-size:12px;color:var(--txt);">Manual Portal Status</div>
+                    <div style="font-size:11px;color:var(--txt-3);">Instantly open or close affiliate cash payouts</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="affManualStatusToggle" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Closed Notice Message</label>
+                  <input type="text" class="form-input" id="affClosedMsg" placeholder="Affiliate Cash withdrawals are currently closed by administration. Please check back later.">
+                </div>
+              </div>
+
+              <!-- Scheduled Mode Options -->
+              <div id="affScheduleSection" style="display:none;">
+                <label class="form-label" style="margin-bottom:6px;">Opening Days</label>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="mon"> Mon</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="tue" checked> Tue</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="wed"> Wed</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="thu"> Thu</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="fri" checked> Fri</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="sat"> Sat</label>
+                  <label class="btn btn-ghost btn-sm" style="cursor:pointer;padding:4px 9px;font-size:11px;"><input type="checkbox" name="affDays" value="sun"> Sun</label>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-input" id="affTimeStart" value="08:00">
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-input" id="affTimeEnd" value="22:00">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pending Payout Requests Card -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">Pending Payout Requests</div>
@@ -3764,6 +3959,7 @@ async function handleDeleteCoupon(code) {
 // WITHDRAWALS LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 async function loadWithdrawalsData() {
+  loadWithdrawalSettings();
   const tbody = document.getElementById('withdrawalsTableBody');
   try {
     const r = await fetch('/api/withdrawals.php?action=get_pending');
@@ -3827,6 +4023,194 @@ async function rejectWithdrawal(id) {
       loadAdminOverview();
     }
   } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WITHDRAWAL PORTAL SETTINGS & SCHEDULE LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadWithdrawalSettings() {
+  try {
+    const r = await fetch('/api/withdrawals.php?action=get_settings');
+    const d = await r.json();
+    if (!d || d.status !== 'success') return;
+    const s = d.settings || {};
+    const task = s.task || {};
+    const aff = s.affiliate || {};
+
+    // Task Wallet Fields
+    const taskAutoMin = Boolean(task.auto_open_on_min_reached);
+    const taskAutoToggle = document.getElementById('taskAutoMinToggle');
+    if (taskAutoToggle) taskAutoToggle.checked = taskAutoMin;
+
+    if (task.min_amount !== undefined) document.getElementById('taskMinAmount').value = task.min_amount;
+    if (task.max_amount !== undefined) document.getElementById('taskMaxAmount').value = task.max_amount;
+
+    const taskMode = task.mode || 'manual';
+    if (taskMode === 'schedule' || taskMode === 'automatic') {
+      const el = document.getElementById('taskModeSchedule');
+      if (el) el.checked = true;
+    } else {
+      const el = document.getElementById('taskModeManual');
+      if (el) el.checked = true;
+    }
+
+    const taskManualStatus = document.getElementById('taskManualStatusToggle');
+    if (taskManualStatus) taskManualStatus.checked = ((task.manual_status || 'open') === 'open');
+
+    const taskClosedMsg = document.getElementById('taskClosedMsg');
+    if (taskClosedMsg) taskClosedMsg.value = task.manual_closed_message || '';
+
+    const taskDays = task.auto_recurring_days || ['sun'];
+    document.querySelectorAll('input[name="taskDays"]').forEach(cb => {
+      cb.checked = taskDays.includes(cb.value);
+    });
+
+    if (task.auto_time_start) document.getElementById('taskTimeStart').value = task.auto_time_start;
+    if (task.auto_time_end) document.getElementById('taskTimeEnd').value = task.auto_time_end;
+
+    // Task Badge Status
+    const taskBadge = document.getElementById('taskPortalBadge');
+    if (taskBadge) {
+      if (taskAutoMin) {
+        taskBadge.className = 'badge badge-pending';
+        taskBadge.textContent = 'Auto (Min Balance)';
+      } else if (d.task_is_open) {
+        taskBadge.className = 'badge badge-active';
+        taskBadge.textContent = 'Portal Open';
+      } else {
+        taskBadge.className = 'badge badge-rejected';
+        taskBadge.textContent = 'Portal Closed';
+      }
+    }
+
+    // Affiliate Wallet Fields (NO auto-open by minimum balance!)
+    if (aff.min_amount !== undefined) document.getElementById('affMinAmount').value = aff.min_amount;
+    if (aff.max_amount !== undefined) document.getElementById('affMaxAmount').value = aff.max_amount;
+
+    const affMode = aff.mode || 'manual';
+    if (affMode === 'schedule' || affMode === 'automatic') {
+      const el = document.getElementById('affModeSchedule');
+      if (el) el.checked = true;
+    } else {
+      const el = document.getElementById('affModeManual');
+      if (el) el.checked = true;
+    }
+
+    const affManualStatus = document.getElementById('affManualStatusToggle');
+    if (affManualStatus) affManualStatus.checked = ((aff.manual_status || 'open') === 'open');
+
+    const affClosedMsg = document.getElementById('affClosedMsg');
+    if (affClosedMsg) affClosedMsg.value = aff.manual_closed_message || '';
+
+    const affDays = aff.auto_recurring_days || ['tue', 'fri'];
+    document.querySelectorAll('input[name="affDays"]').forEach(cb => {
+      cb.checked = affDays.includes(cb.value);
+    });
+
+    if (aff.auto_time_start) document.getElementById('affTimeStart').value = aff.auto_time_start;
+    if (aff.auto_time_end) document.getElementById('affTimeEnd').value = aff.auto_time_end;
+
+    // Affiliate Badge Status
+    const affBadge = document.getElementById('affPortalBadge');
+    if (affBadge) {
+      if (d.affiliate_is_open) {
+        affBadge.className = 'badge badge-active';
+        affBadge.textContent = 'Portal Open';
+      } else {
+        affBadge.className = 'badge badge-rejected';
+        affBadge.textContent = 'Portal Closed';
+      }
+    }
+
+    toggleTaskModeFields();
+    toggleAffModeFields();
+  } catch(e){}
+}
+
+function handleTaskAutoMinToggle(el) {
+  const badge = document.getElementById('taskPortalBadge');
+  if (badge && el.checked) {
+    badge.className = 'badge badge-pending';
+    badge.textContent = 'Auto (Min Balance)';
+  } else {
+    toggleTaskModeFields();
+  }
+}
+
+function toggleTaskModeFields() {
+  const isSched = document.getElementById('taskModeSchedule')?.checked;
+  const manualSec = document.getElementById('taskManualSection');
+  const schedSec = document.getElementById('taskScheduleSection');
+  if (manualSec) manualSec.style.display = isSched ? 'none' : 'block';
+  if (schedSec) schedSec.style.display = isSched ? 'block' : 'none';
+}
+
+function toggleAffModeFields() {
+  const isSched = document.getElementById('affModeSchedule')?.checked;
+  const manualSec = document.getElementById('affManualSection');
+  const schedSec = document.getElementById('affScheduleSection');
+  if (manualSec) manualSec.style.display = isSched ? 'none' : 'block';
+  if (schedSec) schedSec.style.display = isSched ? 'block' : 'none';
+}
+
+async function saveWithdrawalSettings(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const btn = document.getElementById('btnSaveWdSettings');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving Settings...'; }
+
+  const taskDays = [];
+  document.querySelectorAll('input[name="taskDays"]:checked').forEach(cb => taskDays.push(cb.value));
+
+  const affDays = [];
+  document.querySelectorAll('input[name="affDays"]:checked').forEach(cb => affDays.push(cb.value));
+
+  const payload = {
+    action: 'save_settings',
+    task: {
+      status: 'active',
+      auto_open_on_min_reached: document.getElementById('taskAutoMinToggle')?.checked || false,
+      min_amount: parseFloat(document.getElementById('taskMinAmount')?.value) || 1000,
+      max_amount: parseFloat(document.getElementById('taskMaxAmount')?.value) || 100000,
+      mode: document.getElementById('taskModeSchedule')?.checked ? 'automatic' : 'manual',
+      manual_status: document.getElementById('taskManualStatusToggle')?.checked ? 'open' : 'closed',
+      manual_closed_message: document.getElementById('taskClosedMsg')?.value.trim() || 'Task Points withdrawals are currently closed by administration. Please check back later.',
+      auto_schedule_type: 'recurring_days',
+      auto_recurring_days: taskDays.length ? taskDays : ['sun'],
+      auto_time_start: document.getElementById('taskTimeStart')?.value || '14:00',
+      auto_time_end: document.getElementById('taskTimeEnd')?.value || '18:00'
+    },
+    affiliate: {
+      status: 'active',
+      min_amount: parseFloat(document.getElementById('affMinAmount')?.value) || 5000,
+      max_amount: parseFloat(document.getElementById('affMaxAmount')?.value) || 100000,
+      mode: document.getElementById('affModeSchedule')?.checked ? 'automatic' : 'manual',
+      manual_status: document.getElementById('affManualStatusToggle')?.checked ? 'open' : 'closed',
+      manual_closed_message: document.getElementById('affClosedMsg')?.value.trim() || 'Affiliate Cash withdrawals are currently closed by administration. Please check back later.',
+      auto_schedule_type: 'recurring_days',
+      auto_recurring_days: affDays.length ? affDays : ['tue', 'fri'],
+      auto_time_start: document.getElementById('affTimeStart')?.value || '08:00',
+      auto_time_end: document.getElementById('affTimeEnd')?.value || '22:00'
+    }
+  };
+
+  try {
+    const r = await fetch('/api/withdrawals.php?action=save_settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('Withdrawal portal settings saved successfully!', 'success');
+      loadWithdrawalSettings();
+    } else {
+      toast(d.message || 'Failed to save settings', 'error');
+    }
+  } catch(err) {
+    toast('Error saving settings. Please try again.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Portal Settings'; }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
