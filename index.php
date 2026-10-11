@@ -238,49 +238,50 @@ h1, h2, h3, h4, .font-display {
     animation: spinSlow 30s linear infinite;
 }
 
-/* Floating Pill Navbar (Evermore Style) */
+/* Floating Pill Navbar (Evermore Style - Compact & Sleek) */
 .ev-pill-header {
     position: sticky;
-    top: 14px;
+    top: 10px;
     z-index: 50;
     width: 100%;
-    padding: 0 16px;
-    margin: 10px 0 0;
+    padding: 0 14px;
+    margin: 6px 0 0;
     pointer-events: none;
 }
 
 .ev-pill-navbar {
-    max-width: 1060px;
+    max-width: 790px;
     margin: 0 auto;
     pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 14px 8px 18px;
+    padding: 5px 6px 5px 12px;
     border-radius: 9999px;
-    background: rgba(15, 25, 46, 0.82);
+    background: rgba(15, 25, 46, 0.85);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(56, 189, 248, 0.22);
-    box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6), 0 0 20px -4px rgba(56, 189, 248, 0.18);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 26px -6px rgba(0, 0, 0, 0.55), 0 0 16px -4px rgba(56, 189, 248, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="light"] .ev-pill-navbar {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.92);
     border-color: rgba(2, 132, 199, 0.22);
-    box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+    box-shadow: 0 8px 24px -5px rgba(2, 132, 199, 0.12);
 }
 
 .ev-pill-link {
     color: var(--color-muted);
     text-decoration: none;
-    font-size: 0.84rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    padding: 6px 14px;
+    padding: 5px 9px;
     border-radius: 9999px;
     border: 1px solid transparent;
-    transition: all 0.18s ease;
+    transition: all 0.16s ease;
+    white-space: nowrap;
 }
 
 .ev-pill-link:hover {
@@ -324,25 +325,25 @@ h1, h2, h3, h4, .font-display {
 <div class="relative min-h-screen overflow-x-clip">
 
     <!-- ===== TOP NOTICE BAR (EVERMORE STANDARD) ===== -->
-    <div style="border-bottom:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.08);padding:9px 16px;text-align:center;font-size:0.82rem;font-weight:600;color:#FDE68A;">
+    <div style="border-bottom:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.08);padding:7px 14px;text-align:center;font-size:0.78rem;font-weight:600;color:#FDE68A;">
         <span>Automated Daily Task Drops &amp; Direct Bank Settlements Now Active Across Nigeria.</span>
     </div>
 
-    <!-- ===== HEADER NAVBAR (EVERMORE FLOATING PILL BAR) ===== -->
+    <!-- ===== HEADER NAVBAR (EVERMORE COMPACT FLOATING PILL BAR) ===== -->
     <header class="ev-pill-header">
         <nav class="ev-pill-navbar">
             <!-- Brand Logo -->
-            <a href="index.php" style="display:flex;align-items:center;gap:10px;text-decoration:none;" aria-label="INNOVATIONX home">
-                <div style="width:34px;height:34px;border-radius:9999px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.86rem;box-shadow:0 0 14px rgba(56,189,248,0.5);">
+            <a href="index.php" style="display:flex;align-items:center;gap:8px;text-decoration:none;" aria-label="INNOVATIONX home">
+                <div style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.75rem;box-shadow:0 0 10px rgba(56,189,248,0.45);">
                     IX
                 </div>
-                <span style="font-family:var(--font-display);font-weight:700;font-size:1.06rem;color:var(--color-fg);letter-spacing:-0.02em;">
+                <span style="font-family:var(--font-display);font-weight:700;font-size:0.92rem;color:var(--color-fg);letter-spacing:-0.02em;">
                     INNOVATIONX
                 </span>
             </a>
 
             <!-- Nav Links (Desktop Micro-Pills) -->
-            <div style="display:none;align-items:center;gap:4px;" class="desktop-menu">
+            <div style="display:none;align-items:center;gap:2px;" class="desktop-menu">
                 <a href="#how" class="ev-pill-link">How it works</a>
                 <a href="#features" class="ev-pill-link">Ways to earn</a>
                 <a href="#subscriptions" class="ev-pill-link">Membership</a>
@@ -351,18 +352,18 @@ h1, h2, h3, h4, .font-display {
             </div>
 
             <!-- Actions -->
-            <div style="display:flex;align-items:center;gap:8px;">
-                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:34px;height:34px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" style="width:28px;height:28px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
-                <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:7px 14px;border-radius:9999px;font-size:0.84rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
+                <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:5px 11px;border-radius:9999px;font-size:0.78rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
                     Sign in
                 </a>
-                <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:8px 18px;font-size:0.84rem;font-weight:700;">
+                <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">
                     Get started
                 </a>
-                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:36px;height:36px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:30px;height:30px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
             </div>
         </nav>
@@ -912,6 +913,8 @@ h1, h2, h3, h4, .font-display {
     .footer-inner-row { flex-direction: row !important; }
 }
 @media (max-width: 767px) {
+    .ev-pill-header { top: 8px !important; padding: 0 10px !important; margin: 4px 0 0 !important; }
+    .ev-pill-navbar { padding: 4px 6px 4px 10px !important; }
     .desktop-auth-btn { display: none !important; }
     .mobile-menu-btn { display: flex !important; }
     .hero-split-grid { grid-template-columns: 1fr !important; }
