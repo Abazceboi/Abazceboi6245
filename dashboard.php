@@ -4329,7 +4329,7 @@ async function loadSurveys() {
     const localDeductions = JSON.parse(localStorage.getItem('ix_survey_deductions_' + CURRENT_USER) || '{}');
     allSurveysList.forEach(s => {
       const isDone = doneSurveyIds.includes(s.id);
-      const total = parseInt(s.total_slots) || 100;
+      const total = (s.total_slots !== undefined && !isNaN(parseInt(s.total_slots))) ? Math.max(1, parseInt(s.total_slots)) : 1;
       let rem = s.remaining_slots !== undefined ? parseInt(s.remaining_slots) : total;
       const localDeduct = localDeductions[s.id] || (isDone ? 1 : 0);
       if (localDeduct > 0 && rem >= total) {

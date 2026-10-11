@@ -2329,7 +2329,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return true;
                 }).map(s => {
                     const copy = JSON.parse(JSON.stringify(s));
-                    const total = parseInt(copy.total_slots) || 100;
+                    const total = (copy.total_slots !== undefined && !isNaN(parseInt(copy.total_slots))) ? Math.max(1, parseInt(copy.total_slots)) : 100;
                     const subCount = sSubs.filter(sub => sub.survey_id === s.id).length;
                     if (subCount > (parseInt(copy.completions) || 0)) {
                         copy.completions = subCount;

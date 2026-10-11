@@ -641,17 +641,19 @@ input,textarea,select{font-family:var(--ff);}
                 <option value="10">10 Questions (Comprehensive Survey)</option>
               </select>
             </div>
-            <div class="form-group" style="flex:1.1;">
-              <label class="form-label" style="font-size:12px;font-weight:700;">Available Slots</label>
-              <input type="number" class="form-input" id="genSurveySlots" value="100" min="1" placeholder="e.g. 100" oninput="if(typeof updateGeneratedPlanSlots === 'function') updateGeneratedPlanSlots(this.value)">
+            <div class="form-group" style="flex:1.2;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Available Slots (User Limit)</label>
+              <input type="number" class="form-input" id="genSurveySlots" value="10" min="1" step="1" placeholder="e.g. 1, 2, 5, 10 or 100" oninput="if(typeof updateGeneratedPlanSlots === 'function') updateGeneratedPlanSlots(this.value)">
               <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;font-weight:700;" onclick="setGenSlots(1)">1 user</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;font-weight:700;" onclick="setGenSlots(2)">2 users</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;font-weight:700;" onclick="setGenSlots(5)">5</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(10)">10</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(25)">25</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(50)">50</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(100)">100</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(250)">250</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(500)">500</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 6px;" onclick="setGenSlots(1000)">1k</button>
               </div>
+              <div style="font-size:10.5px;color:var(--txt-3);margin-top:3px;">Set any custom limit (even for 1 or 2 users).</div>
             </div>
             <div class="form-group" style="flex:1.1;">
               <label class="form-label" style="font-size:12px;font-weight:700;">Format Style</label>
@@ -719,15 +721,16 @@ input,textarea,select{font-family:var(--ff);}
             <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:700;color:var(--txt);">Available Slots:</label>
-                <input type="number" id="genPreviewSlots" class="form-input" min="1" style="width:100px;padding:5px 8px;font-size:13px;font-weight:700;" oninput="updateGeneratedPlanSlots(this.value)">
+                <input type="number" id="genPreviewSlots" class="form-input" min="1" step="1" style="width:85px;padding:5px 8px;font-size:13px;font-weight:700;" oninput="updateGeneratedPlanSlots(this.value)">
               </div>
               <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;font-weight:700;" onclick="setPreviewSlots(1)">1 user</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;font-weight:700;" onclick="setPreviewSlots(2)">2 users</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;font-weight:700;" onclick="setPreviewSlots(5)">5</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;font-weight:700;" onclick="setPreviewSlots(10)">10</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(25)">25</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(50)">50</button>
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(100)">100</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(250)">250</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(500)">500</button>
-                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(1000)">1k</button>
               </div>
               <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
                 <label style="font-size:12px;font-weight:700;color:var(--txt);">Reward (PTS):</label>
@@ -813,8 +816,16 @@ input,textarea,select{font-family:var(--ff);}
             </div>
             <div class="form-group">
               <label class="form-label">Participant Slots (Number of Persons)</label>
-              <input type="number" class="form-input" id="svSlots" value="100" min="1" required placeholder="e.g. 50 or 100 persons">
-              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">When this number of persons complete the survey, slots deduce until 0 and the survey automatically displays Not Available.</div>
+              <input type="number" class="form-input" id="svSlots" value="10" min="1" step="1" required placeholder="e.g. 1, 2, 5, 10 or 100 persons">
+              <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 1;">1 user</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 2;">2 users</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 5;">5</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 10;">10</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 50;">50</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="font-size:10px;padding:2px 7px;font-weight:700;" onclick="document.getElementById('svSlots').value = 100;">100</button>
+              </div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Set any custom limit (even 1 or 2 users). When this number of persons complete the survey, slots deduce until 0 and the survey automatically displays Not Available.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Expiry Date & Time (Optional)</label>
@@ -1982,12 +1993,13 @@ input,textarea,select{font-family:var(--ff);}
       <div>
         <div style="font-size:11px;color:var(--txt-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Quick Presets</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(1)">1 user</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(2)">2 users</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(5)">5</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(10)">10</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(25)">25</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(50)">50</button>
           <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(100)">100</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(200)">200</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(500)">500</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAdjustSlotVal(1000)">1000</button>
         </div>
       </div>
     </div>
@@ -2529,34 +2541,42 @@ function generateTopicQuestionsClient(topic, count, style, slots = 100) {
   };
 }
 
+function parsePositiveSlots(val, fallback = 1) {
+  if (val === undefined || val === null || String(val).trim() === '') return fallback;
+  const p = parseInt(String(val).trim(), 10);
+  return (!isNaN(p) && p > 0) ? p : fallback;
+}
+
 function setGenSlots(val) {
+  const num = parsePositiveSlots(val, 1);
   const el = document.getElementById('genSurveySlots');
-  if (el) el.value = val;
+  if (el) el.value = num;
   if (lastGeneratedSurveyPlan) {
-    updateGeneratedPlanSlots(val);
+    updateGeneratedPlanSlots(num);
   }
 }
 
 function setPreviewSlots(val) {
+  const num = parsePositiveSlots(val, 1);
   const pEl = document.getElementById('genPreviewSlots');
-  if (pEl) pEl.value = val;
+  if (pEl) pEl.value = num;
   const gEl = document.getElementById('genSurveySlots');
-  if (gEl) gEl.value = val;
-  updateGeneratedPlanSlots(val);
+  if (gEl) gEl.value = num;
+  updateGeneratedPlanSlots(num);
 }
 
 function updateGeneratedPlanSlots(val) {
-  const num = Math.max(1, parseInt(val) || 100);
+  const num = parsePositiveSlots(val, 1);
   if (lastGeneratedSurveyPlan) {
     lastGeneratedSurveyPlan.total_slots = num;
   }
   const pEl = document.getElementById('genPreviewSlots');
-  if (pEl && parseInt(pEl.value) !== num) pEl.value = num;
+  if (pEl && document.activeElement !== pEl) pEl.value = num;
   const gEl = document.getElementById('genSurveySlots');
-  if (gEl && parseInt(gEl.value) !== num) gEl.value = num;
+  if (gEl && document.activeElement !== gEl) gEl.value = num;
   const metaDisplay = document.getElementById('genResultMetaDisplay');
   if (metaDisplay && lastGeneratedSurveyPlan) {
-    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${lastGeneratedSurveyPlan.reward_points} PTS | Available Slots: ${num}`;
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${lastGeneratedSurveyPlan.reward_points} PTS | Available Slots: ${num} ${num === 1 ? 'user' : 'users'}`;
   }
 }
 
@@ -2566,10 +2586,11 @@ function updateGeneratedPlanReward(val) {
     lastGeneratedSurveyPlan.reward_points = num;
   }
   const pEl = document.getElementById('genPreviewReward');
-  if (pEl && parseInt(pEl.value) !== num) pEl.value = num;
+  if (pEl && document.activeElement !== pEl) pEl.value = num;
   const metaDisplay = document.getElementById('genResultMetaDisplay');
   if (metaDisplay && lastGeneratedSurveyPlan) {
-    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${num} PTS | Available Slots: ${lastGeneratedSurveyPlan.total_slots}`;
+    const sCount = lastGeneratedSurveyPlan.total_slots || 1;
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${num} PTS | Available Slots: ${sCount} ${sCount === 1 ? 'user' : 'users'}`;
   }
 }
 
@@ -2583,7 +2604,7 @@ function renderGeneratedSurveyResults(plan) {
 
   if (!box || !titleDisplay || !list) return;
 
-  const currentSlots = parseInt(document.getElementById('genSurveySlots')?.value) || plan.total_slots || 100;
+  const currentSlots = parsePositiveSlots(document.getElementById('genSurveySlots')?.value, plan.total_slots || 1);
   plan.total_slots = currentSlots;
 
   if (previewSlots) previewSlots.value = plan.total_slots;
@@ -2591,7 +2612,7 @@ function renderGeneratedSurveyResults(plan) {
 
   titleDisplay.textContent = plan.title || 'Official Survey';
   if (metaDisplay) {
-    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Reward: ${plan.reward_points} PTS | Available Slots: ${plan.total_slots}`;
+    metaDisplay.textContent = `Category: ${plan.category} | Questions: ${plan.questions.length} | Reward: ${plan.reward_points} PTS | Available Slots: ${plan.total_slots} ${plan.total_slots === 1 ? 'user' : 'users'}`;
   }
 
   list.innerHTML = plan.questions.map((q, qIdx) => `
@@ -2623,13 +2644,10 @@ async function applyAndPublishGeneratedSurvey() {
     return;
   }
 
-  const currentSlots = parseInt(document.getElementById('genPreviewSlots')?.value)
-    || parseInt(document.getElementById('genSurveySlots')?.value)
-    || parseInt(lastGeneratedSurveyPlan.total_slots)
-    || 100;
-  const currentReward = parseInt(document.getElementById('genPreviewReward')?.value)
-    || parseInt(lastGeneratedSurveyPlan.reward_points)
-    || 150;
+  const pVal = document.getElementById('genPreviewSlots')?.value;
+  const gVal = document.getElementById('genSurveySlots')?.value;
+  const currentSlots = parsePositiveSlots(pVal, parsePositiveSlots(gVal, lastGeneratedSurveyPlan.total_slots || 1));
+  const currentReward = parsePositiveSlots(document.getElementById('genPreviewReward')?.value, lastGeneratedSurveyPlan.reward_points || 150);
 
   const payload = {
     title: lastGeneratedSurveyPlan.title || 'Platform Feedback Survey',
@@ -2653,7 +2671,7 @@ async function applyAndPublishGeneratedSurvey() {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast(`Survey published successfully with ${payload.total_slots} participant slots!`, 'success');
+      toast(`Survey published successfully with ${payload.total_slots} participant slot${payload.total_slots === 1 ? '' : 's'}!`, 'success');
       const createdSurvey = d.survey || Object.assign({
         id: 'SRV-' + Date.now(),
         total_slots: payload.total_slots,
@@ -2686,13 +2704,10 @@ function applyGeneratedSurveyToForm(fullApply = true) {
     return;
   }
 
-  const currentSlots = parseInt(document.getElementById('genPreviewSlots')?.value)
-    || parseInt(document.getElementById('genSurveySlots')?.value)
-    || parseInt(lastGeneratedSurveyPlan.total_slots)
-    || 100;
-  const currentReward = parseInt(document.getElementById('genPreviewReward')?.value)
-    || parseInt(lastGeneratedSurveyPlan.reward_points)
-    || 150;
+  const pVal = document.getElementById('genPreviewSlots')?.value;
+  const gVal = document.getElementById('genSurveySlots')?.value;
+  const currentSlots = parsePositiveSlots(pVal, parsePositiveSlots(gVal, lastGeneratedSurveyPlan.total_slots || 1));
+  const currentReward = parsePositiveSlots(document.getElementById('genPreviewReward')?.value, lastGeneratedSurveyPlan.reward_points || 150);
 
   if (fullApply) {
     const titleEl = document.getElementById('svTitle');
@@ -2989,7 +3004,7 @@ async function handleCreateSurvey(e) {
     format_type: currentSurveyFormat,
     video_url: finalVideoUrl,
     reward_points: parseInt(document.getElementById('svReward').value) || 150,
-    total_slots: Math.max(1, parseInt(document.getElementById('svSlots').value) || 100),
+    total_slots: parsePositiveSlots(document.getElementById('svSlots')?.value, 1),
     expires_at: document.getElementById('svExpiresAt').value,
     description: document.getElementById('svDesc').value.trim(),
     require_screenshot: document.getElementById('svRequireScreenshot') ? document.getElementById('svRequireScreenshot').checked : false,

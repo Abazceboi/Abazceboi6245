@@ -38,7 +38,7 @@ function getSurveys(): array {
             if ($subCount > intval($sv['completions'] ?? 0)) {
                 $sv['completions'] = $subCount;
             }
-            $total = intval($sv['total_slots'] ?? 100);
+            $total = isset($sv['total_slots']) ? max(1, intval($sv['total_slots'])) : 100;
             if (isset($sv['completions']) && intval($sv['completions']) > 0) {
                 $sv['remaining_slots'] = max(0, $total - intval($sv['completions']));
             }
