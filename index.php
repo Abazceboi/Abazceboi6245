@@ -247,6 +247,82 @@ h1, h2, h3, h4, .font-display {
     box-shadow: 0 0 16px rgba(2, 132, 199, 0.22) !important;
 }
 
+/* Hero Live Badge */
+.hero-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9999px;
+    padding: 6px 14px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6EE7B7;
+    margin-bottom: 14px;
+}
+
+.hero-live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 8px #10B981;
+}
+
+.hero-live-text {
+    color: inherit;
+}
+
+[data-theme="light"] .hero-live-badge {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1px solid rgba(5, 150, 105, 0.35) !important;
+    color: #047857 !important;
+    font-weight: 700 !important;
+}
+
+[data-theme="light"] .hero-live-dot {
+    background: #059669 !important;
+    box-shadow: 0 0 6px rgba(5, 150, 105, 0.6) !important;
+}
+
+[data-theme="light"] .hero-live-text {
+    color: #047857 !important;
+}
+
+[data-theme="light"] .hero-platform-tag {
+    background: #FFFFFF !important;
+    border-color: rgba(2, 132, 199, 0.22) !important;
+    color: #0284C7 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.08) !important;
+}
+
+[data-theme="light"] .terminal-sub-box {
+    background: #F8FAFC !important;
+    border-color: rgba(2, 132, 199, 0.16) !important;
+}
+
+[data-theme="light"] .terminal-item-row {
+    background: #F8FAFC !important;
+    border-color: rgba(2, 132, 199, 0.14) !important;
+}
+
+[data-theme="light"] .badge-live-rewards {
+    background: rgba(5, 150, 105, 0.12) !important;
+    border-color: rgba(5, 150, 105, 0.35) !important;
+    color: #047857 !important;
+}
+
+[data-theme="light"] footer {
+    background: #FFFFFF !important;
+    border-top: 1px solid rgba(2, 132, 199, 0.14) !important;
+}
+
+[data-theme="light"] #tourWaveBars span {
+    background: #0284C7 !important;
+}
+
 .glow-neon {
     box-shadow: 0 0 30px -6px var(--color-aqua), 0 0 60px -15px var(--color-primary);
 }
@@ -548,12 +624,12 @@ h1, h2, h3, h4, .font-display {
                 
                 <!-- Left: Hero Text Content -->
                 <div style="text-align:left;">
-                    <div style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:6px 14px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.22);font-size:0.78rem;font-weight:600;color:#6EE7B7;margin-bottom:14px;">
-                        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;"></span>
-                        <span>Daily Task Drops &amp; Direct Bank Settlements Active</span>
+                    <div class="hero-live-badge">
+                        <span class="hero-live-dot"></span>
+                        <span class="hero-live-text">Daily Task Drops &amp; Direct Bank Settlements Active</span>
                     </div>
                     <br>
-                    <span class="glass" style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:5px 14px;font-size:0.74rem;font-weight:700;letter-spacing:0.1em;color:var(--color-aqua);text-transform:uppercase;">
+                    <span class="glass hero-platform-tag" style="display:inline-flex;align-items:center;gap:8px;border-radius:9999px;padding:5px 14px;font-size:0.74rem;font-weight:700;letter-spacing:0.1em;color:var(--color-aqua);text-transform:uppercase;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         DIGITAL EARNING PLATFORM
                     </span>
@@ -581,16 +657,16 @@ h1, h2, h3, h4, .font-display {
 
                     <!-- 3 Trust Checks (Evermore exact) -->
                     <div style="margin-top:30px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:0.84rem;color:var(--color-muted);">
-                        <span style="display:flex;align-items:center;gap:6px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="hero-trust-check" style="display:flex;align-items:center;gap:6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             Direct Bank Settlements
                         </span>
-                        <span style="display:flex;align-items:center;gap:6px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="hero-trust-check" style="display:flex;align-items:center;gap:6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             Verified Vendor PINs
                         </span>
-                        <span style="display:flex;align-items:center;gap:6px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="hero-trust-check" style="display:flex;align-items:center;gap:6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             100% Automated Dispatches
                         </span>
                     </div>
@@ -608,13 +684,13 @@ h1, h2, h3, h4, .font-display {
                                     <div style="width:26px;height:26px;border-radius:7px;background:#0284C7;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.72rem;">IX</div>
                                     <span style="font-family:var(--font-display);font-weight:700;font-size:0.92rem;color:var(--color-fg);">Member Terminal</span>
                                 </div>
-                                <span style="font-size:0.68rem;font-weight:800;color:var(--color-emerald);background:rgba(52,211,153,0.12);padding:3px 8px;border-radius:999px;border:1px solid rgba(52,211,153,0.3);">
+                                <span class="badge-live-rewards" style="font-size:0.68rem;font-weight:800;color:var(--color-emerald);background:rgba(52,211,153,0.12);padding:3px 8px;border-radius:999px;border:1px solid rgba(52,211,153,0.3);">
                                     LIVE REWARDS
                                 </span>
                             </div>
 
                             <!-- Balance block -->
-                            <div style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px;margin-bottom:14px;">
+                            <div class="terminal-sub-box" style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px;margin-bottom:14px;">
                                 <div style="font-size:0.72rem;color:var(--color-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Available Cash Balance</div>
                                 <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;color:var(--color-fg);line-height:1;margin-bottom:12px;">
                                     &#8358;18,450<span style="font-size:1.1rem;color:var(--color-dim);">.00</span>
@@ -633,11 +709,11 @@ h1, h2, h3, h4, .font-display {
 
                             <!-- Mini activity items -->
                             <div style="display:flex;flex-direction:column;gap:8px;">
-                                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                                <div class="terminal-item-row" style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
                                     <span style="font-size:0.8rem;font-weight:600;color:var(--color-fg);">Nigeria Socio-Economics Survey</span>
                                     <span style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--color-aqua);">+180 PTS</span>
                                 </div>
-                                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                                <div class="terminal-item-row" style="background:rgba(255,255,255,0.03);border:1px solid var(--color-border);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
                                     <span style="font-size:0.8rem;font-weight:600;color:var(--color-fg);">Direct Affiliate Cash Bonus</span>
                                     <span style="font-family:var(--font-display);font-size:0.8rem;font-weight:700;color:var(--color-emerald);">+&#8358;<?= number_format($refBonus) ?></span>
                                 </div>
