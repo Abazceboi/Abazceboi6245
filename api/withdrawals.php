@@ -202,6 +202,10 @@ if ($action === 'get_settings' || $_SERVER['REQUEST_METHOD'] === 'GET') {
     echo json_encode([
         'status' => 'success',
         'settings' => $settings,
+        'schedule_status' => [
+            'task' => $taskEval,
+            'affiliate' => $affEval
+        ],
         'task' => array_merge($settings['task'], ['evaluation' => $taskEval, 'is_open' => $taskEval['is_open']]),
         'affiliate' => array_merge($settings['affiliate'], ['evaluation' => $affEval, 'is_open' => $affEval['is_open']]),
         'task_is_open' => $taskEval['is_open'],

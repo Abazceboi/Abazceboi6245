@@ -3241,11 +3241,27 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
 
                 if (action === 'get_settings' || (!action && req.method === 'GET')) {
-                    const taskEval = evaluateWalletSchedule(s.task, 'Task Points');
-                    const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash');
+                    let userPts = null;
+                    let userCash = null;
+                    const reqUser = (parsed.username || queryParams.get('username') || '').toLowerCase().trim();
+                    if (reqUser) {
+                        const usersData = getUsers();
+                        const foundUser = (usersData.users || []).find(u => (u.username || '').toLowerCase() === reqUser);
+                        if (foundUser) {
+                            userPts = parseInt(foundUser.remaining_pts !== undefined ? foundUser.remaining_pts : (foundUser.pointsBalance || 0));
+                            userCash = parseFloat(foundUser.remaining_cash !== undefined ? foundUser.remaining_cash : (foundUser.cashBalance || 0));
+                        }
+                    }
+
+                    const taskEval = evaluateWalletSchedule(s.task, 'Task Points', userPts);
+                    const affEval = evaluateWalletSchedule(s.affiliate, 'Affiliate Cash', userCash);
                     res.end(JSON.stringify({
                         status: 'success',
                         settings: s,
+                        schedule_status: {
+                            task: taskEval,
+                            affiliate: affEval
+                        },
                         task: Object.assign({}, s.task, { evaluation: taskEval, is_open: taskEval.is_open }),
                         affiliate: Object.assign({}, s.affiliate, { evaluation: affEval, is_open: affEval.is_open }),
                         task_is_open: taskEval.is_open,
