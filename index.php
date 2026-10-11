@@ -1,1327 +1,2061 @@
 <?php
-$pageTitle = 'INNOVATIONX | Nigeria\'s Premier Digital Earning Platform';
-$pageDesc = 'Join INNOVATIONX — earn real cash daily through sponsored micro-tasks, referral bonuses, and instant automated bank payouts. One-time ₦500 activation. No monthly fees.';
-$siteContentFile = __DIR__ . '/config/site_content.json';
-$siteContent = [];
-if (file_exists($siteContentFile)) {
-    $siteContent = json_decode(file_get_contents($siteContentFile), true) ?: [];
-}
+/**
+ * INNOVATIONX — Modern Technical Landing Page
+ * Completely redesigned architecture, color scheme, and layout.
+ * Reflects authentic platform features: Tasks, World Surveys, Referrals, Dual Wallet, and Direct Bank Settlements.
+ * Zero emojis in accordance with strict user guidelines.
+ */
+
+$pageTitle = 'INNOVATIONX | Digital Tasks, Market Surveys & Direct Bank Settlement';
+$pageDesc = 'Nigeria\'s verified digital earning portal. Monetize your attention through daily sponsored tasks and global opinion surveys with automated bank payouts.';
+
+$hideNavbar = true;
+$hideFooter = true;
+
+require_once __DIR__ . '/includes/header.php';
+
+// Load pricing dynamically from central configuration
+$pricingFile = __DIR__ . '/config/app_pricing.json';
+$pricingData = file_exists($pricingFile) ? json_decode(file_get_contents($pricingFile), true) : [];
+
+$regFee = isset($pricingData['reg_fee']) ? floatval($pricingData['reg_fee']) : (defined('MEMBERSHIP_FEE') ? MEMBERSHIP_FEE : 1200);
+$refBonus = isset($pricingData['ref_commission']) ? floatval($pricingData['ref_commission']) : (defined('REFERRAL_CASH_BONUS') ? REFERRAL_CASH_BONUS : 850);
+$minCashWd = isset($pricingData['min_cash_withdrawal']) ? floatval($pricingData['min_cash_withdrawal']) : (defined('MIN_WITHDRAWAL_NAIRA') ? MIN_WITHDRAWAL_NAIRA : 5000);
+$minPtsWd = isset($pricingData['min_points_withdrawal']) ? floatval($pricingData['min_points_withdrawal']) : 1000;
+$taskRate = defined('TASK_POINTS_RATE') ? TASK_POINTS_RATE : 150;
+
 if (!empty($_GET['ref'])) {
     $refParam = trim($_GET['ref']);
     setcookie('ix_ref', $refParam, time() + 86400 * 30, '/');
 }
-require_once __DIR__ . '/includes/header.php';
 ?>
 
-<!-- ===== INLINE PAGE-SPECIFIC STYLES ===== -->
 <style>
-/* ---- Landing page custom styles (scoped, non-breaking) ---- */
+/* ==========================================================================
+   INNOVATIONX TECH-FINANCIAL DESIGN SYSTEM
+   Palette: Obsidian, Cyber Emerald, Electric Cyan, Crisp Slate
+   ========================================================================== */
 
-/* Hero */
-.lp-hero {
+:root {
+    --ix-bg-base: #060913;
+    --ix-bg-surface: #0B1020;
+    --ix-bg-elevated: #111A33;
+    --ix-bg-card: rgba(13, 20, 38, 0.78);
+    --ix-bg-card-hover: rgba(18, 28, 54, 0.92);
+    
+    --ix-emerald: #10B981;
+    --ix-emerald-glow: rgba(16, 185, 129, 0.28);
+    --ix-cyan: #06B6D4;
+    --ix-cyan-glow: rgba(6, 182, 212, 0.28);
+    --ix-sky: #38BDF8;
+    
+    --ix-border-subtle: rgba(255, 255, 255, 0.07);
+    --ix-border-mid: rgba(255, 255, 255, 0.14);
+    --ix-border-accent: rgba(16, 185, 129, 0.35);
+    --ix-border-cyan: rgba(6, 182, 212, 0.35);
+    
+    --ix-text-bright: #F8FAFC;
+    --ix-text-primary: #E2E8F0;
+    --ix-text-muted: #94A3B8;
+    --ix-text-dim: #64748B;
+    
+    --ix-mono: "Space Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+    --ix-sans: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    --ix-shadow-glow: 0 0 35px -5px rgba(16, 185, 129, 0.15);
+    --ix-radius-sm: 8px;
+    --ix-radius-md: 14px;
+    --ix-radius-lg: 20px;
+}
+
+[data-theme="light"] {
+    --ix-bg-base: #F8FAFC;
+    --ix-bg-surface: #FFFFFF;
+    --ix-bg-elevated: #F1F5F9;
+    --ix-bg-card: rgba(255, 255, 255, 0.92);
+    --ix-bg-card-hover: #FFFFFF;
+    
+    --ix-emerald: #059669;
+    --ix-emerald-glow: rgba(5, 150, 105, 0.15);
+    --ix-cyan: #0284C7;
+    --ix-cyan-glow: rgba(2, 132, 199, 0.15);
+    --ix-sky: #0369A1;
+    
+    --ix-border-subtle: rgba(0, 0, 0, 0.08);
+    --ix-border-mid: rgba(0, 0, 0, 0.15);
+    --ix-border-accent: rgba(5, 150, 105, 0.3);
+    --ix-border-cyan: rgba(2, 132, 199, 0.3);
+    
+    --ix-text-bright: #0F172A;
+    --ix-text-primary: #1E293B;
+    --ix-text-muted: #475569;
+    --ix-text-dim: #64748B;
+    
+    --ix-shadow-glow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* Base resets & layout */
+body {
+    background-color: var(--ix-bg-base) !important;
+    color: var(--ix-text-primary) !important;
+    font-family: var(--ix-sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+    padding-bottom: 0 !important;
+}
+
+.ix-container {
+    width: 100%;
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Background Cyber Grid */
+.ix-bg-grid {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: 
+        radial-gradient(ellipse 90% 50% at 50% -10%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 90% 70%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+}
+
+[data-theme="light"] .ix-bg-grid {
+    background-image: 
+        radial-gradient(ellipse 90% 50% at 50% -10%, rgba(2, 132, 199, 0.06) 0%, transparent 60%),
+        linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+}
+
+.ix-content-wrap {
     position: relative;
-    min-height: 100vh;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   NAVIGATION BAR
+   ========================================================================== */
+.ix-nav {
+    position: sticky;
+    top: 16px;
+    z-index: 100;
+    margin: 16px auto 0;
+    max-width: 1220px;
+    padding: 0 24px;
+}
+
+.ix-nav-bar {
+    background: rgba(11, 16, 32, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: 9999px;
+    padding: 10px 18px;
     display: flex;
     align-items: center;
-    padding: clamp(100px, 14vw, 148px) 0 clamp(60px, 8vw, 100px);
-    overflow: hidden;
-}
-.lp-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 80% 55% at 60% -10%, rgba(56,189,248,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 45% 40% at 0% 80%, rgba(2,132,199,0.07) 0%, transparent 65%);
-    pointer-events: none;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
-.lp-hero-inner {
+[data-theme="light"] .ix-nav-bar {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.ix-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ix-text-bright);
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+}
+
+.ix-brand-badge {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--ix-emerald), var(--ix-cyan));
+    color: #FFFFFF;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.ix-brand-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.65rem;
+    color: var(--ix-emerald);
+    font-family: var(--ix-mono);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 2px 7px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 999px;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ix-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ix-emerald);
+    box-shadow: 0 0 8px var(--ix-emerald);
+    animation: ixPulse 2s infinite ease-in-out;
+}
+
+@keyframes ixPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.ix-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ix-nav-links a {
+    color: var(--ix-text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.ix-nav-links a:hover {
+    color: var(--ix-text-bright);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .ix-nav-links a:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.ix-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ix-btn-theme {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--ix-border-subtle);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ix-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ix-btn-theme:hover {
+    border-color: var(--ix-border-mid);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ix-btn-ghost {
+    color: var(--ix-text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 999px;
+    transition: color 0.2s;
+}
+
+.ix-btn-ghost:hover {
+    color: var(--ix-text-bright);
+}
+
+.ix-btn-primary {
+    background: linear-gradient(135deg, var(--ix-emerald) 0%, #059669 100%);
+    color: #FFFFFF !important;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 18px;
+    text-decoration: none;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px var(--ix-emerald-glow);
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.ix-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+}
+
+.ix-mobile-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--ix-text-bright);
+    padding: 6px;
+    cursor: pointer;
+}
+
+/* Mobile drawer */
+.ix-mobile-menu {
+    display: none;
+    position: fixed;
+    top: 76px;
+    left: 20px;
+    right: 20px;
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+.ix-mobile-menu.open {
+    display: block;
+}
+
+.ix-mobile-menu a {
+    display: block;
+    padding: 12px 14px;
+    color: var(--ix-text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.ix-mobile-menu a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   HERO SECTION: ASYMMETRICAL TERMINAL LAYOUT
+   ========================================================================== */
+.ix-hero {
+    padding: 70px 0 60px;
+}
+
+.ix-hero-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(40px, 6vw, 80px);
+    grid-template-columns: 1.15fr 0.95fr;
+    gap: 48px;
     align-items: center;
 }
 
-/* Hero left */
-.lp-hero-badge {
+.ix-tagline-bar {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 14px 6px 8px;
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.22);
-    border-radius: 999px;
-    font-size: 0.73rem;
+    padding: 4px 12px;
+    background: rgba(6, 182, 212, 0.08);
+    border: 1px solid var(--ix-border-cyan);
+    border-radius: 6px;
+    font-family: var(--ix-mono);
+    font-size: 0.72rem;
+    color: var(--ix-cyan);
     font-weight: 700;
     letter-spacing: 0.8px;
+    margin-bottom: 22px;
     text-transform: uppercase;
-    color: var(--sky-vibrant);
-    margin-bottom: 24px;
-}
-.lp-hero-badge-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--sky-vibrant);
-    box-shadow: 0 0 8px rgba(56,189,248,0.7);
-    animation: blink-dot 2s infinite;
-}
-@keyframes blink-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
 }
 
-.lp-hero-h1 {
-    font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+.ix-hero-h1 {
+    font-size: clamp(2.4rem, 4.4vw, 3.8rem);
     font-weight: 900;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    color: var(--text-white);
-    margin-bottom: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: var(--ix-text-bright);
+    margin-bottom: 20px;
 }
-.lp-hero-h1 .accent {
-    background: linear-gradient(135deg, #38BDF8 0%, #7DD3FC 60%, #BAE6FD 100%);
+
+.ix-gradient-text {
+    background: linear-gradient(135deg, var(--ix-emerald) 0%, var(--ix-cyan) 50%, var(--ix-sky) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.lp-hero-sub {
-    font-size: clamp(1rem, 1.8vw, 1.15rem);
-    color: var(--text-gray);
-    line-height: 1.7;
-    max-width: 520px;
-    margin-bottom: 36px;
+.ix-hero-p {
+    font-size: 1.05rem;
+    color: var(--ix-text-muted);
+    line-height: 1.65;
+    max-width: 540px;
+    margin-bottom: 32px;
 }
 
-.lp-hero-btns {
+.ix-hero-ctas {
     display: flex;
+    align-items: center;
     gap: 14px;
     flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: 36px;
+    margin-bottom: 34px;
 }
-.lp-btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 14px 28px;
-    background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-    color: #fff;
-    border-radius: 12px;
+
+.ix-btn-cta-lg {
+    background: linear-gradient(135deg, var(--ix-emerald) 0%, #059669 100%);
+    color: #FFFFFF;
+    font-size: 0.95rem;
     font-weight: 800;
-    font-size: 0.95rem;
-    text-decoration: none;
-    box-shadow: 0 4px 20px rgba(56,189,248,0.32);
-    transition: transform 0.2s, box-shadow 0.2s;
-    white-space: nowrap;
-}
-.lp-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(56,189,248,0.45);
-    color: #fff;
-}
-.lp-btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 14px 26px;
-    background: transparent;
-    color: var(--text-light);
-    border: 1.5px solid rgba(56,189,248,0.28);
+    padding: 13px 26px;
     border-radius: 12px;
-    font-weight: 700;
-    font-size: 0.95rem;
     text-decoration: none;
-    transition: border-color 0.2s, background 0.2s, transform 0.2s;
-    white-space: nowrap;
-}
-.lp-btn-outline:hover {
-    background: rgba(56,189,248,0.06);
-    border-color: rgba(56,189,248,0.55);
-    color: var(--sky-vibrant);
-    transform: translateY(-2px);
-}
-
-.lp-hero-trust {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-.lp-hero-trust-badges {
-    display: flex;
-    align-items: center;
-    gap: -4px;
-}
-.lp-trust-dot {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0284C7, #38BDF8);
-    border: 2px solid var(--bg-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 0.68rem;
-    color: #fff;
-}
-.lp-hero-trust strong { color: var(--text-white); }
-
-/* Hero right — console card */
-.lp-console-card {
-    background: rgba(12,22,45,0.82);
-    border: 1px solid rgba(56,189,248,0.18);
-    border-radius: 22px;
-    padding: clamp(22px, 3vw, 32px);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 24px 64px rgba(2,10,28,0.55), 0 0 0 1px rgba(56,189,248,0.06);
-    position: relative;
-    overflow: hidden;
-}
-.lp-console-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.5), transparent);
-}
-.lp-console-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.lp-console-title {
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--text-light);
-    display: flex;
+    box-shadow: 0 4px 20px var(--ix-emerald-glow);
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.25s ease;
 }
-.lp-live-pill {
+
+.ix-btn-cta-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+    color: #FFFFFF;
+}
+
+.ix-btn-cta-secondary {
+    background: var(--ix-bg-elevated);
+    color: var(--ix-text-bright);
+    border: 1px solid var(--ix-border-mid);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 13px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.ix-btn-cta-secondary:hover {
+    border-color: var(--ix-cyan);
+    color: var(--ix-cyan);
+}
+
+.ix-hero-specs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ix-border-subtle);
+    max-width: 520px;
+}
+
+.ix-spec-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.ix-spec-label {
+    font-size: 0.7rem;
+    color: var(--ix-text-dim);
+    text-transform: uppercase;
+    font-family: var(--ix-mono);
+    letter-spacing: 0.5px;
+}
+
+.ix-spec-val {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ix-text-bright);
+}
+
+/* ==========================================================================
+   TERMINAL CONSOLE WIDGET (HERO RIGHT)
+   ========================================================================== */
+.ix-terminal {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-lg);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), var(--ix-shadow-glow);
+    overflow: hidden;
+    position: relative;
+}
+
+.ix-terminal-header {
+    background: rgba(0, 0, 0, 0.35);
+    border-bottom: 1px solid var(--ix-border-subtle);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ix-terminal-dots {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.2);
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--sky-vibrant);
-    letter-spacing: 0.5px;
-}
-.lp-live-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #38BDF8;
-    box-shadow: 0 0 6px rgba(56,189,248,0.8);
-    animation: blink-dot 1.5s infinite;
 }
 
-.lp-balance-section {
-    background: linear-gradient(135deg, rgba(2,132,199,0.12) 0%, rgba(56,189,248,0.06) 100%);
-    border: 1px solid rgba(56,189,248,0.14);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 18px;
+.ix-terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 }
-.lp-balance-label {
+
+.ix-terminal-title {
+    font-family: var(--ix-mono);
     font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.8px;
+    color: var(--ix-text-dim);
+    letter-spacing: 0.6px;
     text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.lp-instant-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    background: rgba(56,189,248,0.1);
-    border-radius: 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #38BDF8;
-}
-.lp-balance-amt {
-    font-size: clamp(2rem, 4vw, 2.6rem);
-    font-weight: 900;
-    color: var(--text-white);
-    letter-spacing: -0.03em;
-    margin-bottom: 14px;
-}
-.lp-balance-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-.lp-balance-item-label {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-bottom: 3px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.lp-balance-item-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-}
-.lp-balance-item-val {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: var(--text-white);
 }
 
-.lp-task-list {
+.ix-terminal-tabs {
+    display: flex;
+    padding: 10px 14px 0;
+    gap: 8px;
+    border-bottom: 1px solid var(--ix-border-subtle);
+}
+
+.ix-terminal-tab {
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ix-text-dim);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ix-terminal-tab.active {
+    color: var(--ix-emerald);
+    border-bottom-color: var(--ix-emerald);
+}
+
+.ix-terminal-body {
+    padding: 20px;
+}
+
+/* Tab Panel 1: Activity Feed */
+.ix-feed-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 18px;
 }
-.lp-task-row {
+
+.ix-feed-row {
+    background: var(--ix-bg-card);
+    border: 1px solid var(--ix-border-subtle);
+    border-radius: var(--ix-radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color 0.2s;
+}
+
+.ix-feed-row:hover {
+    border-color: var(--ix-border-mid);
+}
+
+.ix-feed-info {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 11px 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(56,189,248,0.09);
-    border-radius: 11px;
-    transition: background 0.2s;
+    min-width: 0;
 }
-.lp-task-row:hover {
-    background: rgba(56,189,248,0.05);
-}
-.lp-task-icon {
-    width: 34px; height: 34px;
-    border-radius: 9px;
-    background: rgba(56,189,248,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: var(--sky-vibrant);
-}
-.lp-task-name {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-light);
-    flex: 1;
-}
-.lp-task-badge {
-    font-size: 0.73rem;
-    font-weight: 800;
-    padding: 4px 9px;
-    background: rgba(56,189,248,0.12);
-    border: 1px solid rgba(56,189,248,0.2);
-    border-radius: 7px;
-    color: var(--sky-vibrant);
+
+.ix-feed-badge {
+    font-family: var(--ix-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
     white-space: nowrap;
 }
 
-.lp-console-cta {
+.ix-badge-survey {
+    background: rgba(6, 182, 212, 0.12);
+    color: var(--ix-cyan);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.ix-badge-task {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--ix-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ix-badge-affiliate {
+    background: rgba(245, 158, 11, 0.12);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.ix-feed-desc {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ix-text-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ix-feed-val {
+    font-family: var(--ix-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ix-emerald);
+    white-space: nowrap;
+}
+
+/* Tab Panel 2: Settlement Card */
+.ix-atm-preview {
+    background: linear-gradient(135deg, #131A2D 0%, #080D1A 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    margin-bottom: 14px;
+}
+
+.ix-atm-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.ix-atm-chip {
+    width: 38px;
+    height: 28px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #FCD34D, #D97706);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.ix-atm-network {
+    font-size: 0.75rem;
+    font-family: var(--ix-mono);
+    color: var(--ix-cyan);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.ix-atm-num {
+    font-family: var(--ix-mono);
+    font-size: 1.15rem;
+    letter-spacing: 2px;
+    color: #FFFFFF;
+    margin-bottom: 18px;
+}
+
+.ix-atm-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.ix-atm-holder-lbl {
+    font-size: 0.65rem;
+    color: var(--ix-text-dim);
+    text-transform: uppercase;
+}
+
+.ix-atm-holder-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.ix-atm-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--ix-emerald);
+    font-weight: 700;
+    font-family: var(--ix-mono);
+}
+
+/* ==========================================================================
+   METRICS TELEMETRY STRIP
+   ========================================================================== */
+.ix-metrics-strip {
+    background: var(--ix-bg-surface);
+    border-top: 1px solid var(--ix-border-subtle);
+    border-bottom: 1px solid var(--ix-border-subtle);
+    padding: 26px 0;
+    margin: 40px 0 70px;
+}
+
+.ix-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.ix-metric-card {
+    text-align: left;
+    padding: 0 12px;
+    border-left: 2px solid var(--ix-emerald);
+}
+
+.ix-metric-val {
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: var(--ix-text-bright);
+    font-family: var(--ix-mono);
+    line-height: 1.2;
+}
+
+.ix-metric-lbl {
+    font-size: 0.8rem;
+    color: var(--ix-text-muted);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   ACTIVITIES: TASKS & WORLD SURVEYS MODULE
+   ========================================================================== */
+.ix-section {
+    padding: 60px 0;
+}
+
+.ix-section-header {
+    margin-bottom: 40px;
+}
+
+.ix-section-tag {
+    font-family: var(--ix-mono);
+    font-size: 0.72rem;
+    color: var(--ix-emerald);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.ix-section-title {
+    font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+    font-weight: 900;
+    color: var(--ix-text-bright);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.ix-section-desc {
+    color: var(--ix-text-muted);
+    font-size: 0.98rem;
+    max-width: 600px;
+    margin-top: 10px;
+}
+
+.ix-activities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.ix-activity-panel {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-lg);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, border-color 0.25s;
+}
+
+.ix-activity-panel:hover {
+    transform: translateY(-3px);
+    border-color: var(--ix-border-accent);
+}
+
+.ix-activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.ix-activity-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 13px 20px;
-    background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-    color: #fff;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 0.88rem;
-    text-decoration: none;
-    box-shadow: 0 4px 16px rgba(56,189,248,0.28);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.lp-console-cta:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(56,189,248,0.4);
-    color: #fff;
+    color: #FFFFFF;
 }
 
-/* Stats strip */
-.lp-stats {
-    background: rgba(12,22,45,0.6);
-    border-top: 1px solid rgba(56,189,248,0.1);
-    border-bottom: 1px solid rgba(56,189,248,0.1);
-    padding: 0;
-}
-.lp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-}
-.lp-stat {
-    padding: 28px 20px;
-    text-align: center;
-    border-right: 1px solid rgba(56,189,248,0.08);
-    position: relative;
-}
-.lp-stat:last-child { border-right: none; }
-.lp-stat-num {
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
-    font-weight: 900;
-    color: var(--sky-vibrant);
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-    display: block;
-}
-.lp-stat-lbl {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-weight: 500;
+.ix-icon-cyan {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--ix-cyan);
+    border: 1px solid var(--ix-border-cyan);
 }
 
-/* How it works */
-.lp-section {
-    padding: clamp(60px, 8vw, 100px) 0;
+.ix-icon-emerald {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--ix-emerald);
+    border: 1px solid var(--ix-border-accent);
 }
-.lp-section-tag {
-    display: inline-block;
-    font-size: 0.72rem;
+
+.ix-activity-reward {
+    font-family: var(--ix-mono);
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--sky-vibrant);
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.18);
+    padding: 4px 10px;
     border-radius: 6px;
-    padding: 4px 12px;
-    margin-bottom: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--ix-border-mid);
+    color: var(--ix-emerald);
 }
-.lp-section-title {
-    font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-    font-weight: 900;
-    letter-spacing: -0.025em;
-    color: var(--text-white);
-    margin-bottom: 14px;
-    line-height: 1.15;
-}
-.lp-section-sub {
-    font-size: clamp(0.9rem, 1.6vw, 1.05rem);
-    color: var(--text-muted);
-    line-height: 1.7;
-    max-width: 580px;
-}
-.lp-section-header { margin-bottom: clamp(36px, 5vw, 58px); }
-.lp-section-header.center { text-align: center; }
-.lp-section-header.center .lp-section-sub { margin: 0 auto; }
 
-/* Steps */
-.lp-steps {
+.ix-activity-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--ix-text-bright);
+    margin-bottom: 10px;
+}
+
+.ix-activity-desc {
+    color: var(--ix-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.ix-survey-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.ix-cat-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--ix-border-subtle);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--ix-text-primary);
+}
+
+.ix-cat-pill span:last-child {
+    font-family: var(--ix-mono);
+    color: var(--ix-cyan);
+    font-weight: 700;
+    font-size: 0.72rem;
+}
+
+/* ==========================================================================
+   EARNING SIMULATOR (REACTIVE JS CALCULATOR)
+   ========================================================================== */
+.ix-simulator-box {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-lg);
+    padding: clamp(28px, 4vw, 42px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.ix-sim-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.ix-sim-control {
+    margin-bottom: 24px;
+}
+
+.ix-sim-control:last-child {
+    margin-bottom: 0;
+}
+
+.ix-sim-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ix-sim-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ix-text-bright);
+}
+
+.ix-sim-badge {
+    font-family: var(--ix-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ix-cyan);
+    background: rgba(6, 182, 212, 0.1);
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ix-border-cyan);
+}
+
+.ix-sim-range {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ix-bg-elevated);
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--ix-emerald);
+}
+
+/* Simulator Output Display */
+.ix-sim-result-card {
+    background: linear-gradient(135deg, var(--ix-bg-elevated) 0%, rgba(17, 26, 51, 0.9) 100%);
+    border: 1px solid var(--ix-border-accent);
+    border-radius: var(--ix-radius-md);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.ix-sim-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ix-border-subtle);
+}
+
+.ix-sim-result-lbl {
+    font-size: 0.82rem;
+    color: var(--ix-text-muted);
+}
+
+.ix-sim-result-val {
+    font-family: var(--ix-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ix-text-bright);
+}
+
+.ix-sim-grand-total {
+    padding-top: 8px;
+}
+
+.ix-sim-grand-lbl {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-family: var(--ix-mono);
+    color: var(--ix-emerald);
+    letter-spacing: 1px;
+}
+
+.ix-sim-grand-val {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--ix-text-bright);
+    letter-spacing: -0.03em;
+    font-family: var(--ix-mono);
+    line-height: 1.1;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   3-STEP ONBOARDING PIPELINE
+   ========================================================================== */
+.ix-pipeline-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
 }
-.lp-step {
-    background: rgba(12,22,45,0.55);
-    border: 1px solid rgba(56,189,248,0.12);
-    border-radius: 18px;
-    padding: 30px 26px;
-    position: relative;
-    transition: border-color 0.25s, transform 0.25s;
-    overflow: hidden;
-}
-.lp-step::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(56,189,248,0.03) 0%, transparent 60%);
-    pointer-events: none;
-}
-.lp-step:hover {
-    border-color: rgba(56,189,248,0.3);
-    transform: translateY(-3px);
-}
-.lp-step-num {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--sky-vibrant);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.lp-step-num::before {
-    content: '';
-    display: block;
-    width: 32px; height: 32px;
-    border-radius: 9px;
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.22);
-    flex-shrink: 0;
-}
-.lp-step-num span {
-    position: absolute;
-    margin-left: 7px;
-    font-size: 0.85rem;
-}
-.lp-step-icon-wrap {
-    width: 48px; height: 48px;
-    border-radius: 13px;
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 18px;
-    color: var(--sky-vibrant);
-}
-.lp-step-n {
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    color: var(--sky-vibrant);
-    opacity: 0.7;
-    margin-bottom: 12px;
-}
-.lp-step-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--text-white);
-    margin-bottom: 10px;
-}
-.lp-step-desc {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    line-height: 1.65;
-}
 
-/* Features grid */
-.lp-features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-.lp-feature-card {
-    background: rgba(12,22,45,0.55);
-    border: 1px solid rgba(56,189,248,0.1);
-    border-radius: 16px;
-    padding: 26px 22px;
-    transition: border-color 0.22s, transform 0.22s;
-}
-.lp-feature-card:hover {
-    border-color: rgba(56,189,248,0.28);
-    transform: translateY(-2px);
-}
-.lp-feature-icon {
-    width: 44px; height: 44px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
-    color: var(--sky-vibrant);
-    flex-shrink: 0;
-}
-.lp-feature-title {
-    font-size: 0.98rem;
-    font-weight: 800;
-    color: var(--text-white);
-    margin-bottom: 8px;
-}
-.lp-feature-desc {
-    font-size: 0.84rem;
-    color: var(--text-muted);
-    line-height: 1.6;
-}
-.lp-feature-badge {
-    display: inline-block;
-    margin-top: 14px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--sky-vibrant);
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.16);
-    border-radius: 6px;
-    padding: 3px 9px;
-}
-
-/* Opportunities pills bar */
-.lp-opps-section {
-    background: rgba(8,15,30,0.6);
-    border-top: 1px solid rgba(56,189,248,0.08);
-    border-bottom: 1px solid rgba(56,189,248,0.08);
-    padding: clamp(50px, 7vw, 80px) 0;
-}
-.lp-opps-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(36px, 6vw, 72px);
-    align-items: center;
-}
-.lp-opps-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 28px;
-}
-.lp-opp-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    background: rgba(12,22,45,0.7);
-    border: 1px solid rgba(56,189,248,0.14);
-    border-radius: 10px;
-    font-size: 0.83rem;
-    font-weight: 600;
-    color: var(--text-light);
-    text-decoration: none;
-    transition: border-color 0.2s, background 0.2s, color 0.2s;
-}
-.lp-opp-pill svg { color: var(--sky-vibrant); flex-shrink: 0; }
-.lp-opp-pill:hover {
-    border-color: rgba(56,189,248,0.35);
-    background: rgba(56,189,248,0.07);
-    color: var(--sky-vibrant);
-}
-.lp-opps-cta {
-    margin-top: 28px;
-}
-
-/* Why trust section */
-.lp-trust-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-.lp-trust-card {
-    background: rgba(12,22,45,0.55);
-    border: 1px solid rgba(56,189,248,0.1);
-    border-radius: 18px;
+.ix-pipe-card {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-md);
     padding: 28px 24px;
     position: relative;
-    overflow: hidden;
-    transition: border-color 0.22s, transform 0.22s;
-}
-.lp-trust-card:hover {
-    border-color: rgba(56,189,248,0.28);
-    transform: translateY(-2px);
-}
-.lp-trust-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.4), transparent);
-}
-.lp-trust-badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--sky-vibrant);
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.16);
-    border-radius: 6px;
-    padding: 3px 8px;
-    margin-bottom: 14px;
-}
-.lp-trust-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: var(--text-white);
-    margin-bottom: 10px;
-}
-.lp-trust-desc {
-    font-size: 0.86rem;
-    color: var(--text-muted);
-    line-height: 1.65;
+    transition: all 0.2s ease;
 }
 
-/* FAQ */
-.lp-faq-list {
-    max-width: 760px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.ix-pipe-card:hover {
+    border-color: var(--ix-border-accent);
+    transform: translateY(-2px);
 }
-.lp-faq-item {
-    background: rgba(12,22,45,0.55);
-    border: 1px solid rgba(56,189,248,0.1);
-    border-radius: 14px;
-    overflow: hidden;
-    transition: border-color 0.2s;
+
+.ix-pipe-step {
+    font-family: var(--ix-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--ix-emerald);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    display: inline-block;
 }
-.lp-faq-item.open {
-    border-color: rgba(56,189,248,0.25);
+
+.ix-pipe-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--ix-text-bright);
+    margin-bottom: 8px;
 }
-.lp-faq-q {
+
+.ix-pipe-desc {
+    font-size: 0.88rem;
+    color: var(--ix-text-muted);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   SETTLEMENT & BANKING NETWORK MODULE
+   ========================================================================== */
+.ix-settlement-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+}
+
+.ix-dual-wallet-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.ix-wallet-panel {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-md);
+    padding: 20px;
+}
+
+.ix-wallet-badge {
+    font-family: var(--ix-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--ix-cyan);
+    text-transform: uppercase;
+}
+
+.ix-wallet-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--ix-text-bright);
+    margin: 4px 0 6px;
+}
+
+.ix-wallet-desc {
+    font-size: 0.78rem;
+    color: var(--ix-text-muted);
+    line-height: 1.5;
+}
+
+.ix-banks-cluster {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-lg);
+    padding: 26px;
+}
+
+.ix-banks-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
-    padding: 18px 22px;
-    cursor: pointer;
+    margin-bottom: 18px;
+}
+
+.ix-banks-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--ix-text-bright);
+}
+
+.ix-banks-tag {
+    font-family: var(--ix-mono);
+    font-size: 0.7rem;
+    color: var(--ix-emerald);
+}
+
+.ix-banks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.ix-bank-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--ix-border-subtle);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ix-text-primary);
+    text-align: center;
+}
+
+/* ==========================================================================
+   AUTHENTIC ABOUT SECTION
+   ========================================================================== */
+.ix-about-box {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-lg);
+    padding: clamp(32px, 5vw, 54px);
+}
+
+.ix-about-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+    align-items: center;
+}
+
+.ix-about-lead {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--ix-text-bright);
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+
+.ix-about-body {
+    color: var(--ix-text-muted);
+    font-size: 0.94rem;
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.ix-trust-points {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ix-trust-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.ix-check-bullet {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--ix-emerald);
+    border: 1px solid var(--ix-border-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.ix-point-content h4 {
     font-size: 0.92rem;
     font-weight: 700;
-    color: var(--text-white);
+    color: var(--ix-text-bright);
+    margin-bottom: 2px;
+}
+
+.ix-point-content p {
+    font-size: 0.84rem;
+    color: var(--ix-text-muted);
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   TECHNICAL ACCORDION FAQ
+   ========================================================================== */
+.ix-faq-list {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ix-faq-item {
+    background: var(--ix-bg-surface);
+    border: 1px solid var(--ix-border-mid);
+    border-radius: var(--ix-radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.ix-faq-item.active {
+    border-color: var(--ix-border-accent);
+}
+
+.ix-faq-question {
+    padding: 18px 22px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ix-text-bright);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
     user-select: none;
-    -webkit-user-select: none;
 }
-.lp-faq-q:hover { color: var(--sky-vibrant); }
-.lp-faq-chevron {
-    width: 18px; height: 18px;
-    color: var(--text-muted);
-    flex-shrink: 0;
-    transition: transform 0.28s;
+
+.ix-faq-icon {
+    font-family: var(--ix-mono);
+    color: var(--ix-text-dim);
+    font-size: 1rem;
+    transition: transform 0.25s ease;
 }
-.lp-faq-item.open .lp-faq-chevron { transform: rotate(180deg); color: var(--sky-vibrant); }
-.lp-faq-a {
+
+.ix-faq-item.active .ix-faq-icon {
+    transform: rotate(45deg);
+    color: var(--ix-emerald);
+}
+
+.ix-faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.25s;
+    transition: max-height 0.35s ease, padding 0.25s ease;
 }
-.lp-faq-item.open .lp-faq-a {
-    max-height: 300px;
-    padding-bottom: 18px;
+
+.ix-faq-item.active .ix-faq-answer {
+    max-height: 250px;
+    padding: 0 22px 18px;
 }
-.lp-faq-a p {
-    padding: 0 22px;
-    font-size: 0.87rem;
-    color: var(--text-muted);
-    line-height: 1.7;
+
+.ix-faq-answer p {
+    font-size: 0.88rem;
+    color: var(--ix-text-muted);
+    line-height: 1.65;
     margin: 0;
 }
 
-/* CTA section */
-.lp-cta-section {
-    padding: clamp(60px, 9vw, 110px) 0;
-    position: relative;
+/* ==========================================================================
+   FINAL CALL TO ACTION & FOOTER
+   ========================================================================== */
+.ix-cta-panel {
+    background: linear-gradient(135deg, var(--ix-bg-elevated) 0%, #070F1E 100%);
+    border: 1px solid var(--ix-border-accent);
+    border-radius: var(--ix-radius-lg);
+    padding: clamp(36px, 5vw, 64px) 28px;
     text-align: center;
-    overflow: hidden;
+    margin: 40px auto 70px;
+    max-width: 960px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), var(--ix-shadow-glow);
 }
-.lp-cta-section::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(800px, 100%);
-    height: 340px;
-    background: radial-gradient(ellipse at center, rgba(56,189,248,0.09) 0%, transparent 70%);
-    pointer-events: none;
+
+.ix-footer {
+    background: var(--ix-bg-base);
+    border-top: 1px solid var(--ix-border-subtle);
+    padding: 40px 0 30px;
 }
-.lp-cta-box {
-    background: rgba(12,22,45,0.75);
-    border: 1px solid rgba(56,189,248,0.18);
-    border-radius: 24px;
-    padding: clamp(40px, 6vw, 64px) clamp(28px, 5vw, 60px);
-    max-width: 700px;
-    margin: 0 auto;
-    position: relative;
-    overflow: hidden;
-}
-.lp-cta-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.55), transparent);
-}
-.lp-cta-h {
-    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-    font-weight: 900;
-    color: var(--text-white);
-    letter-spacing: -0.025em;
-    margin-bottom: 14px;
-    line-height: 1.1;
-}
-.lp-cta-p {
-    font-size: clamp(0.9rem, 1.5vw, 1rem);
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 32px;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-.lp-cta-btns {
+
+.ix-footer-inner {
     display: flex;
-    gap: 14px;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
-}
-.lp-cta-note {
-    margin-top: 20px;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    opacity: 0.7;
+    gap: 20px;
 }
 
-/* Light theme overrides */
-[data-theme="light"] .lp-console-card {
-    background: #FFFFFF;
-    border-color: #E2E8F0;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+.ix-footer-links {
+    display: flex;
+    gap: 18px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
-[data-theme="light"] .lp-balance-section {
-    background: #F0F9FF;
-    border-color: #BAE6FD;
-}
-[data-theme="light"] .lp-task-row {
-    background: #F8FAFC;
-    border-color: #E2E8F0;
-}
-[data-theme="light"] .lp-step,
-[data-theme="light"] .lp-feature-card,
-[data-theme="light"] .lp-trust-card,
-[data-theme="light"] .lp-faq-item,
-[data-theme="light"] .lp-opp-pill {
-    background: #FFFFFF;
-    border-color: #E2E8F0;
-}
-[data-theme="light"] .lp-step:hover,
-[data-theme="light"] .lp-feature-card:hover,
-[data-theme="light"] .lp-trust-card:hover,
-[data-theme="light"] .lp-faq-item.open,
-[data-theme="light"] .lp-opp-pill:hover {
-    border-color: #0284C7;
-}
-[data-theme="light"] .lp-stats {
-    background: #FFFFFF;
-    border-color: #E2E8F0;
-}
-[data-theme="light"] .lp-opps-section {
-    background: #F8FAFC;
-    border-color: #E2E8F0;
-}
-[data-theme="light"] .lp-cta-box {
-    background: #FFFFFF;
-    border-color: #E2E8F0;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.05);
-}
-[data-theme="light"] .lp-hero-h1 { color: #0F172A; }
-[data-theme="light"] .lp-hero-sub { color: #475569; }
-[data-theme="light"] .lp-step-title,
-[data-theme="light"] .lp-feature-title,
-[data-theme="light"] .lp-trust-title,
-[data-theme="light"] .lp-section-title,
-[data-theme="light"] .lp-faq-q,
-[data-theme="light"] .lp-cta-h { color: #0F172A; }
-[data-theme="light"] .lp-step-desc,
-[data-theme="light"] .lp-feature-desc,
-[data-theme="light"] .lp-trust-desc,
-[data-theme="light"] .lp-section-sub,
-[data-theme="light"] .lp-faq-a p,
-[data-theme="light"] .lp-cta-p,
-[data-theme="light"] .lp-stat-lbl,
-[data-theme="light"] .lp-task-name { color: #64748B; }
-[data-theme="light"] .lp-balance-amt,
-[data-theme="light"] .lp-balance-item-val { color: #0F172A; }
-[data-theme="light"] .lp-stat-num { color: #0284C7; }
-[data-theme="light"] .lp-opp-pill { color: #334155; }
 
-/* Responsive */
+.ix-footer-links a {
+    font-size: 0.82rem;
+    color: var(--ix-text-dim);
+    text-decoration: none;
+}
+
+.ix-footer-links a:hover {
+    color: var(--ix-text-bright);
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
 @media (max-width: 1024px) {
-    .lp-features-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 900px) {
-    .lp-hero-inner { grid-template-columns: 1fr; gap: 48px; }
-    .lp-steps { grid-template-columns: 1fr; }
-    .lp-opps-inner { grid-template-columns: 1fr; }
-    .lp-trust-cards { grid-template-columns: 1fr; }
-    .lp-stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .lp-stat { border-right: none; border-bottom: 1px solid rgba(56,189,248,0.08); }
-    .lp-stat:nth-child(odd) { border-right: 1px solid rgba(56,189,248,0.08); }
-    .lp-stat:nth-last-child(-n+2) { border-bottom: none; }
-}
-@media (max-width: 640px) {
-    .lp-features-grid { grid-template-columns: 1fr; }
-    .lp-hero-btns { flex-direction: column; }
-    .lp-btn-primary, .lp-btn-outline { justify-content: center; width: 100%; }
-    .lp-cta-btns { flex-direction: column; align-items: center; }
-    .lp-stats-grid { grid-template-columns: 1fr 1fr; }
-    .lp-trust-cards { grid-template-columns: 1fr; }
+    .ix-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .ix-sim-grid { grid-template-columns: 1fr; }
+    .ix-about-grid { grid-template-columns: 1fr; }
+    .ix-settlement-grid { grid-template-columns: 1fr; }
+    .ix-activities-grid { grid-template-columns: 1fr; }
 }
 
-/* Scroll reveal */
-.lp-reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.55s ease, transform 0.55s ease;
-}
-.lp-reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
+@media (max-width: 768px) {
+    .ix-nav-links { display: none; }
+    .ix-btn-ghost { display: none; }
+    .ix-mobile-toggle { display: block; }
+    .ix-metrics-grid { grid-template-columns: 1fr 1fr; }
+    .ix-pipeline-grid { grid-template-columns: 1fr; }
+    .ix-banks-grid { grid-template-columns: repeat(2, 1fr); }
+    .ix-dual-wallet-box { grid-template-columns: 1fr; }
+    .ix-hero-specs { grid-template-columns: 1fr 1fr; }
 }
 </style>
 
-<!-- ===== HERO SECTION ===== -->
-<section class="lp-hero" id="home">
-    <div class="container">
-        <div class="lp-hero-inner">
-            <!-- Left: Copy -->
-            <div class="lp-hero-copy">
-                <div class="lp-hero-badge">
-                    <span class="lp-hero-badge-dot"></span>
-                    Nigeria's Premier Digital Earning Platform
+<div class="ix-bg-grid"></div>
+
+<div class="ix-content-wrap">
+
+    <!-- ===== TECHNICAL FLOATING NAVBAR ===== -->
+    <header class="ix-nav">
+        <div class="ix-nav-bar">
+            <a href="index.php" class="ix-brand">
+                <div class="ix-brand-badge">IX</div>
+                <span>INNOVATIONX</span>
+                <span class="ix-brand-status">
+                    <span class="ix-pulse-dot"></span>
+                    ACTIVE
+                </span>
+            </a>
+
+            <nav class="ix-nav-links">
+                <a href="#activities">Tasks &amp; Surveys</a>
+                <a href="#simulator">Earning Simulator</a>
+                <a href="#pipeline">How It Works</a>
+                <a href="#settlement">Bank Settlement</a>
+                <a href="vendors.php">Verified Vendors</a>
+                <a href="#about">About</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+
+            <div class="ix-nav-actions">
+                <button type="button" class="ix-btn-theme" onclick="togglePlatformTheme(event)" title="Toggle Theme" aria-label="Toggle Theme">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </button>
+                <a href="login.php" class="ix-btn-ghost">Sign In</a>
+                <a href="register.php" class="ix-btn-primary">
+                    <span>Get Started</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <button type="button" class="ix-mobile-toggle" onclick="toggleMobileNav()" aria-label="Toggle Navigation">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Drawer -->
+    <div class="ix-mobile-menu" id="ixMobileMenu">
+        <a href="#activities" onclick="toggleMobileNav()">Tasks &amp; Surveys</a>
+        <a href="#simulator" onclick="toggleMobileNav()">Earning Simulator</a>
+        <a href="#pipeline" onclick="toggleMobileNav()">How It Works</a>
+        <a href="#settlement" onclick="toggleMobileNav()">Bank Settlement</a>
+        <a href="vendors.php">Verified Vendors</a>
+        <a href="#about" onclick="toggleMobileNav()">About Platform</a>
+        <a href="#faq" onclick="toggleMobileNav()">FAQ</a>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--ix-border-subtle);display:flex;flex-direction:column;gap:8px;">
+            <a href="login.php" style="text-align:center;background:rgba(255,255,255,0.05);">Sign In</a>
+            <a href="register.php" style="text-align:center;background:var(--ix-emerald);color:#fff;">Create Account</a>
+        </div>
+    </div>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="ix-hero" id="home">
+        <div class="ix-container">
+            <div class="ix-hero-grid">
+                
+                <!-- Left: Headline & Actions -->
+                <div>
+                    <div class="ix-tagline-bar">
+                        <span>Terminal Protocol</span>
+                        <span>//</span>
+                        <span>Verifiable Yield Engine</span>
+                    </div>
+
+                    <h1 class="ix-hero-h1">
+                        Digital Tasks.<br>
+                        Verified Surveys.<br>
+                        <span class="ix-gradient-text">Direct Bank Settlement.</span>
+                    </h1>
+
+                    <p class="ix-hero-p">
+                        INNOVATIONX connects sponsor campaigns and global research topics with active Nigerian earners. Complete structured micro-activities daily and withdraw earned cash directly to your commercial bank account.
+                    </p>
+
+                    <div class="ix-hero-ctas">
+                        <a href="register.php" class="ix-btn-cta-lg">
+                            <span>Activate Account (&#8358;<?= number_format($regFee) ?>)</span>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                        <a href="#simulator" class="ix-btn-cta-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/></svg>
+                            <span>Earning Simulator</span>
+                        </a>
+                    </div>
+
+                    <div class="ix-hero-specs">
+                        <div class="ix-spec-item">
+                            <span class="ix-spec-label">Settlement Speed</span>
+                            <span class="ix-spec-val">Automated Payouts</span>
+                        </div>
+                        <div class="ix-spec-item">
+                            <span class="ix-spec-label">Activation Gate</span>
+                            <span class="ix-spec-val">Vendor PIN System</span>
+                        </div>
+                        <div class="ix-spec-item">
+                            <span class="ix-spec-label">Platform Term</span>
+                            <span class="ix-spec-val">Lifetime Access</span>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="lp-hero-h1">
-                    Turn Screen Time<br>Into <span class="accent">Real Naira.</span>
-                </h1>
-                <p class="lp-hero-sub">
-                    Complete sponsored micro-tasks, share links with friends, and earn real cash directly to any Nigerian bank account. One-time activation. Zero monthly fees. Start today.
-                </p>
-                <div class="lp-hero-btns">
-                    <a href="register.php" class="lp-btn-primary">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 12 5 19 12"></polyline><polyline points="12 19 12 5"></polyline></svg>
-                        Start Earning Now
-                    </a>
-                    <a href="forecaster.php" class="lp-btn-outline">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        Estimate Your Earnings
-                    </a>
+
+                <!-- Right: Cyber Terminal Console -->
+                <div>
+                    <div class="ix-terminal">
+                        <div class="ix-terminal-header">
+                            <div class="ix-terminal-dots">
+                                <span class="ix-terminal-dot" style="background:#EF4444"></span>
+                                <span class="ix-terminal-dot" style="background:#F59E0B"></span>
+                                <span class="ix-terminal-dot" style="background:#10B981"></span>
+                            </div>
+                            <div class="ix-terminal-title">IX-NODE // MEMBER CONSOLE</div>
+                            <div style="font-family:var(--ix-mono);font-size:0.65rem;color:var(--ix-emerald);">LIVE</div>
+                        </div>
+
+                        <div class="ix-terminal-tabs">
+                            <button type="button" class="ix-terminal-tab active" id="tabBtnStream" onclick="switchTerminalTab('stream')">Live Activity Feed</button>
+                            <button type="button" class="ix-terminal-tab" id="tabBtnCard" onclick="switchTerminalTab('card')">Settlement Terminal</button>
+                        </div>
+
+                        <div class="ix-terminal-body">
+                            <!-- Stream Content -->
+                            <div id="termStreamContent">
+                                <div class="ix-feed-list">
+                                    <div class="ix-feed-row">
+                                        <div class="ix-feed-info">
+                                            <span class="ix-feed-badge ix-badge-survey">SURVEY</span>
+                                            <span class="ix-feed-desc">Nigeria Socio-Economics &amp; Fuel Subsidy</span>
+                                        </div>
+                                        <span class="ix-feed-val">+180 PTS</span>
+                                    </div>
+                                    <div class="ix-feed-row">
+                                        <div class="ix-feed-info">
+                                            <span class="ix-feed-badge ix-badge-task">TASK</span>
+                                            <span class="ix-feed-desc">Brand Video Visit &amp; Verification</span>
+                                        </div>
+                                        <span class="ix-feed-val">+150 PTS</span>
+                                    </div>
+                                    <div class="ix-feed-row">
+                                        <div class="ix-feed-info">
+                                            <span class="ix-feed-badge ix-badge-survey">SURVEY</span>
+                                            <span class="ix-feed-desc">Global Geopolitics &amp; World Conflicts</span>
+                                        </div>
+                                        <span class="ix-feed-val">+200 PTS</span>
+                                    </div>
+                                    <div class="ix-feed-row">
+                                        <div class="ix-feed-info">
+                                            <span class="ix-feed-badge ix-badge-affiliate">AFFILIATE</span>
+                                            <span class="ix-feed-desc">Direct Partner Activation Bonus</span>
+                                        </div>
+                                        <span class="ix-feed-val">+&#8358;<?= number_format($refBonus) ?></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Content (Hidden by default) -->
+                            <div id="termCardContent" style="display:none;">
+                                <div class="ix-atm-preview">
+                                    <div class="ix-atm-top">
+                                        <div class="ix-atm-chip"></div>
+                                        <span class="ix-atm-network">NIGERIAN SETTLEMENT</span>
+                                    </div>
+                                    <div class="ix-atm-num">0801 &bull;&bull;&bull;&bull; &bull;&bull;89</div>
+                                    <div class="ix-atm-footer">
+                                        <div>
+                                            <div class="ix-atm-holder-lbl">DESTINATION ACCOUNT</div>
+                                            <div class="ix-atm-holder-val">GTBANK / OPAY / KUDA</div>
+                                        </div>
+                                        <div class="ix-atm-status">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                            SETTLED
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--ix-text-muted);font-family:var(--ix-mono);">
+                                    <span>STATUS: REALTIME API</span>
+                                    <span style="color:var(--ix-emerald)">DISPATCH READY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="lp-hero-trust">
-                    <div class="lp-trust-dot">IX</div>
-                    <span>Verified daily settlements to <strong>GTBank, OPay, Kuda, PalmPay</strong> and more.</span>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== METRICS TELEMETRY STRIP ===== -->
+    <div class="ix-metrics-strip">
+        <div class="ix-container">
+            <div class="ix-metrics-grid">
+                <div class="ix-metric-card">
+                    <div class="ix-metric-val">150 - 200</div>
+                    <div class="ix-metric-lbl">PTS per Verified Task &amp; Survey</div>
+                </div>
+                <div class="ix-metric-card">
+                    <div class="ix-metric-val">&#8358;<?= number_format($refBonus) ?></div>
+                    <div class="ix-metric-lbl">Cash Bonus per Verified Invite</div>
+                </div>
+                <div class="ix-metric-card">
+                    <div class="ix-metric-val">&#8358;<?= number_format($minCashWd) ?></div>
+                    <div class="ix-metric-lbl">Minimum Direct Bank Cash Out</div>
+                </div>
+                <div class="ix-metric-card">
+                    <div class="ix-metric-val">30+</div>
+                    <div class="ix-metric-lbl">Supported Commercial &amp; MFB Banks</div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Right: Earnings Console -->
-            <div class="lp-console-card lp-reveal">
-                <div class="lp-console-header">
-                    <div class="lp-console-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>
-                        Member Wallet
-                    </div>
-                    <div class="lp-live-pill">
-                        <span class="lp-live-dot"></span>
-                        Live Earnings
-                    </div>
-                </div>
+    <!-- ===== CORE ACTIVITIES: TASKS & WORLD SURVEYS ===== -->
+    <section class="ix-section" id="activities">
+        <div class="ix-container">
+            <div class="ix-section-header">
+                <span class="ix-section-tag">Activity Modules</span>
+                <h2 class="ix-section-title">Two Structured Ways to Earn Daily</h2>
+                <p class="ix-section-desc">
+                    Unlike platforms with confusing or removed games, INNOVATIONX focuses on two verified revenue streams.
+                </p>
+            </div>
 
-                <div class="lp-balance-section">
-                    <div class="lp-balance-label">
-                        Available Balance
-                        <span class="lp-instant-badge">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Instant
-                        </span>
-                    </div>
-                    <div class="lp-balance-amt" id="heroBalance">&#8358;18,450.00</div>
-                    <div class="lp-balance-grid">
-                        <div>
-                            <div class="lp-balance-item-label">
-                                <span class="lp-balance-item-dot" style="background:#38BDF8;box-shadow:0 0 4px rgba(56,189,248,0.6)"></span>
-                                Task Points
+            <div class="ix-activities-grid">
+                
+                <!-- Card 1: Sponsored Tasks -->
+                <div class="ix-activity-panel">
+                    <div>
+                        <div class="ix-activity-header">
+                            <div class="ix-activity-icon ix-icon-emerald">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                             </div>
-                            <div class="lp-balance-item-val"><span id="heroPoints">2,450</span> PTS</div>
+                            <span class="ix-activity-reward">+<?= $taskRate ?> PTS / Activity</span>
                         </div>
-                        <div>
-                            <div class="lp-balance-item-label">
-                                <span class="lp-balance-item-dot" style="background:#7DD3FC;box-shadow:0 0 4px rgba(125,211,252,0.5)"></span>
-                                Referral Cash
+                        <h3 class="ix-activity-title">Sponsored Micro-Tasks</h3>
+                        <p class="ix-activity-desc">
+                            Execute sponsored campaigns for corporate advertisers. Review sponsor clips, verify web destinations, share promotional links, and complete micro-engagements. Each activity undergoes real-time visit tracking with automated wallet crediting upon completion.
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div class="ix-cat-pill">
+                                <span>Sponsored Video Engagements</span>
+                                <span>Verified</span>
                             </div>
-                            <div class="lp-balance-item-val"><span id="heroRef">&#8358;16,000</span>.00</div>
+                            <div class="ix-cat-pill">
+                                <span>Platform Review &amp; Web Visits</span>
+                                <span>Automated</span>
+                            </div>
+                            <div class="ix-cat-pill">
+                                <span>Social Task Amplification</span>
+                                <span>Instant Credit</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:20px;">
+                        <a href="register.php" class="ix-btn-primary" style="width:100%;justify-content:center;">Access Daily Tasks</a>
+                    </div>
+                </div>
+
+                <!-- Card 2: Research Surveys -->
+                <div class="ix-activity-panel">
+                    <div>
+                        <div class="ix-activity-header">
+                            <div class="ix-activity-icon ix-icon-cyan">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            </div>
+                            <span class="ix-activity-reward">Up to 200 PTS / Survey</span>
+                        </div>
+                        <h3 class="ix-activity-title">World &amp; National Surveys</h3>
+                        <p class="ix-activity-desc">
+                            Participate in research surveys across global and domestic issues. Share your demographic perspective on world affairs, infrastructure, and economics to earn verified research credits.
+                        </p>
+                        <div class="ix-survey-categories">
+                            <div class="ix-cat-pill">
+                                <span>Nigeria Socio-Economics &amp; Fuel Subsidy</span>
+                                <span>180 PTS</span>
+                            </div>
+                            <div class="ix-cat-pill">
+                                <span>Global Conflicts &amp; Geopolitics</span>
+                                <span>200 PTS</span>
+                            </div>
+                            <div class="ix-cat-pill">
+                                <span>North America &amp; Canada Affairs</span>
+                                <span>170 PTS</span>
+                            </div>
+                            <div class="ix-cat-pill">
+                                <span>Alaska &amp; Arctic Strategic Affairs</span>
+                                <span>190 PTS</span>
+                            </div>
+                            <div class="ix-cat-pill">
+                                <span>Global Economy &amp; Inflation Trends</span>
+                                <span>160 PTS</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="register.php" class="ix-btn-cta-secondary" style="width:100%;justify-content:center;">Submit First Survey</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INTERACTIVE EARNING SIMULATOR ===== -->
+    <section class="ix-section" id="simulator" style="padding-top:20px;">
+        <div class="ix-container">
+            <div class="ix-simulator-box">
+                <div class="ix-sim-grid">
+                    
+                    <!-- Controls -->
+                    <div>
+                        <span class="ix-section-tag">Interactive Estimator</span>
+                        <h3 style="font-size:1.6rem;font-weight:900;color:var(--ix-text-bright);margin-bottom:12px;">Earning Simulator</h3>
+                        <p style="font-size:0.9rem;color:var(--ix-text-muted);margin-bottom:28px;">
+                            Adjust your projected daily engagements and monthly referral volume to view estimated earnings.
+                        </p>
+
+                        <!-- Slider 1 -->
+                        <div class="ix-sim-control">
+                            <div class="ix-sim-label-row">
+                                <span class="ix-sim-label">Daily Sponsored Tasks</span>
+                                <span class="ix-sim-badge" id="simValTasks">4 Tasks / Day</span>
+                            </div>
+                            <input type="range" class="ix-sim-range" id="simRangeTasks" min="0" max="15" value="4" oninput="updateSim()">
+                        </div>
+
+                        <!-- Slider 2 -->
+                        <div class="ix-sim-control">
+                            <div class="ix-sim-label-row">
+                                <span class="ix-sim-label">Daily Opinion Surveys</span>
+                                <span class="ix-sim-badge" id="simValSurveys">3 Surveys / Day</span>
+                            </div>
+                            <input type="range" class="ix-sim-range" id="simRangeSurveys" min="0" max="8" value="3" oninput="updateSim()">
+                        </div>
+
+                        <!-- Slider 3 -->
+                        <div class="ix-sim-control">
+                            <div class="ix-sim-label-row">
+                                <span class="ix-sim-label">Monthly Affiliate Referrals</span>
+                                <span class="ix-sim-badge" id="simValRefs">6 Members / Month</span>
+                            </div>
+                            <input type="range" class="ix-sim-range" id="simRangeRefs" min="0" max="30" value="6" oninput="updateSim()">
+                        </div>
+                    </div>
+
+                    <!-- Output Board -->
+                    <div>
+                        <div class="ix-sim-result-card">
+                            <div class="ix-sim-result-row">
+                                <span class="ix-sim-result-lbl">Daily Task &amp; Survey Credits</span>
+                                <span class="ix-sim-result-val" id="simOutDailyPts">1,140 PTS</span>
+                            </div>
+                            <div class="ix-sim-result-row">
+                                <span class="ix-sim-result-lbl">Monthly Accumulated Credits</span>
+                                <span class="ix-sim-result-val" id="simOutMonthlyPts">34,200 PTS</span>
+                            </div>
+                            <div class="ix-sim-result-row">
+                                <span class="ix-sim-result-lbl">Monthly Affiliate Referral Cash</span>
+                                <span class="ix-sim-result-val" style="color:var(--ix-emerald);" id="simOutRefCash">&#8358;5,100</span>
+                            </div>
+                            <div class="ix-sim-grand-total">
+                                <div class="ix-sim-grand-lbl">Total Estimated Monthly Value</div>
+                                <div class="ix-sim-grand-val" id="simOutTotalVal">&#8358;39,300</div>
+                            </div>
+                            <a href="register.php" class="ix-btn-primary" style="justify-content:center;margin-top:10px;">
+                                Lock In This Earning Plan
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 3-STEP PIPELINE ===== -->
+    <section class="ix-section" id="pipeline">
+        <div class="ix-container">
+            <div class="ix-section-header" style="text-align:center;">
+                <span class="ix-section-tag">System Execution</span>
+                <h2 class="ix-section-title">How INNOVATIONX Operates in 3 Steps</h2>
+                <p class="ix-section-desc" style="margin:10px auto 0;">
+                    Transparent activation, verifiable activities, and direct bank settlement.
+                </p>
+            </div>
+
+            <div class="ix-pipeline-grid">
+                
+                <div class="ix-pipe-card">
+                    <span class="ix-pipe-step">STEP 01 // ACTIVATION</span>
+                    <h3 class="ix-pipe-title">Acquire Coupon PIN</h3>
+                    <p class="ix-pipe-desc">
+                        Connect with an authorized verified vendor to purchase an official activation PIN for &#8358;<?= number_format($regFee) ?>. This one-time fee permanently unlocks your lifetime dashboard with no recurring monthly charges.
+                    </p>
+                </div>
+
+                <div class="ix-pipe-card">
+                    <span class="ix-pipe-step">STEP 02 // ENGAGEMENT</span>
+                    <h3 class="ix-pipe-title">Execute Tasks &amp; Surveys</h3>
+                    <p class="ix-pipe-desc">
+                        Log into your terminal daily to complete sponsored visits, brand video tasks, and interactive opinion surveys. Optionally share your unique referral link to collect &#8358;<?= number_format($refBonus) ?> instant cash per member.
+                    </p>
+                </div>
+
+                <div class="ix-pipe-card">
+                    <span class="ix-pipe-step">STEP 03 // SETTLEMENT</span>
+                    <h3 class="ix-pipe-title">Automated Bank Transfer</h3>
+                    <p class="ix-pipe-desc">
+                        Link your commercial bank account or microfinance bank (OPay, Kuda, PalmPay, GTBank). Once you cross the minimum threshold, request your withdrawal and receive automated transfer directly.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== DUAL WALLET & BANKING NETWORK ===== -->
+    <section class="ix-section" id="settlement" style="padding-top:10px;">
+        <div class="ix-container">
+            <div class="ix-settlement-grid">
+                
+                <div>
+                    <span class="ix-section-tag">Financial Architecture</span>
+                    <h2 class="ix-section-title">Dual-Wallet Accounting &amp; Direct Bank Drops</h2>
+                    <p class="ix-section-desc">
+                        Your account operates on an isolated dual-wallet ledger. Task credits and affiliate commissions are cleanly tracked and immediately verifiable.
+                    </p>
+
+                    <div class="ix-dual-wallet-box">
+                        <div class="ix-wallet-panel">
+                            <span class="ix-wallet-badge">LEDGER 01</span>
+                            <h4 class="ix-wallet-title">Points Wallet</h4>
+                            <p class="ix-wallet-desc">
+                                Accumulates earnings from sponsored tasks and world surveys. Threshold: <?= number_format($minPtsWd) ?> PTS.
+                            </p>
+                        </div>
+                        <div class="ix-wallet-panel">
+                            <span class="ix-wallet-badge" style="color:var(--ix-emerald);">LEDGER 02</span>
+                            <h4 class="ix-wallet-title">Cash Wallet</h4>
+                            <p class="ix-wallet-desc">
+                                Accumulates direct affiliate referral commissions in Naira (&#8358;<?= number_format($refBonus) ?> per verified registration). Threshold: &#8358;<?= number_format($minCashWd) ?>.
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div class="lp-task-list">
-                    <div class="lp-task-row">
-                        <div class="lp-task-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <div>
+                    <div class="ix-banks-cluster">
+                        <div class="ix-banks-header">
+                            <span class="ix-banks-title">Supported Nigerian Banks</span>
+                            <span class="ix-banks-tag">DIRECT SETTLEMENT</span>
                         </div>
-                        <span class="lp-task-name"><?= htmlspecialchars($siteContent['hero_task1_title'] ?? 'Watch 30s clip & complete social task') ?></span>
-                        <span class="lp-task-badge"><?= htmlspecialchars($siteContent['hero_task1_badge'] ?? '+150 PTS') ?></span>
-                    </div>
-                    <div class="lp-task-row">
-                        <div class="lp-task-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+
+                        <div class="ix-banks-grid">
+                            <div class="ix-bank-item">GTBank</div>
+                            <div class="ix-bank-item">OPay</div>
+                            <div class="ix-bank-item">Kuda Bank</div>
+                            <div class="ix-bank-item">PalmPay</div>
+                            <div class="ix-bank-item">Access Bank</div>
+                            <div class="ix-bank-item">Zenith Bank</div>
+                            <div class="ix-bank-item">Moniepoint</div>
+                            <div class="ix-bank-item">UBA</div>
+                            <div class="ix-bank-item">FirstBank</div>
+                            <div class="ix-bank-item">Fidelity Bank</div>
+                            <div class="ix-bank-item">Stanbic IBTC</div>
+                            <div class="ix-bank-item">Wema / ALAT</div>
                         </div>
-                        <span class="lp-task-name"><?= htmlspecialchars($siteContent['hero_task2_title'] ?? 'Daily Lucky Spin Wheel reward') ?></span>
-                        <span class="lp-task-badge"><?= htmlspecialchars($siteContent['hero_task2_badge'] ?? 'Free Spin') ?></span>
-                    </div>
-                    <div class="lp-task-row">
-                        <div class="lp-task-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                        </div>
-                        <span class="lp-task-name"><?= htmlspecialchars($siteContent['hero_task3_title'] ?? 'Redeem points to 1GB mobile data') ?></span>
-                        <span class="lp-task-badge"><?= htmlspecialchars($siteContent['hero_task3_badge'] ?? 'Instant') ?></span>
-                    </div>
-                    <div class="lp-task-row">
-                        <div class="lp-task-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        </div>
-                        <span class="lp-task-name"><?= htmlspecialchars($siteContent['hero_task4_title'] ?? 'Earn cash for every referral') ?></span>
-                        <span class="lp-task-badge"><?= htmlspecialchars($siteContent['hero_task4_badge'] ?? '+&#8358;250 Cash') ?></span>
                     </div>
                 </div>
 
-                <a href="register.php" class="lp-console-cta">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    <?= htmlspecialchars($siteContent['hero_wallet_btn_text'] ?? 'Claim 100 PTS Welcome Bonus') ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ABOUT THE PLATFORM ===== -->
+    <section class="ix-section" id="about">
+        <div class="ix-container">
+            <div class="ix-about-box">
+                <div class="ix-about-grid">
+                    
+                    <div>
+                        <span class="ix-section-tag">About INNOVATIONX</span>
+                        <h2 class="ix-about-lead">
+                            A Verified Micro-Earning &amp; Market Research Infrastructure Built for Nigeria.
+                        </h2>
+                        <p class="ix-about-body">
+                            INNOVATIONX operates as a commercial bridge between institutional advertisers, research groups, and everyday digital consumers. Instead of spending advertising budgets on algorithmic tech monopolies, brands channel engagement tasks and survey budgets directly to our member base.
+                        </p>
+                        <p class="ix-about-body">
+                            Members dedicate brief periods of their daily screen time to evaluate content, submit opinions on world and national issues, and refer fellow earners. The result is a self-sustaining ecosystem with verified payouts.
+                        </p>
+                    </div>
+
+                    <div class="ix-trust-points">
+                        <div class="ix-trust-point">
+                            <div class="ix-check-bullet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="ix-point-content">
+                                <h4>No Gambling or Games of Chance</h4>
+                                <p>We do not feature roulette wheels, spin games, or luck-based gimmicks. All earnings are tied to verifiable tasks and completed surveys.</p>
+                            </div>
+                        </div>
+
+                        <div class="ix-trust-point">
+                            <div class="ix-check-bullet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="ix-point-content">
+                                <h4>Fraud-Resistant Vendor Distribution</h4>
+                                <p>Activation codes are distributed through certified local vendors, safeguarding members against debit card compromise and fraud.</p>
+                            </div>
+                        </div>
+
+                        <div class="ix-trust-point">
+                            <div class="ix-check-bullet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="ix-point-content">
+                                <h4>Guaranteed Bank Settlement</h4>
+                                <p>Earnings are disbursed via direct Nigerian bank clearing once minimum threshold requirements are fulfilled.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TECHNICAL FAQ ===== -->
+    <section class="ix-section" id="faq">
+        <div class="ix-container">
+            <div class="ix-section-header" style="text-align:center;">
+                <span class="ix-section-tag">System Inquiries</span>
+                <h2 class="ix-section-title">Frequently Asked Questions</h2>
+                <p class="ix-section-desc" style="margin:10px auto 0;">
+                    Clear, honest answers regarding account activation, tasks, and withdrawals.
+                </p>
+            </div>
+
+            <div class="ix-faq-list">
+                
+                <div class="ix-faq-item active" onclick="toggleTechFaq(this)">
+                    <div class="ix-faq-question">
+                        <span>How much is the activation fee and why is it required?</span>
+                        <span class="ix-faq-icon">+</span>
+                    </div>
+                    <div class="ix-faq-answer">
+                        <p>
+                            Account activation requires a one-time lifetime membership fee of &#8358;<?= number_format($regFee) ?> paid via an official vendor coupon code. This eliminates automated spam accounts, protects advertiser task integrity, and funds your welcome bonus. There are zero recurring monthly maintenance charges.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ix-faq-item" onclick="toggleTechFaq(this)">
+                    <div class="ix-faq-question">
+                        <span>Can I withdraw earnings without referring anyone?</span>
+                        <span class="ix-faq-icon">+</span>
+                    </div>
+                    <div class="ix-faq-answer">
+                        <p>
+                            Yes. Affiliate recruitment is entirely optional. Members can accumulate and settle earnings solely through daily sponsored tasks and survey completion.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ix-faq-item" onclick="toggleTechFaq(this)">
+                    <div class="ix-faq-question">
+                        <span>How do I purchase an activation coupon PIN?</span>
+                        <span class="ix-faq-icon">+</span>
+                    </div>
+                    <div class="ix-faq-answer">
+                        <p>
+                            Visit the Verified Vendors page on our site to contact certified distributors via WhatsApp or Telegram. After purchasing your PIN, input it on the registration form to immediately unlock your account.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ix-faq-item" onclick="toggleTechFaq(this)">
+                    <div class="ix-faq-question">
+                        <span>Which banks are supported for withdrawal?</span>
+                        <span class="ix-faq-icon">+</span>
+                    </div>
+                    <div class="ix-faq-answer">
+                        <p>
+                            We support all licensed Nigerian commercial banks (e.g., GTBank, Access Bank, Zenith Bank, FirstBank, UBA) and licensed microfinance banks (OPay, Kuda Bank, PalmPay, Moniepoint).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ix-faq-item" onclick="toggleTechFaq(this)">
+                    <div class="ix-faq-question">
+                        <span>What is the minimum withdrawal threshold?</span>
+                        <span class="ix-faq-icon">+</span>
+                    </div>
+                    <div class="ix-faq-answer">
+                        <p>
+                            For direct cash wallet earnings (affiliate commissions), the minimum threshold is &#8358;<?= number_format($minCashWd) ?>. For task points, the threshold is <?= number_format($minPtsWd) ?> PTS.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CALL TO ACTION ===== -->
+    <div class="ix-container">
+        <div class="ix-cta-panel">
+            <span class="ix-section-tag">Instant Provisioning</span>
+            <h2 style="font-size:clamp(1.9rem, 3.5vw, 2.8rem);font-weight:900;color:var(--ix-text-bright);letter-spacing:-0.03em;margin:10px 0 14px;">
+                Ready to Join the Verification Terminal?
+            </h2>
+            <p style="color:var(--ix-text-muted);font-size:1rem;max-width:540px;margin:0 auto 28px;line-height:1.6;">
+                Activate your account today for a one-time fee of &#8358;<?= number_format($regFee) ?> and begin completing verified tasks and surveys with automated bank drops.
+            </p>
+            <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+                <a href="register.php" class="ix-btn-cta-lg">
+                    <span>Activate Account</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="vendors.php" class="ix-btn-cta-secondary">
+                    <span>Contact Verified Vendors</span>
                 </a>
             </div>
         </div>
     </div>
-</section>
 
-<!-- ===== STATS STRIP ===== -->
-<div class="lp-stats">
-    <div class="container">
-        <div class="lp-stats-grid">
-            <div class="lp-stat lp-reveal">
-                <span class="lp-stat-num">24/7</span>
-                <span class="lp-stat-lbl">Automated Task Delivery</span>
-            </div>
-            <div class="lp-stat lp-reveal">
-                <span class="lp-stat-num">&#8358;1,000</span>
-                <span class="lp-stat-lbl">Low Minimum Payout</span>
-            </div>
-            <div class="lp-stat lp-reveal">
-                <span class="lp-stat-num">&#8358;250+</span>
-                <span class="lp-stat-lbl">Per Referral Earned</span>
-            </div>
-            <div class="lp-stat lp-reveal">
-                <span class="lp-stat-num">100%</span>
-                <span class="lp-stat-lbl">Direct Bank Settlement</span>
+    <!-- ===== SLEEK TECH FOOTER ===== -->
+    <footer class="ix-footer">
+        <div class="ix-container">
+            <div class="ix-footer-inner">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="ix-brand-badge" style="width:26px;height:26px;font-size:0.7rem;">IX</div>
+                    <span style="font-size:0.9rem;font-weight:800;color:var(--ix-text-bright);">INNOVATIONX</span>
+                    <span style="font-size:0.78rem;color:var(--ix-text-dim);">&copy; <?= date('Y') ?></span>
+                </div>
+
+                <ul class="ix-footer-links">
+                    <li><a href="#activities">Tasks</a></li>
+                    <li><a href="#activities">Surveys</a></li>
+                    <li><a href="vendors.php">Vendors</a></li>
+                    <li><a href="login.php">Sign In</a></li>
+                    <li><a href="register.php">Register</a></li>
+                </ul>
+
+                <div style="font-size:0.75rem;color:var(--ix-text-dim);font-family:var(--ix-mono);">
+                    SUPPORT: <?= htmlspecialchars(defined('SUPPORT_EMAIL') ? SUPPORT_EMAIL : 'Supportinnovationx@gmail.com') ?>
+                </div>
             </div>
         </div>
-    </div>
+    </footer>
+
 </div>
 
-<!-- ===== HOW IT WORKS ===== -->
-<section class="lp-section" id="how">
-    <div class="container">
-        <div class="lp-section-header center">
-            <div class="lp-section-tag">How It Works</div>
-            <h2 class="lp-section-title">Start Earning in <span style="color:var(--sky-vibrant)">3 Simple Steps</span></h2>
-            <p class="lp-section-sub">No complicated requirements. No monthly subscriptions. Just direct access to daily earning opportunities and instant bank payouts.</p>
-        </div>
-
-        <div class="lp-steps">
-            <div class="lp-step lp-reveal">
-                <div class="lp-step-n">Step 01</div>
-                <div class="lp-step-icon-wrap">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                </div>
-                <h3 class="lp-step-title">Register & Activate</h3>
-                <p class="lp-step-desc">Create your account using an authorized vendor coupon code. One-time activation fee of &#8358;<?= number_format(MEMBERSHIP_FEE) ?> unlocks full lifetime access. You immediately receive 100 PTS as a welcome bonus.</p>
-            </div>
-            <div class="lp-step lp-reveal" style="transition-delay:0.1s">
-                <div class="lp-step-n">Step 02</div>
-                <div class="lp-step-icon-wrap">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                </div>
-                <h3 class="lp-step-title">Complete Tasks & Refer</h3>
-                <p class="lp-step-desc">Engage with daily sponsored micro-tasks, video campaigns, and surveys — each earning <?= TASK_POINTS_RATE ?> PTS. Share your referral link and earn &#8358;<?= number_format(REFERRAL_CASH_BONUS) ?> instant cash for every person who joins.</p>
-            </div>
-            <div class="lp-step lp-reveal" style="transition-delay:0.2s">
-                <div class="lp-step-n">Step 03</div>
-                <div class="lp-step-icon-wrap">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="12" y1="8" x2="12" y2="12"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                </div>
-                <h3 class="lp-step-title">Withdraw to Your Bank</h3>
-                <p class="lp-step-desc">Withdraw your referral earnings directly to any Nigerian commercial bank — GTBank, Kuda, OPay, PalmPay, Access Bank, and more. Or convert task points to 1GB mobile data instantly.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== FEATURES ===== -->
-<section class="lp-section" id="features" style="padding-top:0">
-    <div class="container">
-        <div class="lp-section-header">
-            <div class="lp-section-tag">Platform Features</div>
-            <h2 class="lp-section-title">Everything You Need to <span style="color:var(--sky-vibrant)">Earn Daily</span></h2>
-            <p class="lp-section-sub">A full suite of earning tools, community features, and financial utilities — all in one platform.</p>
-        </div>
-
-        <div class="lp-features-grid">
-            <div class="lp-feature-card lp-reveal">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                </div>
-                <div class="lp-feature-title">Daily Sponsored Tasks</div>
-                <div class="lp-feature-desc">Complete short video campaigns, link-sharing gigs, and sponsored social tasks for 150 PTS each — credited immediately to your wallet.</div>
-                <span class="lp-feature-badge">150 PTS / Task</span>
-            </div>
-            <div class="lp-feature-card lp-reveal" style="transition-delay:0.07s">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                </div>
-                <div class="lp-feature-title">Referral Cash Rewards</div>
-                <div class="lp-feature-desc">Earn &#8358;<?= number_format(REFERRAL_CASH_BONUS) ?> in real cash for every verified member you refer. Build your affiliate network and multiply your passive income stream effortlessly.</div>
-                <span class="lp-feature-badge">&#8358;<?= number_format(REFERRAL_CASH_BONUS) ?> / Referral</span>
-            </div>
-            <div class="lp-feature-card lp-reveal" style="transition-delay:0.14s">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                </div>
-                <div class="lp-feature-title">Daily Lucky Spin Wheel</div>
-                <div class="lp-feature-desc">Get one free spin of the Lucky Wheel every single day. Win bonus task points, cash prizes, airtime vouchers, or special bonus multipliers.</div>
-                <span class="lp-feature-badge">Free Daily Spin</span>
-            </div>
-            <div class="lp-feature-card lp-reveal" style="transition-delay:0.07s">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                </div>
-                <div class="lp-feature-title">VTU Airtime & Data</div>
-                <div class="lp-feature-desc">Redeem your accumulated task points for discounted 30-day SME mobile data bundles or airtime on MTN, Airtel, Glo, and 9mobile instantly from your dashboard.</div>
-                <span class="lp-feature-badge">Instant Top-Up</span>
-            </div>
-            <div class="lp-feature-card lp-reveal" style="transition-delay:0.14s">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
-                </div>
-                <div class="lp-feature-title">OTC Token Trading</div>
-                <div class="lp-feature-desc">Buy and sell unlisted tokens (VERY, RUBI) through our trusted peer-to-peer OTC desk with escrow protection and direct NGN bank settlement at competitive rates.</div>
-                <span class="lp-feature-badge">P2P Escrow</span>
-            </div>
-            <div class="lp-feature-card lp-reveal" style="transition-delay:0.21s">
-                <div class="lp-feature-icon" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.18);">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                </div>
-                <div class="lp-feature-title">Advertise Your Business</div>
-                <div class="lp-feature-desc">Promote your product or service to thousands of active platform members through our sponsored campaign system. Targeted audience, measurable results, and affordable pricing.</div>
-                <span class="lp-feature-badge">Reach Members</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== OPPORTUNITIES / QUICK LINKS ===== -->
-<section class="lp-opps-section" id="explore">
-    <div class="container">
-        <div class="lp-opps-inner">
-            <div class="lp-reveal">
-                <div class="lp-section-tag">Platform Access</div>
-                <h2 class="lp-section-title">Everything Is a<br><span style="color:var(--sky-vibrant)">Click Away</span></h2>
-                <p class="lp-section-sub">From revenue calculators to top earner boards — explore all the tools and opportunities we have for you.</p>
-                <div class="lp-opps-cta">
-                    <a href="jobbers.php" class="lp-btn-primary" style="display:inline-flex;width:auto;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        Explore All Opportunities
-                    </a>
-                </div>
-            </div>
-            <div>
-                <div class="lp-opps-pills lp-reveal" style="transition-delay:0.1s">
-                    <a href="forecaster.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        Revenue Forecaster
-                    </a>
-                    <a href="membership.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"></path></svg>
-                        Membership Access
-                    </a>
-                    <a href="jobbers.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect x="2" y="6" width="20" height="14" rx="2"></rect></svg>
-                        Jobbers &amp; Opportunities
-                    </a>
-                    <a href="tokens.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="6" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="18"></line></svg>
-                        OTC Token Desk
-                    </a>
-                    <a href="advertise.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                        Advertise Your Product
-                    </a>
-                    <a href="vendors.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                        Verified Vendors
-                    </a>
-                    <a href="verify.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        Verify Activation PIN
-                    </a>
-                    <a href="leaderboard.php" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
-                        Top Earners Board
-                    </a>
-                    <a href="javascript:void(0)" onclick="openTelegramCommunityModal()" class="lp-opp-pill">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                        Telegram Community
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== WHY TRUST US ===== -->
-<section class="lp-section" id="about">
-    <div class="container">
-        <div class="lp-section-header center">
-            <div class="lp-section-tag">About INNOVATIONX</div>
-            <h2 class="lp-section-title">Built for <span style="color:var(--sky-vibrant)">Transparency & Speed</span></h2>
-            <p class="lp-section-sub">INNOVATIONX is a verified Nigerian digital earning platform designed to give everyday people genuine access to automated income streams — no experience required.</p>
-        </div>
-
-        <div class="lp-trust-cards">
-            <div class="lp-trust-card lp-reveal">
-                <div class="lp-trust-badge">Automated Payouts</div>
-                <div class="lp-trust-title">Direct Bank Transfers</div>
-                <div class="lp-trust-desc">Withdraw your referral cash earnings directly to any Nigerian commercial or microfinance bank — GTBank, Kuda, OPay, PalmPay, Access, Zenith. Real-time automated settlement with zero manual delays.</div>
-            </div>
-            <div class="lp-trust-card lp-reveal" style="transition-delay:0.1s">
-                <div class="lp-trust-badge">Instant Crediting</div>
-                <div class="lp-trust-title">Live Task Crediting Engine</div>
-                <div class="lp-trust-desc">Each completed sponsored task, video campaign, and survey link is verified and credited to your wallet immediately. No manual reviews. No waiting. Your points balance updates in real time.</div>
-            </div>
-            <div class="lp-trust-card lp-reveal" style="transition-delay:0.2s">
-                <div class="lp-trust-badge">Flexible Rewards</div>
-                <div class="lp-trust-title">Multi-Wallet Freedom</div>
-                <div class="lp-trust-desc">Your earnings split across two wallets: a Task Points wallet for VTU data redemptions, surveys, and spin wins — and a Referral Cash wallet for direct NGN bank withdrawals. Maximum flexibility.</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ===== FAQ ===== -->
-<section class="lp-section" id="faq" style="padding-top:0">
-    <div class="container">
-        <div class="lp-section-header center">
-            <div class="lp-section-tag">FAQ</div>
-            <h2 class="lp-section-title">Frequently Asked <span style="color:var(--sky-vibrant)">Questions</span></h2>
-            <p class="lp-section-sub">Everything you need to know before you start earning with INNOVATIONX.</p>
-        </div>
-
-        <div class="lp-faq-list">
-<?php
-$faqPath = __DIR__ . '/faq.json';
-$faqData = file_exists($faqPath) ? json_decode(file_get_contents($faqPath), true) : [];
-if (empty($faqData) || !is_array($faqData)) {
-    $faqData = [
-        [
-            'question' => 'How much does it cost to join INNOVATIONX?',
-            'answer' => 'Joining INNOVATIONX requires a one-time lifetime membership activation fee of only &#8358;' . number_format(MEMBERSHIP_FEE) . '. There are zero hidden monthly maintenance fees, and you receive an immediate 100 PTS welcome bonus upon activation.'
-        ],
-        [
-            'question' => 'How do I withdraw my earnings to my bank account?',
-            'answer' => 'Withdrawals can be requested directly from your dashboard to any commercial or microfinance bank in Nigeria (e.g. GTBank, Kuda, OPay, PalmPay, Access, Zenith). Once you meet the minimum threshold of &#8358;' . number_format(MIN_WITHDRAWAL_NAIRA) . ', payouts are processed swiftly via our automated payout system.'
-        ],
-        [
-            'question' => 'Can I earn without referring anyone?',
-            'answer' => 'Yes, absolutely! Referrals are 100% optional. You can earn and withdraw consistently purely by completing your daily sponsored tasks, participating in surveys, spinning the Lucky Wheel, and claiming daily login bonuses.'
-        ],
-        [
-            'question' => 'What is the activation coupon and where do I get one?',
-            'answer' => 'An activation coupon is a unique PIN that unlocks your full platform membership. You obtain one from our list of verified authorized vendors on the Vendors page. Each coupon is &#8358;' . number_format(MEMBERSHIP_FEE) . ' and grants lifetime access.'
-        ],
-        [
-            'question' => 'What services does INNOVATIONX offer?',
-            'answer' => 'INNOVATIONX provides daily sponsored tasks, referral affiliate rewards, a Lucky Spin Wheel, OTC unlisted token trading (VERY, RUBI), VTU airtime and data top-up, a sponsored advertising marketplace, an Opportunities Hub with Web3 mining and digital gigs, revenue forecasting tools, and direct NGN bank withdrawals.'
-        ],
-        [
-            'question' => 'Is this platform safe and legitimate?',
-            'answer' => 'INNOVATIONX is a transparent, verified digital earning platform. All task completions, survey submissions, and referral credits are tracked and processed automatically. We do not ask for sensitive personal or banking login credentials — only your bank name, account number, and account name for withdrawal settlement.'
-        ],
-    ];
-}
-foreach ($faqData as $idx => $item): ?>
-            <div class="lp-faq-item<?= $idx === 0 ? ' open' : '' ?>" onclick="toggleFaq(this)">
-                <div class="lp-faq-q">
-                    <span><?= htmlspecialchars($item['question'] ?? '') ?></span>
-                    <svg class="lp-faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-                <div class="lp-faq-a">
-                    <p><?= $item['answer'] ?? '' ?></p>
-                </div>
-            </div>
-<?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
-<!-- ===== FINAL CTA ===== -->
-<section class="lp-cta-section">
-    <div class="container">
-        <div class="lp-cta-box lp-reveal">
-            <div class="lp-cta-h">Ready to Start Earning?</div>
-            <p class="lp-cta-p">Join INNOVATIONX today. One-time activation, lifetime access. Complete tasks, grow your referral network, and withdraw real cash to your bank account every day.</p>
-            <div class="lp-cta-btns">
-                <a href="register.php" class="lp-btn-primary">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 12 5 19 12"></polyline><polyline points="12 19 12 5"></polyline></svg>
-                    Create Account — &#8358;<?= number_format(MEMBERSHIP_FEE) ?> Lifetime
-                </a>
-                <a href="vendors.php" class="lp-btn-outline">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                    Find Verified Vendors
-                </a>
-            </div>
-            <div class="lp-cta-note">No monthly fees. No hidden charges. Withdraw anytime after meeting minimum threshold.</div>
-        </div>
-    </div>
-</section>
-
 <script>
-// Referral param to localStorage
-(function() {
-    var urlParams = new URLSearchParams(window.location.search);
-    var ref = urlParams.get('ref');
-    if (ref) {
-        try { localStorage.setItem('ix_ref', ref); } catch(e) {}
+// Terminal Tab Switcher
+function switchTerminalTab(tab) {
+    var btnStream = document.getElementById('tabBtnStream');
+    var btnCard = document.getElementById('tabBtnCard');
+    var streamContent = document.getElementById('termStreamContent');
+    var cardContent = document.getElementById('termCardContent');
+    
+    if (tab === 'stream') {
+        btnStream.classList.add('active');
+        btnCard.classList.remove('active');
+        streamContent.style.display = 'block';
+        cardContent.style.display = 'none';
+    } else {
+        btnCard.classList.add('active');
+        btnStream.classList.remove('active');
+        streamContent.style.display = 'none';
+        cardContent.style.display = 'block';
     }
-})();
-
-// FAQ toggle
-function toggleFaq(el) {
-    var isOpen = el.classList.contains('open');
-    document.querySelectorAll('.lp-faq-item').forEach(function(item) {
-        item.classList.remove('open');
-    });
-    if (!isOpen) el.classList.add('open');
 }
 
-// Scroll reveal
-(function() {
-    var els = document.querySelectorAll('.lp-reveal');
-    var io = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                io.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    els.forEach(function(el) { io.observe(el); });
-
-    // Hero card is visible above fold — trigger immediately
-    var heroCard = document.querySelector('.lp-hero .lp-reveal');
-    if (heroCard) {
-        setTimeout(function() { heroCard.classList.add('visible'); }, 150);
+// Mobile Nav Toggle
+function toggleMobileNav() {
+    var menu = document.getElementById('ixMobileMenu');
+    if (menu) {
+        menu.classList.toggle('open');
     }
-})();
+}
 
-// Animated wallet balance counter
-(function() {
-    var balances = [12750, 18450, 9200, 15800, 22100, 8600, 16340];
-    var pts = [1850, 2450, 900, 3200, 1100, 2850, 1650];
-    var refs = [8000, 16000, 5500, 12500, 19500, 7250, 14000];
-    var i = 0;
-    function fmt(n) { return n.toLocaleString('en-NG'); }
-
-    function tick() {
-        var b = document.getElementById('heroBalance');
-        var p = document.getElementById('heroPoints');
-        var r = document.getElementById('heroRef');
-        if (b && p && r) {
-            b.textContent = '\u20A6' + fmt(balances[i]);
-            p.textContent = fmt(pts[i]);
-            r.textContent = '\u20A6' + fmt(refs[i]);
-            i = (i + 1) % balances.length;
-        }
+// FAQ Accordion
+function toggleTechFaq(el) {
+    var wasActive = el.classList.contains('active');
+    document.querySelectorAll('.ix-faq-item').forEach(function(item) {
+        item.classList.remove('active');
+    });
+    if (!wasActive) {
+        el.classList.add('active');
     }
-    setInterval(tick, 2800);
-})();
+}
+
+// Interactive Simulator Logic
+function updateSim() {
+    var tasks = parseInt(document.getElementById('simRangeTasks').value) || 0;
+    var surveys = parseInt(document.getElementById('simRangeSurveys').value) || 0;
+    var refs = parseInt(document.getElementById('simRangeRefs').value) || 0;
+    
+    document.getElementById('simValTasks').textContent = tasks + ' Tasks / Day';
+    document.getElementById('simValSurveys').textContent = surveys + ' Surveys / Day';
+    document.getElementById('simValRefs').textContent = refs + ' Members / Month';
+    
+    var taskRate = <?= (int)$taskRate ?>;
+    var surveyAvgRate = 180;
+    var refBonus = <?= (float)$refBonus ?>;
+    
+    var dailyPts = (tasks * taskRate) + (surveys * surveyAvgRate);
+    var monthlyPts = dailyPts * 30;
+    var monthlyRefCash = refs * refBonus;
+    var estimatedNairaTotal = monthlyRefCash + (monthlyPts * 1);
+    
+    document.getElementById('simOutDailyPts').textContent = dailyPts.toLocaleString() + ' PTS';
+    document.getElementById('simOutMonthlyPts').textContent = monthlyPts.toLocaleString() + ' PTS';
+    document.getElementById('simOutRefCash').textContent = '\u20A6' + monthlyRefCash.toLocaleString();
+    document.getElementById('simOutTotalVal').textContent = '\u20A6' + estimatedNairaTotal.toLocaleString();
+}
+
+// Auto-run simulation on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSim();
+});
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
