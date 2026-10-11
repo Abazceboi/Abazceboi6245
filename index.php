@@ -989,6 +989,52 @@ h1, h2, h3, h4, .font-display {
     border-color: rgba(2, 132, 199, 0.4);
 }
 
+/* Standalone Theme Button (Desktop Right Side) */
+.ev-theme-standalone {
+    pointer-events: auto;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.ev-theme-standalone:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38BDF8;
+}
+
+[data-theme="light"] .ev-theme-standalone {
+    background: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 10px 28px -4px rgba(2, 132, 199, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+    color: #0F172A;
+}
+
+[data-theme="light"] .ev-theme-standalone:hover {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(2, 132, 199, 0.35) !important;
+    color: #0284C7;
+}
+
+/* In-Pill Theme Button (Hidden on desktop, active on mobile) */
+.ev-theme-in-pill {
+    display: none;
+}
+
 .ev-pill-link {
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
@@ -1070,7 +1116,8 @@ h1, h2, h3, h4, .font-display {
 
                     <!-- Actions -->
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" class="ev-theme-btn">
+                        <!-- In-pill theme button (Mobile only, keeps exact same position and alignment) -->
+                        <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" class="ev-theme-btn ev-theme-in-pill">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                         </button>
                         <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:5px 11px;border-radius:9999px;font-size:0.78rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
@@ -1086,8 +1133,12 @@ h1, h2, h3, h4, .font-display {
                 </nav>
             </div>
 
-            <!-- Balanced Spacer (Right) -->
-            <div class="ev-header-side ev-header-right"></div>
+            <!-- Standalone Theme Toggle (Right - Circled Position) -->
+            <div class="ev-header-side ev-header-right">
+                <button type="button" onclick="togglePlatformTheme(event)" title="Toggle Theme" class="ev-theme-standalone" aria-label="Toggle theme">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -1682,6 +1733,9 @@ h1, h2, h3, h4, .font-display {
     }
     .ev-header-side.ev-header-right {
         display: none !important;
+    }
+    .ev-theme-in-pill {
+        display: flex !important;
     }
 }
 @media (max-width: 767px) {
