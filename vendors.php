@@ -1,5 +1,6 @@
 <?php
-$pageTitle = 'Verified Vendors | ' . APP_NAME;
+require_once __DIR__ . '/config/app.php';
+$pageTitle = 'Verified Vendors | ' . (defined('APP_NAME') ? APP_NAME : 'INNOVATIONX');
 $pageDesc = 'Purchase your account activation code directly from verified vendors via WhatsApp or Telegram.';
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/storage_helper.php';
