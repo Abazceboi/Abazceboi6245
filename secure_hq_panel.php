@@ -1432,6 +1432,7 @@ input,textarea,select{font-family:var(--ff);}
             </tbody>
           </table>
         </div>
+      </div>
     </div>
 
     <!-- ══ TAB: VENDORS ACTIVITY & STOCKS MONITORING ═══════════════════════ -->
@@ -6281,6 +6282,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadWithdrawalsData();
   loadCouponsData();
   loadVendorsDropdown();
+  loadVendorsActivityData();
   loadAdminNotificationsTab();
   if (!window.IS_SUB_ADMIN) {
     loadSubAdminsData();
