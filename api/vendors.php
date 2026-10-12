@@ -91,6 +91,102 @@ if ($action === 'get_vendors' || (empty($action) && $_SERVER['REQUEST_METHOD'] =
     exit;
 }
 
+// 1B. GET VENDORS ACTIVITY & STOCK MONITORING (For Admin Dashboard)
+if ($action === 'get_vendors_activity') {
+    $coupons = readStorageJson('data/coupons.json', []);
+    if (!is_array($coupons)) $coupons = [];
+
+    $uData = readStorageJson('data/users.json', ['users' => []]);
+    $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
+
+    // Combine vendors from config/vendors.json with any registered users having role === 'vendor'
+    $vendorMap = [];
+    foreach ($vendors as $v) {
+        $k = strtolower($v['username'] ?? $v['name'] ?? $v['id']);
+        $vendorMap[$k] = $v;
+    }
+    foreach ($users as $u) {
+        if (strtolower($u['role'] ?? '') === 'vendor') {
+            $k = strtolower($u['username'] ?? '');
+            if (!isset($vendorMap[$k])) {
+                $vendorMap[$k] = [
+                    'id' => 'v_' . $k,
+                    'username' => $u['username'],
+                    'name' => $u['full_name'] ?? $u['username'],
+                    'phone' => $u['phone'] ?? '',
+                    'location' => 'Nigeria (National)',
+                    'rating' => 5.0,
+                    'codes' => '0 Codes Sold',
+                    'telegram' => '',
+                    'status' => $u['status'] ?? 'active',
+                    'avatar' => '#F59E0B'
+                ];
+            }
+        }
+    }
+
+    $activity = [];
+    foreach ($vendorMap as $v) {
+        $uName = strtolower($v['username'] ?? '');
+        $vId = strtolower($v['id'] ?? '');
+        $vName = strtolower($v['name'] ?? '');
+
+        $codesSold = 0;
+        $codesRemaining = 0;
+        $codesTotal = 0;
+
+        foreach ($coupons as $c) {
+            $cVid = strtolower($c['vendor_id'] ?? $c['vendorId'] ?? '');
+            $cVname = strtolower($c['vendor_name'] ?? $c['vendorName'] ?? '');
+
+            $isMatch = ($uName && ($cVid === $uName || $cVname === $uName || $cVid === ('v_' . $uName)))
+                || ($vId && ($cVid === $vId || $cVname === $vId))
+                || ($vName && ($cVid === $vName || $cVname === $vName));
+
+            if ($isMatch) {
+                $codesTotal++;
+                $isUsed = !empty($c['is_used']) || !empty($c['isUsed']) || ($c['status'] ?? '') === 'used' || !empty($c['used_by']) || !empty($c['usedBy']);
+                if ($isUsed) {
+                    $codesSold++;
+                } else {
+                    $codesRemaining++;
+                }
+            }
+        }
+
+        $referralsCount = 0;
+        $activeReferrals = 0;
+        $vRefCode = strtoupper('INX-' . $uName);
+
+        foreach ($users as $u) {
+            $refBy = strtolower(trim($u['referred_by'] ?? $u['referredBy'] ?? ''));
+            $refCode = strtoupper(trim($u['referred_by_code'] ?? ''));
+            if ($refBy === $uName || ($vRefCode && $refCode === $vRefCode)) {
+                $referralsCount++;
+                if (!empty($u['is_activated']) || !empty($u['coupon_activated']) || !empty($u['coupon_pin_used'])) {
+                    $activeReferrals++;
+                }
+            }
+        }
+
+        $v['codes_sold'] = $codesSold;
+        $v['codes_remaining'] = $codesRemaining;
+        $v['codes_total'] = $codesTotal;
+        $v['referrals_count'] = $referralsCount;
+        $v['active_referrals'] = $activeReferrals;
+
+        $activity[] = $v;
+    }
+
+    echo json_encode([
+        'success' => true,
+        'status' => 'success',
+        'count' => count($activity),
+        'vendors' => $activity
+    ]);
+    exit;
+}
+
 // 2. GET TELEGRAM SETTINGS
 if ($action === 'get_telegram_settings') {
     echo json_encode([

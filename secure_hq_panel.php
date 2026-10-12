@@ -542,6 +542,10 @@ input,textarea,select{font-family:var(--ff);}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
       Coupon PINs
     </button>
+    <button class="nav-item" data-perm="vendors" onclick="switchAdminTab('vendors', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+      Vendors Activity
+    </button>
     <button class="nav-item" data-perm="withdrawals" onclick="switchAdminTab('withdrawals', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Withdrawals
@@ -1425,6 +1429,98 @@ input,textarea,select{font-family:var(--ff);}
             </thead>
             <tbody id="couponsTableBody">
               <tr><td colspan="6" style="text-align:center;padding:20px;">Loading coupons...</td></tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+    <!-- ══ TAB: VENDORS ACTIVITY & STOCKS MONITORING ═══════════════════════ -->
+    <div id="tab-vendors" class="tab-content">
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+          <div>
+            <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+              <span>Vendors Activity & Stocks Monitoring</span>
+            </div>
+            <div class="card-sub" style="margin-bottom:0;">Live performance analytics, wholesale PIN inventory tracking, and referral volumes across all certified vendors.</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadVendorsActivityData()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Refresh Data
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="switchAdminTab('coupons')" style="background:linear-gradient(135deg, #F59E0B, #D97706);border:none;color:#000;font-weight:800;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Generate PINs for Vendors
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vendor KPIs Grid -->
+      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;margin-bottom:20px;">
+        <div class="kpi-card">
+          <div class="kpi-label">Accredited Vendors</div>
+          <div class="kpi-val" id="kpiVendorsTotal" style="color:var(--txt);">0</div>
+          <div class="kpi-sub">Official coupon distributors</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Codes Assigned</div>
+          <div class="kpi-val" id="kpiVendorsAssigned" style="color:#38BDF8;">0</div>
+          <div class="kpi-sub">Allocated wholesale PINs</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Codes Sold / Redeemed</div>
+          <div class="kpi-val" id="kpiVendorsSold" style="color:var(--green);">0</div>
+          <div class="kpi-sub">Successfully used by members</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Codes Remaining (In Stock)</div>
+          <div class="kpi-val" id="kpiVendorsRemaining" style="color:#F59E0B;">0</div>
+          <div class="kpi-sub">Unused PINs available for buyers</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Downline Referrals</div>
+          <div class="kpi-val" id="kpiVendorsReferrals" style="color:#A78BFA;">0</div>
+          <div class="kpi-sub">Users invited by vendors</div>
+        </div>
+      </div>
+
+      <!-- Vendors Table Card -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <div class="card-title" style="margin:0;">Vendor Performance Registry</div>
+            <div class="card-sub" style="margin:0;">Real-time stock ledger, contact channels, and affiliate referral acquisition.</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" class="form-input" id="vendorActivitySearchInput" placeholder="Search by name, username, phone..." style="max-width:260px;" oninput="filterVendorsActivityTable()">
+            <select class="form-select" id="vendorActivityStatusFilter" style="max-width:160px;" onchange="filterVendorsActivityTable()">
+              <option value="all">All Vendors</option>
+              <option value="active">Active Only</option>
+              <option value="in_stock">With Stock Remaining</option>
+              <option value="out_of_stock">Stock Depleted</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Vendor Identity</th>
+                <th>Contact Handles</th>
+                <th style="text-align:center;">Codes Sold</th>
+                <th style="text-align:center;">Codes Remaining</th>
+                <th style="text-align:center;">Total Assigned</th>
+                <th style="text-align:center;">Downline Referrals</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vendorsActivityTableBody">
+              <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--txt-3);">Loading vendor activity metrics...</td></tr>
             </tbody>
           </table>
         </div>
@@ -2479,7 +2575,7 @@ window.SUB_ADMIN_PERMISSIONS = <?= json_encode($subAdminPermissions ?: (object)[
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','pricing','notifications','subadmins'];
+const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','pricing','notifications','subadmins'];
 
 function applySubAdminPermissions() {
   if (!window.IS_SUB_ADMIN) return;
@@ -2494,7 +2590,7 @@ function applySubAdminPermissions() {
 
   const activeTab = sessionStorage.getItem('ix_admin_active_tab') || 'overview';
   if (activeTab === 'subadmins' || perms[activeTab] === false) {
-    const firstAllowed = ['overview','surveys','tasks','ecosystem','users','coupons','withdrawals','notifications','pricing'].find(t => perms[t] !== false);
+    const firstAllowed = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','notifications','pricing'].find(t => perms[t] !== false);
     if (firstAllowed) {
       switchAdminTab(firstAllowed);
     }
@@ -2530,6 +2626,7 @@ function switchAdminTab(tab, btn) {
     ecosystem: 'Innovation Ecosystem',
     users: 'Users',
     coupons: 'Coupon PINs',
+    vendors: 'Vendors Activity & Stocks',
     withdrawals: 'Withdrawals',
     pricing: 'Pricing & Rates',
     notifications: 'Notifications',
@@ -2553,6 +2650,7 @@ function switchAdminTab(tab, btn) {
     if (tab === 'ecosystem') loadAdminEcosystem();
     if (tab === 'users') loadUsersData();
     if (tab === 'coupons') { loadCouponsData(); loadVendorsDropdown(); }
+    if (tab === 'vendors') loadVendorsActivityData();
     if (tab === 'withdrawals') loadWithdrawalsData();
     if (tab === 'pricing') loadPricingData();
     if (tab === 'notifications') loadAdminNotificationsTab();
@@ -4398,6 +4496,220 @@ async function handleDeleteCoupon(code) {
       loadCouponsData();
     }
   } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VENDORS ACTIVITY & STOCKS MONITORING LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+let allVendorsActivityList = [];
+
+async function loadVendorsActivityData() {
+  const tbody = document.getElementById('vendorsActivityTableBody');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--txt-3);">Refreshing vendor activity metrics...</td></tr>';
+  }
+
+  try {
+    const r = await fetch('/api/vendors.php?action=get_vendors_activity');
+    const d = await r.json();
+    allVendorsActivityList = d.vendors || d.data || [];
+
+    // Calculate aggregate KPIs
+    let totalAssigned = 0;
+    let totalSold = 0;
+    let totalRemaining = 0;
+    let totalReferrals = 0;
+
+    allVendorsActivityList.forEach(v => {
+      totalAssigned += parseInt(v.codes_total || 0);
+      totalSold += parseInt(v.codes_sold || 0);
+      totalRemaining += parseInt(v.codes_remaining || 0);
+      totalReferrals += parseInt(v.referrals_count || 0);
+    });
+
+    const kTotal = document.getElementById('kpiVendorsTotal');
+    const kAssigned = document.getElementById('kpiVendorsAssigned');
+    const kSold = document.getElementById('kpiVendorsSold');
+    const kRemaining = document.getElementById('kpiVendorsRemaining');
+    const kRefs = document.getElementById('kpiVendorsReferrals');
+
+    if (kTotal) kTotal.textContent = allVendorsActivityList.length.toLocaleString();
+    if (kAssigned) kAssigned.textContent = totalAssigned.toLocaleString();
+    if (kSold) kSold.textContent = totalSold.toLocaleString();
+    if (kRemaining) kRemaining.textContent = totalRemaining.toLocaleString();
+    if (kRefs) kRefs.textContent = totalReferrals.toLocaleString();
+
+    renderVendorsActivityTable(allVendorsActivityList);
+  } catch(e) {
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--red);">Failed to load vendor activity. Please try again.</td></tr>';
+    }
+  }
+}
+
+function renderVendorsActivityTable(list) {
+  const tbody = document.getElementById('vendorsActivityTableBody');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--txt-3);">No vendor activity records matching your criteria.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(v => {
+    const avatar = v.photo || v.avatar || '';
+    const name = v.name || v.username || 'Vendor';
+    const username = v.username || '';
+    const location = v.location || 'Nigeria (National)';
+    const phone = (v.phone || '').replace(/[^0-9]/g, '');
+    const telegram = v.telegram || '';
+    const codesSold = parseInt(v.codes_sold || 0);
+    const codesRemaining = parseInt(v.codes_remaining || 0);
+    const codesTotal = parseInt(v.codes_total || 0);
+    const refCount = parseInt(v.referrals_count || 0);
+    const activeRefs = parseInt(v.active_referrals || 0);
+    const isActive = (v.status || 'active') === 'active';
+
+    let avatarHtml = '';
+    if (avatar && (avatar.startsWith('http') || avatar.startsWith('data:image'))) {
+      avatarHtml = `<img src="${avatar}" alt="${esc(name)}" style="width:38px;height:38px;border-radius:10px;object-fit:cover;border:1px solid rgba(245,158,11,0.4);flex-shrink:0;">`;
+    } else {
+      const initChar = name.charAt(0).toUpperCase() || 'V';
+      avatarHtml = `<div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #F59E0B, #D97706);color:#000;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0;">${esc(initChar)}</div>`;
+    }
+
+    // WhatsApp Handle Link
+    let waHtml = '<span style="color:var(--txt-3);font-size:11px;">No WhatsApp</span>';
+    if (phone) {
+      const waUrl = 'https://wa.me/' + (phone.startsWith('0') ? '234' + phone.substring(1) : phone);
+      waHtml = `<a href="${waUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;background:rgba(37,211,102,0.12);color:#25D366;border:1px solid rgba(37,211,102,0.25);font-size:11.5px;font-weight:700;text-decoration:none;" title="Open WhatsApp Chat">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>+${phone}</span>
+      </a>`;
+    }
+
+    // Telegram Handle Link
+    let tgHtml = '<span style="color:var(--txt-3);font-size:11px;">No Telegram</span>';
+    if (telegram) {
+      const cleanTg = telegram.startsWith('http') ? telegram : ('https://t.me/' + telegram.replace(/^@/, ''));
+      const tgLabel = telegram.startsWith('http') ? ('@' + telegram.split('/').pop()) : telegram;
+      tgHtml = `<a href="${cleanTg}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:6px;background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);font-size:11.5px;font-weight:700;text-decoration:none;" title="Open Telegram">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>${esc(tgLabel)}</span>
+      </a>`;
+    }
+
+    const remainingBadge = codesRemaining > 0
+      ? `<span style="font-weight:800;color:#F59E0B;font-size:14px;background:rgba(245,158,11,0.12);padding:3px 10px;border-radius:8px;border:1px solid rgba(245,158,11,0.3);">${codesRemaining.toLocaleString()}</span>`
+      : `<span style="font-weight:800;color:var(--red);font-size:11px;background:rgba(239,68,68,0.12);padding:3px 8px;border-radius:6px;border:1px solid rgba(239,68,68,0.25);">Out of Stock</span>`;
+
+    const statusBadge = isActive
+      ? '<span class="badge" style="background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);">Active</span>'
+      : '<span class="badge" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);">Inactive</span>';
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${avatarHtml}
+            <div>
+              <div style="font-weight:800;font-size:13.5px;color:var(--txt);">${esc(name)}</div>
+              <div style="font-size:11.5px;color:#F59E0B;font-weight:700;">@${esc(username || name)}</div>
+              <div style="font-size:11px;color:var(--txt-3);">${esc(location)}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
+            ${waHtml}
+            ${tgHtml}
+          </div>
+        </td>
+        <td style="text-align:center;">
+          <div style="font-weight:800;color:var(--green);font-size:15px;">${codesSold.toLocaleString()}</div>
+          <div style="font-size:10.5px;color:var(--txt-3);">Redeemed</div>
+        </td>
+        <td style="text-align:center;">
+          ${remainingBadge}
+        </td>
+        <td style="text-align:center;">
+          <div style="font-weight:800;color:#38BDF8;font-size:14px;">${codesTotal.toLocaleString()}</div>
+          <div style="font-size:10.5px;color:var(--txt-3);">Allocated</div>
+        </td>
+        <td style="text-align:center;">
+          <div style="font-weight:800;color:#A78BFA;font-size:15px;">${refCount.toLocaleString()}</div>
+          <div style="font-size:10.5px;color:var(--green);font-weight:600;">${activeRefs.toLocaleString()} activated</div>
+        </td>
+        <td>
+          ${statusBadge}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="btn btn-sm" onclick="generatePinsForSpecificVendor('${esc(v.id || username)}', '${esc(name)}')" style="padding:5px 9px;font-size:11px;font-weight:700;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);border-radius:6px;" title="Allocate batch PINs to this vendor">
+              + Add PINs
+            </button>
+            <a href="vendors.php" target="_blank" class="btn btn-secondary btn-sm" style="padding:5px 9px;font-size:11px;border-radius:6px;" title="View directory card">
+              View ↗
+            </a>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterVendorsActivityTable() {
+  const query = (document.getElementById('vendorActivitySearchInput')?.value || '').trim().toLowerCase();
+  const statusFilter = document.getElementById('vendorActivityStatusFilter')?.value || 'all';
+
+  const filtered = allVendorsActivityList.filter(v => {
+    const nameMatch = (v.name || '').toLowerCase().includes(query) ||
+                      (v.username || '').toLowerCase().includes(query) ||
+                      (v.phone || '').includes(query) ||
+                      (v.telegram || '').toLowerCase().includes(query) ||
+                      (v.location || '').toLowerCase().includes(query);
+
+    if (!nameMatch) return false;
+
+    if (statusFilter === 'active') {
+      return (v.status || 'active') === 'active';
+    } else if (statusFilter === 'in_stock') {
+      return parseInt(v.codes_remaining || 0) > 0;
+    } else if (statusFilter === 'out_of_stock') {
+      return parseInt(v.codes_remaining || 0) === 0;
+    }
+    return true;
+  });
+
+  renderVendorsActivityTable(filtered);
+}
+
+function generatePinsForSpecificVendor(vendorId, vendorName) {
+  switchAdminTab('coupons');
+  setTimeout(() => {
+    const sel = document.getElementById('couponVendor');
+    if (sel) {
+      let matched = false;
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === vendorId || sel.options[i].text.toLowerCase().includes(vendorName.toLowerCase())) {
+          sel.selectedIndex = i;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched && vendorId) {
+        const opt = document.createElement('option');
+        opt.value = vendorId;
+        opt.text = vendorName + ' (@' + vendorId + ')';
+        opt.setAttribute('data-name', vendorName);
+        sel.appendChild(opt);
+        sel.value = vendorId;
+      }
+      toast(`Ready to generate PINs for vendor: ${vendorName}`, 'info');
+      const countInput = document.getElementById('couponCount');
+      if (countInput) countInput.focus();
+    }
+  }, 250);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

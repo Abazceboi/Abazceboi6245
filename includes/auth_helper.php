@@ -101,6 +101,23 @@ function getAuthenticatedUser(): ?array {
     // 1. Check PHP Session memory first
     if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
         $uRole = $_SESSION['role'] ?? (!empty($_SESSION['is_admin']) ? 'super_admin' : 'member');
+        
+        // Dynamically check live role from users.json if session role is member
+        if ($uRole === 'member') {
+            require_once __DIR__ . '/storage_helper.php';
+            $uJson = readStorageJson('data/users.json', ['users' => []]);
+            $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
+            foreach ($uList as $chkU) {
+                if (strtolower($chkU['username'] ?? '') === strtolower($_SESSION['username'])) {
+                    if (!empty($chkU['role']) && $chkU['role'] !== 'member') {
+                        $uRole = strtolower($chkU['role']);
+                        $_SESSION['role'] = $uRole;
+                    }
+                    break;
+                }
+            }
+        }
+
         $isAdmin = !empty($_SESSION['is_admin']) 
             || in_array(strtolower($_SESSION['username']), ['admin', 'abas6245', 'abazceboi'])
             || in_array(strtolower($uRole), ['admin', 'super_admin', 'sub_admin']);

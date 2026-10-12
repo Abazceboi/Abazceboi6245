@@ -1972,6 +1972,13 @@ input,textarea,select{font-family:var(--ff);}
     </div>
 
     <div class="top-pill-actions">
+      <?php if ($userRole === 'vendor' || $isAdmin): ?>
+      <a href="vendor_dashboard.php" class="btn" style="padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);text-decoration:none;display:inline-flex;align-items:center;gap:5px;" title="Vendor Wholesale Terminal">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+        <span>Vendor Terminal</span>
+      </a>
+      <?php endif; ?>
+
       <!-- Notification Bell -->
       <div style="position:relative;">
         <button class="top-action-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications">
@@ -2369,6 +2376,19 @@ input,textarea,select{font-family:var(--ff);}
         <button type="submit" class="btn btn-primary btn-sm" id="btnSavePassword">Update Password</button>
       </form>
     </div>
+
+    <?php if ($userRole === 'vendor' || $isAdmin): ?>
+    <div class="card" style="border:1px solid rgba(245,158,11,0.35);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);">
+      <div class="card-title" style="color:#F59E0B;display:flex;align-items:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+        <span>Vendor Wholesale Terminal</span>
+      </div>
+      <div class="card-sub">You are an accredited wholesale coupon PIN vendor. Access your dedicated portal to manage coupon stock, configure your public WhatsApp, Telegram, and photo directory handles, and generate buyer onboarding dispatches.</div>
+      <a href="vendor_dashboard.php" class="btn btn-sm" style="background:#F59E0B;color:#000;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+        Open Vendor Terminal ↗
+      </a>
+    </div>
+    <?php endif; ?>
 
     <?php if ($isAdmin): ?>
     <div class="card">
@@ -3067,16 +3087,16 @@ function getUserCash() {
   const gate = document.getElementById('modalActivationGate');
   if (!gate) return;
   const dataEl = document.getElementById('dataActivated');
-  const isServerActivated = (dataEl && dataEl.dataset.activated === '1') ||
-    document.cookie.includes('ix_account_activated=1') ||
-    (typeof CURRENT_USER !== 'undefined' && CURRENT_USER && localStorage.getItem('ix_activated_' + CURRENT_USER) === '1');
+  // Strictly check server activation state — client cookies or localStorage cannot bypass
+  const isServerActivated = Boolean(dataEl && dataEl.dataset.activated === '1');
 
   if (!isServerActivated) {
-    // Strictly maintain the lock screen
+    // Strictly maintain the lock screen permanently until valid code is inputted
     gate.classList.add('active');
     gate.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   } else {
-    // Only dismiss if the server or active account verified that the user is genuinely active
+    // Only dismiss if the server confirmed user is genuinely active
     try {
       if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
         localStorage.setItem('ix_activated_' + CURRENT_USER, '1');
@@ -3087,6 +3107,7 @@ function getUserCash() {
     gate.classList.remove('active');
     gate.style.display = 'none';
     gate.remove();
+    document.body.style.overflow = '';
   }
 })();
 
@@ -3434,6 +3455,7 @@ function dismissNewUserActivationPopup() {
     document.cookie = key + "=1; Path=/; Max-Age=31536000; SameSite=Lax";
   } catch(e){}
   closeModal('modalNewUserActivationPopup');
+  window.location.reload();
 }
 
 async function checkNewUserActivationPopup() {
@@ -3478,6 +3500,9 @@ async function checkNewUserActivationPopup() {
 // POP-UP ANNOUNCEMENT CHECK
 // ═══════════════════════════════════════════════════════════════════════════
 async function checkAnnouncementPopup() {
+  <?php if (!$isActivated): ?>
+  return;
+  <?php endif; ?>
   try {
     const r = await fetch(`/api/broadcasts.php?action=get&_t=${Date.now()}`, {
       cache: 'no-store',
@@ -5061,11 +5086,19 @@ async function submitAccountActivation() {
         gate.classList.remove('active');
         gate.style.display = 'none';
         gate.remove();
+        document.body.style.overflow = '';
       }
       toast('Account activated successfully! All platform features unlocked.', 'success');
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+
+      // Dismiss activation lock and immediately show the welcome message
+      const welcomePopup = document.getElementById('modalNewUserActivationPopup');
+      if (welcomePopup) {
+        openModal('modalNewUserActivationPopup');
+      } else {
+        setTimeout(() => {
+          window.location.reload();
+        }, 600);
+      }
     } else {
       if (errBox) {
         errBox.textContent = d.message || 'Invalid or already used coupon code.';

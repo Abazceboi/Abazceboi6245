@@ -15,6 +15,38 @@ if (!$authUser) {
 $username = $authUser['username'] ?? $_SESSION['username'] ?? 'Vendor';
 $userRole = strtolower($authUser['role'] ?? $_SESSION['role'] ?? 'member');
 $isAdmin = in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']) || in_array($userRole, ['admin', 'super_admin']);
+
+// Dynamically check live user role from data/users.json and config/vendors.json
+// so promoted vendors don't get blocked by a stale session cookie
+require_once __DIR__ . '/includes/storage_helper.php';
+$uData = readStorageJson('data/users.json', ['users' => []]);
+$allUsers = $uData['users'] ?? (is_array($uData) ? $uData : []);
+foreach ($allUsers as $u) {
+    if (strtolower($u['username'] ?? '') === strtolower($username)) {
+        if (!empty($u['role'])) {
+            $userRole = strtolower($u['role']);
+            $_SESSION['role'] = $userRole;
+        }
+        break;
+    }
+}
+
+// Also check config/vendors.json if this user is an accredited vendor
+$vList = readStorageJson('config/vendors.json', []);
+if (is_array($vList)) {
+    foreach ($vList as $v) {
+        $vUname = strtolower($v['username'] ?? '');
+        $vName = strtolower($v['name'] ?? '');
+        $vId = strtolower($v['id'] ?? '');
+        $uLower = strtolower($username);
+        if ($vUname === $uLower || $vName === $uLower || $vId === 'v_' . $uLower) {
+            $userRole = 'vendor';
+            $_SESSION['role'] = 'vendor';
+            break;
+        }
+    }
+}
+
 $isVendor = $isAdmin || ($userRole === 'vendor');
 
 // If not a vendor yet, show the Vendor Accreditation Required page

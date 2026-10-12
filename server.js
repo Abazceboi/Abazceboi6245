@@ -5209,6 +5209,107 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return;
                 }
 
+                if (action === 'get_vendors_activity') {
+                    const cFile = path.join(PUBLIC_DIR, 'data', 'coupons.json');
+                    let allCoupons = [];
+                    if (fs.existsSync(cFile)) {
+                        try { allCoupons = JSON.parse(fs.readFileSync(cFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(allCoupons)) allCoupons = [];
+
+                    const uFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    let allUsers = [];
+                    if (fs.existsSync(uFile)) {
+                        try {
+                            const ud = JSON.parse(fs.readFileSync(uFile, 'utf8'));
+                            allUsers = ud.users || (Array.isArray(ud) ? ud : []);
+                        } catch(e){}
+                    }
+
+                    // Collect all vendors: vendorsList + any users with role === 'vendor'
+                    const combinedVendorsMap = new Map();
+                    vendorsList.forEach(v => {
+                        const key = (v.username || v.name || v.id).toLowerCase();
+                        combinedVendorsMap.set(key, { ...v });
+                    });
+                    allUsers.forEach(u => {
+                        if (String(u.role || '').toLowerCase() === 'vendor') {
+                            const key = (u.username || '').toLowerCase();
+                            if (!combinedVendorsMap.has(key)) {
+                                combinedVendorsMap.set(key, {
+                                    id: 'v_' + key,
+                                    username: u.username,
+                                    name: u.full_name || u.username,
+                                    phone: u.phone || '',
+                                    location: 'Nigeria (National)',
+                                    rating: 5.0,
+                                    codes: '0 Codes Sold',
+                                    telegram: '',
+                                    status: u.status || 'active',
+                                    avatar: '#F59E0B'
+                                });
+                            }
+                        }
+                    });
+
+                    const activityList = Array.from(combinedVendorsMap.values()).map(v => {
+                        const uName = (v.username || '').toLowerCase();
+                        const vId = (v.id || '').toLowerCase();
+                        const vName = (v.name || '').toLowerCase();
+
+                        // Match coupons assigned to this vendor
+                        const vendorPins = allCoupons.filter(c => {
+                            const cVid = String(c.vendor_id || c.vendorId || '').toLowerCase();
+                            const cVname = String(c.vendor_name || c.vendorName || '').toLowerCase();
+                            return (uName && (cVid === uName || cVname === uName || cVid === ('v_' + uName))) ||
+                                   (vId && (cVid === vId || cVname === vId)) ||
+                                   (vName && (cVid === vName || cVname === vName));
+                        });
+
+                        let codesSold = 0;
+                        let codesRemaining = 0;
+                        vendorPins.forEach(p => {
+                            if (p.is_used || p.isUsed || p.status === 'used' || p.used_by || p.usedBy) {
+                                codesSold++;
+                            } else {
+                                codesRemaining++;
+                            }
+                        });
+
+                        // Match referrals downline
+                        let referralsCount = 0;
+                        let activeReferrals = 0;
+                        const vRefCode = ('INX-' + uName).toUpperCase();
+                        allUsers.forEach(u => {
+                            const refBy = String(u.referred_by || u.referredBy || '').toLowerCase();
+                            const refCode = String(u.referred_by_code || '').toUpperCase();
+                            if (refBy === uName || (vRefCode && refCode === vRefCode)) {
+                                referralsCount++;
+                                if (u.is_activated || u.coupon_activated || u.coupon_pin_used) {
+                                    activeReferrals++;
+                                }
+                            }
+                        });
+
+                        return {
+                            ...v,
+                            codes_sold: codesSold,
+                            codes_remaining: codesRemaining,
+                            codes_total: vendorPins.length,
+                            referrals_count: referralsCount,
+                            active_referrals: activeReferrals
+                        };
+                    });
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        count: activityList.length,
+                        vendors: activityList
+                    }));
+                    return;
+                }
+
                 if (action === 'get_vendor_profile') {
                     const uname = (urlObj.searchParams.get('username') || '').toLowerCase();
                     const v = vendorsList.find(x => (x.username || '').toLowerCase() === uname || (x.name || '').toLowerCase() === uname || x.id === 'v_' + uname);
@@ -5664,13 +5765,6 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                     ['admin', 'super_admin', 'uploader', 'vendor'].includes(String(userRecord.role || '').toLowerCase())
                                 );
                                 context.isActivated = isUserAct;
-                                if (!context.isActivated && req.headers.cookie && req.headers.cookie.includes('ix_account_activated=1')) {
-                                    context.isActivated = true;
-                                    userRecord.is_activated = true;
-                                    try {
-                                        fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
-                                    } catch(e){}
-                                }
                                 context.welcomeShown = Boolean(userRecord.welcome_shown);
                                 context.referralCode = userRecord.referral_code || ('INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase());
                                 const proto = req.headers['x-forwarded-proto'] || 'http';

@@ -749,7 +749,10 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
                     }
                     if (!data.is_activated) {
                         localStorage.removeItem('ix_is_activated');
-                        if (data.username) localStorage.removeItem('ix_activated_' + data.username);
+                        if (data.username) {
+                            localStorage.removeItem('ix_activated_' + data.username);
+                            localStorage.removeItem('ix_act_popup_seen_' + data.username);
+                        }
                         document.cookie = "ix_account_activated=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
                     } else {
                         localStorage.setItem('ix_is_activated', '1');
