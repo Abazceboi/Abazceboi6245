@@ -1,55 +1,84 @@
 <?php
-$pageTitle = 'Verified Vendors | INNOVATIONX Code Distributors';
-$pageDesc = 'Purchase your activation coupon PIN from certified WhatsApp vendors across Nigeria or access your vendor inventory vault.';
+$pageTitle = 'Verified Vendors | ' . APP_NAME;
+$pageDesc = 'Purchase your account activation code directly from verified vendors via WhatsApp or Telegram.';
 require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/storage_helper.php';
 
-$vendorsConfigFile = __DIR__ . '/config/vendors.json';
-$telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
+// Dynamically resolve live vendors directory from user roles and vendor profiles
+function getVendorsPageList(): array {
+    $uData = readStorageJson('data/users.json', ['users' => []]);
+    $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
 
-$vendors = [
-    [
-        'id' => 'v1',
-        'name' => 'Emmanuel Eze',
-        'location' => 'Lagos / National (GTBank, OPay, Kuda)',
-        'rating' => 5.0,
-        'codes' => '2,400+ Codes Sold',
-        'phone' => '2348012345678',
-        'telegram' => 'https://t.me/emmanuel_vtu',
-        'avatar' => '#0284C7'
-    ],
-    [
-        'id' => 'v2',
-        'name' => 'Fatima Bello',
-        'location' => 'Abuja / Northern Region (Access Bank, Palmpay)',
-        'rating' => 4.9,
-        'codes' => '1,850+ Codes Sold',
-        'phone' => '2348023456789',
-        'telegram' => 'https://t.me/fatima_pins',
-        'avatar' => '#38BDF8'
-    ],
-    [
-        'id' => 'v3',
-        'name' => 'Tunde Adeyemi',
-        'location' => 'Ibadan / South West (Zenith, Moniepoint)',
-        'rating' => 4.9,
-        'codes' => '1,420+ Codes Sold',
-        'phone' => '2348034567890',
-        'telegram' => 'https://t.me/tunde_codes',
-        'avatar' => '#0369A1'
-    ]
-];
-
-if (file_exists($vendorsConfigFile)) {
-    $loadedVendors = json_decode(file_get_contents($vendorsConfigFile), true);
-    if (is_array($loadedVendors) && !empty($loadedVendors)) {
-        $vendors = $loadedVendors;
+    $userRoles = [];
+    $promotedVendors = [];
+    foreach ($users as $u) {
+        $uName = strtolower(trim($u['username'] ?? ''));
+        if (!$uName) continue;
+        $role = strtolower($u['role'] ?? 'member');
+        $userRoles[$uName] = $role;
+        if ($role === 'vendor') {
+            $promotedVendors[$uName] = $u;
+        }
     }
+
+    $savedVendors = readStorageJson('config/vendors.json', []);
+    if (!is_array($savedVendors)) $savedVendors = [];
+
+    $hasRealVendors = !empty($promotedVendors);
+    $finalVendors = [];
+    $processedUsernames = [];
+
+    foreach ($savedVendors as $v) {
+        $uName = strtolower(trim($v['username'] ?? ''));
+        $vId = strtolower(trim($v['id'] ?? ''));
+
+        // If vendor record is bound to a registered user, ensure they are still a vendor
+        if ($uName && isset($userRoles[$uName])) {
+            if ($userRoles[$uName] !== 'vendor') {
+                continue; // Demoted user - automatically excluded
+            }
+            $processedUsernames[$uName] = true;
+        }
+
+        // Omit dummy accounts (v1, v2, v3) if any real promoted vendor exists
+        if (in_array($vId, ['v1', 'v2', 'v3'])) {
+            if ($hasRealVendors) {
+                continue;
+            }
+        }
+
+        $finalVendors[] = $v;
+    }
+
+    // Add any users with role === 'vendor' who don't have a profile entry in config/vendors.json yet
+    foreach ($promotedVendors as $uName => $u) {
+        if (!isset($processedUsernames[$uName])) {
+            $finalVendors[] = [
+                'id' => 'v_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $uName)),
+                'username' => $u['username'],
+                'name' => !empty($u['full_name']) ? $u['full_name'] : $u['username'],
+                'location' => !empty($u['location']) ? $u['location'] : 'Nigeria (National)',
+                'rating' => 5.0,
+                'codes' => '0 Codes Sold',
+                'phone' => !empty($u['phone']) ? preg_replace('/[^0-9]/', '', $u['phone']) : '',
+                'telegram' => !empty($u['telegram']) ? $u['telegram'] : '',
+                'photo' => !empty($u['photo']) ? $u['photo'] : (!empty($u['avatar']) ? $u['avatar'] : ''),
+                'status' => $u['status'] ?? 'active',
+                'avatar' => '#D97706'
+            ];
+            $processedUsernames[$uName] = true;
+        }
+    }
+
+    return array_values($finalVendors);
 }
 
+$vendors = getVendorsPageList();
+
+$telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
 $telegramConfig = [
     'channel_link' => 'https://t.me/innovationx_official',
-    'popup_title' => 'Join Official Telegram Community',
-    'popup_description' => 'Get daily coupon codes, task drop alerts, and instant direct admin support.'
+    'support_link' => 'https://t.me/innovationx_support',
 ];
 if (file_exists($telegramConfigFile)) {
     $loadedTel = json_decode(file_get_contents($telegramConfigFile), true);
@@ -59,318 +88,712 @@ if (file_exists($telegramConfigFile)) {
 }
 ?>
 
-<!-- Page Hero -->
-<section class="page-hero">
-    <div class="container">
-        <a href="index.php#features-bar" class="btn-back-home" aria-label="Back to Home">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span>Home</span>
-        </a>
-        <h1 class="hero-title" style="font-size:clamp(2.4rem, 4.5vw, 3.8rem);margin-bottom:16px">
-            Official Verified <span class="glow-word">Vendors.</span>
-        </h1>
-        <p class="hero-desc" style="max-width:640px;margin:0 auto 24px">
-            Purchase your activation coupon PIN directly from certified distributors via WhatsApp or Telegram. Instant delivery guaranteed.
-        </p>
+<style>
+    :root {
+        --v-bg-page: #0A0D14;
+        --v-bg-card: #111726;
+        --v-bg-card-hover: #151D2F;
+        --v-bg-input: #182032;
+        --v-border: #1E283D;
+        --v-border-focus: #3B82F6;
+        --v-text: #F1F5F9;
+        --v-text-muted: #8896AB;
+        --v-accent: #D97706;
+        --v-accent-hover: #B45309;
+        --v-green: #10B981;
+    }
 
-        <!-- Official Telegram & Vault Action Bar -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-            <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="btn-dash-action" style="background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;padding:10px 22px;border-radius:12px;font-size:0.85rem;font-weight:800;gap:8px;box-shadow:0 4px 16px rgba(56,189,248,0.35);text-decoration:none">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                <span>Join Official Telegram Community ↗</span>
-            </a>
+    .vendors-page {
+        min-height: 80vh;
+        padding: 40px 16px 80px;
+        background: var(--v-bg-page);
+        color: var(--v-text);
+    }
 
-            <!-- Vendor Inventory Vault Trigger Button -->
-            <button type="button" onclick="openVendorVaultModal()" class="btn-dash-action" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);padding:10px 22px;border-radius:12px;font-size:0.85rem;font-weight:800;gap:8px;box-shadow:0 4px 16px rgba(56,189,248,0.2)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <span>Vendor Private PIN Vault (Vendors Only)</span>
-            </button>
-        </div>
-    </div>
-</section>
+    .vendors-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
 
-<!-- Main Content -->
-<main class="section" style="padding-top:10px;padding-bottom:100px">
-    <div class="container">
-        <!-- Search Bar -->
-        <div class="vendor-search-bar reveal" style="max-width:640px;margin:0 auto 36px">
-            <div style="position:relative">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-gray)"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="vendorSearchInput" class="form-input" placeholder="Search vendor by name, location, or bank..." oninput="filterVendors(this.value)" style="padding-left:46px;border-radius:var(--radius-full);background:rgba(255,255,255,0.06);border:1px solid var(--white-border)">
+    /* Hero */
+    .vendors-hero {
+        text-align: center;
+        margin-bottom: 36px;
+    }
+
+    .vendors-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: rgba(217, 119, 6, 0.12);
+        color: #F59E0B;
+        border: 1px solid rgba(217, 119, 6, 0.25);
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+    }
+
+    .vendors-title {
+        font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: #FFFFFF;
+        margin-bottom: 10px;
+    }
+
+    .vendors-sub {
+        font-size: 0.92rem;
+        color: var(--v-text-muted);
+        max-width: 580px;
+        margin: 0 auto 24px;
+        line-height: 1.55;
+    }
+
+    /* Actions Bar */
+    .vendors-actions-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .btn-action-tg {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        background: #0284C7;
+        color: #FFFFFF;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .btn-action-tg:hover { background: #0369A1; }
+
+    .btn-action-portal {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        background: #182032;
+        color: #CBD5E1;
+        border: 1px solid var(--v-border);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .btn-action-portal:hover { background: #222C44; color: #FFFFFF; }
+
+    /* Search Input */
+    .vendors-search-wrap {
+        max-width: 540px;
+        margin: 0 auto 36px;
+        position: relative;
+    }
+
+    .vendors-search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--v-text-muted);
+        pointer-events: none;
+    }
+
+    .vendors-search-input {
+        width: 100%;
+        padding: 12px 16px 12px 42px;
+        border-radius: 10px;
+        background: var(--v-bg-card);
+        border: 1px solid var(--v-border);
+        color: #FFFFFF;
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+    .vendors-search-input:focus { border-color: var(--v-border-focus); }
+
+    /* Vendors Grid */
+    .vendors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
+    .vendor-card {
+        background: var(--v-bg-card);
+        border: 1px solid var(--v-border);
+        border-radius: 12px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.15s, border-color 0.15s;
+    }
+    .vendor-card:hover {
+        border-color: #2D3A54;
+        transform: translateY(-2px);
+    }
+
+    .vendor-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .vendor-photo-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        background: #182032;
+        border: 1px solid var(--v-border);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #F59E0B;
+    }
+    .vendor-photo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .vendor-meta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .vendor-name {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .vendor-location {
+        font-size: 0.78rem;
+        color: var(--v-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .vendor-pill-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+    }
+
+    .pill-verified {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #10B981;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .pill-rating {
+        font-size: 0.72rem;
+        color: #F59E0B;
+        font-weight: 700;
+    }
+
+    .vendor-phone-display {
+        background: #0E131E;
+        border: 1px solid var(--v-border);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .vendor-buttons-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .btn-vendor-wa {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 12px;
+        border-radius: 6px;
+        background: #16A34A;
+        color: #FFFFFF;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .btn-vendor-wa:hover { background: #15803D; }
+
+    .btn-vendor-tg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 12px;
+        border-radius: 6px;
+        background: #0284C7;
+        color: #FFFFFF;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .btn-vendor-tg:hover { background: #0369A1; }
+
+    .btn-vendor-order {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 12px;
+        border-radius: 6px;
+        background: var(--v-accent);
+        color: #FFFFFF;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .btn-vendor-order:hover { background: var(--v-accent-hover); }
+
+    /* Contact Order Modal */
+    .contact-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .contact-modal-backdrop.open {
+        display: flex;
+    }
+
+    .contact-modal {
+        background: #111726;
+        border: 1px solid #1E283D;
+        border-radius: 12px;
+        max-width: 460px;
+        width: 100%;
+        padding: 24px;
+        color: #F1F5F9;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--v-border);
+    }
+    .modal-head h3 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #FFFFFF;
+    }
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--v-text-muted);
+        font-size: 1.4rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .modal-group {
+        margin-bottom: 12px;
+    }
+    .modal-label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #CBD5E1;
+        margin-bottom: 5px;
+    }
+    .modal-input {
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 6px;
+        background: #182032;
+        border: 1px solid var(--v-border);
+        color: #FFFFFF;
+        font-size: 0.84rem;
+        outline: none;
+        font-family: inherit;
+    }
+    .modal-input:focus { border-color: var(--v-border-focus); }
+
+    .modal-summary {
+        background: #0E131E;
+        border: 1px solid var(--v-border);
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        margin: 14px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>
+
+<div class="vendors-page">
+    <div class="vendors-shell">
+        <!-- Hero Header -->
+        <div class="vendors-hero">
+            <span class="vendors-badge">Verified Vendor Network</span>
+            <h1 class="vendors-title">Verified Vendors</h1>
+            <p class="vendors-sub">Purchase your registration activation code directly from verified vendors via WhatsApp or Telegram.</p>
+
+            <div class="vendors-actions-bar">
+                <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="btn-action-tg">
+                    <span>Join Official Telegram Channel</span>
+                </a>
+                <a href="vendor_dashboard.php" class="btn-action-portal">
+                    <span>Vendor Portal Login</span>
+                </a>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="vendors-search-wrap">
+                <svg class="vendors-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="vendorSearchInput" class="vendors-search-input" placeholder="Search by vendor name, state, or phone..." oninput="filterVendors(this.value)">
             </div>
         </div>
 
         <!-- Vendors Grid -->
-        <div class="vendors-grid reveal" id="vendorsGrid" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px">
-            <?php foreach ($vendors as $v): 
-                $tgLink = !empty($v['telegram']) ? (strpos($v['telegram'], 'http') === 0 ? $v['telegram'] : 'https://t.me/' . ltrim($v['telegram'], '@')) : '';
-            ?>
-            <div class="vendor-card" data-search="<?= strtolower($v['name'] . ' ' . $v['location']) ?>" style="background:rgba(13,21,40,0.92);border:1px solid rgba(56,189,248,0.2);border-radius:16px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 30px rgba(2,6,23,0.3)">
-                <div>
-                    <div class="vendor-top" style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-                        <?php 
-                        $pic = $v['photo'] ?? $v['avatar'] ?? '';
-                        $isImage = !empty($pic) && (strpos($pic, 'data:image') === 0 || strpos($pic, 'http') === 0);
-                        if ($isImage): ?>
-                            <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($v['name']) ?>" style="width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid #F59E0B">
-                        <?php else: ?>
-                            <div class="vendor-avatar" style="width:48px;height:48px;border-radius:12px;background:<?= htmlspecialchars($v['avatar'] ?? '#0284C7') ?>;color:#FFF;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem">
-                                <?= strtoupper(substr($v['name'], 0, 1)) ?>
+        <div class="vendors-grid" id="vendorsGrid">
+            <?php if (empty($vendors)): ?>
+                <div style="grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--v-text-muted);">
+                    No accredited vendors currently listed. Check back shortly or contact platform support.
+                </div>
+            <?php else: ?>
+                <?php foreach ($vendors as $v):
+                    $vName = $v['name'] ?? $v['username'] ?? 'Vendor';
+                    $vPhone = preg_replace('/[^0-9]/', '', $v['phone'] ?? '');
+                    $vLocation = $v['location'] ?? 'Nigeria (National)';
+                    $vTg = $v['telegram'] ?? '';
+                    $cleanTg = !empty($vTg) ? (str_starts_with($vTg, 'http') ? $vTg : 'https://t.me/' . ltrim($vTg, '@')) : '';
+                    $pic = $v['photo'] ?? $v['avatar'] ?? '';
+                    $hasImg = !empty($pic) && (str_starts_with($pic, 'http') || str_starts_with($pic, 'data:image'));
+                    $searchData = strtolower($vName . ' ' . $vLocation . ' ' . $vPhone);
+                ?>
+                <div class="vendor-card" data-search="<?= htmlspecialchars($searchData) ?>">
+                    <div>
+                        <div class="vendor-header">
+                            <div class="vendor-photo-box">
+                                <?php if ($hasImg): ?>
+                                    <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($vName) ?>">
+                                <?php else: ?>
+                                    <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
+                                <?php endif; ?>
                             </div>
+                            <div class="vendor-meta">
+                                <div class="vendor-name"><?= htmlspecialchars($vName) ?></div>
+                                <div class="vendor-location"><?= htmlspecialchars($vLocation) ?></div>
+                                <div class="vendor-pill-row">
+                                    <span class="pill-verified">Verified</span>
+                                    <span class="pill-rating">5.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($vPhone)): ?>
+                        <div class="vendor-phone-display">
+                            <span style="font-size:0.72rem;color:var(--v-text-muted);text-transform:uppercase;">Phone</span>
+                            <strong>+<?= htmlspecialchars($vPhone) ?></strong>
+                        </div>
                         <?php endif; ?>
-                        <div class="vendor-meta">
-                            <h3 class="vendor-name" style="font-size:1.05rem;font-weight:800;color:#FFFFFF;margin-bottom:3px"><?= htmlspecialchars($v['name']) ?></h3>
-                            <div class="vendor-location" style="font-size:0.75rem;color:#7DD3FC;line-height:1.3"><?= htmlspecialchars($v['location']) ?></div>
-                        </div>
                     </div>
-                    
-                    <div class="vendor-stats-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(10,16,32,0.6);border:1px solid rgba(56,189,248,0.12);border-radius:10px;margin-bottom:18px">
-                        <div class="vendor-rating" style="display:flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:800;color:#38BDF8">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#38BDF8" stroke="#38BDF8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span><?= number_format((float)($v['rating'] ?? 5.0), 1) ?> Rating</span>
+
+                    <div>
+                        <div class="vendor-buttons-row">
+                            <?php if (!empty($vPhone)): ?>
+                            <a href="https://wa.me/<?= htmlspecialchars($vPhone) ?>?text=<?= urlencode('Hello ' . $vName . ', I want to buy an INNOVATIONX activation code.') ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa">
+                                <span>WhatsApp</span>
+                            </a>
+                            <?php else: ?>
+                            <span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>
+                            <?php endif; ?>
+
+                            <?php if (!empty($cleanTg)): ?>
+                            <a href="<?= htmlspecialchars($cleanTg) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg">
+                                <span>Telegram</span>
+                            </a>
+                            <?php else: ?>
+                            <span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="vendor-sales" style="font-size:0.75rem;font-weight:700;color:#94A3B8"><?= htmlspecialchars($v['codes'] ?? 'Certified Vendor') ?></div>
+
+                        <button type="button" class="btn-vendor-order" onclick="openVendorContactModal(<?= htmlspecialchars(json_encode([
+                            'name' => $vName,
+                            'phone' => $vPhone,
+                            'location' => $vLocation
+                        ])) ?>)">
+                            <span>Request Activation Code</span>
+                        </button>
                     </div>
                 </div>
-
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <a href="https://wa.me/<?= htmlspecialchars($v['phone']) ?>?text=Hello%20<?= urlencode($v['name']) ?>,%20I%20want%20to%20buy%20an%20INNOVATIONX%20Activation%20Coupon%20Code" target="_blank" rel="noopener noreferrer" class="btn-vendor-chat" style="flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;border-radius:10px;font-weight:800;font-size:0.82rem;text-decoration:none;box-shadow:0 4px 14px rgba(56,189,248,0.3)">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        <span>WhatsApp</span>
-                    </a>
-                    <?php if (!empty($tgLink)): ?>
-                    <a href="<?= htmlspecialchars($tgLink) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-chat" style="flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;background:rgba(56,189,248,0.12);color:#7DD3FC;border:1px solid rgba(56,189,248,0.3);border-radius:10px;font-weight:800;font-size:0.82rem;text-decoration:none">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="#38BDF8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                        <span>Telegram</span>
-                    </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</main>
-
-<!-- VENDOR PRIVATE INVENTORY VAULT MODAL (EXCLUSIVE FOR VENDORS) -->
-<div id="vendorVaultModalOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,7,15,0.85);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;padding:20px">
-    <div style="background:rgba(13,21,40,0.98);border:1px solid rgba(56,189,248,0.3);border-top:3px solid #38BDF8;border-radius:16px;max-width:560px;width:100%;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,0.7)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(56,189,248,0.15)">
-            <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:36px;height:36px;border-radius:10px;background:rgba(56,189,248,0.15);color:#38BDF8;display:flex;align-items:center;justify-content:center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                </div>
-                <div>
-                    <h3 style="font-size:1.1rem;font-weight:900;color:#FFFFFF;line-height:1.2">Vendor PIN Inventory Vault</h3>
-                    <p style="font-size:0.72rem;color:#7DD3FC">Exclusive distributor access to allocated wholesale activation codes</p>
-                </div>
-            </div>
-            <button type="button" onclick="closeVendorVaultModal()" style="background:none;border:none;color:#94A3B8;cursor:pointer;font-size:1.4rem;line-height:1">&times;</button>
-        </div>
-
-        <!-- Vendor Selection Screen -->
-        <div id="vendorAuthSection">
-            <div style="margin-bottom:14px">
-                <label style="display:block;font-size:0.75rem;font-weight:800;color:#FFFFFF;margin-bottom:6px;text-transform:uppercase">Select Verified Vendor Profile</label>
-                <select id="vaultVendorSelect" class="form-input" style="width:100%;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(56,189,248,0.3);color:#FFFFFF;padding:0 12px;border-radius:10px;font-size:0.85rem">
-                    <option value="">-- Choose Your Official Profile --</option>
-                    <option value="v1">Emmanuel Eze (Lagos • 08012345678)</option>
-                    <option value="v2">Fatima Bello (Abuja • 08023456789)</option>
-                    <option value="v3">Tunde Adeyemi (Ibadan • 08034567890)</option>
-                </select>
-            </div>
-            <div style="margin-bottom:18px">
-                <label style="display:block;font-size:0.75rem;font-weight:800;color:#FFFFFF;margin-bottom:6px;text-transform:uppercase">Vendor Security Access Code</label>
-                <input type="password" id="vaultVendorPin" class="form-input" placeholder="Enter default PIN (1234)" value="1234" style="width:100%;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(56,189,248,0.3);color:#FFFFFF;padding:0 12px;border-radius:10px;font-size:0.85rem">
-                <span style="font-size:0.68rem;color:#7DD3FC;display:block;margin-top:4px">Certified vendors access their exclusive assigned codes only.</span>
-            </div>
-            <button type="button" onclick="unlockVendorVault()" class="btn-primary" style="width:100%;height:44px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800">
-                <span>Unlock Assigned PIN Inventory</span>
-            </button>
-        </div>
-
-        <!-- Vendor Inventory Results Screen (Segregated) -->
-        <div id="vendorInventorySection" style="display:none">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:10px 14px">
-                <div>
-                    <span style="font-size:0.7rem;color:#7DD3FC;text-transform:uppercase;font-weight:800;display:block">Active Vendor</span>
-                    <strong id="activeVaultVendorName" style="color:#FFFFFF;font-size:0.95rem">Emmanuel Eze</strong>
-                </div>
-                <div style="text-align:right">
-                    <span style="font-size:0.7rem;color:#7DD3FC;text-transform:uppercase;font-weight:800;display:block">Assigned Balance</span>
-                    <span id="activeVaultPinCount" style="color:#38BDF8;font-weight:900;font-size:1.1rem">0 PINs</span>
-                </div>
-            </div>
-
-            <!-- PINs List -->
-            <div id="vaultPinsList" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding-right:2px">
-                <!-- Dynamically injected -->
-            </div>
-
-            <div style="display:flex;gap:8px">
-                <button type="button" onclick="copyAllVendorVaultPins()" class="btn-dash-action" style="flex:1;height:40px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;font-weight:800;border:none;border-radius:8px">
-                    Copy All My Assigned PINs
-                </button>
-                <button type="button" onclick="lockVendorVault()" class="btn-dash-action" style="padding:0 14px;background:rgba(255,255,255,0.06);color:#FFF;border:1px solid rgba(255,255,255,0.12);border-radius:8px">
-                    Switch Vendor
-                </button>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
+<!-- Contact & Order Modal -->
+<div class="contact-modal-backdrop" id="vendorContactModal" onclick="if(event.target === this) closeVendorContactModal()">
+    <div class="contact-modal">
+        <div class="modal-head">
+            <div>
+                <h3 id="modalVendorTitle">Request Activation Code</h3>
+                <span id="modalVendorSub" style="font-size:0.75rem;color:var(--v-text-muted);">Contacting verified vendor</span>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeVendorContactModal()">&times;</button>
+        </div>
+
+        <form id="vendorOrderForm" onsubmit="submitVendorOrder(event)">
+            <input type="hidden" id="orderVendorName">
+            <input type="hidden" id="orderVendorPhone">
+
+            <div class="modal-group">
+                <label class="modal-label">Your Full Name</label>
+                <input type="text" id="orderBuyerName" class="modal-input" placeholder="e.g. Samuel Okon" required>
+            </div>
+
+            <div class="modal-group">
+                <label class="modal-label">Your WhatsApp Phone Number</label>
+                <input type="text" id="orderBuyerPhone" class="modal-input" placeholder="e.g. 08012345678" required>
+            </div>
+
+            <div class="modal-group">
+                <label class="modal-label">Number of Codes Needed</label>
+                <select id="orderCodeQty" class="modal-input" onchange="updateOrderPriceSummary()">
+                    <option value="1">1 Activation Code (₦1,000)</option>
+                    <option value="2">2 Activation Codes (₦2,000)</option>
+                    <option value="5">5 Activation Codes (₦5,000)</option>
+                    <option value="10">10 Activation Codes (₦10,000)</option>
+                </select>
+            </div>
+
+            <div class="modal-group">
+                <label class="modal-label">Payment Method</label>
+                <select id="orderPaymentMethod" class="modal-input">
+                    <option value="Bank Transfer">Bank Transfer (Instant)</option>
+                    <option value="OPay">OPay</option>
+                    <option value="PalmPay">PalmPay</option>
+                    <option value="Kuda Bank">Kuda Bank</option>
+                </select>
+            </div>
+
+            <div class="modal-summary">
+                <span style="color:var(--v-text-muted);">Total Price:</span>
+                <strong id="orderTotalPrice" style="font-size:1rem;color:#F59E0B;">₦1,000</strong>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="flex:1;justify-content:center;">
+                    Copy Request
+                </button>
+                <button type="submit" class="btn-vendor-wa" style="flex:2;justify-content:center;padding:10px;">
+                    Send on WhatsApp ↗
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-function filterVendors(query) {
-    const q = (query || '').toLowerCase().trim();
-    document.querySelectorAll('#vendorsGrid .vendor-card').forEach(card => {
-        const text = card.getAttribute('data-search') || '';
-        card.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
-    });
-}
+    let currentVendorsList = <?= json_encode($vendors) ?>;
 
-function openVendorVaultModal() {
-    const modal = document.getElementById('vendorVaultModalOverlay');
-    if (modal) modal.style.display = 'flex';
-}
-
-function closeVendorVaultModal() {
-    const modal = document.getElementById('vendorVaultModalOverlay');
-    if (modal) modal.style.display = 'none';
-}
-
-function unlockVendorVault() {
-    const select = document.getElementById('vaultVendorSelect');
-    const vendorId = select ? select.value : '';
-    const pin = document.getElementById('vaultVendorPin')?.value;
-
-    if (!vendorId) {
-        alert('Please select your official vendor profile.');
-        return;
+    function filterVendors(query) {
+        const q = String(query || '').trim().toLowerCase();
+        const cards = document.querySelectorAll('.vendor-card');
+        cards.forEach(card => {
+            const data = card.getAttribute('data-search') || '';
+            card.style.display = (!q || data.includes(q)) ? 'flex' : 'none';
+        });
     }
 
-    const vendorMap = {
-        'v1': 'Emmanuel Eze',
-        'v2': 'Fatima Bello',
-        'v3': 'Tunde Adeyemi'
-    };
-
-    const vendorName = vendorMap[vendorId] || 'Vendor';
-
-    function renderVendorVault(coupons) {
-        // Filter ONLY coupons assigned to this specific vendor
-        const vendorCoupons = coupons.filter(c => (c.vendorId === vendorId || c.vendor_id === vendorId));
-
-        document.getElementById('activeVaultVendorName').textContent = vendorName;
-        document.getElementById('activeVaultPinCount').textContent = `${vendorCoupons.length} PINs`;
-
-        const listEl = document.getElementById('vaultPinsList');
-        if (vendorCoupons.length === 0) {
-            listEl.innerHTML = `
-                <div style="padding:24px;text-align:center;color:#94A3B8;background:rgba(10,16,32,0.6);border:1px dashed rgba(56,189,248,0.2);border-radius:10px">
-                    <p style="font-size:0.85rem;margin-bottom:6px;color:#FFF;font-weight:700">No PINs Assigned To ${vendorName}</p>
-                    <p style="font-size:0.75rem;margin:0">Administration has not allocated wholesale codes to your account yet. Generate or assign codes from the Admin Center.</p>
-                </div>
-            `;
-        } else {
-            listEl.innerHTML = vendorCoupons.map(c => {
-                const isUsed = Boolean(c.isUsed || c.is_used || c.usedBy || c.used_by);
-                const statusBadge = isUsed
-                    ? `<span style="font-size:0.68rem;color:#F87171;background:rgba(248,113,113,0.15);padding:2px 6px;border-radius:4px;font-weight:700">Redeemed</span>`
-                    : `<span style="font-size:0.68rem;color:#34D399;background:rgba(52,211,153,0.15);padding:2px 6px;border-radius:4px;font-weight:700">Available</span>`;
-
-                return `
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(10,16,32,0.8);border:1px solid rgba(56,189,248,0.18);border-radius:8px;font-size:0.78rem">
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                            <span style="font-family:monospace;font-weight:800;color:#38BDF8;font-size:0.84rem">${c.code}</span>
-                            <span style="font-size:0.7rem;color:#7DD3FC;font-weight:600">${c.typeLabel || c.type_label || 'Member PIN'}</span>
-                            ${statusBadge}
-                        </div>
-                        <button type="button" class="btn-dash-action" onclick="copyToClipboard('${c.code}')" style="padding:4px 12px;font-size:0.72rem;background:rgba(56,189,248,0.15);color:#FFF;border:1px solid rgba(56,189,248,0.3);border-radius:6px;font-weight:700">
-                            Copy
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
+    function openVendorContactModal(vendor) {
+        if (!vendor) return;
+        document.getElementById('orderVendorName').value = vendor.name || '';
+        document.getElementById('orderVendorPhone').value = vendor.phone || '';
+        document.getElementById('modalVendorTitle').textContent = `Order from ${vendor.name || 'Vendor'}`;
+        document.getElementById('modalVendorSub').textContent = `Coverage: ${vendor.location || 'National'}`;
+        updateOrderPriceSummary();
+        document.getElementById('vendorContactModal').classList.add('open');
     }
 
-    // Retrieve cached coupons first
-    let storedCoupons = JSON.parse(localStorage.getItem('ix_coupons') || '[]');
-    renderVendorVault(storedCoupons);
-
-    // Fetch live backend status
-    fetch('api/coupons.php?action=get_pins')
-        .then(r => r.json())
-        .then(res => {
-            if (res && res.success && Array.isArray(res.coupons)) {
-                localStorage.setItem('ix_coupons', JSON.stringify(res.coupons));
-                renderVendorVault(res.coupons);
-            }
-        })
-        .catch(() => {});
-
-    document.getElementById('vendorAuthSection').style.display = 'none';
-    document.getElementById('vendorInventorySection').style.display = 'block';
-}
-
-function lockVendorVault() {
-    document.getElementById('vendorAuthSection').style.display = 'block';
-    document.getElementById('vendorInventorySection').style.display = 'none';
-}
-
-function copyAllVendorVaultPins() {
-    const listEl = document.getElementById('vaultPinsList');
-    const codes = [];
-    listEl.querySelectorAll('span[style*="monospace"]').forEach(sp => {
-        codes.push(sp.textContent.trim());
-    });
-    if (codes.length === 0) {
-        alert('No PINs to copy.');
-        return;
+    function closeVendorContactModal() {
+        document.getElementById('vendorContactModal').classList.remove('open');
     }
-    copyToClipboard(codes.join('\n'));
-    alert(`Copied all ${codes.length} assigned PINs to clipboard!`);
-}
 
-function copyToClipboard(text) {
-    if (navigator.clipboard) {
+    function updateOrderPriceSummary() {
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '1') || 1;
+        const total = (qty * 1000).toLocaleString();
+        const el = document.getElementById('orderTotalPrice');
+        if (el) el.textContent = `₦${total}`;
+    }
+
+    function getOrderFormattedMessage() {
+        const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
+        const buyerName = document.getElementById('orderBuyerName').value.trim() || 'Customer';
+        const buyerPhone = document.getElementById('orderBuyerPhone').value.trim() || '';
+        const qty = parseInt(document.getElementById('orderCodeQty').value || '1') || 1;
+        const payment = document.getElementById('orderPaymentMethod').value || 'Bank Transfer';
+        const total = (qty * 1000).toLocaleString();
+
+        return `Hello ${vendorName}, my name is ${buyerName} (${buyerPhone}).\n\nI want to purchase ${qty} INNOVATIONX activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;
+    }
+
+    function copyOrderMessage() {
+        const text = getOrderFormattedMessage();
         navigator.clipboard.writeText(text);
-    } else {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+        alert('Order request copied to clipboard!');
     }
-}
 
-// Live Vendor directory sync with admin configuration
-async function syncLiveVendors() {
-    try {
-        let vList = null;
+    function submitVendorOrder(e) {
+        e.preventDefault();
+        const phone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
+        if (!phone) {
+            alert('This vendor does not have a phone number configured.');
+            return;
+        }
+        const text = getOrderFormattedMessage();
+        const waPhone = phone.startsWith('0') ? ('234' + phone.substring(1)) : phone;
+        window.open('https://api.whatsapp.com/send?phone=' + waPhone + '&text=' + encodeURIComponent(text), '_blank');
+        closeVendorContactModal();
+    }
+
+    // Dynamic live sync to keep vendor cards updated in real time upon promotion or demotion
+    async function syncLiveVendorsDirectory() {
         try {
-            const res = await fetch('api/vendors.php?action=get_vendors&t=' + Date.now());
+            const res = await fetch('/api/vendors.php?action=get_vendors&_t=' + Date.now(), {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+            });
             const data = await res.json();
             if (data && data.success && Array.isArray(data.vendors)) {
-                vList = data.vendors;
-                localStorage.setItem('ix_vendors', JSON.stringify(vList));
+                const list = data.vendors;
+                const grid = document.getElementById('vendorsGrid');
+                if (!grid) return;
+
+                if (list.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--v-text-muted);">No accredited vendors currently listed. Check back shortly or contact platform support.</div>';
+                    return;
+                }
+
+                grid.innerHTML = list.map(v => {
+                    const vName = v.name || v.username || 'Vendor';
+                    const vPhone = (v.phone || '').replace(/[^0-9]/g, '');
+                    const vLocation = v.location || 'Nigeria (National)';
+                    const vTg = v.telegram || '';
+                    const cleanTg = vTg ? (vTg.startsWith('http') ? vTg : ('https://t.me/' + vTg.replace(/^@/, ''))) : '';
+                    const pic = v.photo || v.avatar || '';
+                    const hasImg = pic && (pic.startsWith('http') || pic.startsWith('data:image'));
+                    const searchData = (vName + ' ' + vLocation + ' ' + vPhone).toLowerCase();
+
+                    const avatarHtml = hasImg 
+                        ? `<img src="${escHtml(pic)}" alt="${escHtml(vName)}">`
+                        : `<span>${escHtml(vName.charAt(0).toUpperCase())}</span>`;
+
+                    const phoneBox = vPhone 
+                        ? `<div class="vendor-phone-display"><span style="font-size:0.72rem;color:var(--v-text-muted);text-transform:uppercase;">Phone</span><strong>+${escHtml(vPhone)}</strong></div>`
+                        : '';
+
+                    const waBtn = vPhone
+                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><span>WhatsApp</span></a>`
+                        : `<span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>`;
+
+                    const tgBtn = cleanTg
+                        ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><span>Telegram</span></a>`
+                        : `<span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>`;
+
+                    const vDataJson = JSON.stringify({ name: vName, phone: vPhone, location: vLocation }).replace(/"/g, '&quot;');
+
+                    return `
+                        <div class="vendor-card" data-search="${escHtml(searchData)}">
+                            <div>
+                                <div class="vendor-header">
+                                    <div class="vendor-photo-box">${avatarHtml}</div>
+                                    <div class="vendor-meta">
+                                        <div class="vendor-name">${escHtml(vName)}</div>
+                                        <div class="vendor-location">${escHtml(vLocation)}</div>
+                                        <div class="vendor-pill-row">
+                                            <span class="pill-verified">Verified</span>
+                                            <span class="pill-rating">5.0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${phoneBox}
+                            </div>
+                            <div>
+                                <div class="vendor-buttons-row">
+                                    ${waBtn}
+                                    ${tgBtn}
+                                </div>
+                                <button type="button" class="btn-vendor-order" onclick="openVendorContactModal(${vDataJson})">
+                                    <span>Request Activation Code</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
         } catch(e) {}
+    }
 
-        if (!vList) {
-            vList = JSON.parse(localStorage.getItem('ix_vendors') || 'null');
-        }
+    function escHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
 
-        if (vList && Array.isArray(vList) && vList.length > 0) {
-            const sel = document.getElementById('vaultVendorSelect');
-            if (sel) {
-                sel.innerHTML = '<option value="">-- Choose Your Official Profile --</option>' +
-                    vList.map(v => `<option value="${v.id}">${v.name} (${v.location} • ${v.phone})</option>`).join('');
-            }
-        }
-    } catch(err) {}
-}
-syncLiveVendors();
+    document.addEventListener('DOMContentLoaded', () => {
+        syncLiveVendorsDirectory();
+    });
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

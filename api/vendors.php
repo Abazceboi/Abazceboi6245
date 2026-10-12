@@ -68,9 +68,76 @@ $defaultTelegram = [
 
 require_once __DIR__ . '/../includes/storage_helper.php';
 
-// Load vendors
-$savedVendors = readStorageJson('config/vendors.json', []);
-$vendors = (is_array($savedVendors) && !empty($savedVendors)) ? $savedVendors : $defaultVendors;
+function getLiveVendorsDirectory(): array {
+    $uData = readStorageJson('data/users.json', ['users' => []]);
+    $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
+
+    $userRoles = [];
+    $promotedVendors = [];
+    foreach ($users as $u) {
+        $uName = strtolower(trim($u['username'] ?? ''));
+        if (!$uName) continue;
+        $role = strtolower($u['role'] ?? 'member');
+        $userRoles[$uName] = $role;
+        if ($role === 'vendor') {
+            $promotedVendors[$uName] = $u;
+        }
+    }
+
+    $savedVendors = readStorageJson('config/vendors.json', []);
+    if (!is_array($savedVendors)) $savedVendors = [];
+
+    $hasRealVendors = !empty($promotedVendors);
+    $finalVendors = [];
+    $processedUsernames = [];
+
+    foreach ($savedVendors as $v) {
+        $uName = strtolower(trim($v['username'] ?? ''));
+        $vId = strtolower(trim($v['id'] ?? ''));
+
+        // If this vendor is associated with a user account, verify live role
+        if ($uName && isset($userRoles[$uName])) {
+            if ($userRoles[$uName] !== 'vendor') {
+                continue; // Demoted away from vendor
+            }
+            $processedUsernames[$uName] = true;
+        }
+
+        // If real vendors exist, omit dummy placeholder accounts (v1, v2, v3)
+        if (in_array($vId, ['v1', 'v2', 'v3'])) {
+            if ($hasRealVendors) {
+                continue;
+            }
+        }
+
+        $finalVendors[] = $v;
+    }
+
+    // Add any users with role === 'vendor' who don't have a profile entry yet
+    foreach ($promotedVendors as $uName => $u) {
+        if (!isset($processedUsernames[$uName])) {
+            $finalVendors[] = [
+                'id' => 'v_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $uName)),
+                'username' => $u['username'],
+                'name' => !empty($u['full_name']) ? $u['full_name'] : $u['username'],
+                'location' => !empty($u['location']) ? $u['location'] : 'Nigeria (National)',
+                'rating' => 5.0,
+                'codes' => '0 Codes Sold',
+                'phone' => !empty($u['phone']) ? preg_replace('/[^0-9]/', '', $u['phone']) : '',
+                'telegram' => !empty($u['telegram']) ? $u['telegram'] : '',
+                'photo' => !empty($u['photo']) ? $u['photo'] : (!empty($u['avatar']) ? $u['avatar'] : ''),
+                'status' => $u['status'] ?? 'active',
+                'avatar' => '#F59E0B'
+            ];
+            $processedUsernames[$uName] = true;
+        }
+    }
+
+    return array_values($finalVendors);
+}
+
+// Load vendors dynamically based on live user roles
+$vendors = getLiveVendorsDirectory();
 
 // Load telegram settings
 $savedTelegram = readStorageJson('config/telegram_settings.json', []);

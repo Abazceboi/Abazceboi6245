@@ -5265,7 +5265,61 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
 
                 if (action === 'get_vendors' || (req.method === 'GET' && !action)) {
-                    res.end(JSON.stringify({ success: true, status: 'success', count: vendorsList.length, vendors: vendorsList, data: vendorsList, telegram: tgConfig }));
+                    const uFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    let allUsers = [];
+                    if (fs.existsSync(uFile)) {
+                        try {
+                            const ud = JSON.parse(fs.readFileSync(uFile, 'utf8'));
+                            allUsers = ud.users || (Array.isArray(ud) ? ud : []);
+                        } catch(e){}
+                    }
+
+                    const userRoles = {};
+                    const promotedUsers = [];
+                    allUsers.forEach(u => {
+                        const un = (u.username || '').toLowerCase().trim();
+                        if (!un) return;
+                        const role = (u.role || 'member').toLowerCase().trim();
+                        userRoles[un] = role;
+                        if (role === 'vendor') promotedUsers.push(u);
+                    });
+
+                    const hasReal = promotedUsers.length > 0;
+                    const liveVendors = [];
+                    const processed = new Set();
+
+                    vendorsList.forEach(v => {
+                        const un = (v.username || '').toLowerCase().trim();
+                        const vid = (v.id || '').toLowerCase().trim();
+                        if (un && userRoles[un]) {
+                            if (userRoles[un] !== 'vendor') return; // Demoted
+                            processed.add(un);
+                        }
+                        if (['v1', 'v2', 'v3'].includes(vid) && hasReal) return; // Drop dummy if real exists
+                        liveVendors.push(v);
+                    });
+
+                    promotedUsers.forEach(u => {
+                        const un = (u.username || '').toLowerCase().trim();
+                        if (!processed.has(un)) {
+                            liveVendors.push({
+                                id: 'v_' + un.replace(/[^a-z0-9]/g, ''),
+                                username: u.username,
+                                name: u.full_name || u.username,
+                                location: u.location || 'Nigeria (National)',
+                                rating: 5.0,
+                                codes: '0 Codes Sold',
+                                phone: (u.phone || '').replace(/[^0-9]/g, ''),
+                                telegram: u.telegram || '',
+                                photo: u.photo || u.avatar || '',
+                                status: u.status || 'active',
+                                avatar: '#F59E0B'
+                            });
+                            processed.add(un);
+                        }
+                    });
+
+                    res.end(JSON.stringify({ success: true, status: 'success', count: liveVendors.length, vendors: liveVendors, data: liveVendors, telegram: tgConfig }));
                     return;
                 }
 
