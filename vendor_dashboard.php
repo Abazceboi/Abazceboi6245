@@ -31,22 +31,6 @@ foreach ($allUsers as $u) {
     }
 }
 
-// Also check config/vendors.json if this user is an accredited vendor
-$vList = readStorageJson('config/vendors.json', []);
-if (is_array($vList)) {
-    foreach ($vList as $v) {
-        $vUname = strtolower($v['username'] ?? '');
-        $vName = strtolower($v['name'] ?? '');
-        $vId = strtolower($v['id'] ?? '');
-        $uLower = strtolower($username);
-        if ($vUname === $uLower || $vName === $uLower || $vId === 'v_' . $uLower) {
-            $userRole = 'vendor';
-            $_SESSION['role'] = 'vendor';
-            break;
-        }
-    }
-}
-
 $isVendor = $isAdmin || ($userRole === 'vendor');
 
 // If not a vendor yet, show the Vendor Accreditation Required page

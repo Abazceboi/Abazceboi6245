@@ -124,6 +124,20 @@ foreach ($allUsers as $ju) {
     }
 }
 
+if (!empty($userRole)) {
+    $_SESSION['role'] = strtolower($userRole);
+}
+
+$roleLabelsMap = [
+    'member' => 'Active Member',
+    'uploader' => 'Verified Uploader',
+    'vendor' => 'Verified Vendor',
+    'moderator' => 'Moderator',
+    'sub_admin' => 'Sub-Admin',
+    'super_admin' => 'Super Admin'
+];
+$userRoleLabel = $roleLabelsMap[strtolower($userRole)] ?? 'Active Member';
+
 if (!empty($_SESSION['bank_name']) && $_SESSION['bank_name'] !== 'Pending Setup')           $bankName      = $_SESSION['bank_name'];
 if (!empty($_SESSION['account_number']) && $_SESSION['account_number'] !== '0801234567')      $accountNumber = $_SESSION['account_number'];
 if (!empty($_SESSION['account_name']))        $accountName   = $_SESSION['account_name'];
@@ -1968,16 +1982,22 @@ input,textarea,select{font-family:var(--ff);}
       <div class="user-pill">
         <span class="user-dot"></span>
         <span class="user-name"><?= htmlspecialchars($username) ?></span>
+        <span id="userRoleBadge" style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.4px;<?= $userRole === 'vendor' ? 'background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);' : ($userRole === 'uploader' ? 'background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);' : (in_array($userRole, ['admin','super_admin','sub_admin']) ? 'background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);' : 'background:rgba(255,255,255,0.08);color:#94A3B8;border:1px solid rgba(255,255,255,0.1);')) ?>"><?= htmlspecialchars($userRoleLabel) ?></span>
       </div>
     </div>
 
     <div class="top-pill-actions">
-      <?php if ($userRole === 'vendor' || $isAdmin): ?>
-      <a href="vendor_dashboard.php" class="btn" style="padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);text-decoration:none;display:inline-flex;align-items:center;gap:5px;" title="Vendor Wholesale Terminal">
+      <!-- Vendor Terminal Quick Action -->
+      <a href="vendor_dashboard.php" id="navVendorTerminalBtn" class="btn" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);text-decoration:none;align-items:center;gap:5px;" title="Vendor Wholesale Terminal">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
         <span>Vendor Terminal</span>
       </a>
-      <?php endif; ?>
+
+      <!-- Uploader Studio Quick Action -->
+      <a href="uploader_dashboard.php" id="navUploaderStudioBtn" class="btn" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.35);text-decoration:none;align-items:center;gap:5px;" title="Creator Publishing Studio">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        <span>Creator Studio</span>
+      </a>
 
       <!-- Notification Bell -->
       <div style="position:relative;">
@@ -2377,8 +2397,8 @@ input,textarea,select{font-family:var(--ff);}
       </form>
     </div>
 
-    <?php if ($userRole === 'vendor' || $isAdmin): ?>
-    <div class="card" style="border:1px solid rgba(245,158,11,0.35);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);">
+    <!-- Vendor Wholesale Terminal Card -->
+    <div id="cardVendorTerminal" class="card" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:block;' : 'display:none;' ?>border:1px solid rgba(245,158,11,0.35);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);">
       <div class="card-title" style="color:#F59E0B;display:flex;align-items:center;gap:8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
         <span>Vendor Wholesale Terminal</span>
@@ -2388,10 +2408,21 @@ input,textarea,select{font-family:var(--ff);}
         Open Vendor Terminal ↗
       </a>
     </div>
-    <?php endif; ?>
 
-    <?php if ($isAdmin): ?>
-    <div class="card">
+    <!-- Creator Publishing Studio Card -->
+    <div id="cardUploaderStudio" class="card" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:block;' : 'display:none;' ?>border:1px solid rgba(16,185,129,0.35);background:linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(17,24,39,0.7) 100%);">
+      <div class="card-title" style="color:#10B981;display:flex;align-items:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        <span>Creator Publishing Studio</span>
+      </div>
+      <div class="card-sub">You are an accredited task creator and advertiser. Access your publishing studio to launch sponsored micro-tasks, review member submissions, and monitor engagement.</div>
+      <a href="uploader_dashboard.php" class="btn btn-sm" style="background:#10B981;color:#fff;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+        Open Creator Studio ↗
+      </a>
+    </div>
+
+    <!-- Administrator Console Card -->
+    <div id="cardAdminConsole" class="card" style="<?= $isAdmin ? 'display:block;' : 'display:none;' ?>">
       <div class="card-title">Administrator Console</div>
       <div class="card-sub">Authorized administrator console for platform management.</div>
       <a href="secure_hq_panel.php" class="btn btn-secondary btn-sm" target="_blank">
@@ -2399,7 +2430,6 @@ input,textarea,select{font-family:var(--ff);}
         Open Admin HQ Panel
       </a>
     </div>
-    <?php endif; ?>
   </div>
 
 </main>
@@ -3216,11 +3246,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadReferrals();
     loadEcosystem();
   });
+  // Rapid 5-second role and balance sync so promotions and demotions reflect immediately without manual page refresh
+  setInterval(() => {
+    syncLiveProfile();
+  }, 5000);
+
   setInterval(() => {
     loadTasks();
     loadSurveys();
     loadNotifications();
-    syncLiveProfile();
     syncLivePricing();
     loadReferrals();
     loadEcosystem();
@@ -3336,6 +3370,61 @@ document.addEventListener('click', (e) => {
 // ═══════════════════════════════════════════════════════════════════════════
 // LIVE PROFILE & BALANCE SYNC
 // ═══════════════════════════════════════════════════════════════════════════
+let currentUserRole = '<?= htmlspecialchars(strtolower($userRole)) ?>';
+
+function updateDashboardRoleUI(newRole) {
+  const norm = String(newRole || 'member').toLowerCase().trim();
+  const roleLabels = {
+    'member': 'Active Member',
+    'uploader': 'Verified Uploader',
+    'vendor': 'Verified Vendor',
+    'moderator': 'Moderator',
+    'sub_admin': 'Sub-Admin',
+    'super_admin': 'Super Admin',
+    'admin': 'Super Admin'
+  };
+  const roleLabel = roleLabels[norm] || 'Active Member';
+
+  const badge = document.getElementById('userRoleBadge');
+  if (badge) {
+    badge.textContent = roleLabel;
+    let badgeStyle = 'background:rgba(255,255,255,0.08);color:#94A3B8;border:1px solid rgba(255,255,255,0.1);';
+    if (norm === 'vendor') {
+      badgeStyle = 'background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);';
+    } else if (norm === 'uploader') {
+      badgeStyle = 'background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);';
+    } else if (['admin', 'super_admin', 'sub_admin', 'moderator'].includes(norm)) {
+      badgeStyle = 'background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);';
+    }
+    badge.style.cssText = `font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.4px;` + badgeStyle;
+  }
+
+  const isVendor = norm === 'vendor' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
+  const vNav = document.getElementById('navVendorTerminalBtn');
+  if (vNav) vNav.style.display = isVendor ? 'inline-flex' : 'none';
+  const vCard = document.getElementById('cardVendorTerminal');
+  if (vCard) vCard.style.display = isVendor ? 'block' : 'none';
+
+  const isUploader = norm === 'uploader' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
+  const uNav = document.getElementById('navUploaderStudioBtn');
+  if (uNav) uNav.style.display = isUploader ? 'inline-flex' : 'none';
+  const uCard = document.getElementById('cardUploaderStudio');
+  if (uCard) uCard.style.display = isUploader ? 'block' : 'none';
+
+  const isAdmin = ['admin', 'super_admin', 'sub_admin'].includes(norm);
+  const aCard = document.getElementById('cardAdminConsole');
+  if (aCard) aCard.style.display = isAdmin ? 'block' : 'none';
+
+  if (currentUserRole && currentUserRole !== norm) {
+    currentUserRole = norm;
+    if (typeof toast === 'function') {
+      toast(`Your account status has been updated to ${roleLabel}`, 'success');
+    }
+  } else {
+    currentUserRole = norm;
+  }
+}
+
 async function syncLiveProfile() {
   if (!CURRENT_USER) return;
   try {
@@ -3351,6 +3440,11 @@ async function syncLiveProfile() {
 
       updateUserPointsDisplay(pts, true);
       updateUserCashDisplay(cash, true);
+
+      const liveRole = u.role || d.role;
+      if (liveRole) {
+        updateDashboardRoleUI(liveRole);
+      }
     }
   } catch(e) {}
 }

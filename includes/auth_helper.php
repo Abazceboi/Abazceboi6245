@@ -100,16 +100,18 @@ function getAuthenticatedUser(): ?array {
     
     // 1. Check PHP Session memory first
     if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
-        $uRole = $_SESSION['role'] ?? (!empty($_SESSION['is_admin']) ? 'super_admin' : 'member');
+        $uNameLower = strtolower($_SESSION['username']);
+        $isHardcodedAdmin = in_array($uNameLower, ['admin', 'abas6245', 'abazceboi']);
+        $uRole = $_SESSION['role'] ?? ($isHardcodedAdmin ? 'super_admin' : 'member');
         
-        // Dynamically check live role from users.json if session role is member
-        if ($uRole === 'member') {
+        // Dynamically check live role from users.json so promotions and demotions take effect immediately
+        if (!$isHardcodedAdmin) {
             require_once __DIR__ . '/storage_helper.php';
             $uJson = readStorageJson('data/users.json', ['users' => []]);
             $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
             foreach ($uList as $chkU) {
-                if (strtolower($chkU['username'] ?? '') === strtolower($_SESSION['username'])) {
-                    if (!empty($chkU['role']) && $chkU['role'] !== 'member') {
+                if (strtolower($chkU['username'] ?? '') === $uNameLower) {
+                    if (!empty($chkU['role'])) {
                         $uRole = strtolower($chkU['role']);
                         $_SESSION['role'] = $uRole;
                     }
@@ -119,7 +121,7 @@ function getAuthenticatedUser(): ?array {
         }
 
         $isAdmin = !empty($_SESSION['is_admin']) 
-            || in_array(strtolower($_SESSION['username']), ['admin', 'abas6245', 'abazceboi'])
+            || $isHardcodedAdmin
             || in_array(strtolower($uRole), ['admin', 'super_admin', 'sub_admin']);
         return [
             'user_id' => $_SESSION['user_id'],
@@ -178,6 +180,22 @@ function getAuthenticatedUser(): ?array {
                 if ($isValid || $isSystemAdmin) {
                     $isAdmin = $isSystemAdmin;
                     $uRole = $data['role'] ?? ($isAdmin ? 'super_admin' : 'member');
+
+                    // Synchronize live role from users.json
+                    if (!$isSystemAdmin) {
+                        require_once __DIR__ . '/storage_helper.php';
+                        $uJson = readStorageJson('data/users.json', ['users' => []]);
+                        $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
+                        foreach ($uList as $chkU) {
+                            if (strtolower($chkU['username'] ?? '') === $uName) {
+                                if (!empty($chkU['role'])) {
+                                    $uRole = strtolower($chkU['role']);
+                                }
+                                break;
+                            }
+                        }
+                    }
+
                     $adminAuthStep = isset($data['admin_auth_step']) ? (int)$data['admin_auth_step'] : ($isAdmin ? 1 : 0);
 
                     $_SESSION['user_id'] = $data['user_id'] ?? 'admin';
@@ -189,9 +207,6 @@ function getAuthenticatedUser(): ?array {
                     $_SESSION['is_admin'] = $isAdmin;
                     $_SESSION['admin_auth_step'] = $adminAuthStep;
                     $isActivated = !empty($data['is_activated']) || $isAdmin || in_array($uRole, ['admin', 'super_admin', 'uploader', 'vendor']);
-                    if (!$isActivated && !empty($_COOKIE['ix_account_activated']) && $_COOKIE['ix_account_activated'] === '1') {
-                        $isActivated = true;
-                    }
                     $_SESSION['is_activated'] = $isActivated;
                     $data['role'] = $uRole;
                     $data['is_admin'] = $isAdmin;

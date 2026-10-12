@@ -4644,13 +4644,16 @@ function renderVendorsActivityTable(list) {
           ${statusBadge}
         </td>
         <td>
-          <div style="display:flex;gap:6px;">
+          <div style="display:flex;gap:6px;align-items:center;">
             <button type="button" class="btn btn-sm" onclick="generatePinsForSpecificVendor('${esc(v.id || username)}', '${esc(name)}')" style="padding:5px 9px;font-size:11px;font-weight:700;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);border-radius:6px;" title="Allocate batch PINs to this vendor">
               + Add PINs
             </button>
             <a href="vendors.php" target="_blank" class="btn btn-secondary btn-sm" style="padding:5px 9px;font-size:11px;border-radius:6px;" title="View directory card">
               View ↗
             </a>
+            <button type="button" class="btn btn-sm" onclick="demoteVendorToMember('${esc(username || v.id)}', '${esc(name)}')" style="padding:5px 9px;font-size:11px;font-weight:700;background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.25);border-radius:6px;" title="Demote vendor back to regular member">
+              Demote
+            </button>
           </div>
         </td>
       </tr>
@@ -4710,6 +4713,39 @@ function generatePinsForSpecificVendor(vendorId, vendorName) {
       if (countInput) countInput.focus();
     }
   }, 250);
+}
+
+async function demoteVendorToMember(username, name) {
+  if (!username) {
+    toast('Invalid vendor identifier', 'error');
+    return;
+  }
+  const displayName = name || username;
+  if (!confirm(`Are you sure you want to demote "${displayName}" back to a regular member?\n\nThis will revoke their vendor wholesale dashboard access and remove them from the public vendor directory immediately.`)) {
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/users.php?action=update_role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username,
+        role: 'member'
+      })
+    });
+    const d = await r.json();
+    if (d && (d.success || d.status === 'success')) {
+      toast(`Successfully demoted ${displayName} to Active Member`, 'success');
+      loadVendorsActivityData();
+      if (typeof loadUsersData === 'function') loadUsersData();
+      if (typeof loadVendorsDropdown === 'function') loadVendorsDropdown();
+    } else {
+      toast(d.error || d.message || 'Failed to demote vendor', 'error');
+    }
+  } catch(e) {
+    toast('Network error while demoting vendor', 'error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

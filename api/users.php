@@ -131,6 +131,34 @@ function syncVendorProfileIfVendor(string $username, string $fullName = '', stri
     }
 }
 
+function removeVendorProfileIfDemoted(string $username): void {
+    if (empty($username)) return;
+    $vendors = readStorageJson('config/vendors.json', []);
+    if (!is_array($vendors)) return;
+    $uLower = strtolower($username);
+    $filtered = [];
+    foreach ($vendors as $v) {
+        $vUname = strtolower($v['username'] ?? '');
+        $vName = strtolower($v['name'] ?? '');
+        $vId = strtolower($v['id'] ?? '');
+        if ($vUname !== $uLower && $vName !== $uLower && $vId !== 'v_' . $uLower) {
+            $filtered[] = $v;
+        }
+    }
+    writeStorageJson('config/vendors.json', $filtered);
+}
+
+function removeSubAdminIfDemoted(string $username): void {
+    if (empty($username)) return;
+    $subs = readStorageJson('data/sub_admins.json', []);
+    if (!is_array($subs)) return;
+    $uLower = strtolower($username);
+    $filtered = array_values(array_filter($subs, function($s) use ($uLower) {
+        return strtolower($s['username'] ?? '') !== $uLower;
+    }));
+    writeStorageJson('data/sub_admins.json', $filtered);
+}
+
 $rawInput = file_get_contents('php://input');
 $inputData = (!empty($rawInput) ? json_decode($rawInput, true) : null) ?? $_POST ?? [];
 $action = $_GET['action'] ?? $inputData['action'] ?? '';
@@ -310,6 +338,11 @@ switch ($action) {
 
         if ($newRole === 'vendor') {
             syncVendorProfileIfVendor($username, $user['full_name'] ?? $username, $user['phone'] ?? '');
+        } else {
+            removeVendorProfileIfDemoted($username);
+        }
+        if ($newRole !== 'sub_admin') {
+            removeSubAdminIfDemoted($username);
         }
 
         // Also persist role update into database if available
@@ -320,9 +353,13 @@ switch ($action) {
             } catch (Exception $e) {}
         }
 
+        $msg = ($newRole === 'member')
+            ? "User '{$username}' demoted to Active Member"
+            : "User '{$username}' role updated to {$ROLE_LABELS[$newRole]}";
+
         echo json_encode([
             'success' => true,
-            'message' => "User '{$username}' has been promoted to {$ROLE_LABELS[$newRole]}",
+            'message' => $msg,
             'username' => $username,
             'new_role' => $newRole,
             'role_label' => $ROLE_LABELS[$newRole],
@@ -575,6 +612,17 @@ switch ($action) {
 
         if ($role === 'vendor') {
             syncVendorProfileIfVendor($newUsername, $fullName, $phone);
+        } else {
+            removeVendorProfileIfDemoted($newUsername);
+            if (!empty($targetUsername) && $targetUsername !== $newUsername) {
+                removeVendorProfileIfDemoted($targetUsername);
+            }
+        }
+        if ($role !== 'sub_admin') {
+            removeSubAdminIfDemoted($newUsername);
+            if (!empty($targetUsername) && $targetUsername !== $newUsername) {
+                removeSubAdminIfDemoted($targetUsername);
+            }
         }
 
         echo json_encode([

@@ -214,11 +214,39 @@ if ($action === 'delete_sub_admin') {
     }
 
     $existing = getSubAdminsList();
-    $filtered = array_filter($existing, fn($sa) => ($sa['id'] ?? '') !== $id);
+    $deletedUser = null;
+    $filtered = [];
+    foreach ($existing as $sa) {
+        if (($sa['id'] ?? '') === $id) {
+            $deletedUser = $sa['username'] ?? '';
+        } else {
+            $filtered[] = $sa;
+        }
+    }
 
-    if (count($filtered) !== count($existing)) {
+    if ($deletedUser !== null) {
         saveSubAdminsList($filtered);
-        echo json_encode(['status' => 'success', 'message' => 'Sub-admin removed successfully']);
+        if (!empty($deletedUser)) {
+            $uPath = __DIR__ . '/../data/users.json';
+            if (file_exists($uPath)) {
+                $uData = json_decode(@file_get_contents($uPath), true);
+                if (isset($uData['users']) && is_array($uData['users'])) {
+                    $changed = false;
+                    foreach ($uData['users'] as &$u) {
+                        if (strtolower($u['username'] ?? '') === strtolower($deletedUser)) {
+                            if (($u['role'] ?? '') === 'sub_admin') {
+                                $u['role'] = 'member';
+                                $changed = true;
+                            }
+                        }
+                    }
+                    if ($changed) {
+                        @file_put_contents($uPath, json_encode($uData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                    }
+                }
+            }
+        }
+        echo json_encode(['status' => 'success', 'message' => 'Sub-admin removed successfully and demoted to member']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Sub-admin not found']);
     }

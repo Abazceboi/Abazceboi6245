@@ -3075,10 +3075,27 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         return;
                     }
 
+                    const targetSa = subAdmins.find(sa => sa.id === id);
                     const prevLen = subAdmins.length;
                     subAdmins = subAdmins.filter(sa => sa.id !== id);
                     if (subAdmins.length !== prevLen) {
                         fs.writeFileSync(subAdminsFile, JSON.stringify(subAdmins, null, 2));
+                        if (targetSa && targetSa.username) {
+                            try {
+                                const uFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                                if (fs.existsSync(uFile)) {
+                                    const uData = JSON.parse(fs.readFileSync(uFile, 'utf8'));
+                                    let changed = false;
+                                    (uData.users || []).forEach(u => {
+                                        if ((u.username || '').toLowerCase() === targetSa.username.toLowerCase() && u.role === 'sub_admin') {
+                                            u.role = 'member';
+                                            changed = true;
+                                        }
+                                    });
+                                    if (changed) fs.writeFileSync(uFile, JSON.stringify(uData, null, 2));
+                                }
+                            } catch(e) {}
+                        }
                         res.end(JSON.stringify({ status: 'success', message: 'Sub-admin deleted successfully' }));
                     } else {
                         res.end(JSON.stringify({ status: 'error', message: 'Sub-admin not found' }));
@@ -3916,6 +3933,30 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
                 }
 
+                function removeVendorRecord(uName) {
+                    if (!uName) return;
+                    const vFile = path.join(PUBLIC_DIR, 'config', 'vendors.json');
+                    if (!fs.existsSync(vFile)) return;
+                    let vList = [];
+                    try { vList = JSON.parse(fs.readFileSync(vFile, 'utf8')); } catch(e){}
+                    if (!Array.isArray(vList)) return;
+                    const uLower = uName.toLowerCase();
+                    vList = vList.filter(v => (v.username || '').toLowerCase() !== uLower && (v.name || '').toLowerCase() !== uLower && v.id !== 'v_' + uLower);
+                    fs.writeFileSync(vFile, JSON.stringify(vList, null, 2));
+                }
+
+                function removeSubAdminRecord(uName) {
+                    if (!uName) return;
+                    const sFile = path.join(PUBLIC_DIR, 'data', 'sub_admins.json');
+                    if (!fs.existsSync(sFile)) return;
+                    let sList = [];
+                    try { sList = JSON.parse(fs.readFileSync(sFile, 'utf8')); } catch(e){}
+                    if (!Array.isArray(sList)) return;
+                    const uLower = uName.toLowerCase();
+                    sList = sList.filter(s => (s.username || '').toLowerCase() !== uLower);
+                    fs.writeFileSync(sFile, JSON.stringify(sList, null, 2));
+                }
+
                 if (action === 'get_users') {
                     res.end(JSON.stringify({ success: true, users: usersData.users || [], valid_roles: validRoles, role_labels: roleLabels, role_colors: roleColors }));
                     return;
@@ -3953,11 +3994,19 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
                     if (newRole === 'vendor') {
                         syncVendorRecord(username, targetUserObj ? targetUserObj.full_name : username, targetUserObj ? targetUserObj.phone : '');
+                    } else {
+                        removeVendorRecord(username);
+                    }
+                    if (newRole !== 'sub_admin') {
+                        removeSubAdminRecord(username);
                     }
                     const dataDir = path.dirname(usersFile);
                     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
-                    res.end(JSON.stringify({ success: true, message: `User '${username}' promoted to ${roleLabels[newRole]}`, username, new_role: newRole, role_label: roleLabels[newRole], role_colors: roleColors[newRole] }));
+                    const msg = (newRole === 'member')
+                        ? `User '${username}' demoted to Active Member`
+                        : `User '${username}' role updated to ${roleLabels[newRole]}`;
+                    res.end(JSON.stringify({ success: true, message: msg, username, new_role: newRole, role_label: roleLabels[newRole], role_colors: roleColors[newRole] }));
                     return;
                 }
 
@@ -4041,6 +4090,17 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             newEntry.password_reset_by = 'admin';
                         }
                         usersData.users.push(newEntry);
+                    }
+
+                    if (role === 'vendor') {
+                        syncVendorRecord(newUsername, fullName, phone);
+                    } else {
+                        removeVendorRecord(newUsername);
+                        if (targetUsername && targetUsername !== newUsername) removeVendorRecord(targetUsername);
+                    }
+                    if (role !== 'sub_admin') {
+                        removeSubAdminRecord(newUsername);
+                        if (targetUsername && targetUsername !== newUsername) removeSubAdminRecord(targetUsername);
                     }
 
                     const dataDir = path.dirname(usersFile);
@@ -5397,9 +5457,33 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                 if (action === 'delete_vendor' && req.method === 'POST') {
                     const delId = (parsed.id || '').trim();
+                    const deletedNames = [];
+                    vendorsList.forEach(v => {
+                        if (v.id === delId || v.name === delId || (v.username || '') === delId) {
+                            if (v.username) deletedNames.push(v.username.toLowerCase());
+                            if (v.name) deletedNames.push(v.name.toLowerCase());
+                        }
+                    });
                     vendorsList = vendorsList.filter(v => v.id !== delId && v.name !== delId && (v.username || '') !== delId);
                     fs.writeFileSync(vFile, JSON.stringify(vendorsList, null, 2));
-                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Vendor removed', vendors: vendorsList }));
+
+                    if (deletedNames.length > 0) {
+                        try {
+                            const uFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                            if (fs.existsSync(uFile)) {
+                                const uData = JSON.parse(fs.readFileSync(uFile, 'utf8'));
+                                let changed = false;
+                                (uData.users || []).forEach(u => {
+                                    if (deletedNames.includes((u.username || '').toLowerCase()) && u.role === 'vendor') {
+                                        u.role = 'member';
+                                        changed = true;
+                                    }
+                                });
+                                if (changed) fs.writeFileSync(uFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e) {}
+                    }
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Vendor removed and demoted to member', vendors: vendorsList }));
                     return;
                 }
 

@@ -287,17 +287,43 @@ if ($action === 'delete_vendor' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $filtered = array_values(array_filter($vendors, function($v) use ($id) {
-        return ($v['id'] ?? '') !== $id && ($v['name'] ?? '') !== $id && ($v['username'] ?? '') !== $id;
-    }));
+    $deletedUsernames = [];
+    $filtered = [];
+    foreach ($vendors as $v) {
+        if (($v['id'] ?? '') === $id || ($v['name'] ?? '') === $id || ($v['username'] ?? '') === $id) {
+            if (!empty($v['username'])) $deletedUsernames[] = strtolower($v['username']);
+            if (!empty($v['name'])) $deletedUsernames[] = strtolower($v['name']);
+        } else {
+            $filtered[] = $v;
+        }
+    }
 
-    $vendors = $filtered;
+    $vendors = array_values($filtered);
     writeStorageJson('config/vendors.json', $vendors);
+
+    // Also demote matching user in data/users.json if role was vendor
+    if (!empty($deletedUsernames)) {
+        $uPath = 'data/users.json';
+        $uData = readStorageJson($uPath, ['users' => []]);
+        if (isset($uData['users']) && is_array($uData['users'])) {
+            $changed = false;
+            foreach ($uData['users'] as &$u) {
+                $uName = strtolower($u['username'] ?? '');
+                if (in_array($uName, $deletedUsernames) && ($u['role'] ?? '') === 'vendor') {
+                    $u['role'] = 'member';
+                    $changed = true;
+                }
+            }
+            if ($changed) {
+                writeStorageJson($uPath, $uData);
+            }
+        }
+    }
 
     echo json_encode([
         'success' => true,
         'status' => 'success',
-        'message' => 'Vendor removed from active directory.',
+        'message' => 'Vendor removed from active directory and demoted to member.',
         'vendors' => $vendors
     ]);
     exit;
