@@ -1987,12 +1987,6 @@ input,textarea,select{font-family:var(--ff);}
     </div>
 
     <div class="top-pill-actions">
-      <!-- Vendor Terminal Quick Action -->
-      <a href="vendor_dashboard.php" id="navVendorTerminalBtn" class="btn" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);text-decoration:none;align-items:center;gap:5px;" title="Vendor Wholesale Terminal">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
-        <span>Vendor Terminal</span>
-      </a>
-
       <!-- Uploader Studio Quick Action -->
       <a href="uploader_dashboard.php" id="navUploaderStudioBtn" class="btn" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.35);text-decoration:none;align-items:center;gap:5px;" title="Creator Publishing Studio">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
@@ -2355,6 +2349,179 @@ input,textarea,select{font-family:var(--ff);}
     </div>
   </div>
 
+  <!-- ══ TAB: VENDOR TERMINAL ═══════════════════════════════════════════ -->
+  <div id="tab-vendor" class="tab-panel">
+    <!-- Vendor Header Banner -->
+    <div class="card" style="border:1px solid rgba(245,158,11,0.3);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:8px;">
+              <span>Vendor Terminal</span>
+              <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);letter-spacing:0.4px;">AUTHORIZED</span>
+            </div>
+            <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Manage activation code stock, public directory handles, and buyer onboarding dispatch.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="loadVendorTabData()" style="display:inline-flex;align-items:center;gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Refresh Stock</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:14px;">
+      <div class="card" style="padding:16px;margin-bottom:0;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Available Stock</div>
+        <div id="vTabKpiAvailable" style="font-size:24px;font-weight:800;color:#10B981;margin-top:4px;">0</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Unused activation codes</div>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:0;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Codes Redeemed</div>
+        <div id="vTabKpiSold" style="font-size:24px;font-weight:800;color:#38BDF8;margin-top:4px;">0</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Activated by buyers</div>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:0;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Total Allocated</div>
+        <div id="vTabKpiTotal" style="font-size:24px;font-weight:800;color:var(--txt);margin-top:4px;">0</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Lifetime assigned codes</div>
+      </div>
+    </div>
+
+    <!-- Two Column Grid: Directory Profile & Buyer Dispatch -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:14px;margin-bottom:14px;">
+      <!-- Card: Directory Profile & Handles -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Public Directory & Contact Handles</span>
+        </div>
+        <div class="card-sub">This information is displayed to prospective buyers on the official vendor directory.</div>
+
+        <form onsubmit="handleSaveVendorTabProfile(event)" style="margin-top:14px;">
+          <!-- Avatar Preview & Upload -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+            <div style="width:50px;height:50px;border-radius:50%;background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+              <img id="vTabPhotoImg" src="" alt="Vendor Avatar" style="width:100%;height:100%;object-fit:cover;display:none;">
+              <span id="vTabPhotoInitial" style="font-weight:800;font-size:18px;color:#F59E0B;"><?= strtoupper(substr($username, 0, 1)) ?></span>
+            </div>
+            <div style="flex:1;">
+              <label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Upload Profile Photo</span>
+                <input type="file" id="vTabPhotoInput" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handleVendorTabPhotoUpload(this)">
+              </label>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">JPG, PNG, or WEBP. Max 2MB.</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Vendor Display Name</label>
+            <input type="text" class="form-input" id="vTabName" required placeholder="e.g. John Doe / Ace Vendor">
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp Contact Number</label>
+            <input type="text" class="form-input" id="vTabPhone" required placeholder="e.g. 2348012345678 (without + sign)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telegram Handle or Link</label>
+            <input type="text" class="form-input" id="vTabTelegram" placeholder="e.g. @username or t.me/username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location / State</label>
+            <input type="text" class="form-input" id="vTabLocation" placeholder="e.g. Lagos, Nigeria">
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+            <button type="submit" class="btn btn-primary btn-sm" id="vTabBtnSaveProfile" style="background:#F59E0B;color:#000;font-weight:700;border:none;">Save Profile</button>
+            <span id="vTabProfileStatus" style="font-size:12px;color:#10B981;font-weight:600;"></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Card: Buyer Dispatch Generator -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span>Quick Buyer Dispatch Generator</span>
+        </div>
+        <div class="card-sub">Generate formatted onboarding messages with assigned activation codes for new buyers.</div>
+
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Select Available Code</label>
+            <select class="form-input" id="vTabDispatchCodeSelect">
+              <option value="">Loading codes...</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Buyer First Name (Optional)</label>
+            <input type="text" class="form-input" id="vTabDispatchBuyerName" placeholder="e.g. Samuel">
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:8px;padding:12px;margin-top:4px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);margin-bottom:4px;">Dispatch Preview</div>
+            <div id="vTabDispatchPreview" style="font-size:12px;color:var(--txt-2);line-height:1.5;white-space:pre-wrap;font-family:monospace;">Select a code above to view preview message.</div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="sendVendorTabDispatchWhatsApp()" style="background:#22C55E;color:#fff;border:none;display:inline-flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span>Send via WhatsApp</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyVendorTabDispatchText()" style="display:inline-flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy Text</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assigned Codes Inventory Table -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+        <div>
+          <div class="card-title">Assigned Activation Codes Stock</div>
+          <div class="card-sub">All activation codes allocated to your vendor account by administration.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <input type="text" class="form-input" id="vTabSearchPinInput" placeholder="Filter code..." oninput="filterVendorTabPins()" style="max-width:180px;height:34px;font-size:12px;padding:6px 10px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copyAllVendorTabAvailableCodes()" style="display:inline-flex;align-items:center;gap:5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy All Available</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container" style="overflow-x:auto;">
+        <table class="table" style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
+              <th style="padding:10px 12px;">Activation Code</th>
+              <th style="padding:10px 12px;">Type</th>
+              <th style="padding:10px 12px;">Status</th>
+              <th style="padding:10px 12px;">Redeemed By</th>
+              <th style="padding:10px 12px;">Date Assigned</th>
+              <th style="padding:10px 12px;text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="vTabPinsTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;color:var(--txt-3);padding:24px;">Loading allocated stock...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ TAB: SETTINGS ═════════════════════════════════════════════════════ -->
   <div id="tab-settings" class="tab-panel">
     <div class="card">
@@ -2404,9 +2571,9 @@ input,textarea,select{font-family:var(--ff);}
         <span>Vendor Wholesale Terminal</span>
       </div>
       <div class="card-sub">You are an accredited wholesale coupon PIN vendor. Access your dedicated portal to manage coupon stock, configure your public WhatsApp, Telegram, and photo directory handles, and generate buyer onboarding dispatches.</div>
-      <a href="vendor_dashboard.php" class="btn btn-sm" style="background:#F59E0B;color:#000;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
-        Open Vendor Terminal ↗
-      </a>
+      <button type="button" class="btn btn-sm" onclick="switchTab('vendor', document.getElementById('dockBtnVendor'))" style="background:#F59E0B;color:#000;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+        Open Vendor Tab
+      </button>
     </div>
 
     <!-- Creator Publishing Studio Card -->
@@ -2453,6 +2620,9 @@ input,textarea,select{font-family:var(--ff);}
   </button>
   <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Innovation Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+  </button>
+  <button class="dock-item" onclick="switchTab('vendor', this)" id="dockBtnVendor" title="Vendor Terminal" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
   </button>
   <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings" title="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -3402,8 +3572,18 @@ function updateDashboardRoleUI(newRole) {
   const isVendor = norm === 'vendor' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
   const vNav = document.getElementById('navVendorTerminalBtn');
   if (vNav) vNav.style.display = isVendor ? 'inline-flex' : 'none';
+  const dockVendor = document.getElementById('dockBtnVendor');
+  if (dockVendor) dockVendor.style.display = isVendor ? 'inline-flex' : 'none';
   const vCard = document.getElementById('cardVendorTerminal');
   if (vCard) vCard.style.display = isVendor ? 'block' : 'none';
+
+  if (!isVendor) {
+    const activeTab = document.querySelector('.tab-panel.active');
+    if (activeTab && activeTab.id === 'tab-vendor') {
+      const homeDock = document.querySelector('.dock-item[onclick*="\'home\'"]');
+      if (typeof switchTab === 'function') switchTab('home', homeDock);
+    }
+  }
 
   const isUploader = norm === 'uploader' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
   const uNav = document.getElementById('navUploaderStudioBtn');
@@ -3638,7 +3818,7 @@ async function checkAnnouncementPopup() {
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOATING DOWN TAB BAR NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'ecosystem', 'settings'];
+const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'ecosystem', 'vendor', 'settings'];
 
 function switchTab(tab, btn) {
   if (!TABS.includes(tab)) tab = 'home';
@@ -3668,6 +3848,7 @@ function switchTab(tab, btn) {
   if (tab === 'referrals') loadReferrals();
   if (tab === 'wallet') { syncLivePricing(); syncLiveProfile(); }
   if (tab === 'ecosystem') loadEcosystem();
+  if (tab === 'vendor') loadVendorTabData();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -3676,6 +3857,10 @@ function restoreMemberActiveTab() {
   const savedTab = (hash && TABS.includes(hash))
     ? hash
     : (sessionStorage.getItem('ix_member_active_tab') || localStorage.getItem('ix_member_active_tab'));
+  if (savedTab === 'vendor' && !['vendor', 'admin', 'super_admin', 'sub_admin'].includes(currentUserRole)) {
+    switchTab('home');
+    return;
+  }
   if (savedTab && TABS.includes(savedTab)) {
     switchTab(savedTab);
   }
@@ -5642,6 +5827,269 @@ function formatMs(ms) {
 
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VENDOR TERMINAL TAB LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+let allVendorTabPins = [];
+let vendorTabRecord = null;
+let vendorTabPhotoBase64 = '';
+
+async function loadVendorTabData() {
+  await Promise.all([
+    loadVendorTabProfile(),
+    loadVendorTabInventory()
+  ]);
+}
+
+async function loadVendorTabProfile() {
+  try {
+    const res = await fetch('/api/vendors.php?action=get_vendor_profile&username=' + encodeURIComponent(CURRENT_USER) + '&_t=' + Date.now());
+    const data = await res.json();
+    if (data && data.vendor) {
+      vendorTabRecord = data.vendor;
+      const v = data.vendor;
+      const nameInput = document.getElementById('vTabName');
+      const phoneInput = document.getElementById('vTabPhone');
+      const telegramInput = document.getElementById('vTabTelegram');
+      const locationInput = document.getElementById('vTabLocation');
+      if (nameInput && v.name) nameInput.value = v.name;
+      if (phoneInput && v.phone) phoneInput.value = v.phone;
+      if (telegramInput && v.telegram) telegramInput.value = v.telegram.replace('https://t.me/', '@');
+      if (locationInput && v.location) locationInput.value = v.location;
+
+      const avatar = v.photo || v.avatar || '';
+      if (avatar && (avatar.startsWith('data:image') || avatar.startsWith('http'))) {
+        vendorTabPhotoBase64 = avatar;
+        const img = document.getElementById('vTabPhotoImg');
+        const initial = document.getElementById('vTabPhotoInitial');
+        if (img) { img.src = avatar; img.style.display = 'block'; }
+        if (initial) initial.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+}
+
+function handleVendorTabPhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 2 * 1024 * 1024) {
+    if (typeof toast === 'function') toast('Profile photo size must be under 2MB', 'error');
+    else alert('Profile photo size must be under 2MB');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    vendorTabPhotoBase64 = e.target.result;
+    const img = document.getElementById('vTabPhotoImg');
+    const initial = document.getElementById('vTabPhotoInitial');
+    if (img) { img.src = vendorTabPhotoBase64; img.style.display = 'block'; }
+    if (initial) initial.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function handleSaveVendorTabProfile(e) {
+  e.preventDefault();
+  const btn = document.getElementById('vTabBtnSaveProfile');
+  const statusEl = document.getElementById('vTabProfileStatus');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  if (statusEl) statusEl.textContent = '';
+
+  const payload = {
+    username: CURRENT_USER,
+    name: (document.getElementById('vTabName')?.value || '').trim(),
+    phone: (document.getElementById('vTabPhone')?.value || '').trim(),
+    telegram: (document.getElementById('vTabTelegram')?.value || '').trim(),
+    location: (document.getElementById('vTabLocation')?.value || '').trim(),
+    avatar: vendorTabPhotoBase64
+  };
+
+  try {
+    const res = await fetch('/api/vendors.php?action=update_vendor_profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data && data.success) {
+      if (statusEl) statusEl.textContent = 'Profile saved';
+      if (typeof toast === 'function') toast('Vendor contact profile updated successfully', 'success');
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3500);
+    } else {
+      const msg = (data && data.message) || 'Failed to update details';
+      if (typeof toast === 'function') toast(msg, 'error');
+      else alert(msg);
+    }
+  } catch(err) {
+    if (typeof toast === 'function') toast('Network error updating profile', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }
+  }
+}
+
+async function loadVendorTabInventory() {
+  try {
+    const res = await fetch('/api/coupons.php?action=get_pins&_t=' + Date.now());
+    const data = await res.json();
+    const rawPins = data.coupons || data.pins || [];
+
+    const u = String(CURRENT_USER || '').toLowerCase().trim();
+    const vRecId = vendorTabRecord ? String(vendorTabRecord.id || '').toLowerCase().trim() : '';
+    const vRecName = vendorTabRecord ? String(vendorTabRecord.name || '').toLowerCase().trim() : '';
+
+    allVendorTabPins = rawPins.filter(p => {
+      const vId = String(p.vendor_id || p.vendorId || '').toLowerCase().trim();
+      const vName = String(p.vendor_name || p.vendorName || '').toLowerCase().trim();
+      if (!vId && (!vName || vName === 'general pool')) return false;
+      const matchId = Boolean(vId && (vId === u || vId === ('v_' + u) || (vRecId && vId === vRecId)));
+      const matchName = Boolean(vName && (vName === u || (vRecName && vName === vRecName)));
+      return matchId || matchName;
+    });
+
+    let available = 0;
+    let sold = 0;
+    allVendorTabPins.forEach(p => {
+      if (p.is_used || p.isUsed) sold++;
+      else available++;
+    });
+
+    const kpiAvail = document.getElementById('vTabKpiAvailable');
+    const kpiSold = document.getElementById('vTabKpiSold');
+    const kpiTotal = document.getElementById('vTabKpiTotal');
+    if (kpiAvail) kpiAvail.textContent = available;
+    if (kpiSold) kpiSold.textContent = sold;
+    if (kpiTotal) kpiTotal.textContent = allVendorTabPins.length;
+
+    renderVendorTabPinsTable(allVendorTabPins);
+    populateVendorTabDispatchSelect(allVendorTabPins);
+  } catch(e) {
+    const tbody = document.getElementById('vTabPinsTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--txt-3);padding:24px;">Failed to load activation codes.</td></tr>';
+  }
+}
+
+function renderVendorTabPinsTable(pins) {
+  const tbody = document.getElementById('vTabPinsTableBody');
+  if (!tbody) return;
+  if (!pins || pins.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--txt-3);padding:24px;">No activation codes assigned yet. Contact administrator to allocate codes.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pins.map(p => {
+    const isUsed = Boolean(p.is_used || p.isUsed);
+    const statusBadge = isUsed
+      ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Redeemed</span>'
+      : '<span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Available</span>';
+    const redeemedBy = p.used_by || p.usedBy || '—';
+    const dateCreated = (p.created_at || '').substring(0, 10) || 'Recently';
+    const codeEscaped = escapeVendorTabHtml(p.code);
+
+    return `
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:700;color:var(--txt);">${codeEscaped}</td>
+        <td style="padding:10px 12px;color:var(--txt-2);">${escapeVendorTabHtml(p.type || 'AFF')}</td>
+        <td style="padding:10px 12px;">${statusBadge}</td>
+        <td style="padding:10px 12px;color:var(--txt-3);">${escapeVendorTabHtml(redeemedBy)}</td>
+        <td style="padding:10px 12px;color:var(--txt-3);font-size:12px;">${escapeVendorTabHtml(dateCreated)}</td>
+        <td style="padding:10px 12px;text-align:right;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copyVendorTabSingleCode('${codeEscaped}')" style="padding:3px 8px;font-size:11.5px;">Copy</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function populateVendorTabDispatchSelect(pins) {
+  const select = document.getElementById('vTabDispatchCodeSelect');
+  if (!select) return;
+  const unused = pins.filter(p => !p.is_used && !p.isUsed);
+  if (unused.length === 0) {
+    select.innerHTML = '<option value="">No available codes in stock</option>';
+    updateVendorTabDispatchPreview();
+    return;
+  }
+  select.innerHTML = '<option value="">Select an available code...</option>' +
+    unused.map(p => `<option value="${escapeVendorTabHtml(p.code)}">${escapeVendorTabHtml(p.code)}</option>`).join('');
+  select.onchange = updateVendorTabDispatchPreview;
+  const buyerInput = document.getElementById('vTabDispatchBuyerName');
+  if (buyerInput) buyerInput.oninput = updateVendorTabDispatchPreview;
+  updateVendorTabDispatchPreview();
+}
+
+function updateVendorTabDispatchPreview() {
+  const preview = document.getElementById('vTabDispatchPreview');
+  if (!preview) return;
+  const pin = document.getElementById('vTabDispatchCodeSelect')?.value;
+  if (!pin) {
+    preview.textContent = 'Select an available code above to view preview message.';
+    return;
+  }
+  const text = getVendorTabDispatchText(false);
+  if (text) preview.textContent = text;
+}
+
+function filterVendorTabPins() {
+  const q = (document.getElementById('vTabSearchPinInput')?.value || '').trim().toUpperCase();
+  if (!q) {
+    renderVendorTabPinsTable(allVendorTabPins);
+    return;
+  }
+  const filtered = allVendorTabPins.filter(p => (p.code || '').toUpperCase().includes(q));
+  renderVendorTabPinsTable(filtered);
+}
+
+function copyVendorTabSingleCode(code) {
+  navigator.clipboard.writeText(code);
+  if (typeof toast === 'function') toast(`Copied code: ${code}`, 'success');
+  else alert(`Copied code: ${code}`);
+}
+
+function copyAllVendorTabAvailableCodes() {
+  const unused = allVendorTabPins.filter(p => !p.is_used && !p.isUsed).map(p => p.code);
+  if (unused.length === 0) {
+    if (typeof toast === 'function') toast('No available codes to copy', 'info');
+    else alert('No available codes to copy');
+    return;
+  }
+  navigator.clipboard.writeText(unused.join('\n'));
+  if (typeof toast === 'function') toast(`Copied ${unused.length} available code(s)`, 'success');
+  else alert(`Copied ${unused.length} available code(s)`);
+}
+
+function getVendorTabDispatchText(showAlerts = true) {
+  const name = (document.getElementById('vTabDispatchBuyerName')?.value || '').trim() || 'Customer';
+  const pin = document.getElementById('vTabDispatchCodeSelect')?.value;
+  if (!pin) {
+    if (showAlerts) {
+      if (typeof toast === 'function') toast('Please select an available activation code first', 'info');
+      else alert('Please select an available activation code first');
+    }
+    return null;
+  }
+  const regUrl = window.location.origin + '/register.php?pin=' + encodeURIComponent(pin);
+  return `Hello ${name}, here is your INNOVATIONX activation code: ${pin}\n\nRegister here:\n${regUrl}`;
+}
+
+function copyVendorTabDispatchText() {
+  const text = getVendorTabDispatchText(true);
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+  if (typeof toast === 'function') toast('Dispatch message copied to clipboard', 'success');
+  else alert('Dispatch message copied to clipboard');
+}
+
+function sendVendorTabDispatchWhatsApp() {
+  const text = getVendorTabDispatchText(true);
+  if (!text) return;
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
+}
+
+function escapeVendorTabHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
 }
 </script>
 </body>
