@@ -258,9 +258,11 @@ if ($action === 'activate' || $action === 'activate_coupon') {
             if (strtolower($chkU['username'] ?? '') === strtolower($username)) {
                 if (!empty($chkU['is_activated']) || !empty($chkU['coupon_activated']) || !empty($chkU['coupon_pin_used'])) {
                     echo json_encode([
-                        'success' => false,
-                        'status' => 'error',
-                        'message' => 'This account is already activated and unlocked. Activation codes only need to be entered once.'
+                        'success' => true,
+                        'status' => 'success',
+                        'is_activated' => true,
+                        'isActivated' => true,
+                        'message' => 'This account is already activated and unlocked.'
                     ]);
                     exit;
                 }

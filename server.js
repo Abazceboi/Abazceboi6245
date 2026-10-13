@@ -62,7 +62,7 @@ function renderPhpFile(filePath, context = {}) {
 
     if (context.isActivated) {
         content = content.replace(/<\?php\s+if\s*\(\s*!\$isActivated\s*\)\s*:\s*\?>[\s\S]*?<\?php\s+endif;\s*\?>/g, '');
-        content = content.replace(/<!-- Mandatory Coupon Activation Gate Overlay -->[\s\S]*?<div[^>]*id="modalActivationGate"[\s\S]*?<\/div>\s*<\/div>\s*(?:<\?php\s+endif;\s*\?>)?/g, '');
+        content = content.replace(/<!-- Mandatory Coupon Activation Gate Overlay -->[\s\S]*?<div[^>]*id="modalActivationGate"[\s\S]*?(?:<\/div>\s*){1,3}(?:<\?php\s+endif;\s*\?>)?/g, '');
     }
 
     content = content.replace(/(?:require_once|require|include_once|include)\s+__DIR__\s*\.\s*['"]([^'"]+)['"];?/g, (match, relPath) => {
@@ -831,7 +831,7 @@ const server = http.createServer((req, res) => {
                     }
                     const userRecord = (usersData.users || []).find(u => (u.username || '').toLowerCase() === username.toLowerCase());
                     if (userRecord && (userRecord.is_activated || userRecord.coupon_activated || userRecord.coupon_pin_used)) {
-                        res.end(JSON.stringify({ status: 'error', message: 'This account is already activated and unlocked. Activation codes only need to be entered once.' }));
+                        res.end(JSON.stringify({ status: 'success', success: true, is_activated: true, isActivated: true, message: 'This account is already activated and unlocked.' }));
                         return;
                     }
 
@@ -1223,7 +1223,7 @@ const server = http.createServer((req, res) => {
                     const users = uData.users || (Array.isArray(uData) ? uData : []);
                     const userRecord = users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
                     if (userRecord && (userRecord.is_activated || userRecord.coupon_activated || userRecord.coupon_pin_used)) {
-                        res.end(JSON.stringify({ success: false, status: 'error', message: 'This account is already activated and unlocked. Activation codes only need to be entered once.' }));
+                        res.end(JSON.stringify({ success: true, status: 'success', is_activated: true, isActivated: true, message: 'This account is already activated and unlocked.' }));
                         return;
                     }
 
@@ -4056,6 +4056,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 u.password_reset_by = 'admin';
                             }
                             u.status = status;
+                            if (status === 'active') {
+                                u.is_activated = true;
+                            }
                             u.updated_at = new Date().toISOString();
                             found = true;
                         }
@@ -5900,6 +5903,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                     userRecord.coupon_activated === 1 ||
                                     userRecord.coupon_activated === '1' ||
                                     userRecord.coupon_pin_used ||
+                                    (userRecord.status === 'active' && String(userRecord.role_label || '').toLowerCase() === 'active member') ||
                                     ['admin', 'super_admin', 'uploader', 'vendor'].includes(String(userRecord.role || '').toLowerCase())
                                 );
                                 context.isActivated = isUserAct;

@@ -80,6 +80,7 @@
       "referral_code": "INX-ABAS",
       "referral_count": 0,
       "referral_earnings": 0,
+      "is_activated": true,
       "status": "active",
       "created_at": "2026-10-03T17:41:10.383Z",
       "updated_at": "2026-10-09T00:42:33.284Z",
@@ -106,6 +107,7 @@
       "referral_code": "INX-ONLYWHIZ",
       "referral_count": 0,
       "referral_earnings": 0,
+      "is_activated": true,
       "status": "active",
       "created_at": "2026-10-04T22:00:00.000Z",
       "updated_at": "2026-10-04T21:47:28.700Z"

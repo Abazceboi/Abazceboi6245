@@ -117,11 +117,20 @@ foreach ($allUsers as $ju) {
         if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
         if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
         if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
-        if (!empty($ju['is_activated']) || !empty($ju['coupon_activated']) || !empty($ju['coupon_pin_used'])) {
+        if (
+            !empty($ju['is_activated']) || 
+            !empty($ju['coupon_activated']) || 
+            !empty($ju['coupon_pin_used']) ||
+            (!empty($ju['status']) && strtolower($ju['status']) === 'active' && !empty($ju['role_label']) && strtolower($ju['role_label']) === 'active member')
+        ) {
             $isActivated = true;
         }
         break;
     }
+}
+
+if (!empty($_SESSION['is_activated']) || (!empty($_COOKIE['ix_account_activated']) && $_COOKIE['ix_account_activated'] === '1')) {
+    $isActivated = true;
 }
 
 if (!empty($userRole)) {
@@ -150,7 +159,7 @@ if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor
 $pdo = getDbConnection();
 if ($pdo) {
     try {
-        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode" FROM users WHERE LOWER(username)=LOWER(?)');
+        $stmt = $pdo->prepare('SELECT "pointsBalance","cashBalance",role,"bankName","accountNumber","accountName",phone,email,"fullName","referralCode","is_activated","couponPinUsed" FROM users WHERE LOWER(username)=LOWER(?)');
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -173,6 +182,10 @@ if ($pdo) {
             }
         }
     } catch (Exception $e) {}
+}
+
+if (in_array(strtolower($userRole), ['admin', 'super_admin', 'uploader', 'vendor', 'moderator'])) {
+    $isActivated = true;
 }
 
 $isBankConfigured = !empty($bankName) 
@@ -3287,20 +3300,17 @@ function getUserCash() {
   const gate = document.getElementById('modalActivationGate');
   if (!gate) return;
   const dataEl = document.getElementById('dataActivated');
-  // Strictly check server activation state — client cookies or localStorage cannot bypass
   const isServerActivated = Boolean(dataEl && dataEl.dataset.activated === '1');
+  const user = (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) ? CURRENT_USER : '';
+  const isClientActivated = Boolean(
+    (user && localStorage.getItem('ix_activated_' + user) === '1') ||
+    localStorage.getItem('ix_is_activated') === '1' ||
+    document.cookie.includes('ix_account_activated=1')
+  );
 
-  if (!isServerActivated) {
-    // Strictly maintain the lock screen permanently until valid code is inputted
-    gate.classList.add('active');
-    gate.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  } else {
-    // Only dismiss if the server confirmed user is genuinely active
+  if (isServerActivated || isClientActivated) {
     try {
-      if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
-        localStorage.setItem('ix_activated_' + CURRENT_USER, '1');
-      }
+      if (user) localStorage.setItem('ix_activated_' + user, '1');
       localStorage.setItem('ix_is_activated', '1');
       document.cookie = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax";
     } catch(e) {}
@@ -3308,6 +3318,10 @@ function getUserCash() {
     gate.style.display = 'none';
     gate.remove();
     document.body.style.overflow = '';
+  } else {
+    gate.classList.add('active');
+    gate.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   }
 })();
 
@@ -3624,6 +3638,23 @@ async function syncLiveProfile() {
       const liveRole = u.role || d.role;
       if (liveRole) {
         updateDashboardRoleUI(liveRole);
+      }
+
+      const isLiveActive = Boolean(
+        u.is_activated ||
+        u.coupon_activated ||
+        u.coupon_pin_used ||
+        (u.status === 'active' && u.role_label === 'Active Member') ||
+        ['admin', 'super_admin', 'uploader', 'vendor'].includes(String(liveRole || '').toLowerCase())
+      );
+      if (isLiveActive) {
+        const gate = document.getElementById('modalActivationGate');
+        if (gate) {
+          gate.classList.remove('active');
+          gate.style.display = 'none';
+          gate.remove();
+          document.body.style.overflow = '';
+        }
       }
     }
   } catch(e) {}
@@ -5352,7 +5383,8 @@ async function submitAccountActivation() {
       })
     });
     const d = await r.json();
-    if (d.success || d.status === 'success') {
+    const isAlreadyAct = Boolean(d.message && d.message.toLowerCase().includes('already activated'));
+    if (d.success || d.status === 'success' || isAlreadyAct) {
       try {
         localStorage.setItem('ix_is_activated', '1');
         if (typeof CURRENT_USER !== 'undefined' && CURRENT_USER) {
@@ -5367,7 +5399,7 @@ async function submitAccountActivation() {
         gate.remove();
         document.body.style.overflow = '';
       }
-      toast('Account activated successfully! All platform features unlocked.', 'success');
+      toast(isAlreadyAct ? 'Your account is verified and active.' : 'Account activated successfully! All platform features unlocked.', 'success');
 
       // Dismiss activation lock and immediately show the welcome message
       const welcomePopup = document.getElementById('modalNewUserActivationPopup');

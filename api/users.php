@@ -569,6 +569,9 @@ switch ($action) {
                     $u['password_reset_by'] = 'admin';
                 }
                 $u['status'] = $status;
+                if (strtolower($status) === 'active') {
+                    $u['is_activated'] = true;
+                }
                 $u['updated_at'] = date('c');
                 $found = true;
                 break;
