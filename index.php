@@ -2,7 +2,8 @@
 /**
  * INNOVATIONX — Minimal Spatial Tech Landing Page
  * Inspired by the streamlined architecture of evermoreai.africa:
- * Pure spatial tech minimalism, midnight navy palette (#060F1E / #0A1628),
+ * Pure spatial tech minimalism with the site's official Sky Blue brand palette (#0284C7 / #38BDF8),
+ * full Light Mode and Dark Mode support with seamless theme switcher,
  * floating pill navigation, high-impact concise typography, essence editorial,
  * three-step feature representation, stats surface, minimal FAQ, and wordmark footer.
  * Zero emojis in accordance with strict platform guidelines.
@@ -52,28 +53,72 @@ if (file_exists($telegramConfigFile)) {
 
 <style>
 /* ==========================================================================
-   SPATIAL TECH MINIMALISM — DESIGN SYSTEM (EVERMORE PATTERN)
+   SPATIAL TECH MINIMALISM — DESIGN SYSTEM & SITE BRAND COLOURS
    ========================================================================== */
 :root {
-    --ev-canvas: #060F1E;
-    --ev-canvas-alt: #0A1628;
-    --ev-surface: #0E1B31;
-    --ev-surface-card: rgba(14, 27, 49, 0.75);
-    --ev-border: rgba(255, 255, 255, 0.09);
-    --ev-border-cyan: rgba(21, 184, 208, 0.28);
-    
-    --ev-text: #F8FAFC;
-    --ev-text-muted: #8E9FB5;
-    --ev-text-dim: #5C708A;
+    /* Site Master Brand Colors: Sky Blue (#0284C7 / #38BDF8) */
+    --color-primary: #0284C7;
+    --color-vibrant: #38BDF8;
+    --color-dark: #0369A1;
+    --color-deep: #0C4A6E;
+    --color-light: #7DD3FC;
+    --color-ice: #BAE6FD;
+    --color-emerald: #10B981;
 
-    --ev-cyan: #15B8D0;
-    --ev-cyan-bright: #00D4F0;
-    --ev-emerald: #1AAA64;
-    --ev-grad-brand: linear-gradient(135deg, #15B8D0 0%, #1AAA64 100%);
-    --ev-grad-dark: linear-gradient(180deg, #060F1E 0%, #0A1628 100%);
+    /* Dark Mode Tokens (Default) */
+    --ev-canvas: #070D1A;
+    --ev-canvas-alt: #0C162D;
+    --ev-surface: #0F1D38;
+    --ev-surface-card: rgba(12, 22, 45, 0.78);
+    --ev-surface-card-hover: rgba(18, 32, 64, 0.9);
+    --ev-border: rgba(56, 189, 248, 0.16);
+    --ev-border-accent: rgba(56, 189, 248, 0.38);
+
+    --ev-text: #FFFFFF;
+    --ev-text-muted: #94A3B8;
+    --ev-text-dim: #64748B;
+
+    --ev-cyan: #38BDF8;
+    --ev-cyan-bright: #38BDF8;
+    --ev-grad-brand: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+    --ev-grad-dark: linear-gradient(180deg, #070D1A 0%, #0C162D 100%);
+    --ev-pill-bg: rgba(255, 255, 255, 0.05);
+    --ev-pill-border: rgba(255, 255, 255, 0.12);
+    --ev-card-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.45);
+    --ev-wordmark-color: rgba(56, 189, 248, 0.025);
 
     --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Light Mode Token Overrides */
+[data-theme="light"] {
+    --ev-canvas: #F8FAFC;
+    --ev-canvas-alt: #FFFFFF;
+    --ev-surface: #FFFFFF;
+    --ev-surface-card: #FFFFFF;
+    --ev-surface-card-hover: #F0F9FF;
+    --ev-border: rgba(2, 132, 199, 0.14);
+    --ev-border-accent: rgba(2, 132, 199, 0.38);
+
+    --ev-text: #0F172A;
+    --ev-text-muted: #475569;
+    --ev-text-dim: #64748B;
+
+    --ev-cyan: #0284C7;
+    --ev-cyan-bright: #0284C7;
+    --ev-grad-brand: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+    --ev-grad-dark: linear-gradient(180deg, #F8FAFC 0%, #EDF4FA 100%);
+    --ev-pill-bg: rgba(255, 255, 255, 0.88);
+    --ev-pill-border: rgba(2, 132, 199, 0.16);
+    --ev-card-shadow: 0 10px 30px -4px rgba(2, 132, 199, 0.08);
+    --ev-wordmark-color: rgba(2, 132, 199, 0.04);
+}
+
+/* Smooth Theme Transitions */
+html.theme-transitioning,
+html.theme-transitioning * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 * {
@@ -132,16 +177,17 @@ a {
     gap: 10px;
     padding: 6px 16px 6px 8px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--ev-pill-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--ev-border);
+    box-shadow: var(--ev-card-shadow);
     transition: transform 0.2s, border-color 0.2s;
 }
 
 .ev-brand:hover {
     transform: translateY(-1px);
-    border-color: var(--ev-border-cyan);
+    border-color: var(--ev-border-accent);
 }
 
 .ev-brand-badge {
@@ -156,7 +202,7 @@ a {
     font-family: var(--font-display);
     font-weight: 800;
     font-size: 0.8rem;
-    box-shadow: 0 0 12px rgba(21, 184, 208, 0.35);
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
 }
 
 .ev-brand-name {
@@ -164,7 +210,7 @@ a {
     font-weight: 700;
     font-size: 0.95rem;
     letter-spacing: -0.02em;
-    color: #FFFFFF;
+    color: var(--ev-text);
 }
 
 .ev-nav-capsule {
@@ -174,10 +220,11 @@ a {
     gap: 4px;
     padding: 4px 8px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--ev-pill-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--ev-border);
+    box-shadow: var(--ev-card-shadow);
 }
 
 .ev-nav-link {
@@ -185,21 +232,60 @@ a {
     border-radius: 9999px;
     font-size: 0.82rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--ev-text-muted);
     transition: color 0.15s, background 0.15s;
     white-space: nowrap;
 }
 
 .ev-nav-link:hover {
-    color: #FFFFFF;
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--ev-text);
+    background: rgba(2, 132, 199, 0.1);
 }
 
 .ev-nav-actions {
     pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+}
+
+/* Theme Toggle Button */
+.ev-theme-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background: var(--ev-pill-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--ev-border);
+    color: var(--ev-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.05rem;
+    box-shadow: var(--ev-card-shadow);
+    transition: transform 0.18s, border-color 0.18s, color 0.18s, background 0.18s;
+}
+
+.ev-theme-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--ev-border-accent);
+    color: var(--color-primary);
+}
+
+.theme-icon-sun {
+    display: inline-flex;
+}
+.theme-icon-moon {
+    display: none;
+}
+
+[data-theme="light"] .theme-icon-sun {
+    display: none;
+}
+[data-theme="light"] .theme-icon-moon {
+    display: inline-flex;
 }
 
 .ev-btn-signin {
@@ -207,12 +293,12 @@ a {
     border-radius: 9999px;
     font-size: 0.82rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--ev-text);
     transition: color 0.15s;
 }
 
 .ev-btn-signin:hover {
-    color: #FFFFFF;
+    color: var(--color-primary);
 }
 
 .ev-btn-primary {
@@ -222,10 +308,10 @@ a {
     padding: 8px 18px;
     border-radius: 9999px;
     background: var(--ev-grad-brand);
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     font-size: 0.82rem;
     font-weight: 700;
-    box-shadow: 0 4px 18px rgba(21, 184, 208, 0.25);
+    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.3);
     transition: transform 0.15s, opacity 0.15s;
 }
 
@@ -239,9 +325,9 @@ a {
     width: 36px;
     height: 36px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--ev-pill-bg);
     border: 1px solid var(--ev-border);
-    color: #FFFFFF;
+    color: var(--ev-text);
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -252,7 +338,7 @@ a {
 .ev-drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(4, 9, 18, 0.75);
+    background: rgba(4, 9, 18, 0.65);
     backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
@@ -270,7 +356,7 @@ a {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 280px;
+    width: 290px;
     max-width: 85vw;
     background: var(--ev-canvas-alt);
     border-left: 1px solid var(--ev-border);
@@ -279,7 +365,8 @@ a {
     z-index: 120;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 22px;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.35);
 }
 
 .ev-drawer.open {
@@ -302,8 +389,14 @@ a {
     inset: 0;
     pointer-events: none;
     background: 
-        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(21, 184, 208, 0.12), transparent 70%),
-        radial-gradient(circle 350px at 80% 40%, rgba(26, 170, 100, 0.08), transparent 60%);
+        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(2, 132, 199, 0.14), transparent 70%),
+        radial-gradient(circle 350px at 80% 40%, rgba(56, 189, 248, 0.08), transparent 60%);
+}
+
+[data-theme="light"] .ev-hero-atmosphere {
+    background: 
+        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(2, 132, 199, 0.07), transparent 70%),
+        radial-gradient(circle 350px at 80% 40%, rgba(56, 189, 248, 0.05), transparent 60%);
 }
 
 .ev-hero-eyebrow {
@@ -312,13 +405,13 @@ a {
     gap: 8px;
     padding: 6px 16px;
     border-radius: 9999px;
-    background: rgba(21, 184, 208, 0.08);
-    border: 1px solid var(--ev-border-cyan);
+    background: rgba(2, 132, 199, 0.1);
+    border: 1px solid var(--ev-border-accent);
     font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--ev-cyan-bright);
+    color: var(--color-primary);
     margin-bottom: 28px;
 }
 
@@ -330,7 +423,7 @@ a {
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.035em;
-    color: #FFFFFF;
+    color: var(--ev-text);
 }
 
 .ev-hero-lead {
@@ -356,10 +449,10 @@ a {
     padding: 13px 28px;
     border-radius: 9999px;
     background: var(--ev-grad-brand);
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     font-size: 0.92rem;
     font-weight: 700;
-    box-shadow: 0 6px 24px rgba(21, 184, 208, 0.3);
+    box-shadow: 0 6px 24px rgba(2, 132, 199, 0.3);
     transition: transform 0.18s, opacity 0.18s;
 }
 
@@ -374,17 +467,19 @@ a {
     gap: 8px;
     padding: 13px 26px;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--ev-pill-bg);
     border: 1px solid var(--ev-border);
-    color: #FFFFFF;
+    color: var(--ev-text);
     font-size: 0.92rem;
     font-weight: 600;
-    transition: background 0.18s, border-color 0.18s;
+    box-shadow: var(--ev-card-shadow);
+    transition: background 0.18s, border-color 0.18s, transform 0.18s;
 }
 
 .ev-btn-outline-light:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--ev-border-cyan);
+    transform: translateY(-1px);
+    border-color: var(--ev-border-accent);
+    color: var(--color-primary);
 }
 
 /* ==========================================================================
@@ -399,7 +494,7 @@ a {
     width: 36px;
     height: 3px;
     border-radius: 9999px;
-    background: var(--ev-cyan);
+    background: var(--color-primary);
     margin-bottom: 18px;
 }
 
@@ -408,7 +503,7 @@ a {
     font-size: clamp(2rem, 3.4vw, 2.8rem);
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: #FFFFFF;
+    color: var(--ev-text);
     margin-bottom: 24px;
 }
 
@@ -426,7 +521,7 @@ a {
 }
 
 /* ==========================================================================
-   SECTION: WHAT WE REPRESENT (3-ITEM EDITORIAL)
+   SECTION: WHAT WE REPRESENT
    ========================================================================== */
 .ev-ed-identity {
     display: inline-flex;
@@ -439,7 +534,7 @@ a {
     width: 8px;
     height: 8px;
     border-radius: 2px;
-    background: var(--ev-cyan);
+    background: var(--color-primary);
 }
 
 .ev-ed-label {
@@ -448,7 +543,7 @@ a {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--ev-cyan-bright);
+    color: var(--color-primary);
 }
 
 .ev-ed-divider {
@@ -469,7 +564,7 @@ a {
     font-family: var(--font-display);
     font-size: 1.3rem;
     font-weight: 800;
-    color: var(--ev-cyan-bright);
+    color: var(--color-primary);
 }
 
 .ev-ed-counter-sep {
@@ -492,12 +587,13 @@ a {
     border: 1px solid var(--ev-border);
     border-radius: 16px;
     padding: 32px 26px;
+    box-shadow: var(--ev-card-shadow);
     transition: transform 0.2s, border-color 0.2s;
 }
 
 .ev-ed-card:hover {
     transform: translateY(-3px);
-    border-color: var(--ev-border-cyan);
+    border-color: var(--ev-border-accent);
 }
 
 .ev-ed-title {
@@ -505,7 +601,7 @@ a {
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: #FFFFFF;
+    color: var(--ev-text);
     margin-bottom: 12px;
 }
 
@@ -523,6 +619,7 @@ a {
     border: 1px solid var(--ev-border);
     border-radius: 20px;
     padding: 48px 32px;
+    box-shadow: var(--ev-card-shadow);
     position: relative;
     overflow: hidden;
 }
@@ -539,12 +636,12 @@ a {
     font-size: clamp(2.4rem, 4vw, 3.4rem);
     font-weight: 800;
     line-height: 1;
-    color: #FFFFFF;
+    color: var(--ev-text);
     letter-spacing: -0.03em;
 }
 
 .ev-stat-number span {
-    color: var(--ev-cyan-bright);
+    color: var(--color-primary);
 }
 
 .ev-stat-label {
@@ -562,7 +659,13 @@ a {
     border: 1px solid var(--ev-border);
     border-radius: 12px;
     margin-bottom: 14px;
+    box-shadow: var(--ev-card-shadow);
     overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.ev-faq-item:hover {
+    border-color: var(--ev-border-accent);
 }
 
 .ev-faq-trigger {
@@ -573,7 +676,7 @@ a {
     padding: 20px 24px;
     background: none;
     border: none;
-    color: #FFFFFF;
+    color: var(--ev-text);
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 600;
@@ -583,7 +686,7 @@ a {
 
 .ev-faq-icon {
     font-size: 1.25rem;
-    color: var(--ev-cyan);
+    color: var(--color-primary);
     transition: transform 0.2s;
 }
 
@@ -621,7 +724,7 @@ a {
     font-weight: 900;
     font-size: clamp(4rem, 15vw, 13rem);
     letter-spacing: -0.05em;
-    color: rgba(255, 255, 255, 0.02);
+    color: var(--ev-wordmark-color);
     pointer-events: none;
     white-space: nowrap;
     user-select: none;
@@ -632,6 +735,7 @@ a {
     border: 1px solid var(--ev-border);
     border-radius: 20px;
     padding: 44px 36px 32px;
+    box-shadow: var(--ev-card-shadow);
     position: relative;
     z-index: 2;
 }
@@ -657,7 +761,7 @@ a {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #FFFFFF;
+    color: var(--ev-text);
     margin-bottom: 16px;
 }
 
@@ -674,7 +778,7 @@ a {
 }
 
 .ev-footer-link:hover {
-    color: var(--ev-cyan-bright);
+    color: var(--color-primary);
 }
 
 .ev-footer-bottom {
@@ -695,8 +799,8 @@ a {
     gap: 6px;
     padding: 4px 12px;
     border-radius: 9999px;
-    background: rgba(26, 170, 100, 0.1);
-    color: #34D399;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10B981;
     font-size: 0.76rem;
     font-weight: 600;
 }
@@ -751,6 +855,11 @@ a {
         </nav>
 
         <div class="ev-nav-actions">
+            <!-- Theme Toggle Button -->
+            <button type="button" class="ev-theme-btn" onclick="handleThemeToggle(event)" title="Toggle Theme" aria-label="Toggle Light/Dark Theme">
+                <i class="ri-sun-line theme-icon-sun"></i>
+                <i class="ri-moon-line theme-icon-moon"></i>
+            </button>
             <a href="login.php" class="ev-btn-signin">Sign In</a>
             <a href="register.php" class="ev-btn-primary">
                 <span>Get Started</span>
@@ -766,22 +875,31 @@ a {
 <!-- Mobile Slide-out Drawer -->
 <div class="ev-drawer-backdrop" id="evDrawerBackdrop" onclick="toggleEvermoreDrawer()"></div>
 <aside class="ev-drawer" id="evDrawer">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:10px;">
             <div class="ev-brand-badge" style="width:28px;height:28px;font-size:0.75rem;">IX</div>
             <span class="ev-brand-name">INNOVATIONX</span>
         </div>
-        <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:#FFFFFF;font-size:1.4rem;cursor:pointer;">
+        <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:var(--ev-text);font-size:1.4rem;cursor:pointer;">
             <i class="ri-close-line"></i>
         </button>
     </div>
 
+    <!-- Mobile Theme Switcher Bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:var(--ev-pill-bg);border:1px solid var(--ev-border);margin-bottom:20px;">
+        <span style="font-size:0.86rem;font-weight:600;color:var(--ev-text);">Theme Mode</span>
+        <button type="button" class="ev-theme-btn" onclick="handleThemeToggle(event)" title="Toggle Theme" aria-label="Toggle Light/Dark Theme">
+            <i class="ri-sun-line theme-icon-sun"></i>
+            <i class="ri-moon-line theme-icon-moon"></i>
+        </button>
+    </div>
+
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
-        <a href="#hero" onclick="toggleEvermoreDrawer()" style="color:#FFFFFF;font-size:0.95rem;font-weight:500;">Home</a>
-        <a href="#essence" onclick="toggleEvermoreDrawer()" style="color:#FFFFFF;font-size:0.95rem;font-weight:500;">The Essence</a>
-        <a href="#represent" onclick="toggleEvermoreDrawer()" style="color:#FFFFFF;font-size:0.95rem;font-weight:500;">What We Represent</a>
-        <a href="vendors.php" style="color:var(--ev-cyan-bright);font-size:0.95rem;font-weight:600;">Verified Vendors</a>
-        <a href="#faq" onclick="toggleEvermoreDrawer()" style="color:#FFFFFF;font-size:0.95rem;font-weight:500;">FAQ</a>
+        <a href="#hero" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">Home</a>
+        <a href="#essence" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">The Essence</a>
+        <a href="#represent" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">What We Represent</a>
+        <a href="vendors.php" style="color:var(--color-primary);font-size:0.95rem;font-weight:600;">Verified Vendors</a>
+        <a href="#faq" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">FAQ</a>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:auto;">
@@ -989,6 +1107,33 @@ a {
 </footer>
 
 <script>
+function handleThemeToggle(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    document.documentElement.classList.add('theme-transitioning');
+    
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = (current === 'light') ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', next);
+    if (document.body) {
+        document.body.setAttribute('data-theme', next);
+    }
+    
+    try {
+        localStorage.setItem('ix_theme_user_set', next);
+        localStorage.setItem('ix_theme', next);
+        localStorage.setItem('theme', next);
+    } catch(err) {}
+
+    if (window.syncThemeIcons && typeof window.syncThemeIcons === 'function') {
+        window.syncThemeIcons(next);
+    }
+
+    setTimeout(function() {
+        document.documentElement.classList.remove('theme-transitioning');
+    }, 350);
+}
+
 function toggleEvermoreDrawer() {
     var drawer = document.getElementById('evDrawer');
     var backdrop = document.getElementById('evDrawerBackdrop');
