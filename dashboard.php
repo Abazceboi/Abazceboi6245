@@ -356,12 +356,12 @@ if ($actDownlines > $referralCount) {
   --border-mid: rgba(0,0,0,0.14);
   --txt:        #0D1117;
   --txt-2:      #4B5563;
-  --txt-3:      #9CA3AF;
+  --txt-3:      #64748B;
   --accent:     #2563EB;
   --shadow:     0 8px 32px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;padding-bottom:100px;overflow-x:hidden;}
+body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;padding-bottom:120px;overflow-x:hidden;}
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
 input,textarea,select{font-family:var(--ff);}
@@ -1965,6 +1965,311 @@ input,textarea,select{font-family:var(--ff);}
   .stats-grid{grid-template-columns:1fr 1fr;}
   .notif-dropdown{right:-30px;width:min(320px, calc(100vw - 28px));}
 }
+
+/* ═══════════════════════════ LIGHT THEME & VENDOR COMPONENT ENHANCEMENTS ═══════════════════ */
+[data-theme="light"] .card,
+[data-theme="light"] .stat-card {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-textarea,
+[data-theme="light"] select.form-input,
+[data-theme="light"] .form-select {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+[data-theme="light"] .form-input:focus,
+[data-theme="light"] .form-textarea:focus,
+[data-theme="light"] select.form-input:focus,
+[data-theme="light"] .form-select:focus {
+  background-color: #FFFFFF;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="light"] .form-input::placeholder,
+[data-theme="light"] .form-textarea::placeholder {
+  color: #94A3B8;
+}
+
+[data-theme="light"] .form-select option {
+  background: #FFFFFF;
+  color: #0F172A;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #1E293B;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+[data-theme="light"] .btn-ghost {
+  border-color: #CBD5E1;
+  color: #475569;
+}
+
+[data-theme="light"] .btn-ghost:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+[data-theme="light"] .ref-box {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .grid-item-card,
+[data-theme="light"] .eco-card {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .item-tag {
+  background: #F1F5F9;
+  color: #475569;
+  border-color: #E2E8F0;
+}
+
+[data-theme="light"] .item-pts {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+[data-theme="light"] .modal {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .modal-close {
+  background: #F1F5F9;
+  color: #475569;
+  border-color: #CBD5E1;
+}
+
+[data-theme="light"] .modal-close:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+}
+
+[data-theme="light"] .eco-pay-option {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+[data-theme="light"] .table th {
+  color: #64748B;
+  border-bottom-color: #E2E8F0;
+}
+
+[data-theme="light"] .table td {
+  border-bottom-color: #F1F5F9;
+}
+
+[data-theme="light"] .table tbody tr:hover {
+  background: #F8FAFC;
+}
+
+/* Vendor Terminal Elements */
+.vendor-banner-card {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
+  margin-bottom: 14px;
+}
+
+[data-theme="light"] .vendor-banner-card {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.6) 0%, #FFFFFF 100%);
+  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08);
+}
+
+.vendor-banner-desc {
+  font-size: 12px;
+  color: var(--txt-3);
+  margin-top: 2px;
+}
+
+[data-theme="light"] .vendor-banner-desc {
+  color: #475569 !important;
+}
+
+.badge-authorized {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.18);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  letter-spacing: 0.4px;
+}
+
+[data-theme="light"] .badge-authorized {
+  background: rgba(245, 158, 11, 0.14) !important;
+  color: #B45309 !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+.dispatch-preview-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 4px;
+}
+
+[data-theme="light"] .dispatch-preview-box {
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+}
+
+[data-theme="light"] #vTabDispatchPreview {
+  color: #334155 !important;
+}
+
+/* Wholesale & Creator Studio Portal Cards in Settings */
+.special-portal-card.vendor {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
+}
+
+[data-theme="light"] .special-portal-card.vendor {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: linear-gradient(180deg, rgba(254, 243, 199, 0.6) 0%, #FFFFFF 100%);
+  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08);
+}
+
+.special-portal-card.uploader {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
+}
+
+[data-theme="light"] .special-portal-card.uploader {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(180deg, rgba(209, 250, 229, 0.6) 0%, #FFFFFF 100%);
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+}
+
+/* Activation Code Chips and Badges */
+.vtab-code-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563EB;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="light"] .vtab-code-chip {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+.vtab-badge-avail {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+[data-theme="light"] .vtab-badge-avail {
+  background: #ECFDF5;
+  color: #047857;
+  border-color: #A7F3D0;
+}
+
+.vtab-badge-redeemed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+[data-theme="light"] .vtab-badge-redeemed {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-color: #FECACA;
+}
+
+/* User Role Badges */
+.role-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.role-badge-member {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94A3B8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .role-badge-member {
+  background: rgba(0, 0, 0, 0.06);
+  color: #475569;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.role-badge-vendor {
+  background: rgba(245, 158, 11, 0.18);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+[data-theme="light"] .role-badge-vendor {
+  background: rgba(245, 158, 11, 0.14);
+  color: #B45309;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.role-badge-uploader {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="light"] .role-badge-uploader {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.role-badge-admin {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+[data-theme="light"] .role-badge-admin {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1D4ED8;
+  border-color: rgba(37, 99, 235, 0.3);
+}
 </style>
 </head>
 <body>
@@ -1995,7 +2300,13 @@ input,textarea,select{font-family:var(--ff);}
       <div class="user-pill">
         <span class="user-dot"></span>
         <span class="user-name"><?= htmlspecialchars($username) ?></span>
-        <span id="userRoleBadge" style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.4px;<?= $userRole === 'vendor' ? 'background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);' : ($userRole === 'uploader' ? 'background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);' : (in_array($userRole, ['admin','super_admin','sub_admin']) ? 'background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);' : 'background:rgba(255,255,255,0.08);color:#94A3B8;border:1px solid rgba(255,255,255,0.1);')) ?>"><?= htmlspecialchars($userRoleLabel) ?></span>
+        <?php
+          $roleClass = 'role-badge-member';
+          if ($userRole === 'vendor') $roleClass = 'role-badge-vendor';
+          elseif ($userRole === 'uploader') $roleClass = 'role-badge-uploader';
+          elseif (in_array($userRole, ['admin','super_admin','sub_admin','moderator'])) $roleClass = 'role-badge-admin';
+        ?>
+        <span id="userRoleBadge" class="role-badge <?= $roleClass ?>"><?= htmlspecialchars($userRoleLabel) ?></span>
       </div>
     </div>
 
@@ -2365,7 +2676,7 @@ input,textarea,select{font-family:var(--ff);}
   <!-- ══ TAB: VENDOR TERMINAL ═══════════════════════════════════════════ -->
   <div id="tab-vendor" class="tab-panel">
     <!-- Vendor Header Banner -->
-    <div class="card" style="border:1px solid rgba(245,158,11,0.3);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);margin-bottom:14px;">
+    <div class="card vendor-banner-card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:42px;height:42px;border-radius:10px;background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -2374,9 +2685,9 @@ input,textarea,select{font-family:var(--ff);}
           <div>
             <div style="font-size:15px;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:8px;">
               <span>Vendor Terminal</span>
-              <span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);letter-spacing:0.4px;">AUTHORIZED</span>
+              <span class="badge-authorized">AUTHORIZED</span>
             </div>
-            <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Manage activation code stock, public directory handles, and buyer onboarding dispatch.</div>
+            <div class="vendor-banner-desc">Manage activation code stock, public directory handles, and buyer onboarding dispatch.</div>
           </div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -2478,7 +2789,7 @@ input,textarea,select{font-family:var(--ff);}
             <input type="text" class="form-input" id="vTabDispatchBuyerName" placeholder="e.g. Samuel">
           </div>
 
-          <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:8px;padding:12px;margin-top:4px;">
+          <div class="dispatch-preview-box">
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);margin-bottom:4px;">Dispatch Preview</div>
             <div id="vTabDispatchPreview" style="font-size:12px;color:var(--txt-2);line-height:1.5;white-space:pre-wrap;font-family:monospace;">Select a code above to view preview message.</div>
           </div>
@@ -2578,7 +2889,7 @@ input,textarea,select{font-family:var(--ff);}
     </div>
 
     <!-- Vendor Wholesale Terminal Card -->
-    <div id="cardVendorTerminal" class="card" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:block;' : 'display:none;' ?>border:1px solid rgba(245,158,11,0.35);background:linear-gradient(180deg, rgba(245,158,11,0.06) 0%, rgba(17,24,39,0.7) 100%);">
+    <div id="cardVendorTerminal" class="card special-portal-card vendor" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:block;' : 'display:none;' ?>">
       <div class="card-title" style="color:#F59E0B;display:flex;align-items:center;gap:8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
         <span>Vendor Wholesale Terminal</span>
@@ -2590,7 +2901,7 @@ input,textarea,select{font-family:var(--ff);}
     </div>
 
     <!-- Creator Publishing Studio Card -->
-    <div id="cardUploaderStudio" class="card" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:block;' : 'display:none;' ?>border:1px solid rgba(16,185,129,0.35);background:linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(17,24,39,0.7) 100%);">
+    <div id="cardUploaderStudio" class="card special-portal-card uploader" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:block;' : 'display:none;' ?>">
       <div class="card-title" style="color:#10B981;display:flex;align-items:center;gap:8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         <span>Creator Publishing Studio</span>
@@ -2695,12 +3006,12 @@ input,textarea,select{font-family:var(--ff);}
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px;">Choose Listing Fee Payment Method</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
+            <label class="eco-pay-option" style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="points" checked onchange="updateEcoPaySelection()">
               <span style="flex:1;">Pay with Points (<strong id="ecoModalPtsFee"><?= $ecoPtsFee ?> PTS</strong>)</span>
               <span style="font-size:11px;color:var(--accent);">Bal: <span id="ecoModalPtsBal">0</span> PTS</span>
             </label>
-            <label style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
+            <label class="eco-pay-option" style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="affiliate_balance" onchange="updateEcoPaySelection()">
               <span style="flex:1;">Pay with Affiliate Earnings (<strong id="ecoModalCashFee"><?= number_format($ecoCashFee) ?> NGN</strong>)</span>
               <span style="font-size:11px;color:var(--green);">Bal: <span id="ecoModalCashBal">0</span> NGN</span>
@@ -3572,15 +3883,13 @@ function updateDashboardRoleUI(newRole) {
   const badge = document.getElementById('userRoleBadge');
   if (badge) {
     badge.textContent = roleLabel;
-    let badgeStyle = 'background:rgba(255,255,255,0.08);color:#94A3B8;border:1px solid rgba(255,255,255,0.1);';
-    if (norm === 'vendor') {
-      badgeStyle = 'background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);';
-    } else if (norm === 'uploader') {
-      badgeStyle = 'background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);';
-    } else if (['admin', 'super_admin', 'sub_admin', 'moderator'].includes(norm)) {
-      badgeStyle = 'background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.35);';
-    }
-    badge.style.cssText = `font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.4px;` + badgeStyle;
+    badge.className = 'role-badge ' + (
+      norm === 'vendor' ? 'role-badge-vendor' :
+      norm === 'uploader' ? 'role-badge-uploader' :
+      ['admin', 'super_admin', 'sub_admin', 'moderator'].includes(norm) ? 'role-badge-admin' :
+      'role-badge-member'
+    );
+    badge.style.cssText = '';
   }
 
   const isVendor = norm === 'vendor' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
@@ -6013,15 +6322,15 @@ function renderVendorTabPinsTable(pins) {
   tbody.innerHTML = pins.map(p => {
     const isUsed = Boolean(p.is_used || p.isUsed);
     const statusBadge = isUsed
-      ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Redeemed</span>'
-      : '<span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Available</span>';
+      ? '<span class="vtab-badge-redeemed">Redeemed</span>'
+      : '<span class="vtab-badge-avail">Available</span>';
     const redeemedBy = p.used_by || p.usedBy || '—';
     const dateCreated = (p.created_at || '').substring(0, 10) || 'Recently';
     const codeEscaped = escapeVendorTabHtml(p.code);
 
     return `
       <tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:700;color:var(--txt);">${codeEscaped}</td>
+        <td style="padding:10px 12px;"><span class="vtab-code-chip">${codeEscaped}</span></td>
         <td style="padding:10px 12px;color:var(--txt-2);">${escapeVendorTabHtml(p.type || 'AFF')}</td>
         <td style="padding:10px 12px;">${statusBadge}</td>
         <td style="padding:10px 12px;color:var(--txt-3);">${escapeVendorTabHtml(redeemedBy)}</td>
