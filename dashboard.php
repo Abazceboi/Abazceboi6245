@@ -1,4 +1,7 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 /**
  * INNOVATIONX — Member Dashboard
  * Fresh modern design with floating bottom dock, ATM card wallet, and zero emojis.
@@ -2084,14 +2087,41 @@ input,textarea,select{font-family:var(--ff);}
 /* Vendor Terminal Elements */
 .vendor-banner-card {
   border: 1px solid rgba(245, 158, 11, 0.35);
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
   margin-bottom: 14px;
 }
 
-[data-theme="light"] .vendor-banner-card {
+html[data-theme="dark"] .vendor-banner-card,
+html:not([data-theme="light"]) .vendor-banner-card {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%) !important;
+}
+
+html[data-theme="light"] .vendor-banner-card,
+[data-theme="light"] .vendor-banner-card,
+[data-theme="light"] .card.vendor-banner-card {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+.vendor-banner-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.18);
+  color: #F59E0B;
   border: 1px solid rgba(245, 158, 11, 0.35);
-  background: linear-gradient(180deg, rgba(254, 243, 199, 0.6) 0%, #FFFFFF 100%);
-  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .vendor-banner-icon,
+html[data-theme="light"] .vendor-banner-icon {
+  background: #FEF3C7 !important;
+  color: #D97706 !important;
+  border-color: #FDE68A !important;
 }
 
 .vendor-banner-desc {
@@ -2100,7 +2130,8 @@ input,textarea,select{font-family:var(--ff);}
   margin-top: 2px;
 }
 
-[data-theme="light"] .vendor-banner-desc {
+[data-theme="light"] .vendor-banner-desc,
+html[data-theme="light"] .vendor-banner-desc {
   color: #475569 !important;
 }
 
@@ -2115,10 +2146,11 @@ input,textarea,select{font-family:var(--ff);}
   letter-spacing: 0.4px;
 }
 
-[data-theme="light"] .badge-authorized {
-  background: rgba(245, 158, 11, 0.14) !important;
+[data-theme="light"] .badge-authorized,
+html[data-theme="light"] .badge-authorized {
+  background: #FEF3C7 !important;
   color: #B45309 !important;
-  border-color: rgba(245, 158, 11, 0.35) !important;
+  border-color: #FDE68A !important;
 }
 
 .dispatch-preview-box {
@@ -2129,36 +2161,52 @@ input,textarea,select{font-family:var(--ff);}
   margin-top: 4px;
 }
 
-[data-theme="light"] .dispatch-preview-box {
-  background: #F8FAFC;
-  border: 1px dashed #CBD5E1;
+[data-theme="light"] .dispatch-preview-box,
+html[data-theme="light"] .dispatch-preview-box {
+  background: #F8FAFC !important;
+  border: 1px dashed #CBD5E1 !important;
 }
 
-[data-theme="light"] #vTabDispatchPreview {
+[data-theme="light"] #vTabDispatchPreview,
+html[data-theme="light"] #vTabDispatchPreview {
   color: #334155 !important;
 }
 
 /* Wholesale & Creator Studio Portal Cards in Settings */
 .special-portal-card.vendor {
   border: 1px solid rgba(245, 158, 11, 0.35);
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
 }
 
-[data-theme="light"] .special-portal-card.vendor {
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  background: linear-gradient(180deg, rgba(254, 243, 199, 0.6) 0%, #FFFFFF 100%);
-  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08);
+html[data-theme="dark"] .special-portal-card.vendor,
+html:not([data-theme="light"]) .special-portal-card.vendor {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%) !important;
+}
+
+html[data-theme="light"] .special-portal-card.vendor,
+[data-theme="light"] .special-portal-card.vendor,
+[data-theme="light"] .card.special-portal-card.vendor {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08) !important;
 }
 
 .special-portal-card.uploader {
   border: 1px solid rgba(16, 185, 129, 0.35);
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%);
 }
 
-[data-theme="light"] .special-portal-card.uploader {
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  background: linear-gradient(180deg, rgba(209, 250, 229, 0.6) 0%, #FFFFFF 100%);
-  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08);
+html[data-theme="dark"] .special-portal-card.uploader,
+html:not([data-theme="light"]) .special-portal-card.uploader {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%) !important;
+}
+
+html[data-theme="light"] .special-portal-card.uploader,
+[data-theme="light"] .special-portal-card.uploader,
+[data-theme="light"] .card.special-portal-card.uploader {
+  background: #FFFFFF !important;
+  background-image: none !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.08) !important;
 }
 
 /* Activation Code Chips and Badges */
@@ -2679,7 +2727,7 @@ input,textarea,select{font-family:var(--ff);}
     <div class="card vendor-banner-card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:42px;height:42px;border-radius:10px;background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <div class="vendor-banner-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
           </div>
           <div>
