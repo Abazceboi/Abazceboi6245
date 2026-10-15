@@ -137,6 +137,12 @@ if (file_exists($telegramConfigFile)) {
         --v-green: #10B981;
     }
 
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+
     /* Floating Header (Standalone Brand + Centralized Glass Pill Bar) */
     .ev-pill-header {
         position: fixed;
@@ -147,6 +153,7 @@ if (file_exists($telegramConfigFile)) {
         width: 100%;
         padding: 0 20px;
         pointer-events: none;
+        box-sizing: border-box;
     }
 
     .ev-header-container {
@@ -158,6 +165,7 @@ if (file_exists($telegramConfigFile)) {
         gap: 16px;
         width: 100%;
         height: 44px;
+        box-sizing: border-box;
     }
 
     .ev-header-side {
@@ -339,6 +347,10 @@ if (file_exists($telegramConfigFile)) {
         color: #ffffff !important;
         text-decoration: none;
         border-radius: 9999px;
+        padding: 6px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
         transition: transform 0.15s, opacity 0.15s;
     }
     .btn-cta:hover {
@@ -505,39 +517,44 @@ if (file_exists($telegramConfigFile)) {
     .vendor-card {
         background: var(--v-bg-card);
         border: 1px solid var(--v-border);
-        border-radius: 12px;
-        padding: 22px;
+        border-radius: 14px;
+        padding: 18px 18px 16px;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        transition: transform 0.15s, border-color 0.15s;
+        gap: 13px;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+        box-sizing: border-box;
+        width: 100%;
     }
     .vendor-card:hover {
-        border-color: #2D3A54;
+        border-color: rgba(56, 189, 248, 0.4);
         transform: translateY(-2px);
+        box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.35);
     }
 
-    .vendor-header {
+    .vendor-top-row {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 18px;
+        gap: 12px;
     }
 
     .vendor-photo-box {
-        width: 54px;
-        height: 54px;
+        width: 48px;
+        height: 48px;
         border-radius: 12px;
-        background: #182032;
-        border: 1px solid var(--v-border);
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(56, 189, 248, 0.08));
+        border: 1.5px solid rgba(56, 189, 248, 0.25);
         overflow: hidden;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         font-weight: 800;
-        color: #F59E0B;
+        color: #38BDF8;
         font-family: var(--font-display);
     }
     .vendor-photo-box img {
@@ -546,23 +563,57 @@ if (file_exists($telegramConfigFile)) {
         object-fit: cover;
     }
 
-    .vendor-meta {
+    .vendor-info-col {
         flex: 1;
         min-width: 0;
     }
 
+    .vendor-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 3px;
+    }
+
     .vendor-name {
-        font-size: 1.05rem;
-        font-weight: 800;
+        font-size: 1rem;
+        font-weight: 700;
         color: #FFFFFF;
-        margin-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         font-family: var(--font-display);
+        letter-spacing: -0.01em;
+    }
+
+    .pill-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: 9999px;
+        background: rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34D399;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        flex-shrink: 0;
+    }
+
+    .vendor-sub-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
     }
 
     .vendor-location {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
         font-size: 0.78rem;
         color: var(--v-text-muted);
         white-space: nowrap;
@@ -570,36 +621,57 @@ if (file_exists($telegramConfigFile)) {
         text-overflow: ellipsis;
     }
 
-    .vendor-pill-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 6px;
-    }
-
-    .pill-verified {
-        display: inline-block;
-        padding: 2px 7px;
-        border-radius: 4px;
-        background: rgba(16, 185, 129, 0.12);
-        color: #10B981;
-        font-size: 0.68rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-
     .pill-rating {
-        font-size: 0.72rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.74rem;
         color: #F59E0B;
         font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    /* Trust / Instant Delivery Strip */
+    .vendor-trust-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 0.73rem;
+    }
+
+    .vendor-trust-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--v-text-muted);
+    }
+
+    .vendor-status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+        display: inline-block;
+    }
+
+    .vendor-trust-tag {
+        font-weight: 600;
+        color: #38BDF8;
+        font-size: 0.7rem;
+        letter-spacing: 0.2px;
     }
 
     .vendor-buttons-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        margin-bottom: 8px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .btn-vendor-wa {
@@ -607,54 +679,72 @@ if (file_exists($telegramConfigFile)) {
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 9px 12px;
-        border-radius: 6px;
-        background: #16A34A;
-        color: #FFFFFF;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ADE80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
         font-size: 0.8rem;
         font-weight: 700;
         text-decoration: none;
-        border: none;
         cursor: pointer;
-        transition: background 0.15s;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
     }
-    .btn-vendor-wa:hover { background: #15803D; }
+    .btn-vendor-wa:hover {
+        background: #16A34A;
+        color: #FFFFFF;
+        border-color: #16A34A;
+        transform: translateY(-1px);
+    }
 
     .btn-vendor-tg {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 9px 12px;
-        border-radius: 6px;
-        background: #0284C7;
-        color: #FFFFFF;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(14, 165, 233, 0.12);
+        color: #38BDF8;
+        border: 1px solid rgba(14, 165, 233, 0.3);
         font-size: 0.8rem;
         font-weight: 700;
         text-decoration: none;
-        border: none;
         cursor: pointer;
-        transition: background 0.15s;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
     }
-    .btn-vendor-tg:hover { background: #0369A1; }
+    .btn-vendor-tg:hover {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+        transform: translateY(-1px);
+    }
 
     .btn-vendor-order {
         width: 100%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 9px 12px;
-        border-radius: 6px;
-        background: var(--v-accent);
+        gap: 7px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #D97706, #B45309);
         color: #FFFFFF;
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         font-weight: 700;
-        border: none;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
         cursor: pointer;
-        transition: background 0.15s;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
     }
-    .btn-vendor-order:hover { background: var(--v-accent-hover); }
+    .btn-vendor-order:hover {
+        background: linear-gradient(135deg, #B45309, #92400E);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
+    }
 
     /* Contact Order Modal */
     .contact-modal-backdrop {
@@ -769,13 +859,82 @@ if (file_exists($telegramConfigFile)) {
     }
 
     @media (max-width: 767px) {
-        .ev-pill-header { top: 10px !important; padding: 0 10px !important; }
-        .ev-header-container { gap: 8px !important; }
-        .ev-brand-standalone { padding: 5px 11px 5px 6px !important; gap: 7px !important; }
-        .ev-pill-navbar { padding: 4px 6px 4px 8px !important; }
-        .desktop-auth-btn { display: none !important; }
-        .mobile-menu-btn { display: flex !important; }
-        .vendors-page { padding-top: 88px !important; }
+        .ev-pill-header {
+            top: 8px !important;
+            padding: 0 10px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .ev-header-container {
+            height: 38px !important;
+            gap: 6px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        .ev-brand-standalone {
+            height: 34px !important;
+            padding: 0 10px 0 6px !important;
+            gap: 6px !important;
+            box-sizing: border-box !important;
+        }
+        .ev-brand-badge {
+            width: 24px !important;
+            height: 24px !important;
+            font-size: 0.68rem !important;
+        }
+        .ev-brand-name {
+            font-size: 0.78rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em !important;
+        }
+        .ev-pill-navbar {
+            height: 34px !important;
+            padding: 0 4px 0 6px !important;
+            gap: 5px !important;
+            box-sizing: border-box !important;
+        }
+        .desktop-auth-btn {
+            display: none !important;
+        }
+        .btn-cta {
+            white-space: nowrap !important;
+            padding: 0 12px !important;
+            height: 28px !important;
+            line-height: 28px !important;
+            font-size: 0.74rem !important;
+            font-weight: 700 !important;
+            box-sizing: border-box !important;
+        }
+        .ev-theme-btn {
+            width: 26px !important;
+            height: 26px !important;
+            min-width: 26px !important;
+        }
+        .mobile-menu-btn {
+            display: flex !important;
+            width: 26px !important;
+            height: 26px !important;
+            min-width: 26px !important;
+        }
+        .vendors-page {
+            padding-top: 76px !important;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .ev-brand-name {
+            display: none !important;
+        }
+        .ev-brand-standalone {
+            padding: 0 6px !important;
+        }
+        .btn-cta {
+            padding: 0 9px !important;
+            font-size: 0.7rem !important;
+        }
     }
 
     /* ===== LIGHT THEME COMPONENT OVERRIDES ===== */
@@ -850,9 +1009,9 @@ if (file_exists($telegramConfigFile)) {
     }
 
     [data-theme="light"] .vendor-photo-box {
-        background: #FEF3C7 !important;
-        border-color: #FDE68A !important;
-        color: #D97706 !important;
+        background: #EFF6FF !important;
+        border-color: #BFDBFE !important;
+        color: #0284C7 !important;
     }
 
     [data-theme="light"] .pill-verified {
@@ -863,6 +1022,46 @@ if (file_exists($telegramConfigFile)) {
 
     [data-theme="light"] .pill-rating {
         color: #D97706 !important;
+    }
+
+    [data-theme="light"] .vendor-trust-strip {
+        background: #F8FAFC !important;
+        border-color: #E2E8F0 !important;
+    }
+
+    [data-theme="light"] .vendor-trust-tag {
+        color: #0284C7 !important;
+    }
+
+    [data-theme="light"] .btn-vendor-wa {
+        background: #ECFDF5 !important;
+        color: #047857 !important;
+        border-color: #A7F3D0 !important;
+    }
+
+    [data-theme="light"] .btn-vendor-wa:hover {
+        background: #10B981 !important;
+        color: #FFFFFF !important;
+        border-color: #10B981 !important;
+    }
+
+    [data-theme="light"] .btn-vendor-tg {
+        background: #F0F9FF !important;
+        color: #0284C7 !important;
+        border-color: #BAE6FD !important;
+    }
+
+    [data-theme="light"] .btn-vendor-tg:hover {
+        background: #0284C7 !important;
+        color: #FFFFFF !important;
+        border-color: #0284C7 !important;
+    }
+
+    [data-theme="light"] .btn-vendor-order {
+        background: linear-gradient(135deg, #D97706, #B45309) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(217, 119, 6, 0.2) !important;
     }
 
     /* Light Theme Floating Header */
@@ -955,22 +1154,36 @@ if (file_exists($telegramConfigFile)) {
 
     /* Mobile Responsive Enhancements */
     @media (max-width: 640px) {
+        .vendors-shell {
+            padding: 0 8px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
         .vendors-grid {
             grid-template-columns: 1fr !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .vendors-page {
-            padding: 88px 14px 60px !important;
+            padding: 76px 10px 50px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .vendor-card {
-            padding: 18px !important;
+            padding: 16px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .vendors-actions-bar {
             gap: 8px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .btn-action-tg, .btn-action-portal {
             width: 100% !important;
             justify-content: center !important;
             font-size: 0.8rem !important;
+            box-sizing: border-box !important;
         }
     }
 </style>
@@ -1006,7 +1219,7 @@ if (file_exists($telegramConfigFile)) {
                     <a href="login.php" class="desktop-auth-btn" style="text-decoration:none;padding:5px 11px;border-radius:9999px;font-size:0.78rem;font-weight:600;color:var(--color-fg);transition:background 0.15s;">
                         Sign in
                     </a>
-                    <a href="register.php" class="btn-cta" style="border-radius:9999px;padding:6px 14px;font-size:0.78rem;font-weight:700;">
+                    <a href="register.php" class="btn-cta">
                         Get started
                     </a>
                     <button type="button" class="mobile-menu-btn" onclick="toggleEvermoreDrawer()" style="display:none;width:30px;height:30px;border-radius:9999px;border:1px solid var(--color-border);background:transparent;color:var(--color-fg);align-items:center;justify-content:center;cursor:pointer;">
@@ -1117,30 +1330,48 @@ if (file_exists($telegramConfigFile)) {
                     $searchData = strtolower($vName . ' ' . $vLocation);
                 ?>
                 <div class="vendor-card" data-search="<?= htmlspecialchars($searchData) ?>">
-                    <div>
-                        <div class="vendor-header">
-                            <div class="vendor-photo-box">
-                                <?php if ($hasImg): ?>
-                                    <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($vName) ?>">
-                                <?php else: ?>
-                                    <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
-                                <?php endif; ?>
+                    <div class="vendor-top-row">
+                        <div class="vendor-photo-box">
+                            <?php if ($hasImg): ?>
+                                <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($vName) ?>">
+                            <?php else: ?>
+                                <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="vendor-info-col">
+                            <div class="vendor-name-row">
+                                <span class="vendor-name"><?= htmlspecialchars($vName) ?></span>
+                                <span class="pill-verified">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Verified
+                                </span>
                             </div>
-                            <div class="vendor-meta">
-                                <div class="vendor-name"><?= htmlspecialchars($vName) ?></div>
-                                <div class="vendor-location"><?= htmlspecialchars($vLocation) ?></div>
-                                <div class="vendor-pill-row">
-                                    <span class="pill-verified">Verified</span>
-                                    <span class="pill-rating">5.0</span>
-                                </div>
+                            <div class="vendor-sub-row">
+                                <span class="vendor-location">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <?= htmlspecialchars($vLocation) ?>
+                                </span>
+                                <span class="pill-rating">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    5.0
+                                </span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="vendor-trust-strip">
+                        <div class="vendor-trust-item">
+                            <span class="vendor-status-dot"></span>
+                            <span>Instant Code Delivery</span>
+                        </div>
+                        <span class="vendor-trust-tag">Official Partner</span>
                     </div>
 
                     <div>
                         <div class="vendor-buttons-row">
                             <?php if (!empty($vPhone)): ?>
                             <a href="https://wa.me/<?= htmlspecialchars($vPhone) ?>?text=<?= urlencode('Hello ' . $vName . ', I want to buy an INNOVATIONX activation code.') ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                                 <span>WhatsApp</span>
                             </a>
                             <?php else: ?>
@@ -1149,6 +1380,7 @@ if (file_exists($telegramConfigFile)) {
 
                             <?php if (!empty($cleanTg)): ?>
                             <a href="<?= htmlspecialchars($cleanTg) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                                 <span>Telegram</span>
                             </a>
                             <?php else: ?>
@@ -1162,6 +1394,7 @@ if (file_exists($telegramConfigFile)) {
                             'telegram' => $cleanTg ?: $vTg,
                             'location' => $vLocation
                         ])) ?>)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
                             <span>Request Activation Code</span>
                         </button>
                     </div>
@@ -1395,36 +1628,55 @@ if (file_exists($telegramConfigFile)) {
                         : `<span>${escHtml(vName.charAt(0).toUpperCase())}</span>`;
 
                     const waBtn = vPhone
-                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><span>WhatsApp</span></a>`
+                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg><span>WhatsApp</span></a>`
                         : `<span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>`;
 
                     const tgBtn = cleanTg
-                        ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><span>Telegram</span></a>`
+                        ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a>`
                         : `<span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>`;
 
                     const vDataJson = JSON.stringify({ name: vName, phone: vPhone, telegram: cleanTg || vTg, location: vLocation }).replace(/"/g, '&quot;');
 
                     return `
                         <div class="vendor-card" data-search="${escHtml(searchData)}">
-                            <div>
-                                <div class="vendor-header">
-                                    <div class="vendor-photo-box">${avatarHtml}</div>
-                                    <div class="vendor-meta">
-                                        <div class="vendor-name">${escHtml(vName)}</div>
-                                        <div class="vendor-location">${escHtml(vLocation)}</div>
-                                        <div class="vendor-pill-row">
-                                            <span class="pill-verified">Verified</span>
-                                            <span class="pill-rating">5.0</span>
-                                        </div>
+                            <div class="vendor-top-row">
+                                <div class="vendor-photo-box">${avatarHtml}</div>
+                                <div class="vendor-info-col">
+                                    <div class="vendor-name-row">
+                                        <span class="vendor-name">${escHtml(vName)}</span>
+                                        <span class="pill-verified">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            Verified
+                                        </span>
+                                    </div>
+                                    <div class="vendor-sub-row">
+                                        <span class="vendor-location">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                            ${escHtml(vLocation)}
+                                        </span>
+                                        <span class="pill-rating">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                            5.0
+                                        </span>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="vendor-trust-strip">
+                                <div class="vendor-trust-item">
+                                    <span class="vendor-status-dot"></span>
+                                    <span>Instant Code Delivery</span>
+                                </div>
+                                <span class="vendor-trust-tag">Official Partner</span>
+                            </div>
+
                             <div>
                                 <div class="vendor-buttons-row">
                                     ${waBtn}
                                     ${tgBtn}
                                 </div>
                                 <button type="button" class="btn-vendor-order" onclick="openVendorContactModal(${vDataJson})">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
                                     <span>Request Activation Code</span>
                                 </button>
                             </div>

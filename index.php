@@ -821,19 +821,88 @@ a {
 }
 
 @media (max-width: 768px) {
+    .ev-header {
+        top: 8px !important;
+        padding: 0 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .ev-nav-container {
+        height: 38px !important;
+        gap: 6px !important;
+    }
     .ev-nav-capsule,
     .ev-btn-signin {
-        display: none;
+        display: none !important;
+    }
+    .ev-brand {
+        height: 34px !important;
+        padding: 0 10px 0 6px !important;
+        gap: 6px !important;
+        box-sizing: border-box !important;
+    }
+    .ev-brand-badge {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 0.68rem !important;
+    }
+    .ev-brand-name {
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em !important;
+    }
+    .ev-nav-actions {
+        gap: 5px !important;
+        align-items: center !important;
+    }
+    .ev-theme-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        font-size: 0.9rem !important;
+        padding: 0 !important;
+    }
+    .ev-btn-primary {
+        white-space: nowrap !important;
+        padding: 0 12px !important;
+        height: 30px !important;
+        line-height: 30px !important;
+        font-size: 0.74rem !important;
+        font-weight: 700 !important;
+        gap: 4px !important;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25) !important;
+        box-sizing: border-box !important;
+    }
+    .ev-btn-primary i {
+        font-size: 0.75rem !important;
     }
     .ev-mobile-toggle {
-        display: inline-flex;
+        display: inline-flex !important;
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        font-size: 1rem !important;
+        padding: 0 !important;
     }
     .ev-hero-section {
-        padding: 120px 0 70px;
+        padding: 100px 0 60px;
     }
     .ev-stats-grid {
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 380px) {
+    .ev-brand-name {
+        display: none !important;
+    }
+    .ev-brand {
+        padding: 0 6px !important;
+    }
+    .ev-btn-primary {
+        padding: 0 9px !important;
+        font-size: 0.7rem !important;
     }
 }
 </style>

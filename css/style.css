@@ -6043,6 +6043,16 @@ select.dash-input:focus {
   max-width: 100%;
   box-sizing: border-box;
 }
+.footer-links a {
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.footer-dot {
+  opacity: 0.35;
+  font-size: 0.72rem;
+  user-select: none;
+}
 
 /* ===== SCROLL REVEAL ===== */
 .reveal {
@@ -7346,13 +7356,33 @@ select.dash-input:focus {
   }
 
   .footer {
-    padding: 40px 14px 28px;
+    padding: 36px 12px 28px;
     overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
   }
   .footer-links {
-    gap: 6px 12px;
-    font-size: 0.8rem;
-    padding: 0 8px;
+    gap: 6px 10px;
+    font-size: 0.78rem;
+    padding: 0 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .footer-links a {
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.76rem;
+  }
+  .footer-dot {
+    display: none !important;
+  }
+  [data-theme="light"] .footer-links a {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #475569 !important;
   }
 }
 

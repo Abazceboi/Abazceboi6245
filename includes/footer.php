@@ -14,13 +14,13 @@
  </p>
  <div class="footer-links">
  <a href="index.php#terms">Terms of Service</a>
- <span>•</span>
+ <span class="footer-dot">•</span>
  <a href="index.php#privacy">Privacy Policy</a>
- <span>•</span>
+ <span class="footer-dot">•</span>
  <a href="register.php">Sign Up</a>
- <span>•</span>
+ <span class="footer-dot">•</span>
  <a href="login.php">Login</a>
- <span>•</span>
+ <span class="footer-dot">•</span>
  <a href="advertise.php">Place Advert</a>
  </div>
  </div>
