@@ -1,4 +1,7 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 require_once __DIR__ . '/config/app.php';
 $pageTitle = 'Verified Vendors | ' . (defined('APP_NAME') ? APP_NAME : 'INNOVATIONX');
 $pageDesc = 'Purchase your account activation code directly from verified vendors via WhatsApp or Telegram.';
@@ -111,6 +114,24 @@ if (file_exists($telegramConfigFile)) {
         --v-border-focus: #3B82F6;
         --v-text: #F1F5F9;
         --v-text-muted: #8896AB;
+        --v-accent: #D97706;
+        --v-accent-hover: #B45309;
+        --v-green: #10B981;
+    }
+
+    [data-theme="light"] {
+        --color-bg: #F4F6FB;
+        --color-fg: #0D1117;
+        --color-border: rgba(0, 0, 0, 0.08);
+        --color-muted: #64748B;
+        --v-bg-page: #F4F6FB;
+        --v-bg-card: #FFFFFF;
+        --v-bg-card-hover: #F8FAFC;
+        --v-bg-input: #FFFFFF;
+        --v-border: #E2E8F0;
+        --v-border-focus: #0284C7;
+        --v-text: #0F172A;
+        --v-text-muted: #64748B;
         --v-accent: #D97706;
         --v-accent-hover: #B45309;
         --v-green: #10B981;
@@ -754,7 +775,203 @@ if (file_exists($telegramConfigFile)) {
         .ev-pill-navbar { padding: 4px 6px 4px 8px !important; }
         .desktop-auth-btn { display: none !important; }
         .mobile-menu-btn { display: flex !important; }
-        .vendors-page { padding-top: 80px !important; }
+        .vendors-page { padding-top: 88px !important; }
+    }
+
+    /* ===== LIGHT THEME COMPONENT OVERRIDES ===== */
+    [data-theme="light"] body {
+        background: #F4F6FB !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .vendors-page {
+        background: #F4F6FB !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .vendors-title {
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .vendors-sub {
+        color: #64748B !important;
+    }
+
+    [data-theme="light"] .vendors-badge {
+        background: #FEF3C7 !important;
+        color: #B45309 !important;
+        border-color: #FDE68A !important;
+    }
+
+    [data-theme="light"] .btn-action-portal {
+        background: #FFFFFF !important;
+        color: #1E293B !important;
+        border-color: #CBD5E1 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    [data-theme="light"] .btn-action-portal:hover {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .vendors-search-input {
+        background: #FFFFFF !important;
+        border-color: #CBD5E1 !important;
+        color: #0F172A !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    [data-theme="light"] .vendors-search-input::placeholder {
+        color: #94A3B8 !important;
+    }
+
+    [data-theme="light"] .vendors-search-icon {
+        color: #64748B !important;
+    }
+
+    [data-theme="light"] .vendor-card {
+        background: #FFFFFF !important;
+        border-color: #E2E8F0 !important;
+        box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    [data-theme="light"] .vendor-card:hover {
+        border-color: #CBD5E1 !important;
+        box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    [data-theme="light"] .vendor-name {
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .vendor-location {
+        color: #64748B !important;
+    }
+
+    [data-theme="light"] .vendor-photo-box {
+        background: #FEF3C7 !important;
+        border-color: #FDE68A !important;
+        color: #D97706 !important;
+    }
+
+    [data-theme="light"] .pill-verified {
+        background: #ECFDF5 !important;
+        color: #047857 !important;
+        border: 1px solid #A7F3D0 !important;
+    }
+
+    [data-theme="light"] .pill-rating {
+        color: #D97706 !important;
+    }
+
+    /* Light Theme Floating Header */
+    [data-theme="light"] .ev-brand-standalone {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+    }
+
+    [data-theme="light"] .ev-brand-name {
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .ev-pill-navbar {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.08), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+    }
+
+    [data-theme="light"] .ev-pill-link {
+        color: #475569 !important;
+    }
+
+    [data-theme="light"] .ev-pill-link:hover {
+        color: #0F172A !important;
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    [data-theme="light"] .ev-theme-btn,
+    [data-theme="light"] .ev-theme-standalone {
+        background: rgba(0, 0, 0, 0.04) !important;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .mobile-menu-btn {
+        border-color: rgba(0, 0, 0, 0.12) !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .desktop-auth-btn {
+        color: #0F172A !important;
+    }
+
+    /* Light Theme Contact Modal */
+    [data-theme="light"] .contact-modal {
+        background: #FFFFFF !important;
+        border-color: #E2E8F0 !important;
+        color: #0F172A !important;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    [data-theme="light"] .modal-head {
+        border-bottom-color: #E2E8F0 !important;
+    }
+
+    [data-theme="light"] .modal-head h3 {
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .modal-close-btn {
+        color: #64748B !important;
+    }
+
+    [data-theme="light"] .modal-label {
+        color: #334155 !important;
+    }
+
+    [data-theme="light"] .modal-input {
+        background: #F8FAFC !important;
+        border-color: #CBD5E1 !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .modal-summary {
+        background: #F8FAFC !important;
+        border-color: #E2E8F0 !important;
+    }
+
+    /* Light Theme Mobile Drawer */
+    [data-theme="light"] .ev-drawer {
+        background: #FFFFFF !important;
+        border-left-color: #E2E8F0 !important;
+        color: #0F172A !important;
+    }
+
+    [data-theme="light"] .ev-drawer span {
+        color: #0F172A !important;
+    }
+
+    /* Mobile Responsive Enhancements */
+    @media (max-width: 640px) {
+        .vendors-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .vendors-page {
+            padding: 88px 14px 60px !important;
+        }
+        .vendor-card {
+            padding: 18px !important;
+        }
+        .vendors-actions-bar {
+            gap: 8px !important;
+        }
+        .btn-action-tg, .btn-action-portal {
+            width: 100% !important;
+            justify-content: center !important;
+            font-size: 0.8rem !important;
+        }
     }
 </style>
 
