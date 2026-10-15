@@ -3453,7 +3453,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
 
                 function evaluateWalletSchedule(w, walletLabel, userBalance) {
-                    const isTask = (walletLabel.toLowerCase().includes('task') || walletLabel.toLowerCase().includes('point'));
+                    if (!w || typeof w !== 'object') {
+                        return { is_open: true, mode: 'manual', status_badge: 'OPEN', status_text: 'Withdrawals open' };
+                    }
+                    const isTask = ((walletLabel || '').toLowerCase().includes('task') || (walletLabel || '').toLowerCase().includes('point'));
                     if (isTask && w.auto_open_on_min_reached) {
                         const minPts = Number(w.min_amount || 1000);
                         if (userBalance !== undefined && userBalance !== null) {
@@ -3661,6 +3664,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const wallet = (parsed.wallet || parsed.wallet_type || 'cash').toLowerCase().trim();
                     const amount = parseFloat(parsed.amount) || 0;
 
+                    const targetWallet = (['task', 'points', 'point', 'tasks'].includes(wallet)) ? 'task' : 'affiliate';
+                    const walletSched = s[targetWallet] || defaultSettings[targetWallet] || {};
+
                     if (!username || amount <= 0) {
                         res.end(JSON.stringify({ status: 'error', message: 'Valid username and withdrawal amount are required.' }));
                         return;
@@ -3723,21 +3729,16 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         user.remaining_cash = curCash;
                         user.cashBalance = curCash;
                     }
-                    if (parsed.bank_name && (!user.bank_name || user.bank_name === 'Pending Setup')) {
-                        user.bank_name = parsed.bank_name;
-                    }
-                    if (parsed.account_number && (!user.account_number || user.account_number === '••••••••')) {
-                        user.account_number = parsed.account_number;
-                    }
-                    if (parsed.account_name && !user.account_name) {
-                        user.account_name = parsed.account_name;
-                    }
+                    if (parsed.bank_name) user.bank_name = parsed.bank_name;
+                    if (parsed.account_number) user.account_number = parsed.account_number;
+                    if (parsed.account_name) user.account_name = parsed.account_name;
 
                     // Strict Bank Details Verification
                     const curBank = (user.bank_name || parsed.bank_name || '').trim();
                     const curAccNum = (user.account_number || parsed.account_number || '').trim();
                     const curAccHolder = (user.account_name || parsed.account_name || '').trim();
-                    const isBankConfigured = curBank && curBank !== 'Pending Setup' && curAccNum && curAccNum !== '0801234567' && curAccNum !== '••••••••' && curAccNum.length >= 9 && curAccHolder;
+                    const cleanAcc = curAccNum.replace(/\D/g, '');
+                    const isBankConfigured = curBank && curBank !== 'Pending Setup' && curBank !== 'Not Configured' && curAccNum && curAccNum !== '0801234567' && curAccNum !== '••••••••' && curAccNum !== 'Not Configured' && cleanAcc.length >= 9 && curAccHolder;
                     if (!isBankConfigured) {
                         res.end(JSON.stringify({ status: 'error', message: 'Action required: You must configure your verified bank details in wallet settings before requesting a withdrawal.' }));
                         return;

@@ -5640,9 +5640,24 @@ async function executeWithdrawalReq() {
   const btn = document.getElementById('btnAuthorizePayout');
   if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
 
-  const curBankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || '';
-  const curAccNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '';
-  const curAccName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
+  let curBankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || '';
+  if (!curBankName || curBankName === 'Pending Setup' || curBankName === 'Not Configured') {
+    const text = document.getElementById('confirmWdBank')?.textContent.trim() || document.getElementById('atmBankName')?.textContent.trim() || '';
+    if (text && text !== 'Not Configured' && text !== 'Pending Setup') curBankName = text;
+  }
+
+  let curAccNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || '';
+  if (!curAccNo || curAccNo === '••••••••' || curAccNo === 'Not Configured') {
+    const text = (document.getElementById('confirmWdAccount')?.textContent || document.getElementById('atmCardNumber')?.textContent || '').replace(/\s+/g,'').trim();
+    if (text && text !== '••••••••' && text !== 'Not Configured') curAccNo = text;
+  }
+
+  let curAccName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || '';
+  if (!curAccName || curAccName === 'CARDHOLDER NAME') {
+    const text = document.getElementById('confirmWdName')?.textContent.trim() || document.getElementById('atmCardHolder')?.textContent.trim() || '';
+    if (text && text !== 'CARDHOLDER NAME') curAccName = text;
+    else curAccName = CURRENT_USER;
+  }
 
   try {
     const r = await fetch('/api/withdrawals.php?action=request_withdrawal', {
@@ -5653,15 +5668,23 @@ async function executeWithdrawalReq() {
         amount: amount,
         wallet: type,
         wallet_type: type,
-        client_points: getUserPoints(),
-        client_cash: getUserCash(),
+        client_points: typeof getUserPoints === 'function' ? getUserPoints() : userPoints,
+        client_cash: typeof getUserCash === 'function' ? getUserCash() : userCash,
         bank_name: curBankName,
         account_number: curAccNo,
         account_name: curAccName
       })
     });
-    const d = await r.json();
-    if (d.status === 'success' || d.success) {
+    const rawText = await r.text();
+    let d;
+    try {
+      d = JSON.parse(rawText);
+    } catch(parseErr) {
+      console.warn('Withdrawal API non-JSON response:', rawText);
+      const cleanMsg = rawText.replace(/<[^>]+>/g, '').trim().slice(0, 150);
+      d = { status: 'error', message: cleanMsg || 'Server returned an unreadable response' };
+    }
+    if (d && (d.status === 'success' || d.success)) {
       closeModal('modalWithdrawConfirm');
 
       if (type === 'cash') {
@@ -5673,9 +5696,9 @@ async function executeWithdrawalReq() {
 
       // Populate Digital Receipt with verified details
       const rc = d.receipt || {};
-      const bankName = rc.bank_name || rc.bank || localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent || '';
-      const accNo = rc.account_number || rc.account || localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'') || '';
-      const accName = rc.account_name || rc.beneficiary_name || localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent || CURRENT_USER;
+      const bankName = rc.bank_name || rc.bank || curBankName || 'OPay Digital Services';
+      const accNo = rc.account_number || rc.account || curAccNo || '••••••••';
+      const accName = rc.account_name || rc.beneficiary_name || curAccName || CURRENT_USER;
       const txnId = rc.txn_id || rc.id || ('IX-WD-' + Math.floor(100000 + Math.random() * 900000));
       const dateStr = rc.date_formatted || (new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' WAT');
       const walletLabel = rc.wallet_type || (type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet');
@@ -5699,7 +5722,7 @@ async function executeWithdrawalReq() {
       const amtInput = document.getElementById('wdAmount');
       if (amtInput) amtInput.value = '';
     } else {
-      toast(d.message || d.error || 'Failed to submit withdrawal', 'error');
+      toast(d?.message || d?.error || 'Failed to submit withdrawal', 'error');
     }
   } catch(e) {
     toast('Network error processing settlement request', 'error');

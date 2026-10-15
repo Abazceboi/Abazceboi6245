@@ -5,6 +5,8 @@
  * 1. Task Points Wallet (Manual Toggle vs Automatic Schedule)
  * 2. Affiliate / Referral Cash Wallet (Manual Toggle vs Automatic Schedule)
  */
+ini_set('display_errors', '0');
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -81,6 +83,14 @@ $settings['task_status'] = $settings['task']['status'];
 $settings['referral_status'] = $settings['affiliate']['status'];
 
 function evaluateWalletSchedule($w, $walletLabel = 'Task Points', $userBalance = null) {
+    if (!is_array($w)) {
+        return [
+            'is_open' => true,
+            'mode' => 'manual',
+            'status_badge' => 'OPEN',
+            'status_text' => 'Withdrawals open'
+        ];
+    }
     $isTask = (stripos($walletLabel, 'task') !== false || stripos($walletLabel, 'point') !== false);
     
     // Auto-open on minimum threshold reached (TASK ONLY!)
@@ -178,9 +188,11 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points', $userBalance =
     }
 }
 
-$action = $_GET['action'] ?? $_POST['action'] ?? 'get_settings';
+$rawInput = @file_get_contents('php://input');
+$jsonInput = !empty($rawInput) ? @json_decode($rawInput, true) : null;
+$action = $_GET['action'] ?? $_POST['action'] ?? ($jsonInput['action'] ?? 'get_settings');
 
-if ($action === 'get_settings' || $_SERVER['REQUEST_METHOD'] === 'GET') {
+if ($action === 'get_settings' || (empty($_GET['action']) && empty($_POST['action']) && empty($jsonInput['action']) && $_SERVER['REQUEST_METHOD'] === 'GET')) {
     $userPts = null;
     $userCash = null;
     if (!empty($_GET['username'])) {
@@ -318,10 +330,13 @@ if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
 }
 
 if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $input = !empty($jsonInput) ? $jsonInput : (json_decode(file_get_contents('php://input'), true) ?? $_POST);
     $username = trim($input['username'] ?? '');
     $wallet = strtolower(trim($input['wallet'] ?? ($input['wallet_type'] ?? 'cash')));
     $amount = floatval($input['amount'] ?? 0);
+
+    $targetWallet = (in_array($wallet, ['task', 'points', 'point', 'tasks'])) ? 'task' : 'affiliate';
+    $walletSched = $settings[$targetWallet] ?? ($defaultSettings[$targetWallet] ?? []);
 
     if (empty($username) || $amount <= 0) {
         echo json_encode(['status' => 'error', 'message' => 'Valid username and withdrawal amount are required.']);
@@ -415,15 +430,16 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $user['cashBalance'] = $clientCash;
     }
 
-    if (!empty($input['bank_name']) && (empty($user['bank_name']) || $user['bank_name'] === 'Pending Setup')) $user['bank_name'] = trim($input['bank_name']);
-    if (!empty($input['account_number']) && (empty($user['account_number']) || $user['account_number'] === '••••••••')) $user['account_number'] = trim($input['account_number']);
-    if (!empty($input['account_name']) && empty($user['account_name'])) $user['account_name'] = trim($input['account_name']);
+    if (!empty($input['bank_name'])) $user['bank_name'] = trim($input['bank_name']);
+    if (!empty($input['account_number'])) $user['account_number'] = trim($input['account_number']);
+    if (!empty($input['account_name'])) $user['account_name'] = trim($input['account_name']);
 
     // Strict Bank Details Verification
     $curBank = trim($user['bank_name'] ?? '');
     $curAccNum = trim($user['account_number'] ?? '');
     $curAccHolder = trim($user['account_name'] ?? '');
-    $isBankConfigured = !empty($curBank) && $curBank !== 'Pending Setup' && !empty($curAccNum) && $curAccNum !== '0801234567' && $curAccNum !== '••••••••' && strlen($curAccNum) >= 9 && !empty($curAccHolder);
+    $cleanAccNum = preg_replace('/\D/', '', $curAccNum);
+    $isBankConfigured = !empty($curBank) && $curBank !== 'Pending Setup' && $curBank !== 'Not Configured' && !empty($curAccNum) && $curAccNum !== '0801234567' && $curAccNum !== '••••••••' && $curAccNum !== 'Not Configured' && strlen($cleanAccNum) >= 9 && !empty($curAccHolder);
     if (!$isBankConfigured) {
         echo json_encode(['status' => 'error', 'message' => 'Action required: You must configure your verified bank details in wallet settings before requesting a withdrawal.']);
         exit;
