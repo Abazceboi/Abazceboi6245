@@ -2732,10 +2732,10 @@ html[data-theme="light"] .special-portal-card.uploader,
           </div>
           <div>
             <div style="font-size:15px;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:8px;">
-              <span>Vendor Terminal</span>
-              <span class="badge-authorized">AUTHORIZED</span>
+              <span>Vendor Dashboard</span>
+              <span class="badge-authorized">VERIFIED</span>
             </div>
-            <div class="vendor-banner-desc">Manage activation code stock, public directory handles, and buyer onboarding dispatch.</div>
+            <div class="vendor-banner-desc">Manage your activation codes, update your contact details, and send codes directly to buyers.</div>
           </div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -2750,19 +2750,19 @@ html[data-theme="light"] .special-portal-card.uploader,
     <!-- KPI Grid -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:14px;">
       <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Available Stock</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Available Codes</div>
         <div id="vTabKpiAvailable" style="font-size:24px;font-weight:800;color:#10B981;margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Unused activation codes</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Unused codes ready for sale</div>
       </div>
       <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Codes Redeemed</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Codes Sold</div>
         <div id="vTabKpiSold" style="font-size:24px;font-weight:800;color:#38BDF8;margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Activated by buyers</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Activated by members</div>
       </div>
       <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Total Allocated</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Total Codes</div>
         <div id="vTabKpiTotal" style="font-size:24px;font-weight:800;color:var(--txt);margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Lifetime assigned codes</div>
+        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">All-time assigned to you</div>
       </div>
     </div>
 
@@ -2772,9 +2772,9 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div class="card" style="margin-bottom:0;">
         <div class="card-title" style="display:flex;align-items:center;gap:8px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Public Directory & Contact Handles</span>
+          <span>Vendor Profile & Contact Info</span>
         </div>
-        <div class="card-sub">This information is displayed to prospective buyers on the official vendor directory.</div>
+        <div class="card-sub">This information is shown to users looking for codes on the Verified Vendors page.</div>
 
         <form onsubmit="handleSaveVendorTabProfile(event)" style="margin-top:14px;">
           <!-- Avatar Preview & Upload -->
@@ -2817,13 +2817,13 @@ html[data-theme="light"] .special-portal-card.uploader,
         </form>
       </div>
 
-      <!-- Card: Buyer Dispatch Generator -->
+      <!-- Card: Send Code to Customer -->
       <div class="card" style="margin-bottom:0;">
         <div class="card-title" style="display:flex;align-items:center;gap:8px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          <span>Quick Buyer Dispatch Generator</span>
+          <span>Send Code to Customer</span>
         </div>
-        <div class="card-sub">Generate formatted onboarding messages with assigned activation codes for new buyers.</div>
+        <div class="card-sub">Quickly prepare a WhatsApp registration message with an activation code for your buyer.</div>
 
         <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;">
           <div class="form-group" style="margin-bottom:0;">
@@ -2833,13 +2833,13 @@ html[data-theme="light"] .special-portal-card.uploader,
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Buyer First Name (Optional)</label>
+            <label class="form-label">Customer Name (Optional)</label>
             <input type="text" class="form-input" id="vTabDispatchBuyerName" placeholder="e.g. Samuel">
           </div>
 
           <div class="dispatch-preview-box">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);margin-bottom:4px;">Dispatch Preview</div>
-            <div id="vTabDispatchPreview" style="font-size:12px;color:var(--txt-2);line-height:1.5;white-space:pre-wrap;font-family:monospace;">Select a code above to view preview message.</div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);margin-bottom:4px;">Message Preview</div>
+            <div id="vTabDispatchPreview" style="font-size:12px;color:var(--txt-2);line-height:1.5;white-space:pre-wrap;font-family:monospace;">Select an available code above to view preview message.</div>
           </div>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
@@ -2860,8 +2860,8 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
         <div>
-          <div class="card-title">Assigned Activation Codes Stock</div>
-          <div class="card-sub">All activation codes allocated to your vendor account by administration.</div>
+          <div class="card-title">My Activation Codes</div>
+          <div class="card-sub">All activation codes assigned to your vendor account.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <input type="text" class="form-input" id="vTabSearchPinInput" placeholder="Filter code..." oninput="filterVendorTabPins()" style="max-width:180px;height:34px;font-size:12px;padding:6px 10px;">
@@ -2936,13 +2936,12 @@ html[data-theme="light"] .special-portal-card.uploader,
       </form>
     </div>
 
-    <!-- Vendor Wholesale Terminal Card -->
     <div id="cardVendorTerminal" class="card special-portal-card vendor" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:block;' : 'display:none;' ?>">
       <div class="card-title" style="color:#F59E0B;display:flex;align-items:center;gap:8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
-        <span>Vendor Wholesale Terminal</span>
+        <span>Vendor Portal</span>
       </div>
-      <div class="card-sub">You are an accredited wholesale coupon PIN vendor. Access your dedicated portal to manage coupon stock, configure your public WhatsApp, Telegram, and photo directory handles, and generate buyer onboarding dispatches.</div>
+      <div class="card-sub">You are a verified vendor. Open your vendor dashboard to manage your activation codes, update your WhatsApp and Telegram details, and send codes to customers.</div>
       <button type="button" class="btn btn-sm" onclick="switchTab('vendor', document.getElementById('dockBtnVendor'))" style="background:#F59E0B;color:#000;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
         Open Vendor Tab
       </button>
@@ -2993,7 +2992,7 @@ html[data-theme="light"] .special-portal-card.uploader,
   <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Innovation Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
   </button>
-  <button class="dock-item" onclick="switchTab('vendor', this)" id="dockBtnVendor" title="Vendor Terminal" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>">
+  <button class="dock-item" onclick="switchTab('vendor', this)" id="dockBtnVendor" title="Vendor Portal" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
   </button>
   <button class="dock-item" onclick="switchTab('settings', this)" id="dockBtnSettings" title="Settings">
@@ -6466,8 +6465,8 @@ function copyVendorTabDispatchText() {
   const text = getVendorTabDispatchText(true);
   if (!text) return;
   navigator.clipboard.writeText(text);
-  if (typeof toast === 'function') toast('Dispatch message copied to clipboard', 'success');
-  else alert('Dispatch message copied to clipboard');
+  if (typeof toast === 'function') toast('Message copied to clipboard', 'success');
+  else alert('Message copied to clipboard');
 }
 
 function sendVendorTabDispatchWhatsApp() {

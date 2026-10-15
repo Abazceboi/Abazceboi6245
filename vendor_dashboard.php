@@ -60,7 +60,7 @@ if (!$isVendor) {
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
             </div>
             <h1>Vendor Portal Access</h1>
-            <p>This portal is reserved for approved vendors to manage contact handles and customer registration codes.</p>
+            <p>This portal is for verified vendors to manage their profile and customer activation codes.</p>
             <a href="dashboard.php" class="btn">Return to Dashboard</a>
         </div>
     </body>
@@ -231,7 +231,7 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
     <main class="container">
         <div>
             <h1 class="header-title">Vendor Account</h1>
-            <p class="header-sub">Manage your public contact handles and access your assigned activation codes.</p>
+            <p class="header-sub">Manage your vendor profile and view your assigned activation codes.</p>
         </div>
 
         <!-- 4 Stats Cards -->
