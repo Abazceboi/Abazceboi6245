@@ -5644,6 +5644,227 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
             }
 
+            // Top Earners Leaderboard API (Strictly viewed by authenticated users only)
+            if (cleanUrl.includes('top_earners.php') || action === 'get_top_earners') {
+                const sessionUser = parseSessionCookie(req);
+                const cookieHeader = req.headers.cookie || '';
+                let authUname = sessionUser ? (sessionUser.username || sessionUser.user || '') : '';
+                if (!authUname) {
+                    const matchUser = cookieHeader.match(/ix_current_user=([^;]+)/);
+                    if (matchUser) authUname = decodeURIComponent(matchUser[1]);
+                }
+                if (!authUname && req.headers['x-user']) {
+                    authUname = req.headers['x-user'];
+                }
+                
+                if (!authUname) {
+                    res.writeHead(401, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        status: 'error',
+                        message: 'Access Restricted: The Top Earners Leaderboard is strictly reserved for verified platform members. Please sign in to view rankings.'
+                    }));
+                    return;
+                }
+
+                const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                const withdrawalsFile = path.join(PUBLIC_DIR, 'data', 'withdrawals.json');
+                const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
+
+                let usersList = [];
+                if (fs.existsSync(usersFile)) {
+                    try {
+                        const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                        usersList = uData.users || (Array.isArray(uData) ? uData : []);
+                    } catch(e) {}
+                }
+
+                let pricingData = { ref_commission: 3000, indirect_ref_commission: 200 };
+                if (fs.existsSync(pricingFile)) {
+                    try {
+                        pricingData = Object.assign(pricingData, JSON.parse(fs.readFileSync(pricingFile, 'utf8')));
+                    } catch(e) {}
+                }
+                const refComm = Number(pricingData.ref_commission || 3000);
+                const indirectComm = Number(pricingData.indirect_ref_commission || 200);
+
+                let withdrawalsList = [];
+                if (fs.existsSync(withdrawalsFile)) {
+                    try {
+                        withdrawalsList = JSON.parse(fs.readFileSync(withdrawalsFile, 'utf8'));
+                        if (!Array.isArray(withdrawalsList)) withdrawalsList = [];
+                    } catch(e) {}
+                }
+
+                const cashWithdrawnMap = {};
+                withdrawalsList.forEach(w => {
+                    const wU = (w.username || '').toLowerCase().trim();
+                    if (!wU) return;
+                    const st = (w.status || '').toLowerCase().trim();
+                    if (['rejected', 'declined', 'cancelled'].includes(st)) return;
+                    const wt = (w.wallet_type || '').toLowerCase();
+                    const sv = (w.service_type || '').toLowerCase();
+                    if (wt.includes('point') || sv.includes('point') || sv.includes('task')) return;
+                    const amt = Number(w.amount || w.net_amount || 0);
+                    cashWithdrawnMap[wU] = (cashWithdrawnMap[wU] || 0) + amt;
+                });
+
+                const userMap = {};
+                const downlinesMap = {};
+                usersList.forEach(u => {
+                    const uN = (u.username || '').toLowerCase().trim();
+                    if (!uN) return;
+                    userMap[uN] = u;
+                    const ref = (u.referred_by || u.referredBy || '').toLowerCase().trim();
+                    if (ref) {
+                        if (!downlinesMap[ref]) downlinesMap[ref] = [];
+                        downlinesMap[ref].push(uN);
+                    }
+                });
+
+                const leaderboard = [];
+                let totalCashPaid = 0;
+
+                Object.keys(userMap).forEach(uN => {
+                    const u = userMap[uN];
+                    const directDownlines = downlinesMap[uN] || [];
+                    let activeDirectCount = 0;
+                    directDownlines.forEach(d => {
+                        const downUser = userMap[d];
+                        if (downUser && (downUser.is_activated || downUser.coupon_pin_used || downUser.coupon_activated)) {
+                            activeDirectCount++;
+                        }
+                    });
+
+                    const directEarnings = Math.max(Number(u.referral_earnings || 0), activeDirectCount * refComm);
+
+                    let indirectDownlines = [];
+                    directDownlines.forEach(d => {
+                        if (downlinesMap[d]) indirectDownlines = indirectDownlines.concat(downlinesMap[d]);
+                    });
+
+                    let activeIndirectCount = 0;
+                    indirectDownlines.forEach(ind => {
+                        const indUser = userMap[ind];
+                        if (indUser && (indUser.is_activated || indUser.coupon_pin_used || indUser.coupon_activated)) {
+                            activeIndirectCount++;
+                        }
+                    });
+
+                    const indirectEarnings = Math.max(Number(u.indirect_referral_earnings || 0), activeIndirectCount * indirectComm);
+                    const withdrawnCash = Number(cashWithdrawnMap[uN] || 0);
+                    const currentCash = Number(u.remaining_cash || u.cashBalance || 0);
+                    const recordedTotal = Number(u.total_earned || 0);
+
+                    let ledgerCash = 0;
+                    if (Array.isArray(u.activity_ledger)) {
+                        u.activity_ledger.forEach(entry => {
+                            if (entry.reward_type === 'cash') {
+                                ledgerCash += Number(entry.reward_value || 0);
+                            }
+                        });
+                    }
+
+                    const allTimeCash = Math.max(recordedTotal, (directEarnings + indirectEarnings), (currentCash + withdrawnCash), ledgerCash);
+
+                    let role = u.role || 'member';
+                    let roleLabel = u.role_label || 'Active Member';
+                    if (['admin', 'super_admin'].includes(role.toLowerCase())) {
+                        roleLabel = 'Platform Ambassador';
+                    } else if (uN === 'abas') {
+                        roleLabel = 'Diamond Earner';
+                    }
+
+                    leaderboard.push({
+                        username: u.username || uN,
+                        full_name: u.full_name || u.fullName || uN,
+                        role: role,
+                        role_label: roleLabel,
+                        is_activated: Boolean(u.is_activated),
+                        all_time_cash: Math.round(allTimeCash * 100) / 100,
+                        direct_referral_earnings: Math.round(directEarnings * 100) / 100,
+                        indirect_referral_earnings: Math.round(indirectEarnings * 100) / 100,
+                        cash_withdrawn: Math.round(withdrawnCash * 100) / 100,
+                        current_cash: Math.round(currentCash * 100) / 100,
+                        direct_referrals_count: activeDirectCount,
+                        indirect_referrals_count: activeIndirectCount,
+                        total_network_count: activeDirectCount + activeIndirectCount,
+                        avatar_text: (u.username || 'IX').substring(0, 2).toUpperCase()
+                    });
+
+                    totalCashPaid += allTimeCash;
+                });
+
+                leaderboard.sort((a, b) => {
+                    if (b.all_time_cash !== a.all_time_cash) return b.all_time_cash - a.all_time_cash;
+                    return b.total_network_count - a.total_network_count;
+                });
+
+                let myRankData = null;
+                const rankedLeaderboard = leaderboard.map((item, idx) => {
+                    const rank = idx + 1;
+                    item.rank = rank;
+                    if (rank === 1) {
+                        item.rank_badge = 'gold';
+                        item.badge_label = '1st Place • Champion';
+                    } else if (rank === 2) {
+                        item.rank_badge = 'silver';
+                        item.badge_label = '2nd Place • Elite';
+                    } else if (rank === 3) {
+                        item.rank_badge = 'bronze';
+                        item.badge_label = '3rd Place • Master';
+                    } else if (rank <= 10) {
+                        item.rank_badge = 'top10';
+                        item.badge_label = 'Top 10 Earner';
+                    } else {
+                        item.rank_badge = 'member';
+                        item.badge_label = 'Rank #' + rank;
+                    }
+
+                    if (item.username.toLowerCase() === authUname.toLowerCase()) {
+                        item.is_current_user = true;
+                        myRankData = item;
+                    } else {
+                        item.is_current_user = false;
+                    }
+                    return item;
+                });
+
+                if (!myRankData) {
+                    myRankData = {
+                        rank: rankedLeaderboard.length + 1,
+                        username: authUname,
+                        full_name: authUname,
+                        role: 'member',
+                        role_label: 'Active Member',
+                        all_time_cash: 0.00,
+                        direct_referral_earnings: 0.00,
+                        indirect_referral_earnings: 0.00,
+                        cash_withdrawn: 0.00,
+                        current_cash: 0.00,
+                        direct_referrals_count: 0,
+                        indirect_referrals_count: 0,
+                        total_network_count: 0,
+                        is_current_user: true
+                    };
+                }
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'success',
+                    auth_user: myRankData,
+                    stats: {
+                        total_ranked_earners: rankedLeaderboard.length,
+                        platform_total_cash: Math.round(totalCashPaid * 100) / 100,
+                        ref_commission_rate: refComm,
+                        indirect_ref_commission_rate: indirectComm,
+                        updated_at: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                    },
+                    top_podium: rankedLeaderboard.slice(0, 3),
+                    leaderboard: rankedLeaderboard
+                }));
+                return;
+            }
+
             // Referrals & Network Directory API
             if (cleanUrl.includes('referrals.php')) {
                 const refFile = path.join(PUBLIC_DIR, 'data', 'referrals.json');

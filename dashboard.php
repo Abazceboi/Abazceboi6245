@@ -2004,8 +2004,15 @@ input,textarea,select{font-family:var(--ff);}
   .floating-dock{
     bottom: 14px;
     height: 52px;
-    padding: 0 6px;
+    padding: 0 8px;
     gap: 4px;
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .floating-dock::-webkit-scrollbar {
+    display: none;
   }
   .dock-item{
     width: 38px;
@@ -2485,6 +2492,24 @@ html[data-theme="light"] .special-portal-card.uploader,
         <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
       </div>
     </div>
+
+    <!-- Top Earners Quick Access Card -->
+    <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(56,189,248,0.05) 100%);border:1px solid rgba(245,158,11,0.25);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;color:#F59E0B;font-size:20px;">
+            🏆
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);">Top Earners Leaderboard</div>
+            <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Track the highest-earning affiliates and see your platform rank.</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="switchTab('top-earners')" style="background:linear-gradient(135deg, #F59E0B, #D97706);color:#000;font-weight:700;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">
+          View Leaderboard &rarr;
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ══ TAB: TASKS ═══════════════════════════════════════════════════════ -->
@@ -2755,6 +2780,130 @@ html[data-theme="light"] .special-portal-card.uploader,
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: TOP EARNERS LEADERBOARD ═══════════════════════════════════════ -->
+  <div id="tab-top-earners" class="tab-panel">
+    <!-- Header Banner -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          Platform Hall of Fame
+        </div>
+        <h2 style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-0.3px;margin:0 0 4px 0;">Top Earners Leaderboard</h2>
+        <p style="font-size:12.5px;color:var(--txt-3);margin:0;max-width:650px;line-height:1.5;">
+          Rankings are calculated strictly from cumulative all-time cash earnings (including Tier 1 direct and Tier 2 indirect affiliate commissions). Points are excluded. Withdrawals never reduce your ranking or all-time score.
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="loadTopEarners()" style="display:inline-flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Refresh Rankings
+        </button>
+      </div>
+    </div>
+
+    <!-- Authenticated User Personal Ranking Card -->
+    <div id="topEarnersMyPositionCard" class="card" style="margin-bottom:20px;background:linear-gradient(135deg, rgba(2,132,199,0.12) 0%, rgba(56,189,248,0.06) 100%);border:1px solid rgba(56,189,248,0.3);position:relative;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="topEarnersMyAvatar" style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(56,189,248,0.35);">
+            <?= strtoupper(substr($username, 0, 2)) ?>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:16px;font-weight:800;color:var(--txt);">@<?= htmlspecialchars($username) ?></span>
+              <span id="topEarnersMyRankBadge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);">
+                Calculating Rank...
+              </span>
+            </div>
+            <div style="font-size:12px;color:var(--txt-3);margin-top:3px;">Your Leaderboard Standing &bull; All-Time Cash Earnings</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+          <div style="text-align:right;">
+            <div style="font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;">All-Time Cash</div>
+            <div id="topEarnersMyTotalCash" style="font-size:22px;font-weight:800;color:var(--green);letter-spacing:-0.5px;">₦0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Direct Referrals</div>
+          <div id="topEarnersMyDirect" style="font-size:14px;font-weight:700;color:#38BDF8;margin-top:2px;">₦0.00 (0 downlines)</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Indirect Referrals</div>
+          <div id="topEarnersMyIndirect" style="font-size:14px;font-weight:700;color:#F59E0B;margin-top:2px;">₦0.00 (0 downlines)</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Lifetime Paid Out</div>
+          <div id="topEarnersMyWithdrawn" style="font-size:14px;font-weight:700;color:var(--txt);margin-top:2px;">₦0.00 (Protected)</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Points Included</div>
+          <div style="font-size:14px;font-weight:700;color:#94A3B8;margin-top:2px;">0 PTS (Excluded)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 3 Podium Cards -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--txt-2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px;">
+        Podium Leaders
+      </div>
+      <div id="topEarnersPodiumGrid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;color:var(--txt-3);">
+          Loading Top 3 Podium...
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Leaderboard Directory Table -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div class="card-title" style="margin-bottom:2px;">Platform Earnings Directory</div>
+          <div class="card-sub">Ranked in real-time by total cumulative cash earnings across all network levels.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="text" id="topEarnersSearchInput" oninput="filterTopEarnersTable()" placeholder="Search earner..." class="form-input" style="padding:6px 12px;font-size:12px;max-width:180px;">
+        </div>
+      </div>
+
+      <div class="table-container" style="overflow-x:auto;">
+        <table class="table" style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
+              <th style="padding:12px 10px;width:70px;">Rank</th>
+              <th style="padding:12px 10px;">Earner</th>
+              <th style="padding:12px 10px;">Direct (L1)</th>
+              <th style="padding:12px 10px;">Indirect (L2)</th>
+              <th style="padding:12px 10px;text-align:right;">All-Time Cash</th>
+            </tr>
+          </thead>
+          <tbody id="topEarnersTableBody">
+            <tr>
+              <td colspan="5" style="text-align:center;padding:32px;color:var(--txt-3);">Loading top earners leaderboard...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rules / Transparency Notice -->
+    <div style="margin-top:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:12px;color:var(--txt-3);line-height:1.6;">
+      <strong style="color:var(--txt);display:block;margin-bottom:4px;">ℹ️ Leaderboard Ranking Rules &amp; Integrity Guarantee</strong>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;">
+        <li><strong>Strictly Private:</strong> This leaderboard is strictly restricted to logged-in platform members and cannot be viewed by external non-members.</li>
+        <li><strong>Cumulative Gross Cash:</strong> Rankings are calculated based on all-time cash earnings (direct referral commissions + indirect referral commissions + approved task/creator earnings).</li>
+        <li><strong>Activity Points Excluded:</strong> Task points (PTS) and survey credits are excluded from this leaderboard ranking to ensure pure cash accuracy.</li>
+        <li><strong>Protected Against Withdrawals:</strong> Withdrawing funds to your bank account never deducts from your leaderboard standing. Your cumulative gross earnings remain permanently recorded.</li>
+      </ul>
     </div>
   </div>
 
@@ -3119,6 +3268,9 @@ html[data-theme="light"] .special-portal-card.uploader,
   </button>
   <button class="dock-item" onclick="switchTab('wallet', this)" title="Wallet">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+  </button>
+  <button class="dock-item" onclick="switchTab('top-earners', this)" id="dockBtnTopEarners" title="Top Earners">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
   </button>
   <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Innovation Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -4545,7 +4697,7 @@ async function checkAnnouncementPopup() {
 // ═══════════════════════════════════════════════════════════════════════════
 // FLOATING DOWN TAB BAR NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'ecosystem', 'vendor', 'settings'];
+const TABS = ['home', 'tasks', 'surveys', 'referrals', 'wallet', 'top-earners', 'ecosystem', 'vendor', 'settings'];
 
 function switchTab(tab, btn) {
   if (!TABS.includes(tab)) tab = 'home';
@@ -4574,9 +4726,187 @@ function switchTab(tab, btn) {
   if (tab === 'surveys') loadSurveys();
   if (tab === 'referrals') loadReferrals();
   if (tab === 'wallet') { syncLivePricing(); syncLiveProfile(); loadUserWithdrawalHistory(); }
+  if (tab === 'top-earners') loadTopEarners();
   if (tab === 'ecosystem') loadEcosystem();
   if (tab === 'vendor') loadVendorTabData();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOP EARNERS LEADERBOARD LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+let rawTopEarnersList = [];
+
+async function loadTopEarners() {
+  const tableBody = document.getElementById('topEarnersTableBody');
+  const podiumGrid = document.getElementById('topEarnersPodiumGrid');
+  if (tableBody) {
+    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--txt-3);"><div style="display:inline-block;animation:spin 1s linear infinite;margin-right:8px;">⏳</div>Loading top earners rankings...</td></tr>';
+  }
+
+  try {
+    const res = await fetch('api/top_earners.php');
+    if (!res.ok) {
+      if (res.status === 401) {
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#EF4444;font-weight:600;">Access Restricted: You must be logged in to view the platform top earners leaderboard.</td></tr>';
+        return;
+      }
+      throw new Error('HTTP ' + res.status);
+    }
+    const data = await res.json();
+    if (data.status !== 'success') {
+      if (tableBody) tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:#EF4444;">${data.message || 'Failed to load leaderboard.'}</td></tr>`;
+      return;
+    }
+
+    rawTopEarnersList = data.leaderboard || [];
+
+    // 1. Render Personal Position Card
+    if (data.auth_user) {
+      const u = data.auth_user;
+      const rankBadge = document.getElementById('topEarnersMyRankBadge');
+      const totalCash = document.getElementById('topEarnersMyTotalCash');
+      const directEl = document.getElementById('topEarnersMyDirect');
+      const indirectEl = document.getElementById('topEarnersMyIndirect');
+      const withEl = document.getElementById('topEarnersMyWithdrawn');
+
+      if (rankBadge) {
+        rankBadge.textContent = u.rank <= 3 ? `Rank #${u.rank} (${u.badge_label})` : `Rank #${u.rank}`;
+        if (u.rank === 1) {
+          rankBadge.style.background = 'rgba(245,158,11,0.2)';
+          rankBadge.style.color = '#F59E0B';
+          rankBadge.style.borderColor = 'rgba(245,158,11,0.4)';
+        } else if (u.rank === 2) {
+          rankBadge.style.background = 'rgba(148,163,184,0.2)';
+          rankBadge.style.color = '#CBD5E1';
+          rankBadge.style.borderColor = 'rgba(148,163,184,0.4)';
+        } else if (u.rank === 3) {
+          rankBadge.style.background = 'rgba(217,119,6,0.2)';
+          rankBadge.style.color = '#D97706';
+          rankBadge.style.borderColor = 'rgba(217,119,6,0.4)';
+        } else {
+          rankBadge.style.background = 'rgba(56,189,248,0.18)';
+          rankBadge.style.color = '#38BDF8';
+          rankBadge.style.borderColor = 'rgba(56,189,248,0.3)';
+        }
+      }
+
+      if (totalCash) totalCash.textContent = '₦' + Number(u.all_time_cash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (directEl) directEl.textContent = '₦' + Number(u.direct_referral_earnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ` (${u.direct_referrals_count || 0} downlines)`;
+      if (indirectEl) indirectEl.textContent = '₦' + Number(u.indirect_referral_earnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ` (${u.indirect_referrals_count || 0} indirect)`;
+      if (withEl) withEl.textContent = '₦' + Number(u.cash_withdrawn || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' (Protected)';
+    }
+
+    // 2. Render Top 3 Podium
+    if (podiumGrid && data.top_podium && data.top_podium.length > 0) {
+      const podiumColors = [
+        { border: 'rgba(245, 158, 11, 0.5)', bg: 'radial-gradient(circle at top, rgba(245,158,11,0.15), var(--card))', icon: '🥇', label: '1st Place Champion', color: '#F59E0B', shadow: '0 8px 24px rgba(245,158,11,0.2)' },
+        { border: 'rgba(148, 163, 184, 0.5)', bg: 'radial-gradient(circle at top, rgba(148,163,184,0.15), var(--card))', icon: '🥈', label: '2nd Place Elite', color: '#CBD5E1', shadow: '0 8px 24px rgba(148,163,184,0.15)' },
+        { border: 'rgba(217, 119, 6, 0.45)', bg: 'radial-gradient(circle at top, rgba(217,119,6,0.12), var(--card))', icon: '🥉', label: '3rd Place Master', color: '#F59E0B', shadow: '0 8px 24px rgba(217,119,6,0.15)' }
+      ];
+
+      podiumGrid.innerHTML = data.top_podium.map((p, i) => {
+        const theme = podiumColors[i] || podiumColors[2];
+        const isMe = p.is_current_user;
+        return `
+          <div style="background:${theme.bg};border:1px solid ${theme.border};box-shadow:${theme.shadow};border-radius:14px;padding:20px;text-align:center;position:relative;overflow:hidden;">
+            ${isMe ? '<span style="position:absolute;top:10px;right:10px;background:rgba(56,189,248,0.2);color:#38BDF8;border:1px solid rgba(56,189,248,0.4);font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">YOU</span>' : ''}
+            <div style="font-size:32px;line-height:1;margin-bottom:8px;">${theme.icon}</div>
+            <span style="display:inline-block;font-size:11px;font-weight:800;color:${theme.color};text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${theme.label}</span>
+            <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:2px;">@${p.username}</div>
+            <div style="font-size:11px;color:var(--txt-3);margin-bottom:12px;">${p.role_label}</div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:6px;">
+              <div style="font-size:10px;color:var(--txt-3);text-transform:uppercase;">All-Time Cash</div>
+              <div style="font-size:18px;font-weight:800;color:var(--green);margin-top:2px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+            <div style="display:flex;justify-content:center;gap:12px;margin-top:10px;font-size:11px;color:var(--txt-3);">
+              <span>Direct: ₦${Number(p.direct_referral_earnings).toLocaleString('en-US')}</span>
+              <span>&bull;</span>
+              <span>Indirect: ₦${Number(p.indirect_referral_earnings).toLocaleString('en-US')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. Render Table
+    renderTopEarnersTable(rawTopEarnersList);
+
+  } catch(err) {
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#EF4444;">Network error while loading top earners. Please click Refresh Rankings.</td></tr>';
+    }
+  }
+}
+
+function renderTopEarnersTable(list) {
+  const tableBody = document.getElementById('topEarnersTableBody');
+  if (!tableBody) return;
+  if (!list || list.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--txt-3);">No earners found matching your search.</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = list.map(item => {
+    let rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);font-weight:800;font-size:12px;color:var(--txt-2);">${item.rank}</span>`;
+    if (item.rank === 1) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,0.2);color:#F59E0B;font-weight:800;font-size:13px;border:1px solid rgba(245,158,11,0.5);">🥇</span>`;
+    } else if (item.rank === 2) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(148,163,184,0.2);color:#CBD5E1;font-weight:800;font-size:13px;border:1px solid rgba(148,163,184,0.5);">🥈</span>`;
+    } else if (item.rank === 3) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.2);color:#D97706;font-weight:800;font-size:13px;border:1px solid rgba(217,119,6,0.5);">🥉</span>`;
+    }
+
+    const rowStyle = item.is_current_user
+      ? 'background:rgba(56,189,248,0.08);border-left:3px solid #38BDF8;'
+      : 'border-bottom:1px solid rgba(255,255,255,0.05);';
+
+    return `
+      <tr style="${rowStyle}">
+        <td style="padding:12px 10px;vertical-align:middle;">${rankBadgeHtml}</td>
+        <td style="padding:12px 10px;vertical-align:middle;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--txt);">
+              ${item.avatar_text}
+            </div>
+            <div>
+              <div style="font-weight:700;color:var(--txt);display:flex;align-items:center;gap:6px;">
+                @${item.username}
+                ${item.is_current_user ? '<span style="font-size:9.5px;padding:1px 6px;border-radius:6px;background:#38BDF8;color:#000;font-weight:800;">YOU</span>' : ''}
+              </div>
+              <div style="font-size:11px;color:var(--txt-3);">${item.role_label}</div>
+            </div>
+          </div>
+        </td>
+        <td style="padding:12px 10px;vertical-align:middle;">
+          <div style="font-weight:700;color:#38BDF8;">₦${Number(item.direct_referral_earnings).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div style="font-size:10.5px;color:var(--txt-3);">${item.direct_referrals_count} downlines</div>
+        </td>
+        <td style="padding:12px 10px;vertical-align:middle;">
+          <div style="font-weight:700;color:#F59E0B;">₦${Number(item.indirect_referral_earnings).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div style="font-size:10.5px;color:var(--txt-3);">${item.indirect_referrals_count} indirect</div>
+        </td>
+        <td style="padding:12px 10px;vertical-align:middle;text-align:right;">
+          <div style="font-size:15px;font-weight:800;color:var(--green);">₦${Number(item.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div style="font-size:10.5px;color:var(--txt-3);">Gross Cash</div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterTopEarnersTable() {
+  const query = (document.getElementById('topEarnersSearchInput')?.value || '').toLowerCase().trim();
+  if (!query) {
+    renderTopEarnersTable(rawTopEarnersList);
+    return;
+  }
+  const filtered = rawTopEarnersList.filter(u =>
+    (u.username && u.username.toLowerCase().includes(query)) ||
+    (u.full_name && u.full_name.toLowerCase().includes(query)) ||
+    (u.role_label && u.role_label.toLowerCase().includes(query))
+  );
+  renderTopEarnersTable(filtered);
 }
 
 function restoreMemberActiveTab() {
