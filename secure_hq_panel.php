@@ -825,6 +825,10 @@ input,textarea,select{font-family:var(--ff);}
     </button>
 
     <div class="nav-label">System</div>
+    <button class="nav-item" data-perm="maintenance" onclick="switchAdminTab('maintenance', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Maintenance Mode
+    </button>
     <button class="nav-item" data-perm="notifications" onclick="switchAdminTab('notifications', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Notifications
@@ -928,120 +932,6 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-label">Coupon PINs</div>
           <div class="stat-value" id="kpiOverviewCoupons" style="color:var(--purple);">0</div>
           <div class="stat-sub">Available and redeemed PINs</div>
-        </div>
-      </div>
-
-      <!-- ══ SITE STATUS & MAINTENANCE MODE CONTROL PANEL ══ -->
-      <div class="card maint-control-card" id="maintControlCard" style="margin-top:20px;">
-        <div class="card-header maint-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div class="maint-card-icon" id="maintCardIcon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            </div>
-            <div>
-              <div class="card-title" style="display:flex;align-items:center;gap:10px;font-size:15px;">
-                <span>Platform System Status &amp; Maintenance Mode</span>
-                <span class="badge" id="maintOverviewBadge" style="background:rgba(16,185,129,0.14);color:#10B981;border:1px solid rgba(16,185,129,0.25);">OPERATIONAL</span>
-              </div>
-              <div class="card-sub">Control global public access, deploy maintenance screens with 3D animation, and broadcast upgrade notices.</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <a href="includes/maintenance_view.php" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <span>Preview Maintenance Screen</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="maint-card-body" style="padding-top:10px;">
-          <!-- Main Interactive Toggle Banner -->
-          <div class="maint-switch-banner" id="maintSwitchBanner">
-            <div class="maint-switch-info">
-              <div class="maint-switch-title" id="maintBannerTitle">Maintenance Mode is currently <strong id="maintBannerState">OFF</strong></div>
-              <div class="maint-switch-desc" id="maintBannerDesc">All public routes and member areas are completely accessible. Activating maintenance mode will immediately lock public access and display the high-tech 3D spatial maintenance interface.</div>
-            </div>
-            <div class="maint-switch-cta">
-              <button type="button" class="maint-hero-switch" id="overviewMaintToggle" role="switch" aria-checked="false" onclick="toggleSiteMaintenance()" title="Toggle Maintenance Mode">
-                <span class="maint-hero-track">
-                  <span class="maint-hero-thumb" id="overviewMaintThumb">
-                    <svg class="maint-thumb-icon-off" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <svg class="maint-thumb-icon-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  </span>
-                </span>
-                <span class="maint-hero-label" id="overviewMaintBtnLabel">Turn Maintenance ON</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Configuration Form -->
-          <form id="maintConfigForm" onsubmit="saveMaintenanceSettings(event)" style="margin-top:16px;">
-            <div class="form-row" style="grid-template-columns: 2fr 1fr; margin-bottom:12px;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">
-                  <span>Maintenance Headline / Title</span>
-                  <span class="label-hint">Shown in 3D header</span>
-                </label>
-                <input type="text" id="cfgMaintTitle" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. Platform Infrastructure Optimization">
-              </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">
-                  <span>Estimated Time of Completion (ETA)</span>
-                  <span class="label-hint">Shown in telemetry panel</span>
-                </label>
-                <input type="text" id="cfgMaintEta" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. 15 Minutes or 2:00 PM UTC">
-              </div>
-            </div>
-            <div class="form-group" style="margin-bottom:14px;">
-              <label class="form-label">
-                <span>Public Notice / Reason Message</span>
-                <span class="label-hint">Visible to all visitors during maintenance</span>
-              </label>
-              <textarea id="cfgMaintMessage" rows="2" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;" placeholder="Describe the ongoing maintenance or system upgrade..."></textarea>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:10px;">
-              <button type="submit" class="btn btn-primary" id="btnSaveMaintConfig" style="display:inline-flex;align-items:center;gap:8px;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                <span>Save &amp; Broadcast Notice</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Recent Payout & Withdrawal Requests Card in Overview -->
-      <div class="card" style="margin-top:20px;">
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-          <div>
-            <div class="card-title" style="display:flex;align-items:center;gap:8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <span>Recent Payout &amp; Withdrawal Requests</span>
-            </div>
-            <div class="card-sub">Real-time withdrawal queue. Review, approve bank settlements, and change status from Processing to Paid.</div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-ghost btn-sm" onclick="loadAdminOverview()">Refresh</button>
-            <button class="btn btn-primary btn-sm" onclick="switchTab('withdrawals')">Open Withdrawals Tab &rarr;</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Member</th>
-                <th>Amount</th>
-                <th>Wallet</th>
-                <th>Bank &amp; Account</th>
-                <th>Beneficiary Name</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="overviewWithdrawalsTableBody">
-              <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--txt-3);">Loading payout requests...</td></tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -2420,6 +2310,95 @@ input,textarea,select{font-family:var(--ff);}
       </div>
     </div>
 
+    <!-- ══ TAB: MAINTENANCE MODE ════════════════════════════════════════════ -->
+    <div id="tab-maintenance" class="tab-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--txt);">System Status &amp; Maintenance Mode</div>
+          <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Control platform accessibility, toggle emergency maintenance screens, and broadcast upgrade notices.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="loadMaintenanceStatus()">Refresh Status</button>
+          <a href="includes/maintenance_view.php" target="_blank" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Live Screen Preview</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ══ SITE STATUS & MAINTENANCE MODE CONTROL PANEL ══ -->
+      <div class="card maint-control-card" id="maintControlCard">
+        <div class="card-header maint-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="maint-card-icon" id="maintCardIcon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div>
+              <div class="card-title" style="display:flex;align-items:center;gap:10px;font-size:15px;">
+                <span>Platform System Status &amp; Maintenance Mode</span>
+                <span class="badge" id="maintOverviewBadge" style="background:rgba(16,185,129,0.14);color:#10B981;border:1px solid rgba(16,185,129,0.25);">OPERATIONAL</span>
+              </div>
+              <div class="card-sub">Control global public access, deploy maintenance screens with 3D animation, and broadcast upgrade notices.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="maint-card-body" style="padding-top:10px;">
+          <!-- Main Interactive Toggle Banner -->
+          <div class="maint-switch-banner" id="maintSwitchBanner">
+            <div class="maint-switch-info">
+              <div class="maint-switch-title" id="maintBannerTitle">Maintenance Mode is currently <strong id="maintBannerState">OFF</strong></div>
+              <div class="maint-switch-desc" id="maintBannerDesc">All public routes and member areas are completely accessible. Activating maintenance mode will immediately lock public access and display the high-tech 3D spatial maintenance interface.</div>
+            </div>
+            <div class="maint-switch-cta">
+              <button type="button" class="maint-hero-switch" id="overviewMaintToggle" role="switch" aria-checked="false" onclick="toggleSiteMaintenance()" title="Toggle Maintenance Mode">
+                <span class="maint-hero-track">
+                  <span class="maint-hero-thumb" id="overviewMaintThumb">
+                    <svg class="maint-thumb-icon-off" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg class="maint-thumb-icon-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </span>
+                </span>
+                <span class="maint-hero-label" id="overviewMaintBtnLabel">Turn Maintenance ON</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Configuration Form -->
+          <form id="maintConfigForm" onsubmit="saveMaintenanceSettings(event)" style="margin-top:16px;">
+            <div class="form-row" style="grid-template-columns: 2fr 1fr; margin-bottom:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">
+                  <span>Maintenance Headline / Title</span>
+                  <span class="label-hint">Shown in 3D header</span>
+                </label>
+                <input type="text" id="cfgMaintTitle" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. Platform Infrastructure Optimization">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">
+                  <span>Estimated Time of Completion (ETA)</span>
+                  <span class="label-hint">Shown in telemetry panel</span>
+                </label>
+                <input type="text" id="cfgMaintEta" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. 15 Minutes or 2:00 PM UTC">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">
+                <span>Public Notice / Reason Message</span>
+                <span class="label-hint">Visible to all visitors during maintenance</span>
+              </label>
+              <textarea id="cfgMaintMessage" rows="3" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;" placeholder="Describe the ongoing maintenance or system upgrade..."></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+              <button type="submit" class="btn btn-primary" id="btnSaveMaintConfig" style="display:inline-flex;align-items:center;gap:8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Save &amp; Broadcast Notice</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ TAB: SUB-ADMINS MANAGEMENT ════════════════════════════════════ -->
     <div id="tab-subadmins" class="tab-content">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
@@ -2932,6 +2911,10 @@ input,textarea,select{font-family:var(--ff);}
               <input type="checkbox" id="subPermPricing">
               <span>Pricing &amp; Rates</span>
             </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
+              <input type="checkbox" id="subPermMaintenance">
+              <span>Maintenance Mode</span>
+            </label>
           </div>
         </div>
       </div>
@@ -3079,7 +3062,7 @@ window.SUB_ADMIN_PERMISSIONS = <?= json_encode($subAdminPermissions ?: (object)[
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════
-const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','pricing','notifications','subadmins'];
+const TABS = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','pricing','notifications','maintenance','subadmins'];
 
 function applySubAdminPermissions() {
   if (!window.IS_SUB_ADMIN) return;
@@ -3094,7 +3077,7 @@ function applySubAdminPermissions() {
 
   const activeTab = sessionStorage.getItem('ix_admin_active_tab') || 'overview';
   if (activeTab === 'subadmins' || perms[activeTab] === false) {
-    const firstAllowed = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','notifications','pricing'].find(t => perms[t] !== false);
+    const firstAllowed = ['overview','surveys','tasks','ecosystem','users','coupons','vendors','withdrawals','notifications','pricing','maintenance'].find(t => perms[t] !== false);
     if (firstAllowed) {
       switchAdminTab(firstAllowed);
     }
@@ -3134,6 +3117,7 @@ function switchAdminTab(tab, btn) {
     withdrawals: 'Withdrawals',
     pricing: 'Pricing & Rates',
     notifications: 'Notifications',
+    maintenance: 'System Status & Maintenance',
     subadmins: 'Sub-Admin Management'
   };
   const titleEl = document.getElementById('adminTopbarTitle');
@@ -3158,6 +3142,7 @@ function switchAdminTab(tab, btn) {
     if (tab === 'withdrawals') loadWithdrawalsData();
     if (tab === 'pricing') loadPricingData();
     if (tab === 'notifications') loadAdminNotificationsTab();
+    if (tab === 'maintenance') loadMaintenanceStatus();
     if (tab === 'subadmins') loadSubAdminsData();
   } catch(e) {
     console.error('Error loading tab content:', e);
@@ -6958,7 +6943,8 @@ function renderSubAdminsTable(list) {
     coupons: 'Coupons',
     withdrawals: 'Withdrawals',
     notifications: 'Notifications',
-    pricing: 'Pricing'
+    pricing: 'Pricing',
+    maintenance: 'Maintenance'
   };
 
   tbody.innerHTML = list.map(sa => {
@@ -7068,7 +7054,8 @@ function selectAllSubAdminPerms(checked) {
     'subPermCoupons',
     'subPermWithdrawals',
     'subPermNotifications',
-    'subPermPricing'
+    'subPermPricing',
+    'subPermMaintenance'
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -7121,6 +7108,8 @@ function openEditSubAdminModal(id) {
   document.getElementById('subPermWithdrawals').checked = Boolean(p.withdrawals);
   document.getElementById('subPermNotifications').checked = Boolean(p.notifications);
   document.getElementById('subPermPricing').checked = Boolean(p.pricing);
+  const maintEl = document.getElementById('subPermMaintenance');
+  if (maintEl) maintEl.checked = Boolean(p.maintenance !== false);
 
   openModal('modalSubAdmin');
 }
@@ -7147,7 +7136,8 @@ async function handleSaveSubAdmin(e) {
     coupons: document.getElementById('subPermCoupons').checked,
     withdrawals: document.getElementById('subPermWithdrawals').checked,
     notifications: document.getElementById('subPermNotifications').checked,
-    pricing: document.getElementById('subPermPricing').checked
+    pricing: document.getElementById('subPermPricing').checked,
+    maintenance: document.getElementById('subPermMaintenance') ? document.getElementById('subPermMaintenance').checked : true
   };
 
   const btn = document.getElementById('btnSaveSubAdmin');
