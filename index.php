@@ -917,7 +917,7 @@ a {
 
         <nav class="ev-nav-capsule">
             <a href="#hero" class="ev-nav-link">Home</a>
-            <a href="#essence" class="ev-nav-link">The Essence</a>
+            <a href="#ethos" class="ev-nav-link">Our Ethos</a>
             <a href="#represent" class="ev-nav-link">What We Represent</a>
             <a href="vendors.php" class="ev-nav-link">Vendors</a>
             <a href="#faq" class="ev-nav-link">FAQ</a>
@@ -965,7 +965,7 @@ a {
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
         <a href="#hero" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">Home</a>
-        <a href="#essence" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">The Essence</a>
+        <a href="#ethos" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">Our Ethos</a>
         <a href="#represent" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">What We Represent</a>
         <a href="vendors.php" style="color:var(--color-primary);font-size:0.95rem;font-weight:600;">Verified Vendors</a>
         <a href="#faq" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">FAQ</a>
@@ -1009,11 +1009,15 @@ a {
     </div>
 </section>
 
-<!-- The Essence Section -->
-<section class="ev-section" id="essence">
+<!-- Our Ethos Section -->
+<section class="ev-section" id="ethos">
+    <span id="essence" style="display:none;"></span>
     <div class="ev-container">
-        <div class="ev-accent-bar" aria-hidden="true"></div>
-        <h2 class="ev-editorial-heading">THE ESSENCE</h2>
+        <div class="ev-ed-identity">
+            <span class="ev-ed-square" aria-hidden="true"></span>
+            <span class="ev-ed-label">Who We Are</span>
+        </div>
+        <h2 class="ev-editorial-heading">OUR ETHOS</h2>
         <div class="ev-editorial-paragraphs">
             <p class="ev-editorial-p">We are the bridge between daily effort and verified earnings.</p>
             <p class="ev-editorial-p">Connecting online participation to real financial value.</p>
@@ -1042,17 +1046,17 @@ a {
 
             <div class="ev-ed-grid">
                 <article class="ev-ed-card">
-                    <h3 class="ev-ed-title">BEYOND THE MOMENT</h3>
+                    <h3 class="ev-ed-title">CONNECTIVITY</h3>
                     <p class="ev-ed-desc">Sponsored tasks and digital opinion surveys that turn your daily online activity into consistent earnings.</p>
                 </article>
 
                 <article class="ev-ed-card">
-                    <h3 class="ev-ed-title">THE FUTURE</h3>
+                    <h3 class="ev-ed-title">SWIFT WITHDRAWAL</h3>
                     <p class="ev-ed-desc">Automated direct bank settlements with zero delays. Withdraw your cash straight to any Nigerian bank or digital wallet.</p>
                 </article>
 
                 <article class="ev-ed-card">
-                    <h3 class="ev-ed-title">REWARDS</h3>
+                    <h3 class="ev-ed-title">HIGH REWARDS</h3>
                     <p class="ev-ed-desc">High-yield affiliate commissions and referral bonuses every time an invited peer joins using your exclusive referral link.</p>
                 </article>
             </div>
@@ -1145,7 +1149,7 @@ a {
                     <h4 class="ev-footer-heading">Navigation</h4>
                     <div class="ev-footer-links">
                         <a href="#hero" class="ev-footer-link">Home</a>
-                        <a href="#essence" class="ev-footer-link">The Essence</a>
+                        <a href="#ethos" class="ev-footer-link">Our Ethos</a>
                         <a href="vendors.php" class="ev-footer-link">Verified Vendors</a>
                         <a href="register.php" class="ev-footer-link">Create Account</a>
                         <a href="login.php" class="ev-footer-link">Sign In</a>
