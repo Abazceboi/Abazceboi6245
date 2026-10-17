@@ -471,6 +471,37 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Strict Withdrawal PIN Verification
+    $userPin = trim($user['withdrawal_pin'] ?? ($user['withdrawalPin'] ?? ''));
+    $enteredPin = trim($input['pin'] ?? ($input['withdrawal_pin'] ?? ''));
+
+    if (!empty($userPin)) {
+        if (empty($enteredPin)) {
+            echo json_encode(['status' => 'error', 'message' => 'Please enter your 4-digit withdrawal PIN to authorize this transfer.']);
+            exit;
+        }
+        if ($enteredPin !== $userPin) {
+            echo json_encode(['status' => 'error', 'message' => 'Incorrect withdrawal PIN. Please check and try again.']);
+            exit;
+        }
+    } else {
+        if (!empty($enteredPin)) {
+            if (strlen($enteredPin) !== 4 || !ctype_digit($enteredPin)) {
+                echo json_encode(['status' => 'error', 'message' => 'Withdrawal PIN must be exactly 4 numerical digits.']);
+                exit;
+            }
+            $user['withdrawal_pin'] = $enteredPin;
+            if ($pdo) {
+                try {
+                    $pdo->prepare('UPDATE users SET "withdrawalPin" = ? WHERE LOWER(username) = LOWER(?)')->execute([$enteredPin, $username]);
+                } catch(Throwable $e){}
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Withdrawal PIN required: Please enter a 4-digit security PIN to authorize this transfer.']);
+            exit;
+        }
+    }
+
     $curCash = floatval($user['remaining_cash'] ?? $user['cashBalance'] ?? 0);
     $curPoints = intval($user['remaining_pts'] ?? $user['pointsBalance'] ?? 0);
     $checkBal = ($targetWallet === 'task') ? $curPoints : $curCash;

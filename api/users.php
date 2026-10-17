@@ -1017,9 +1017,12 @@ switch ($action) {
         // Return sanitized profile
         unset($target['password']);
         unset($target['password_hash']);
+        $hasPin = !empty($target['withdrawal_pin']) || !empty($target['withdrawalPin']);
         echo json_encode([
             'success' => true,
             'user' => $target,
+            'has_pin' => $hasPin,
+            'withdrawal_pin' => $target['withdrawal_pin'] ?? ($target['withdrawalPin'] ?? ''),
             'points_balance' => (int)($target['remaining_pts'] ?? $target['pointsBalance'] ?? 100),
             'cash_balance' => (float)($target['remaining_cash'] ?? $target['cashBalance'] ?? 0.0),
             'role' => $target['role'] ?? 'member',
@@ -1218,8 +1221,13 @@ switch ($action) {
 
         if ($pdo) {
             try {
-                $stmt = $pdo->prepare('UPDATE users SET "bankName" = ?, "accountNumber" = ?, "accountName" = ? WHERE LOWER(username) = LOWER(?)');
-                $stmt->execute([$bankName, $accNum, $accName ?: ($targetUser['account_name'] ?? $username), $username]);
+                if (!empty($pin)) {
+                    $stmt = $pdo->prepare('UPDATE users SET "bankName" = ?, "accountNumber" = ?, "accountName" = ?, "withdrawalPin" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$bankName, $accNum, $accName ?: ($targetUser['account_name'] ?? $username), $pin, $username]);
+                } else {
+                    $stmt = $pdo->prepare('UPDATE users SET "bankName" = ?, "accountNumber" = ?, "accountName" = ? WHERE LOWER(username) = LOWER(?)');
+                    $stmt->execute([$bankName, $accNum, $accName ?: ($targetUser['account_name'] ?? $username), $username]);
+                }
             } catch (Exception $e) {}
         }
 
@@ -1228,9 +1236,66 @@ switch ($action) {
             'message' => 'Settlement bank details successfully updated!',
             'bank_name' => $bankName,
             'account_number' => $accNum,
-            'account_name' => $accName ?: ($targetUser['account_name'] ?? $username)
+            'account_name' => $accName ?: ($targetUser['account_name'] ?? $username),
+            'has_pin' => !empty($targetUser['withdrawal_pin'])
         ]);
         break;
+
+    case 'update_withdrawal_pin':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'POST required']);
+            exit;
+        }
+
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_SESSION['username'] ?? ''));
+        $pin = trim($input['pin'] ?? ($input['withdrawal_pin'] ?? ''));
+        $oldPin = trim($input['old_pin'] ?? ($input['current_pin'] ?? ''));
+
+        if (empty($username) || empty($pin)) {
+            echo json_encode(['success' => false, 'error' => 'Username and 4-digit PIN are required.']);
+            exit;
+        }
+
+        if (strlen($pin) !== 4 || !ctype_digit($pin)) {
+            echo json_encode(['success' => false, 'error' => 'Withdrawal PIN must be exactly 4 numerical digits.']);
+            exit;
+        }
+
+        $data = loadUsers();
+        $userFound = false;
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
+                $existingPin = trim($u['withdrawal_pin'] ?? '');
+                if (!empty($existingPin) && !empty($oldPin) && $existingPin !== $oldPin) {
+                    echo json_encode(['success' => false, 'error' => 'Current withdrawal PIN is incorrect.']);
+                    exit;
+                }
+                $u['withdrawal_pin'] = $pin;
+                $u['pin_updated_at'] = date('c');
+                $userFound = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($userFound) {
+            saveUsers($data);
+            if ($pdo) {
+                try {
+                    $pdo->prepare('UPDATE users SET "withdrawalPin" = ? WHERE LOWER(username) = LOWER(?)')->execute([$pin, $username]);
+                } catch(Exception $e){}
+            }
+            echo json_encode([
+                'success' => true,
+                'status' => 'success',
+                'message' => 'Withdrawal PIN updated successfully!'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'User account not found.']);
+        }
+        exit;
 
     case 'update_profile':
     case 'update_settings':

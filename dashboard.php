@@ -44,6 +44,7 @@ $referralCount  = 0;
 $referralEarnings = 0.00;
 $tasksCompleted = 0;
 $surveysCompleted = 0;
+$hasWithdrawalPin = false;
 
 $nigerianBanks = [
     'Access Bank',
@@ -121,6 +122,7 @@ foreach ($allUsers as $ju) {
         if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
         if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
         if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
+        $hasWithdrawalPin = !empty($ju['withdrawal_pin']) || !empty($ju['withdrawalPin']);
 
         // Strictly count referrals only if the downline user has used their activation key
         $activeRefsCount = 0;
@@ -2387,6 +2389,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 <span id="dataMinTaskWd" data-min="<?= $minTaskWd ?>" style="display:none"></span>
 <span id="dataActivated" data-activated="<?= $isActivated ? '1' : '0' ?>" style="display:none"></span>
 <span id="dataBankSetup" data-bank-configured="<?= $isBankConfigured ? '1' : '0' ?>" style="display:none"></span>
+<span id="dataHasPin" data-has-pin="<?= $hasWithdrawalPin ? '1' : '0' ?>" style="display:none"></span>
 
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
@@ -2689,10 +2692,14 @@ html[data-theme="light"] .special-portal-card.uploader,
         <div class="atm-card-ambient-shadow"></div>
 
         <!-- Action Button -->
-        <div class="atm-card-actions">
+        <div class="atm-card-actions" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditBank')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Edit Bank Card Details
+            Edit Bank Card
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditBank'); setTimeout(function(){ var p = document.getElementById('editWithdrawalPin'); if(p){ p.focus(); } }, 200);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Set / Change PIN
           </button>
         </div>
       </div>
@@ -3037,6 +3044,29 @@ html[data-theme="light"] .special-portal-card.uploader,
       </form>
     </div>
 
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Withdrawal Security PIN</span>
+      </div>
+      <div class="card-sub">Set or update your 4-digit security PIN used to authorize bank transfers and payouts.</div>
+      <form onsubmit="handleSaveWithdrawalPin(event)">
+        <div class="form-group">
+          <label class="form-label">Current PIN (Leave empty if setting for the first time)</label>
+          <input type="password" class="form-input" id="setOldWithdrawalPin" inputmode="numeric" maxlength="4" placeholder="••••" style="letter-spacing:4px;font-family:var(--mono);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New 4-Digit PIN</label>
+          <input type="password" class="form-input" id="setNewWithdrawalPin" required inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="•••• (4 digits)" style="letter-spacing:4px;font-family:var(--mono);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New PIN</label>
+          <input type="password" class="form-input" id="setConfirmWithdrawalPin" required inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="•••• (Repeat PIN)" style="letter-spacing:4px;font-family:var(--mono);">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="btnSaveWithdrawalPin">Save Withdrawal PIN</button>
+      </form>
+    </div>
+
     <div id="cardVendorTerminal" class="card special-portal-card vendor" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:block;' : 'display:none;' ?>">
       <div class="card-title" style="color:#F59E0B;display:flex;align-items:center;gap:8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
@@ -3277,6 +3307,14 @@ html[data-theme="light"] .special-portal-card.uploader,
           <label class="form-label">Account Holder Name</label>
           <input type="text" class="form-input" id="editAccountName" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full account name">
         </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>4-Digit Withdrawal PIN</span>
+            <span style="font-size:11px;color:var(--text-muted);font-weight:normal;">Required for payouts</span>
+          </label>
+          <input type="password" class="form-input" id="editWithdrawalPin" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="•••• (4 digits)" style="letter-spacing:4px;font-family:var(--mono);">
+          <small style="font-size:11px;color:var(--text-muted);display:block;margin-top:4px;">Set or update your 4-digit PIN to authorize instant withdrawals.</small>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" onclick="closeModal('modalEditBank')">Cancel</button>
@@ -3502,6 +3540,24 @@ html[data-theme="light"] .special-portal-card.uploader,
         <div class="withdraw-detail-row">
           <span>Processing Time</span>
           <span>Instant</span>
+        </div>
+      </div>
+
+      <!-- Withdrawal Security PIN Authorization Input -->
+      <div class="withdraw-pin-section" style="margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label for="confirmWithdrawalPin" style="font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Withdrawal PIN
+          </label>
+          <span style="font-size:11px;color:var(--text-muted);">4-Digit Security Code</span>
+        </div>
+        <div style="position:relative;">
+          <input type="password" id="confirmWithdrawalPin" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;text-align:center;font-size:24px;font-weight:800;letter-spacing:14px;padding:10px 14px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);color:var(--text);outline:none;font-family:var(--mono);box-sizing:border-box;" autocomplete="off">
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;display:flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Required to verify authorization before payout settlement.</span>
         </div>
       </div>
     </div>
@@ -3888,6 +3944,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editH) editH.value = '';
   }
 
+  // Restore cached withdrawal PIN if available
+  const cachedPin = localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || localStorage.getItem('ix_withdrawal_pin') || '';
+  const editPinEl = document.getElementById('editWithdrawalPin');
+  if (editPinEl && cachedPin) {
+    editPinEl.value = cachedPin;
+  }
+
   // Immediately synchronize withdrawal modal bank card display
   syncWithdrawalBankDetails();
 
@@ -4158,6 +4221,16 @@ async function syncLiveProfile() {
           gate.remove();
           document.body.style.overflow = '';
         }
+      }
+
+      if (d.withdrawal_pin) {
+        localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, d.withdrawal_pin);
+        const editPin = document.getElementById('editWithdrawalPin');
+        if (editPin && !editPin.value) editPin.value = d.withdrawal_pin;
+      }
+      if (d.has_pin) {
+        const dataHasPin = document.getElementById('dataHasPin');
+        if (dataHasPin) dataHasPin.dataset.hasPin = '1';
       }
     }
   } catch(e) {}
@@ -4605,6 +4678,57 @@ async function handleSavePassword(e) {
   btn.disabled = false; btn.textContent = 'Update Password';
 }
 
+async function handleSaveWithdrawalPin(e) {
+  e.preventDefault();
+  const oldPin = document.getElementById('setOldWithdrawalPin')?.value.trim() || '';
+  const newPin = document.getElementById('setNewWithdrawalPin')?.value.trim() || '';
+  const confPin = document.getElementById('setConfirmWithdrawalPin')?.value.trim() || '';
+  const btn = document.getElementById('btnSaveWithdrawalPin');
+
+  if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    toast('New withdrawal PIN must be exactly 4 numerical digits.', 'error');
+    return;
+  }
+  if (newPin !== confPin) {
+    toast('New PIN and confirmation PIN do not match.', 'error');
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Updating...';
+  try {
+    const payload = {
+      username: CURRENT_USER,
+      pin: newPin,
+      old_pin: oldPin
+    };
+    const r = await fetch(`api/users.php?action=update_withdrawal_pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (d.success || d.status === 'success') {
+      toast('Withdrawal PIN updated successfully!', 'success');
+      localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, newPin);
+      const dataHasPin = document.getElementById('dataHasPin');
+      if (dataHasPin) dataHasPin.dataset.hasPin = '1';
+      const oldEl = document.getElementById('setOldWithdrawalPin');
+      const newEl = document.getElementById('setNewWithdrawalPin');
+      const confEl = document.getElementById('setConfirmWithdrawalPin');
+      if (oldEl) oldEl.value = '';
+      if (newEl) newEl.value = '';
+      if (confEl) confEl.value = '';
+      const editPin = document.getElementById('editWithdrawalPin');
+      if (editPin) editPin.value = newPin;
+    } else {
+      toast(d.error || d.message || 'Failed to update withdrawal PIN', 'error');
+    }
+  } catch(err) {
+    toast('Network error updating withdrawal PIN', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Save Withdrawal PIN';
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // THEME & TOAST
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4770,6 +4894,7 @@ async function handleUpdateBank(e) {
   const bankName = document.getElementById('editBankName').value.trim();
   const accNum = document.getElementById('editAccountNumber').value.trim();
   const accName = document.getElementById('editAccountName').value.trim();
+  const pin = document.getElementById('editWithdrawalPin')?.value.trim();
   const btn = document.getElementById('btnSaveBank');
 
   if (!bankName) {
@@ -4784,6 +4909,10 @@ async function handleUpdateBank(e) {
     toast('Please enter your full account holder name.', 'error');
     return;
   }
+  if (pin && (pin.length !== 4 || !/^\d{4}$/.test(pin))) {
+    toast('Withdrawal PIN must be exactly 4 numerical digits.', 'error');
+    return;
+  }
 
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
@@ -4793,6 +4922,8 @@ async function handleUpdateBank(e) {
       account_number: accNum,
       account_name: accName
     };
+    if (pin) payload.withdrawal_pin = pin;
+
     const r = await fetch(`api/users.php?action=update_bank_details&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4827,8 +4958,11 @@ async function handleUpdateBank(e) {
         localStorage.setItem('ix_bank_holder_' + CURRENT_USER, accName);
         localStorage.setItem('ix_bank_holder', accName);
       }
-      localStorage.removeItem('ix_withdrawal_pin_' + CURRENT_USER);
-      localStorage.removeItem('ix_withdrawal_pin');
+      if (pin) {
+        localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, pin);
+        const dataHasPin = document.getElementById('dataHasPin');
+        if (dataHasPin) dataHasPin.dataset.hasPin = '1';
+      }
 
       const setupEl = document.getElementById('dataBankSetup');
       if (setupEl) {
@@ -5888,6 +6022,13 @@ function proceedToWithdrawalConfirm() {
   document.getElementById('confirmWdAccount').textContent = accNo;
   document.getElementById('confirmWdName').textContent = accName;
 
+  const pinInput = document.getElementById('confirmWithdrawalPin');
+  if (pinInput) {
+    pinInput.value = '';
+    pinInput.style.borderColor = 'var(--border)';
+    setTimeout(() => pinInput.focus(), 250);
+  }
+
   closeModal('modalWithdraw');
   openModal('modalWithdrawConfirm');
 }
@@ -5895,6 +6036,17 @@ function proceedToWithdrawalConfirm() {
 async function executeWithdrawalReq() {
   if (!pendingWithdrawalData) return;
   const { type, amount } = pendingWithdrawalData;
+
+  const pinInput = document.getElementById('confirmWithdrawalPin');
+  const enteredPin = (pinInput ? pinInput.value : '').trim();
+  if (!enteredPin || enteredPin.length !== 4 || !/^\d{4}$/.test(enteredPin)) {
+    toast('Please enter your 4-digit withdrawal PIN to authorize this transfer.', 'error');
+    if (pinInput) {
+      pinInput.focus();
+      pinInput.style.borderColor = '#EF4444';
+    }
+    return;
+  }
 
   const btn = document.getElementById('btnAuthorizePayout');
   if (btn) { btn.disabled = true; btn.textContent = 'Processing Settlement...'; }
@@ -5927,6 +6079,8 @@ async function executeWithdrawalReq() {
         amount: amount,
         wallet: type,
         wallet_type: type,
+        pin: enteredPin,
+        withdrawal_pin: enteredPin,
         client_points: typeof getUserPoints === 'function' ? getUserPoints() : userPoints,
         client_cash: typeof getUserCash === 'function' ? getUserCash() : userCash,
         bank_name: curBankName,
@@ -5984,6 +6138,10 @@ async function executeWithdrawalReq() {
       const amtInput = document.getElementById('wdAmount');
       if (amtInput) amtInput.value = '';
     } else {
+      if (pinInput) {
+        pinInput.focus();
+        pinInput.style.borderColor = '#EF4444';
+      }
       toast(d?.message || d?.error || 'Failed to submit withdrawal', 'error');
     }
   } catch(e) {

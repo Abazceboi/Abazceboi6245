@@ -4022,6 +4022,32 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         return;
                     }
 
+                    // Strict Withdrawal PIN Verification
+                    const userPin = (user.withdrawal_pin || user.withdrawalPin || '').toString().trim();
+                    const enteredPin = (parsed.pin || parsed.withdrawal_pin || '').toString().trim();
+
+                    if (userPin) {
+                        if (!enteredPin) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Please enter your 4-digit withdrawal PIN to authorize this transfer.' }));
+                            return;
+                        }
+                        if (enteredPin !== userPin) {
+                            res.end(JSON.stringify({ status: 'error', message: 'Incorrect withdrawal PIN. Please check and try again.' }));
+                            return;
+                        }
+                    } else {
+                        if (enteredPin) {
+                            if (!/^\d{4}$/.test(enteredPin)) {
+                                res.end(JSON.stringify({ status: 'error', message: 'Withdrawal PIN must be exactly 4 numerical digits.' }));
+                                return;
+                            }
+                            user.withdrawal_pin = enteredPin;
+                        } else {
+                            res.end(JSON.stringify({ status: 'error', message: 'Withdrawal PIN required: Please enter a 4-digit security PIN to authorize this transfer.' }));
+                            return;
+                        }
+                    }
+
                     if (targetWallet === 'affiliate') {
                         if (curCash < amount) {
                             res.end(JSON.stringify({ status: 'error', message: `Insufficient cash balance. Available: ₦${curCash.toLocaleString('en-US', {minimumFractionDigits: 2})}` }));
@@ -4789,6 +4815,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         res.end(JSON.stringify({
                             success: true,
                             user: sanitized,
+                            has_pin: Boolean(user.withdrawal_pin || user.withdrawalPin),
+                            withdrawal_pin: user.withdrawal_pin || user.withdrawalPin || '',
                             points_balance: parseInt(user.remaining_pts !== undefined ? user.remaining_pts : (user.pointsBalance || 100)) || 100,
                             cash_balance: parseFloat(user.remaining_cash !== undefined ? user.remaining_cash : (user.cashBalance || 0)) || 0,
                             role: user.role || 'member',
@@ -4961,6 +4989,52 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         bank_name: bankName,
                         account_number: accNum,
                         account_name: accName || targetUser.account_name || username
+                    }));
+                    return;
+                }
+
+                if (action === 'update_withdrawal_pin' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const pin = String(parsed.pin || parsed.withdrawal_pin || '').trim();
+                    const oldPin = String(parsed.old_pin || parsed.current_pin || '').trim();
+
+                    if (!username || !pin) {
+                        res.end(JSON.stringify({ success: false, error: 'Username and 4-digit PIN are required.' }));
+                        return;
+                    }
+
+                    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                        res.end(JSON.stringify({ success: false, error: 'Withdrawal PIN must be exactly 4 numerical digits.' }));
+                        return;
+                    }
+
+                    if (!usersData.users) usersData.users = [];
+                    const targetUser = usersData.users.find(u => (u.username || '').toLowerCase() === username.toLowerCase());
+                    if (!targetUser) {
+                        res.end(JSON.stringify({ success: false, error: 'User account not found.' }));
+                        return;
+                    }
+
+                    const existingPin = String(targetUser.withdrawal_pin || '').trim();
+                    if (existingPin && oldPin && existingPin !== oldPin) {
+                        res.end(JSON.stringify({ success: false, error: 'Current withdrawal PIN is incorrect.' }));
+                        return;
+                    }
+
+                    targetUser.withdrawal_pin = pin;
+                    targetUser.pin_updated_at = new Date().toISOString();
+
+                    try {
+                        const uDir = path.dirname(usersFile);
+                        if (!fs.existsSync(uDir)) fs.mkdirSync(uDir, { recursive: true });
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    } catch(e) {}
+
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=UTF-8' });
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        message: 'Withdrawal PIN updated successfully!'
                     }));
                     return;
                 }
