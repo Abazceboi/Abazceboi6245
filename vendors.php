@@ -1,7 +1,6 @@
 <?php
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
-header("Expires: 0");
+header("Location: distributors.php" . (!empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : ''), true, 302);
+exit;
 require_once __DIR__ . '/config/app.php';
 $pageTitle = 'Verified Vendors | ' . (defined('APP_NAME') ? APP_NAME : 'INNOVATIONX');
 $pageDesc = 'Purchase your account activation code directly from verified vendors via WhatsApp or Telegram.';

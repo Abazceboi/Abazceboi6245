@@ -116,10 +116,28 @@ foreach ($allUsers as $ju) {
         if (!empty($ju['account_number']) && $ju['account_number'] !== '0801234567' && $ju['account_number'] !== '••••••••') $accountNumber = $ju['account_number'];
         if (!empty($ju['account_name']))   $accountName      = $ju['account_name'];
         if (!empty($ju['referral_code']))  $referralCode     = $ju['referral_code'];
+        $userReferredBy   = !empty($ju['referred_by']) ? $ju['referred_by'] : (!empty($ju['referredBy']) ? $ju['referredBy'] : '');
         if (!empty($ju['referral_count'])) $referralCount    = intval($ju['referral_count']);
         if (!empty($ju['referral_earnings'])) $referralEarnings = floatval($ju['referral_earnings']);
         if (!empty($ju['tasks_completed'])) $tasksCompleted  = intval($ju['tasks_completed']);
         if (!empty($ju['surveys_completed'])) $surveysCompleted = intval($ju['surveys_completed']);
+
+        // Strictly count referrals only if the downline user has used their activation key
+        $activeRefsCount = 0;
+        foreach ($allUsers as $chkU) {
+            $refBy = trim($chkU['referred_by'] ?? ($chkU['referredBy'] ?? ''));
+            if (!empty($refBy) && (
+                strtolower($refBy) === strtolower($username) || 
+                (!empty($referralCode) && strtoupper($refBy) === strtoupper($referralCode))
+            )) {
+                $chkAct = !empty($chkU['is_activated']) || !empty($chkU['coupon_pin_used']) || !empty($chkU['coupon_activated']);
+                if ($chkAct) {
+                    $activeRefsCount++;
+                }
+            }
+        }
+        $referralCount = $activeRefsCount;
+
         if (
             !empty($ju['is_activated']) || 
             !empty($ju['coupon_activated']) || 
@@ -217,13 +235,13 @@ $bcastConfig = readStorageJson('config/broadcasts.json', []);
 $actSettings = $bcastConfig['activation_lock'] ?? [
     'title' => 'Account Activation Required',
     'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
-    'cta_label' => 'Contact Verified Vendors',
-    'cta_url' => 'vendors.php'
+    'cta_label' => 'Choose a Distributor',
+    'cta_url' => 'distributors.php'
 ];
 $actTitle = !empty($actSettings['title']) ? $actSettings['title'] : 'Account Activation Required';
 $actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
-$actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Contact Verified Vendors';
-$actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'vendors.php';
+$actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Choose a Distributor';
+$actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'distributors.php';
 
 // Dynamic one-time new user activation pop-up configured from Admin HQ
 $actPopupConfig = $bcastConfig['activation_popup'] ?? [
@@ -3631,6 +3649,24 @@ html[data-theme="light"] .special-portal-card.uploader,
       <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter') submitAccountActivation()">
     </div>
 
+    <div style="text-align:left;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-2);">
+          Confirm Upline / Referrer
+        </label>
+        <span style="font-size:10px;font-weight:600;color:#38BDF8;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:4px;">
+          Optional / Confirm
+        </span>
+      </div>
+      <div style="position:relative;">
+        <input type="text" id="activationUplineInput" class="form-input" placeholder="Enter upline username or referral code" value="<?= htmlspecialchars($userReferredBy ?? '') ?>" style="font-weight:600;font-size:13.5px;padding:12px 14px 12px 36px;">
+        <i class="ri-user-shared-line" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt-3);font-size:15px;"></i>
+      </div>
+      <div style="font-size:11px;color:var(--txt-3);margin-top:5px;line-height:1.4;">
+        <?= !empty($userReferredBy) ? "Assigned upline: <strong style='color:#38BDF8;'>@" . htmlspecialchars($userReferredBy) . "</strong>. You can confirm or change this." : "If you were invited by someone, enter their username or code here so they receive referral credit upon activation." ?>
+      </div>
+    </div>
+
     <div id="activationErrorMsg" style="display:none;padding:10px 14px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#EF4444;font-size:12px;margin-bottom:14px;text-align:left;line-height:1.4;"></div>
 
     <button type="button" class="btn btn-primary" id="btnActivateAccount" onclick="submitAccountActivation()" style="width:100%;justify-content:center;padding:13px;font-size:14px;font-weight:800;border-radius:12px;margin-bottom:16px;background:linear-gradient(135deg, #0284C7, #38BDF8);box-shadow:0 4px 16px rgba(56,189,248,0.35);">
@@ -5978,13 +6014,17 @@ async function submitAccountActivation() {
   if (btn) { btn.disabled = true; btn.textContent = 'Validating Activation PIN...'; }
   if (errBox) errBox.style.display = 'none';
 
+  const uplineInput = document.getElementById('activationUplineInput');
+  const uplineVal = uplineInput ? uplineInput.value.trim() : '';
+
   try {
     const r = await fetch('/api/coupons.php?action=activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         code: pin,
-        username: CURRENT_USER
+        username: CURRENT_USER,
+        upline: uplineVal
       })
     });
     const d = await r.json();

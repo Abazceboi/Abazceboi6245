@@ -290,6 +290,33 @@ if ($action === 'activate' || $action === 'activate_coupon') {
     $wrapped = isset($uData['users']);
     $userUpdated = false;
 
+    // Support confirming or setting upline details at the moment of activation
+    $inputUpline = trim($input['upline'] ?? $input['referrer'] ?? $input['ref'] ?? '');
+    if (!empty($inputUpline)) {
+        $upLower = strtolower($inputUpline);
+        $upUpper = strtoupper($inputUpline);
+        $matchedUpline = '';
+        foreach ($users as $chkRef) {
+            $uName = strtolower($chkRef['username'] ?? '');
+            $uCode = strtoupper(trim($chkRef['referral_code'] ?? ''));
+            $uInx = strtoupper('INX-' . $uName);
+            if ($uName === $upLower || ($uCode && $uCode === $upUpper) || $uInx === $upUpper) {
+                $matchedUpline = $chkRef['username'];
+                break;
+            }
+        }
+        if (empty($matchedUpline)) {
+            $matchedUpline = $inputUpline;
+        }
+        foreach ($users as &$u) {
+            if ($username && strtolower($u['username'] ?? '') === strtolower($username)) {
+                $u['referred_by'] = $matchedUpline;
+                break;
+            }
+        }
+        unset($u);
+    }
+
     // Award Referral Commission ONLY now that downline has activated with a coupon
     $downlineReferrer = '';
     $alreadyAwarded = false;
@@ -334,6 +361,11 @@ if ($action === 'activate' || $action === 'activate_coupon') {
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;
                 $refUser['referral_count'] = intval($refUser['referral_count'] ?? 0) + 1;
                 $refUser['total_earned'] = floatval($refUser['total_earned'] ?? 0) + $commAmount;
+                if ($pdo) {
+                    try {
+                        $pdo->prepare('UPDATE users SET "referralCount" = COALESCE("referralCount", 0) + 1 WHERE LOWER(username) = LOWER(?)')->execute([$refUser['username']]);
+                    } catch(Exception $e){}
+                }
                 $directReferrerUpline = trim($refUser['referred_by'] ?? ($refUser['referredBy'] ?? ''));
 
                 if (!isset($refUser['activity_ledger']) || !is_array($refUser['activity_ledger'])) {

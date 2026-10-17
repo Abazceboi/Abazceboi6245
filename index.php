@@ -919,7 +919,6 @@ a {
             <a href="#hero" class="ev-nav-link">Home</a>
             <a href="#ethos" class="ev-nav-link">Our Ethos</a>
             <a href="#represent" class="ev-nav-link">What We Represent</a>
-            <a href="vendors.php" class="ev-nav-link">Vendors</a>
             <a href="#faq" class="ev-nav-link">FAQ</a>
         </nav>
 
@@ -967,7 +966,7 @@ a {
         <a href="#hero" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">Home</a>
         <a href="#ethos" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">Our Ethos</a>
         <a href="#represent" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">What We Represent</a>
-        <a href="vendors.php" style="color:var(--color-primary);font-size:0.95rem;font-weight:600;">Verified Vendors</a>
+        <a href="distributors.php" style="color:var(--color-primary);font-size:0.95rem;font-weight:600;">Distributors</a>
         <a href="#faq" onclick="toggleEvermoreDrawer()" style="color:var(--ev-text);font-size:0.95rem;font-weight:500;">FAQ</a>
     </div>
 
@@ -1002,8 +1001,8 @@ a {
                 <span>Get Started Free</span>
                 <i class="ri-arrow-right-up-line"></i>
             </a>
-            <a href="vendors.php" class="ev-btn-outline-light">
-                <span>Access Vendors</span>
+            <a href="distributors.php" class="ev-btn-outline-light">
+                <span>Distributors</span>
             </a>
         </div>
     </div>
@@ -1150,7 +1149,7 @@ a {
                     <div class="ev-footer-links">
                         <a href="#hero" class="ev-footer-link">Home</a>
                         <a href="#ethos" class="ev-footer-link">Our Ethos</a>
-                        <a href="vendors.php" class="ev-footer-link">Verified Vendors</a>
+                        <a href="distributors.php" class="ev-footer-link">Distributors</a>
                         <a href="register.php" class="ev-footer-link">Create Account</a>
                         <a href="login.php" class="ev-footer-link">Sign In</a>
                     </div>

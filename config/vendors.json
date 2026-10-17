@@ -1,35 +1,58 @@
 [
   {
+    "id": "v_amanda",
+    "name": "Amanda",
+    "username": "COACHAMANDA",
+    "location": "National / Online (Fast Response)",
+    "rating": 5.0,
+    "codes": "3,400+ Codes Distributed",
+    "phone": "2348121632315",
+    "telegram": "https://t.me/CoachAmanda",
+    "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    "status": "active",
+    "avatar": "#16A34A",
+    "custom_note": "HELLO COACH AMANDA I NEED ACCESS KEY"
+  },
+  {
     "id": "v1",
     "name": "Emmanuel Eze",
+    "username": "EMMANUEL_VTU",
     "location": "Lagos / National (GTBank, OPay, Kuda)",
-    "rating": 5,
-    "codes": "2,400+ Codes Sold",
+    "rating": 5.0,
+    "codes": "2,400+ Codes Distributed",
     "phone": "2348012345678",
     "telegram": "https://t.me/emmanuel_vtu",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
     "status": "active",
-    "avatar": "#0284C7"
+    "avatar": "#0284C7",
+    "custom_note": "HELLO EMMANUEL I NEED ACCESS KEY"
   },
   {
     "id": "v2",
     "name": "Fatima Bello",
+    "username": "FATIMA_PINS",
     "location": "Abuja / Northern Region (Access Bank, Palmpay)",
     "rating": 4.9,
-    "codes": "1,850+ Codes Sold",
+    "codes": "1,850+ Codes Distributed",
     "phone": "2348023456789",
     "telegram": "https://t.me/fatima_pins",
+    "photo": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80",
     "status": "active",
-    "avatar": "#38BDF8"
+    "avatar": "#38BDF8",
+    "custom_note": "HELLO FATIMA I NEED ACCESS KEY"
   },
   {
     "id": "v3",
     "name": "Tunde Adeyemi",
+    "username": "TUNDE_CODES",
     "location": "Ibadan / South West (Zenith, Moniepoint)",
     "rating": 4.9,
-    "codes": "1,420+ Codes Sold",
+    "codes": "1,420+ Codes Distributed",
     "phone": "2348034567890",
     "telegram": "https://t.me/tunde_codes",
+    "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
     "status": "active",
-    "avatar": "#0369A1"
+    "avatar": "#0369A1",
+    "custom_note": "HELLO TUNDE I NEED ACCESS KEY"
   }
 ]

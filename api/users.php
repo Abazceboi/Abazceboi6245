@@ -165,6 +165,37 @@ $action = $_GET['action'] ?? $inputData['action'] ?? '';
 
 switch ($action) {
 
+    case 'choose_distributor':
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_SESSION['username'] ?? ''));
+        $distributorId = trim($input['distributor_id'] ?? $input['distributorId'] ?? '');
+        $distributorName = trim($input['distributor_name'] ?? $input['distributorName'] ?? '');
+        $distributorPhone = trim($input['distributor_phone'] ?? $input['distributorPhone'] ?? '');
+        $distributorTelegram = trim($input['distributor_telegram'] ?? $input['distributorTelegram'] ?? '');
+
+        if (empty($username)) {
+            echo json_encode(['success' => false, 'error' => 'Username required']);
+            exit;
+        }
+
+        $data = loadUsers();
+        foreach ($data['users'] as &$u) {
+            if (strtolower($u['username'] ?? '') === strtolower($username)) {
+                $u['chosen_distributor'] = [
+                    'id' => $distributorId,
+                    'name' => $distributorName,
+                    'phone' => $distributorPhone,
+                    'telegram' => $distributorTelegram,
+                    'selected_at' => date('c')
+                ];
+                break;
+            }
+        }
+        unset($u);
+        saveUsers($data);
+        echo json_encode(['success' => true, 'status' => 'success', 'message' => 'Distributor selected successfully.']);
+        exit;
+
     case 'get_users':
         $data = loadUsers();
         $delMap = getDeletedUsersList();

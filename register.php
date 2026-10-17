@@ -778,7 +778,7 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
                     }
                 } catch(e) {}
                 
-                window.location.replace('dashboard.php?new_reg=1');
+                window.location.replace('distributors.php?new_reg=1');
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;

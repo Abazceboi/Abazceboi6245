@@ -200,6 +200,83 @@ function renderPhpFile(filePath, context = {}) {
         } catch(e) {}
     }
 
+    if (content.includes('distributor-card') || content.includes('$distributors as')) {
+        try {
+            const vFile = path.join(PUBLIC_DIR, 'config', 'vendors.json');
+            let vData = [];
+            if (fs.existsSync(vFile)) {
+                vData = JSON.parse(fs.readFileSync(vFile, 'utf8'));
+            }
+            if (Array.isArray(vData) && vData.length > 0) {
+                const cardsHtml = vData.map((d, idx) => {
+                    const dName = d.name || 'Verified Distributor';
+                    const dHandle = d.username ? ('@' + String(d.username).toUpperCase()) : '@DISTRIBUTOR';
+                    const dPhone = String(d.phone || '').replace(/[^0-9]/g, '');
+                    const dTel = d.telegram || '';
+                    const dPhoto = d.photo || '';
+                    const dNote = d.custom_note || ('HELLO ' + String(d.name || '').toUpperCase() + ' I NEED ACCESS KEY');
+                    const waMsg = `Hello ${d.name || 'Distributor'}, I am @${context.username || 'member'} from INNOVATIONX and I need an activation key.`;
+                    const waUrl = `https://wa.me/${dPhone}?text=${encodeURIComponent(waMsg)}`;
+                    
+                    return `
+        <article class="distributor-card" id="distributor-card-${idx}">
+            <div class="distributor-header">
+                <div class="distributor-avatar-wrap">
+                    ${dPhoto ? `<img src="${dPhoto}" alt="${dName}" class="distributor-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="distributor-avatar-fallback" style="display:none;">${(d.name || 'D').substring(0, 1).toUpperCase()}</div>` : `<div class="distributor-avatar-fallback">${(d.name || 'D').substring(0, 1).toUpperCase()}</div>`}
+                </div>
+                <div class="distributor-meta">
+                    <div class="distributor-name-row">
+                        <h3 class="distributor-name">${dName}</h3>
+                        <span class="distributor-badge">
+                            <i class="ri-checkbox-circle-fill"></i> DISTRIBUTOR
+                        </span>
+                    </div>
+                    <span class="distributor-handle">${dHandle}</span>
+                </div>
+            </div>
+
+            <div class="distributor-prompt-box">
+                ${dNote}
+            </div>
+
+            <div class="distributor-contact-list">
+                ${dPhone ? `
+                <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="contact-row">
+                    <div class="contact-icon-box whatsapp">
+                        <i class="ri-whatsapp-fill"></i>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-label">WHATSAPP</span>
+                        <span class="contact-val">+${dPhone}</span>
+                    </div>
+                </a>` : ''}
+
+                ${dTel ? `
+                <a href="${dTel}" target="_blank" rel="noopener noreferrer" class="contact-row">
+                    <div class="contact-icon-box telegram">
+                        <i class="ri-telegram-fill"></i>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-label">TELEGRAM</span>
+                        <span class="contact-val">${dTel}</span>
+                    </div>
+                </a>` : ''}
+            </div>
+
+            <button type="button" class="btn-select-distributor" onclick="handleSelectDistributor('${d.id || ''}', '${dName.replace(/'/g, "\\'")}', '${dPhone}', '${dTel.replace(/'/g, "\\'")}', '${waUrl.replace(/'/g, "\\'")}')">
+                <i class="ri-user-follow-line"></i>
+                <span>Select Distributor</span>
+            </button>
+        </article>`;
+                }).join('\n');
+
+                content = content.replace(/<!-- Distributor Cards Grid -->[\s\S]*?<!-- Bottom Cancel \/ Bypass Option -->/,
+                    `<!-- Distributor Cards Grid -->\n${cardsHtml}\n        <!-- Bottom Cancel / Bypass Option -->`);
+            }
+        } catch(e) {}
+    }
+
     content = content.replace(/<\?php[\s\S]*?\?>/g, '');
     content = content.replace(/<\?=[\s\S]*?\?>/g, '');
     content = content.replace(/<\?php[\s\S]*$/g, '');
@@ -1322,8 +1399,17 @@ const server = http.createServer((req, res) => {
                         userRecord.remaining_pts = (userRecord.remaining_pts || 0) + 100;
                         userRecord.pointsBalance = userRecord.remaining_pts;
 
-                                // Award Referral Commission ONLY now that downline has activated with a coupon
-                                if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
+                        // Support confirming or setting upline details during activation
+                        const uplineInput = (parsed.upline || parsed.referrer || parsed.ref || '').trim();
+                        if (uplineInput) {
+                            const upLower = uplineInput.toLowerCase();
+                            const upUpper = uplineInput.toUpperCase();
+                            const matchedRef = users.find(u => (u.username || '').toLowerCase() === upLower || (u.referral_code || '').toUpperCase() === upUpper || ('INX-' + (u.username || '').toLowerCase()).toUpperCase() === upUpper);
+                            userRecord.referred_by = matchedRef ? matchedRef.username : uplineInput;
+                        }
+
+                        // Award Referral Commission ONLY now that downline has activated with a coupon
+                        if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
                                     const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                                     let commAmount = 3000;
                                     let indirectCommAmount = 200;

@@ -189,7 +189,7 @@ if ($action === 'register') {
                 $stmt = $pdo->prepare("INSERT INTO users (fullName, username, email, phone, passwordHash, referralCode, referredBy) VALUES (?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$fullName, $username, $email, $phone, $passwordHash, $referralCode, $canonicalReferrer]);
             }
-            if (!empty($canonicalReferrer)) {
+            if ($isActivated && !empty($canonicalReferrer)) {
                 try {
                     $pdo->prepare('UPDATE users SET "referralCount" = COALESCE("referralCount", 0) + 1 WHERE LOWER(username) = LOWER(?)')->execute([$canonicalReferrer]);
                 } catch(Exception $e2){}
