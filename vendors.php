@@ -1510,32 +1510,34 @@ if (file_exists($telegramConfigFile)) {
                     <option value="1">1 Activation Code (₦1,000)</option>
                     <option value="2">2 Activation Codes (₦2,000)</option>
                     <option value="5">5 Activation Codes (₦5,000)</option>
-                    <option value="10">10 Activation Codes (₦10,000)</option>
+                    <option value="10" selected>10 Activation Codes (₦10,000)</option>
+                    <option value="20">20 Activation Codes (₦20,000)</option>
+                    <option value="50">50 Activation Codes (₦50,000)</option>
                 </select>
             </div>
 
             <div class="modal-group">
                 <label class="modal-label">Payment Method</label>
                 <select id="orderPaymentMethod" class="modal-input">
-                    <option value="Bank Transfer">Bank Transfer (Instant)</option>
-                    <option value="OPay">OPay</option>
+                    <option value="OPay" selected>OPay</option>
                     <option value="PalmPay">PalmPay</option>
+                    <option value="Bank Transfer">Bank Transfer (Instant)</option>
                     <option value="Kuda Bank">Kuda Bank</option>
                 </select>
             </div>
 
             <div class="modal-summary">
                 <span style="color:var(--v-text-muted);">Total Price:</span>
-                <strong id="orderTotalPrice" style="font-size:1rem;color:#F59E0B;">₦1,000</strong>
+                <strong id="orderTotalPrice" style="font-size:1.05rem;color:var(--v-color,#00D4F0);font-weight:800;">₦10,000</strong>
             </div>
 
             <div class="modal-actions">
                 <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="flex:1;min-width:110px;justify-content:center;">
                     Copy Details
                 </button>
-                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;border:none;">
+                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;border:none;display:inline-flex;align-items:center;gap:6px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Direct Send Order Message</span>
+                    <span>Send on WhatsApp ↗</span>
                 </button>
             </div>
         </form>
@@ -1585,7 +1587,7 @@ if (file_exists($telegramConfigFile)) {
     }
 
     function updateOrderPriceSummary() {
-        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '1') || 1;
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
         const total = (qty * 1000).toLocaleString();
         const el = document.getElementById('orderTotalPrice');
         if (el) el.textContent = `₦${total}`;
@@ -1595,11 +1597,12 @@ if (file_exists($telegramConfigFile)) {
         const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
         const buyerName = document.getElementById('orderBuyerName').value.trim() || 'Customer';
         const buyerPhone = document.getElementById('orderBuyerPhone').value.trim() || '';
-        const qty = parseInt(document.getElementById('orderCodeQty').value || '1') || 1;
-        const payment = document.getElementById('orderPaymentMethod').value || 'Bank Transfer';
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
+        const payment = document.getElementById('orderPaymentMethod')?.value || 'OPay';
         const total = (qty * 1000).toLocaleString();
 
-        return `Hello ${vendorName}, my name is ${buyerName} (${buyerPhone}).\n\nI want to purchase ${qty} INNOVATIONX activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;
+        const phoneStr = buyerPhone ? ` (${buyerPhone})` : '';
+        return `Hello ${vendorName}, my name is ${buyerName}${phoneStr}.\n\nI want to purchase ${qty} INNOVATIONX activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;
     }
 
     function copyOrderMessage() {
@@ -1622,16 +1625,25 @@ if (file_exists($telegramConfigFile)) {
         }
 
         const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
-        const vendorPhone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
+        let vendorPhone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
+        if (vendorPhone.startsWith('0')) {
+            vendorPhone = '234' + vendorPhone.slice(1);
+        } else if (!vendorPhone.startsWith('234') && vendorPhone.length === 10) {
+            vendorPhone = '234' + vendorPhone;
+        }
+
         const vendorTelegram = document.getElementById('orderVendorTelegram').value || '';
-        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '1') || 1;
-        const payment = document.getElementById('orderPaymentMethod')?.value || 'Bank Transfer';
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
+        const payment = document.getElementById('orderPaymentMethod')?.value || 'OPay';
         const text = getOrderFormattedMessage();
+
+        const waUrl = 'https://api.whatsapp.com/send?phone=' + vendorPhone + '&text=' + encodeURIComponent(text);
+        window.open(waUrl, '_blank');
 
         const btnSubmit = document.getElementById('btnSubmitVendorDirect');
         if (btnSubmit) {
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = 'Sending Direct Request...';
+            btnSubmit.innerHTML = 'Opening WhatsApp...';
         }
 
         fetch('/api/users.php?action=send_vendor_order', {
@@ -1650,14 +1662,14 @@ if (file_exists($telegramConfigFile)) {
         })
         .then(res => res.json())
         .then(data => {
-            showVendorOrderSuccess(vendorName, data.reference || ('VOD-' + Math.floor(Math.random()*900000+100000)), text);
+            showVendorOrderSuccess(vendorName, data.reference || ('VOD-' + Math.floor(Math.random()*900000+100000)), text, waUrl);
         })
         .catch(err => {
-            showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text);
+            showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text, waUrl);
         });
     }
 
-    function showVendorOrderSuccess(vendorName, ref, messageText) {
+    function showVendorOrderSuccess(vendorName, ref, messageText, waUrl) {
         const form = document.getElementById('vendorOrderForm');
         if (!form) return;
         form.innerHTML = `
@@ -1666,23 +1678,29 @@ if (file_exists($telegramConfigFile)) {
                     ✓
                 </div>
                 <div>
-                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(0,212,240,0.14);border:1px solid rgba(0,212,240,0.35);color:#00D4F0;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Message Dispatched Directly</span>
-                    <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">Order Message Sent</h3>
-                    <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">Your order request message has been sent directly to <strong>${escHtml(vendorName)}</strong> without leaving the page.</p>
+                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(0,212,240,0.14);border:1px solid rgba(0,212,240,0.35);color:#00D4F0;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">WhatsApp Dispatched</span>
+                    <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">Connecting to ${escHtml(vendorName)}</h3>
+                    <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">WhatsApp should open automatically with your pre-filled request. If not, click below.</p>
                 </div>
-                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(0,212,240,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(0,212,240,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;">
                     <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--v-text-muted);">
-                        <span>Dispatched Request</span>
+                        <span>Pre-filled Request</span>
                         <span style="font-family:monospace;background:rgba(56,189,248,0.15);color:#38BDF8;padding:2px 6px;border-radius:5px;font-weight:700;">REF: ${escHtml(ref)}</span>
                     </div>
                     <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #00D4F0;">${escHtml(messageText)}</div>
                 </div>
-                <div style="display:flex;gap:10px;width:100%;margin-top:4px;">
-                    <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>
-                    <button type="button" class="btn-action-portal" onclick="closeVendorContactModal()" style="flex:1;justify-content:center;">Done</button>
+                <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:4px;">
+                    <a href="${waUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;font-size:13px;">
+                        <span>Open WhatsApp Chat ↗</span>
+                    </a>
+                    <div style="display:flex;gap:8px;width:100%;">
+                        <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>
+                        <button type="button" class="btn-action-portal" onclick="closeVendorContactModal()" style="flex:1;justify-content:center;">Done</button>
+                    </div>
                 </div>
             </div>
         `;
+
     }
 
     function submitVendorOrderTelegram() {
