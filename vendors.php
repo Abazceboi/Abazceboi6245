@@ -1452,10 +1452,15 @@ if (file_exists($telegramConfigFile)) {
                             <?php endif; ?>
 
                             <?php if (!empty($cleanTg)): ?>
-                            <a href="<?= htmlspecialchars($cleanTg) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg">
+                            <button type="button" class="btn-vendor-tg" onclick="openVendorContactModal(<?= htmlspecialchars(json_encode([
+                                'name' => $vName,
+                                'phone' => $vPhone,
+                                'telegram' => $cleanTg ?: $vTg,
+                                'location' => $vLocation
+                            ])) ?>, 'telegram')">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                                 <span>Telegram</span>
-                            </a>
+                            </button>
                             <?php else: ?>
                             <span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>
                             <?php endif; ?>
@@ -1531,13 +1536,19 @@ if (file_exists($telegramConfigFile)) {
                 <strong id="orderTotalPrice" style="font-size:1.05rem;color:var(--v-color,#00D4F0);font-weight:800;">₦10,000</strong>
             </div>
 
-            <div class="modal-actions">
-                <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="flex:1;min-width:110px;justify-content:center;">
-                    Copy Details
-                </button>
-                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;border:none;display:inline-flex;align-items:center;gap:6px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="justify-content:center;padding:12px 10px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;border:none;display:inline-flex;align-items:center;gap:6px;font-size:13px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Send on WhatsApp ↗</span>
+                    <span>WhatsApp ↗</span>
+                </button>
+                <button type="button" id="btnSubmitVendorTg" onclick="submitVendorOrderTelegram()" style="justify-content:center;padding:12px 10px;border-radius:10px;cursor:pointer;background:#0284C7;color:#FFFFFF;font-weight:800;border:none;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-family:var(--font-display);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.95-1.28 4.92-2.13 5.92-2.55 2.82-1.18 3.41-1.38 3.79-1.39.08 0 .28.02.4.12.1.08.13.2.14.28-.01.06-.01.18-.02.29z"/></svg>
+                    <span>Telegram ↗</span>
+                </button>
+            </div>
+            <div style="margin-top:6px;">
+                <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="width:100%;justify-content:center;padding:10px;">
+                    Copy Details
                 </button>
             </div>
         </form>
@@ -1565,7 +1576,7 @@ if (file_exists($telegramConfigFile)) {
         });
     }
 
-    function openVendorContactModal(vendor) {
+    function openVendorContactModal(vendor, preferredChannel) {
         if (!vendor) return;
         const form = document.getElementById('vendorOrderForm');
         if (originalVendorFormHtml && form) {
@@ -1579,6 +1590,12 @@ if (file_exists($telegramConfigFile)) {
         document.getElementById('modalVendorTitle').textContent = `Order from ${vendor.name || 'Vendor'}`;
         document.getElementById('modalVendorSub').textContent = `Coverage: ${vendor.location || 'National'}`;
         updateOrderPriceSummary();
+
+        if (preferredChannel === 'telegram') {
+            const tgBtn = document.getElementById('btnSubmitVendorTg');
+            if (tgBtn) tgBtn.style.boxShadow = '0 0 14px rgba(2,132,199,0.7)';
+        }
+
         document.getElementById('vendorContactModal').classList.add('open');
     }
 
@@ -1657,50 +1674,17 @@ if (file_exists($telegramConfigFile)) {
                 vendor_telegram: vendorTelegram,
                 quantity: qty,
                 payment_method: payment,
+                channel: 'whatsapp',
                 formatted_message: text
             })
         })
         .then(res => res.json())
         .then(data => {
-            showVendorOrderSuccess(vendorName, data.reference || ('VOD-' + Math.floor(Math.random()*900000+100000)), text, waUrl);
+            showVendorOrderSuccess(vendorName, data.reference || ('VOD-' + Math.floor(Math.random()*900000+100000)), text, waUrl, 'whatsapp');
         })
         .catch(err => {
-            showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text, waUrl);
+            showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text, waUrl, 'whatsapp');
         });
-    }
-
-    function showVendorOrderSuccess(vendorName, ref, messageText, waUrl) {
-        const form = document.getElementById('vendorOrderForm');
-        if (!form) return;
-        form.innerHTML = `
-            <div style="text-align:center;padding:15px 10px;display:flex;flex-direction:column;align-items:center;gap:12px;">
-                <div style="width:54px;height:54px;border-radius:50%;background:rgba(0,212,240,0.15);border:1px solid rgba(0,212,240,0.4);display:flex;align-items:center;justify-content:center;color:#00D4F0;font-size:26px;">
-                    ✓
-                </div>
-                <div>
-                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(0,212,240,0.14);border:1px solid rgba(0,212,240,0.35);color:#00D4F0;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">WhatsApp Dispatched</span>
-                    <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">Connecting to ${escHtml(vendorName)}</h3>
-                    <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">WhatsApp should open automatically with your pre-filled request. If not, click below.</p>
-                </div>
-                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(0,212,240,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--v-text-muted);">
-                        <span>Pre-filled Request</span>
-                        <span style="font-family:monospace;background:rgba(56,189,248,0.15);color:#38BDF8;padding:2px 6px;border-radius:5px;font-weight:700;">REF: ${escHtml(ref)}</span>
-                    </div>
-                    <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #00D4F0;">${escHtml(messageText)}</div>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:4px;">
-                    <a href="${waUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;font-size:13px;">
-                        <span>Open WhatsApp Chat ↗</span>
-                    </a>
-                    <div style="display:flex;gap:8px;width:100%;">
-                        <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>
-                        <button type="button" class="btn-action-portal" onclick="closeVendorContactModal()" style="flex:1;justify-content:center;">Done</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
     }
 
     function submitVendorOrderTelegram() {
@@ -1711,37 +1695,90 @@ if (file_exists($telegramConfigFile)) {
             return;
         }
 
+        const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
+        const vendorPhone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
         const rawTg = (document.getElementById('orderVendorTelegram').value || '').trim();
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
+        const payment = document.getElementById('orderPaymentMethod')?.value || 'OPay';
         const text = getOrderFormattedMessage();
 
         try {
             navigator.clipboard.writeText(text);
         } catch(err) {}
 
+        const cleanUser = rawTg.replace(/^https?:\/\/t\.me\//i, '').replace(/^t\.me\//i, '').replace(/^@/, '').trim();
         let tgUrl = '';
-        if (rawTg) {
-            if (rawTg.startsWith('http')) {
-                tgUrl = rawTg;
-            } else {
-                const cleanUser = rawTg.replace(/^@/, '').trim();
-                if (cleanUser) {
-                    tgUrl = 'https://t.me/' + cleanUser;
-                }
-            }
+        if (cleanUser) {
+            tgUrl = 'https://t.me/' + cleanUser;
+        } else if (rawTg.startsWith('http')) {
+            tgUrl = rawTg;
+        } else {
+            tgUrl = '<?= htmlspecialchars($telegramConfig['support_link'] ?? 'https://t.me/innovationx_support') ?>';
         }
 
-        if (!tgUrl) {
-            const fallbackTg = '<?= htmlspecialchars($telegramConfig['support_link'] ?? 'https://t.me/innovationx_support') ?>';
-            tgUrl = fallbackTg;
-        }
+        const tgFullUrl = tgUrl + (tgUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(text);
+        window.open(tgFullUrl, '_blank');
 
-        // Append text if standard t.me user link
-        if (tgUrl && !tgUrl.includes('?')) {
-            tgUrl += '?text=' + encodeURIComponent(text);
-        }
+        fetch('/api/users.php?action=send_vendor_order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buyer_name: buyerName,
+                buyer_phone: buyerPhone,
+                vendor_name: vendorName,
+                vendor_phone: vendorPhone,
+                vendor_telegram: rawTg,
+                quantity: qty,
+                payment_method: payment,
+                channel: 'telegram',
+                formatted_message: text
+            })
+        }).catch(err => {});
 
-        window.open(tgUrl, '_blank');
-        closeVendorContactModal();
+        showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text, tgFullUrl, 'telegram');
+    }
+
+    function showVendorOrderSuccess(vendorName, ref, messageText, actionUrl, channel) {
+        const form = document.getElementById('vendorOrderForm');
+        if (!form) return;
+
+        const isTg = (channel === 'telegram');
+        const pillText = isTg ? 'Telegram Dispatched' : 'WhatsApp Dispatched';
+        const titleText = isTg ? `Connecting to ${escHtml(vendorName)} on Telegram` : `Connecting to ${escHtml(vendorName)}`;
+        const descText = isTg 
+            ? 'Telegram should open automatically with your pre-filled request. Message has also been copied to your clipboard!'
+            : 'WhatsApp should open automatically with your pre-filled request. If not, click below.';
+        const btnLabel = isTg ? 'Open Telegram Chat ↗' : 'Open WhatsApp Chat ↗';
+        const btnBg = isTg ? 'background:#0284C7;color:#FFFFFF;' : 'background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;';
+
+        form.innerHTML = `
+            <div style="text-align:center;padding:15px 10px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+                <div style="width:54px;height:54px;border-radius:50%;background:rgba(0,212,240,0.15);border:1px solid rgba(0,212,240,0.4);display:flex;align-items:center;justify-content:center;color:#00D4F0;font-size:26px;">
+                    ✓
+                </div>
+                <div>
+                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(0,212,240,0.14);border:1px solid rgba(0,212,240,0.35);color:#00D4F0;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">${pillText}</span>
+                    <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">${titleText}</h3>
+                    <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">${descText}</p>
+                </div>
+                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(0,212,240,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--v-text-muted);">
+                        <span>Pre-filled Request</span>
+                        <span style="font-family:monospace;background:rgba(56,189,248,0.15);color:#38BDF8;padding:2px 6px;border-radius:5px;font-weight:700;">REF: ${escHtml(ref)}</span>
+                    </div>
+                    <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #00D4F0;">${escHtml(messageText)}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:4px;">
+                    <a href="${actionUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;${btnBg}font-weight:800;font-size:13px;">
+                        <span>${btnLabel}</span>
+                    </a>
+                    <div style="display:flex;gap:8px;width:100%;">
+                        <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>
+                        <button type="button" class="btn-action-portal" onclick="closeVendorContactModal()" style="flex:1;justify-content:center;">Done</button>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     // Dynamic live sync to keep vendor cards updated in real time upon promotion or demotion

@@ -889,7 +889,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
 
             <div class="distributor-contact-list">
                 <?php if ($dPhone): ?>
-                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>)">
+                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'whatsapp')">
                     <div class="contact-icon-box whatsapp">
                         <i class="ri-whatsapp-fill"></i>
                     </div>
@@ -902,22 +902,33 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 <?php endif; ?>
 
                 <?php if ($dTel): ?>
-                <div class="contact-row">
+                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'telegram')">
                     <div class="contact-icon-box telegram">
                         <i class="ri-telegram-fill"></i>
                     </div>
                     <div class="contact-info">
-                        <span class="contact-label">TELEGRAM</span>
+                        <span class="contact-label">TELEGRAM ORDER</span>
                         <span class="contact-val"><?= $dTel ?></span>
                     </div>
-                </div>
+                    <span class="contact-action-badge"><i class="ri-arrow-right-up-line"></i> Contact</span>
+                </button>
                 <?php endif; ?>
             </div>
 
-            <button type="button" class="btn-select-distributor" id="btn-select-<?= $idx ?>" onclick="openDistributorOrderModal(<?= $dDataJson ?>)">
-                <i class="ri-whatsapp-line"></i>
-                <span>Order Code via WhatsApp</span>
-            </button>
+            <div style="display:grid;grid-template-columns:<?= ($dPhone && $dTel) ? '1fr 1fr' : '1fr' ?>;gap:8px;">
+                <?php if ($dPhone): ?>
+                <button type="button" class="btn-select-distributor" id="btn-select-wa-<?= $idx ?>" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'whatsapp')" style="justify-content:center;">
+                    <i class="ri-whatsapp-line"></i>
+                    <span>Order via WhatsApp</span>
+                </button>
+                <?php endif; ?>
+                <?php if ($dTel): ?>
+                <button type="button" class="btn-select-distributor" id="btn-select-tg-<?= $idx ?>" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'telegram')" style="background:rgba(2,132,199,0.18);border:1px solid rgba(2,132,199,0.45);color:#38BDF8;justify-content:center;">
+                    <i class="ri-telegram-fill"></i>
+                    <span>Order via Telegram</span>
+                </button>
+                <?php endif; ?>
+            </div>
         </article>
         <?php endforeach; ?>
 
@@ -930,7 +941,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         </div>
     </div>
 
-    <!-- Order Activation Code via WhatsApp Modal -->
+    <!-- Order Activation Code Modal -->
     <div class="modal-backdrop" id="modalDistributorOrder">
         <div class="modal-card" style="max-width:440px;text-align:left;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;">
@@ -942,7 +953,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                         Order Activation Code
                     </h3>
                     <p id="modalDistributorSub" style="font-size:12.5px;color:var(--text-muted);margin:3px 0 0;">
-                        Direct WhatsApp order to distributor
+                        Direct order to verified distributor
                     </p>
                 </div>
                 <button type="button" onclick="closeDistributorOrderModal()" style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:var(--text-muted);width:32px;height:32px;border-radius:8px;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;">&times;</button>
@@ -992,12 +1003,18 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                         <strong id="distOrderTotalPrice" style="font-size:1.15rem;font-weight:800;color:var(--color-cyan);">₦10,000</strong>
                     </div>
 
-                    <div style="display:flex;gap:10px;margin-top:4px;">
-                        <button type="button" class="btn-modal-copy" onclick="copyDistributorOrderMessage()">
-                            <i class="ri-file-copy-line"></i> <span>Copy Details</span>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+                        <button type="submit" id="btnSubmitDistWhatsApp" class="btn-modal-wa-submit" style="padding:12px 10px;font-size:13px;justify-content:center;">
+                            <i class="ri-whatsapp-line"></i> <span>WhatsApp ↗</span>
                         </button>
-                        <button type="submit" id="btnSubmitDistWhatsApp" class="btn-modal-wa-submit">
-                            <i class="ri-whatsapp-line"></i> <span>Send on WhatsApp ↗</span>
+                        <button type="button" id="btnSubmitDistTelegram" onclick="submitDistributorTelegramOrder()" style="background:#0284C7;color:#FFFFFF;border:none;border-radius:10px;padding:12px 10px;font-family:var(--font-display);font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
+                            <i class="ri-telegram-fill"></i> <span>Telegram ↗</span>
+                        </button>
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        <button type="button" class="btn-modal-copy" onclick="copyDistributorOrderMessage()" style="width:100%;justify-content:center;padding:10px;">
+                            <i class="ri-file-copy-line"></i> <span>Copy Order Details</span>
                         </button>
                     </div>
 
@@ -1017,7 +1034,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
     var currentUserPhone = '<?= addslashes($userPhone) ?>';
     var originalDistributorFormHtml = '';
 
-    function openDistributorOrderModal(dist) {
+    function openDistributorOrderModal(dist, preferredChannel) {
         if (!dist) return;
         var modal = document.getElementById('modalDistributorOrder');
         var container = document.getElementById('distributorModalContent');
@@ -1042,9 +1059,21 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             phoneInput.value = currentUserPhone || '';
         }
 
+        var contactSubtitle = 'Verified Distributor';
+        if (dist.phone) contactSubtitle = 'Phone: +' + dist.phone;
+        if (dist.telegram) contactSubtitle += (dist.phone ? ' • ' : '') + 'Telegram: ' + dist.telegram;
+
         document.getElementById('modalDistributorTitle').textContent = 'Order from ' + (dist.name || 'Distributor');
-        document.getElementById('modalDistributorSub').textContent = 'Contact: +' + (dist.phone || '');
+        document.getElementById('modalDistributorSub').textContent = contactSubtitle;
         updateDistributorPriceSummary();
+
+        // Highlight preferred channel button if specified
+        if (preferredChannel === 'telegram') {
+            var tgBtn = document.getElementById('btnSubmitDistTelegram');
+            if (tgBtn) {
+                tgBtn.style.boxShadow = '0 0 14px rgba(2,132,199,0.7)';
+            }
+        }
 
         modal.classList.add('open');
     }
@@ -1124,6 +1153,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 name: vendorName,
                 phone: cleanPhone,
                 telegram: vendorTelegram,
+                channel: 'whatsapp',
                 selected_at: new Date().toISOString()
             }));
         } catch(err) {}
@@ -1142,21 +1172,113 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 distributor_telegram: vendorTelegram,
                 quantity: qty,
                 payment_method: payment,
+                channel: 'whatsapp',
                 message: messageText
             })
         }).catch(function() {});
 
         // Show dispatched confirmation screen in modal
-        showDistributorOrderSuccess(vendorName, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), messageText, waUrl);
+        showDistributorOrderSuccess(vendorName, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), messageText, waUrl, 'whatsapp');
     }
 
-    function showDistributorOrderSuccess(vendorName, ref, messageText, waUrl) {
+    function submitDistributorTelegramOrder() {
+        var buyerName = (document.getElementById('distOrderBuyerName').value || '').trim();
+        var buyerPhone = (document.getElementById('distOrderBuyerPhone').value || '').trim();
+
+        if (!buyerName || !buyerPhone) {
+            alert('Please provide your name and phone number.');
+            return;
+        }
+
+        var vendorId = document.getElementById('distOrderVendorId').value || '';
+        var vendorName = document.getElementById('distOrderVendorName').value || 'Distributor';
+        var rawPhone = (document.getElementById('distOrderVendorPhone').value || '').replace(/[^0-9]/g, '');
+        var rawTg = (document.getElementById('distOrderVendorTelegram').value || '').trim();
+        var qty = parseInt(document.getElementById('distOrderCodeQty').value || '10') || 10;
+        var payment = document.getElementById('distOrderPaymentMethod').value || 'OPay';
+
+        var cleanPhone = rawPhone;
+        if (cleanPhone.startsWith('0')) {
+            cleanPhone = '234' + cleanPhone.slice(1);
+        } else if (!cleanPhone.startsWith('234') && cleanPhone.length === 10) {
+            cleanPhone = '234' + cleanPhone;
+        }
+
+        var messageText = getDistributorFormattedMessage();
+
+        // Copy text immediately to clipboard
+        try {
+            navigator.clipboard.writeText(messageText);
+        } catch(e) {}
+
+        // Resolve Telegram URL
+        var tgUser = rawTg.replace(/^https?:\/\/t\.me\//i, '').replace(/^t\.me\//i, '').replace(/^@/, '').trim();
+        var tgUrl = '';
+        if (tgUser) {
+            tgUrl = 'https://t.me/' + tgUser;
+        } else if (rawTg.startsWith('http')) {
+            tgUrl = rawTg;
+        } else {
+            tgUrl = 'https://t.me/innovationx_official';
+        }
+
+        var tgFullUrl = tgUrl + (tgUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(messageText);
+
+        // Open Telegram immediately
+        window.open(tgFullUrl, '_blank');
+
+        // Store distributor preference locally
+        try {
+            localStorage.setItem('ix_chosen_distributor', JSON.stringify({
+                id: vendorId,
+                name: vendorName,
+                phone: cleanPhone,
+                telegram: rawTg,
+                channel: 'telegram',
+                selected_at: new Date().toISOString()
+            }));
+        } catch(err) {}
+
+        // Record on server in background
+        fetch('/api/users.php?action=send_distributor_message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUsername,
+                buyer_name: buyerName,
+                buyer_phone: buyerPhone,
+                distributor_id: vendorId,
+                distributor_name: vendorName,
+                distributor_phone: cleanPhone,
+                distributor_telegram: rawTg,
+                quantity: qty,
+                payment_method: payment,
+                channel: 'telegram',
+                message: messageText
+            })
+        }).catch(function() {});
+
+        // Show dispatched confirmation screen in modal
+        showDistributorOrderSuccess(vendorName, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), messageText, tgFullUrl, 'telegram');
+    }
+
+    function showDistributorOrderSuccess(vendorName, ref, messageText, actionUrl, channel) {
         var container = document.getElementById('distributorModalContent');
         if (!container) return;
 
         function esc(str) {
             return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
+
+        var isTg = (channel === 'telegram');
+        var pillIcon = isTg ? 'ri-telegram-fill' : 'ri-whatsapp-fill';
+        var pillText = isTg ? 'TELEGRAM DISPATCHED' : 'WHATSAPP DISPATCHED';
+        var btnIcon = isTg ? 'ri-telegram-fill' : 'ri-whatsapp-fill';
+        var btnLabel = isTg ? 'Open Telegram Chat ↗' : 'Open WhatsApp Chat ↗';
+        var btnBg = isTg ? 'background:#0284C7;color:#FFFFFF;' : 'background:linear-gradient(135deg, #0284C7, #00D4F0);color:#060F1E;';
+        var descText = isTg 
+            ? 'Telegram should open automatically with your pre-filled request. Message has also been copied to your clipboard!'
+            : 'WhatsApp should open automatically with your pre-filled request. If not, tap the button below.';
 
         container.innerHTML = 
             '<div style="text-align:center;padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:12px;">' +
@@ -1165,10 +1287,10 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 '</div>' +
                 '<div>' +
                     '<div class="modal-status-pill">' +
-                        '<i class="ri-whatsapp-fill"></i> WHATSAPP DISPATCHED' +
+                        '<i class="' + pillIcon + '"></i> ' + pillText +
                     '</div>' +
-                    '<h3 style="font-size:1.2rem;font-weight:700;margin:8px 0 4px;font-family:var(--font-display);color:var(--text-main);">Connecting to ' + esc(vendorName) + '</h3>' +
-                    '<p style="font-size:12.5px;color:var(--text-muted);margin:0;line-height:1.4;">WhatsApp should open automatically with your pre-filled request. If not, tap the button below.</p>' +
+                    '<h3 style="font-size:1.2rem;font-weight:700;margin:8px 0 4px;font-family:var(--font-display);color:var(--text-main);">Connecting to ' + esc(vendorName) + (isTg ? ' on Telegram' : '') + '</h3>' +
+                    '<p style="font-size:12.5px;color:var(--text-muted);margin:0;line-height:1.4;">' + descText + '</p>' +
                 '</div>' +
                 '<div style="width:100%;text-align:left;background:rgba(0,0,0,0.3);border:1px solid var(--card-border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;">' +
                     '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);">' +
@@ -1178,8 +1300,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                     '<div style="font-size:12px;line-height:1.45;color:var(--text-main);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;border-left:3px solid var(--color-cyan);">' + esc(messageText) + '</div>' +
                 '</div>' +
                 '<div style="display:flex;flex-direction:column;gap:9px;width:100%;margin-top:4px;">' +
-                    '<a href="' + waUrl + '" target="_blank" class="btn-modal-wa-submit" style="text-decoration:none;width:100%;box-sizing:border-box;">' +
-                        '<i class="ri-whatsapp-fill"></i> <span>Open WhatsApp Chat ↗</span>' +
+                    '<a href="' + actionUrl + '" target="_blank" class="btn-modal-wa-submit" style="text-decoration:none;width:100%;box-sizing:border-box;' + btnBg + '">' +
+                        '<i class="' + btnIcon + '"></i> <span>' + btnLabel + '</span>' +
                     '</a>' +
                     '<div style="display:flex;gap:8px;width:100%;">' +
                         '<a href="dashboard.php?activate=1" class="btn-modal-enter-code" style="flex:1;text-align:center;">' +
