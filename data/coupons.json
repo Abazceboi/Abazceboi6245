@@ -113,12 +113,13 @@
     "wholesale_price": 800,
     "wholesalePrice": 800,
     "amount": 1000,
-    "is_used": false,
-    "isUsed": false,
-    "used_by": null,
-    "usedBy": null,
-    "used_at": null,
-    "created_at": "2026-10-03T20:25:55.015Z"
+    "is_used": true,
+    "isUsed": true,
+    "used_by": "Creativevic",
+    "usedBy": "Creativevic",
+    "used_at": "2026-10-17T14:29:59.121Z",
+    "created_at": "2026-10-03T20:25:55.015Z",
+    "status": "used"
   },
   {
     "code": "INX-UPL-49BD-1AEA",

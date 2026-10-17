@@ -3305,6 +3305,8 @@ function switchAdminTab(tab, btn) {
   }
   closeAdminSidebar();
 }
+window.switchAdminTab = switchAdminTab;
+window.switchTab = switchAdminTab;
 
 function restoreAdminActiveTab() {
   const hash = window.location.hash.replace('#', '').trim();
@@ -7013,8 +7015,55 @@ async function loadAdminOverview() {
 
     renderProfitEconomicsCard();
   } catch(e) {}
+
+  // Update active surveys counter
+  try {
+    const r = await fetch('/api/surveys.php?action=get_surveys');
+    const d = await r.json();
+    const surveys = d.surveys || [];
+    const activeSurveys = surveys.filter(s => s.status !== 'inactive');
+    const el = document.getElementById('kpiSurveys');
+    if (el) el.textContent = activeSurveys.length;
+  } catch(e) {}
+
+  // Update active tasks counter
+  try {
+    const r = await fetch('/api/tasks.php?action=get_tasks');
+    const d = await r.json();
+    const tasks = d.tasks || [];
+    const activeTasks = tasks.filter(t => t.status !== 'inactive');
+    const el = document.getElementById('kpiTasks');
+    if (el) el.textContent = activeTasks.length;
+  } catch(e) {}
+
+  // Update ecosystem stats
+  try {
+    const r = await fetch('/api/ecosystem.php?action=get_items');
+    const d = await r.json();
+    const items = d.items || [];
+    const ecoCountEl = document.getElementById('kpiOverviewEcoListings');
+    const ecoViewsEl = document.getElementById('kpiOverviewEcoViews');
+    const ecoLikesEl = document.getElementById('kpiOverviewEcoLikes');
+    if (ecoCountEl) ecoCountEl.textContent = items.length;
+    const totalViews = items.reduce((sum, it) => sum + (parseInt(it.views) || 0), 0);
+    const totalLikes = items.reduce((sum, it) => sum + (Array.isArray(it.likes) ? it.likes.length : (parseInt(it.likes_count) || 0)), 0);
+    if (ecoViewsEl) ecoViewsEl.textContent = totalViews.toLocaleString();
+    if (ecoLikesEl) ecoLikesEl.textContent = totalLikes.toLocaleString();
+  } catch(e) {}
+
+  // Update coupon stats
+  try {
+    const r = await fetch('/api/coupons.php?action=get_pins');
+    const d = await r.json();
+    const pins = d.pins || d.coupons || [];
+    const cpnEl = document.getElementById('kpiOverviewCoupons');
+    if (cpnEl) cpnEl.textContent = pins.length;
+  } catch(e) {}
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// NET PROFIT & ECONOMICS HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
 let currentProfitViewMode = 'all';
 
 function switchProfitMode(mode) {
@@ -7105,51 +7154,6 @@ function calculateProfitSimulation() {
   if (simDeduct) simDeduct.textContent = '-₦' + (count * deductPerUser).toLocaleString();
   const simNet = document.getElementById('simNetProfit');
   if (simNet) simNet.textContent = '₦' + (count * netPerUser).toLocaleString();
-}
-
-  // Update active surveys counter
-  try {
-    const r = await fetch('/api/surveys.php?action=get_surveys');
-    const d = await r.json();
-    const surveys = d.surveys || [];
-    const activeSurveys = surveys.filter(s => s.status !== 'inactive');
-    const el = document.getElementById('kpiSurveys');
-    if (el) el.textContent = activeSurveys.length;
-  } catch(e) {}
-
-  // Update active tasks counter
-  try {
-    const r = await fetch('/api/tasks.php?action=get_tasks');
-    const d = await r.json();
-    const tasks = d.tasks || [];
-    const activeTasks = tasks.filter(t => t.status !== 'inactive');
-    const el = document.getElementById('kpiTasks');
-    if (el) el.textContent = activeTasks.length;
-  } catch(e) {}
-
-  // Update ecosystem stats
-  try {
-    const r = await fetch('/api/ecosystem.php?action=get_items');
-    const d = await r.json();
-    const items = d.items || [];
-    const ecoCountEl = document.getElementById('kpiOverviewEcoListings');
-    const ecoViewsEl = document.getElementById('kpiOverviewEcoViews');
-    const ecoLikesEl = document.getElementById('kpiOverviewEcoLikes');
-    if (ecoCountEl) ecoCountEl.textContent = items.length;
-    const totalViews = items.reduce((sum, it) => sum + (parseInt(it.views) || 0), 0);
-    const totalLikes = items.reduce((sum, it) => sum + (Array.isArray(it.likes) ? it.likes.length : (parseInt(it.likes_count) || 0)), 0);
-    if (ecoViewsEl) ecoViewsEl.textContent = totalViews.toLocaleString();
-    if (ecoLikesEl) ecoLikesEl.textContent = totalLikes.toLocaleString();
-  } catch(e) {}
-
-  // Update coupon stats
-  try {
-    const r = await fetch('/api/coupons.php?action=get_pins');
-    const d = await r.json();
-    const pins = d.pins || d.coupons || [];
-    const cpnEl = document.getElementById('kpiOverviewCoupons');
-    if (cpnEl) cpnEl.textContent = pins.length;
-  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
