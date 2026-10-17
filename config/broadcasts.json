@@ -24,7 +24,7 @@
     "enabled": true,
     "title": "Account Activation Required",
     "message": "Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.",
-    "cta_label": "Choose a Distributor",
+    "cta_label": "Contact Verified Vendors",
     "cta_url": "distributors.php"
   },
   "activation_popup": {

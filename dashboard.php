@@ -237,12 +237,12 @@ $bcastConfig = readStorageJson('config/broadcasts.json', []);
 $actSettings = $bcastConfig['activation_lock'] ?? [
     'title' => 'Account Activation Required',
     'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
-    'cta_label' => 'Choose a Distributor',
+    'cta_label' => 'Contact Verified Vendors',
     'cta_url' => 'distributors.php'
 ];
 $actTitle = !empty($actSettings['title']) ? $actSettings['title'] : 'Account Activation Required';
 $actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
-$actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Choose a Distributor';
+$actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Contact Verified Vendors';
 $actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'distributors.php';
 
 // Dynamic one-time new user activation pop-up configured from Admin HQ

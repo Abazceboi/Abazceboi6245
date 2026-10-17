@@ -777,8 +777,11 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
                         document.cookie = "ix_account_activated=1; Path=/; Max-Age=31536000; SameSite=Lax";
                     }
                 } catch(e) {}
-                
-                window.location.replace('distributors.php?new_reg=1');
+                if (data.is_activated) {
+                    window.location.replace('dashboard.php');
+                } else {
+                    window.location.replace('dashboard.php?activate=1');
+                }
             } else {
                 alert(data.message || 'Registration failed.');
                 btn.disabled = false;
