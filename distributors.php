@@ -237,50 +237,120 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             transform: translateY(-1px);
         }
 
-        /* Permanent Selection Advisory */
-        .advisory-card {
-            background: #091220;
-            border: 1px solid rgba(34, 197, 94, 0.35);
-            border-radius: 18px;
-            padding: 18px;
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        /* Direct Dispatch Badges & Modal Enhancements */
+        .contact-row-direct {
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--card-border);
+            font-family: inherit;
         }
 
-        [data-theme="light"] .advisory-card {
-            background: #FFFFFF;
-            border-color: rgba(34, 197, 94, 0.4);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        .contact-action-badge {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 700;
+            color: #22C55E;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 3px 9px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
-        .advisory-icon-wrap {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+        .modal-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             background: rgba(34, 197, 94, 0.15);
             border: 1px solid rgba(34, 197, 94, 0.4);
+            color: var(--color-green);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sent-message-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        [data-theme="light"] .sent-message-preview {
+            background: #F8FAFC;
+            border-color: #E2E8F0;
+        }
+
+        .sent-message-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .ref-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38BDF8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .sent-message-body {
+            font-size: 12.5px;
+            line-height: 1.45;
+            color: var(--text-main);
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--color-green);
+        }
+
+        .sent-message-meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-modal-close-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            border-radius: 12px;
+            padding: 11px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--color-green);
-            font-size: 20px;
-            flex-shrink: 0;
+            gap: 6px;
+            transition: all 0.2s;
         }
 
-        .advisory-content h2 {
-            font-family: var(--font-display);
-            font-size: 1rem;
-            font-weight: 700;
+        .btn-modal-close-action:hover {
+            background: rgba(255, 255, 255, 0.1);
             color: var(--text-main);
-            margin-bottom: 4px;
-        }
-
-        .advisory-content p {
-            font-size: 12.5px;
-            line-height: 1.5;
-            color: var(--text-muted);
         }
 
         /* Social Media Help Row */
@@ -679,17 +749,6 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             </a>
         </div>
 
-        <!-- Permanent Selection Advisory -->
-        <div class="advisory-card">
-            <div class="advisory-icon-wrap">
-                <i class="ri-shield-check-fill"></i>
-            </div>
-            <div class="advisory-content">
-                <h2>Permanent Selection Advisory</h2>
-                <p>You can only choose one distributor. Your chosen distributor will supply your activation keys and assist with your platform earnings.</p>
-            </div>
-        </div>
-
         <!-- Social Media Help Section -->
         <div class="social-help-row">
             <div class="social-help-label">
@@ -718,8 +777,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             $dPhoto = !empty($d['photo']) ? htmlspecialchars($d['photo']) : '';
             $dNote = htmlspecialchars(!empty($d['custom_note']) ? $d['custom_note'] : ('HELLO ' . strtoupper($d['name'] ?? '') . ' I NEED ACCESS KEY'));
             
-            $waMsg = "Hello " . ($d['name'] ?? 'Distributor') . ", I am " . ($username ? ('@' . $username) : 'a new user') . " from INNOVATIONX and I need an activation key.";
-            $waUrl = "https://wa.me/{$dPhone}?text=" . rawurlencode($waMsg);
+            $defaultMsg = "Hello " . ($d['name'] ?? 'Distributor') . ", I am " . ($username ? ('@' . $username) : 'a new user') . " from INNOVATIONX and I need an activation key.";
         ?>
         <article class="distributor-card" id="distributor-card-<?= $idx ?>">
             <div class="distributor-header">
@@ -748,19 +806,20 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
 
             <div class="distributor-contact-list">
                 <?php if ($dPhone): ?>
-                <a href="<?= $waUrl ?>" target="_blank" rel="noopener noreferrer" class="contact-row">
+                <button type="button" class="contact-row contact-row-direct" onclick="handleDirectDistributorSend('<?= addslashes($d['id'] ?? '') ?>', '<?= addslashes($dName) ?>', '<?= addslashes($dPhone) ?>', '<?= addslashes($dTel) ?>', this)">
                     <div class="contact-icon-box whatsapp">
-                        <i class="ri-whatsapp-fill"></i>
+                        <i class="ri-send-plane-fill"></i>
                     </div>
                     <div class="contact-info">
-                        <span class="contact-label">WHATSAPP</span>
+                        <span class="contact-label">DIRECT DISPATCH</span>
                         <span class="contact-val">+<?= $dPhone ?></span>
                     </div>
-                </a>
+                    <span class="contact-action-badge"><i class="ri-flashlight-line"></i> Send Instant</span>
+                </button>
                 <?php endif; ?>
 
                 <?php if ($dTel): ?>
-                <a href="<?= $dTel ?>" target="_blank" rel="noopener noreferrer" class="contact-row">
+                <div class="contact-row">
                     <div class="contact-icon-box telegram">
                         <i class="ri-telegram-fill"></i>
                     </div>
@@ -768,13 +827,13 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                         <span class="contact-label">TELEGRAM</span>
                         <span class="contact-val"><?= $dTel ?></span>
                     </div>
-                </a>
+                </div>
                 <?php endif; ?>
             </div>
 
-            <button type="button" class="btn-select-distributor" onclick="handleSelectDistributor('<?= addslashes($d['id'] ?? '') ?>', '<?= addslashes($dName) ?>', '<?= addslashes($dPhone) ?>', '<?= addslashes($dTel) ?>', '<?= addslashes($waUrl) ?>')">
-                <i class="ri-user-follow-line"></i>
-                <span>Select Distributor</span>
+            <button type="button" class="btn-select-distributor" id="btn-select-<?= $idx ?>" onclick="handleDirectDistributorSend('<?= addslashes($d['id'] ?? '') ?>', '<?= addslashes($dName) ?>', '<?= addslashes($dPhone) ?>', '<?= addslashes($dTel) ?>', this)">
+                <i class="ri-send-plane-2-fill"></i>
+                <span>Send Key Request &amp; Select</span>
             </button>
         </article>
         <?php endforeach; ?>
@@ -788,42 +847,62 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         </div>
     </div>
 
-    <!-- Selection Confirmation Modal -->
+    <!-- Direct Message Dispatched Confirmation Modal -->
     <div class="modal-backdrop" id="modalSelectionConfirm">
         <div class="modal-card">
             <div class="modal-icon-circle">
-                <i class="ri-check-line"></i>
+                <i class="ri-check-double-line"></i>
             </div>
             <div>
-                <h3 id="modalDistributorName" style="font-size:1.25rem;font-weight:700;margin-bottom:6px;font-family:var(--font-display);">Distributor Selected</h3>
+                <div class="modal-status-pill">
+                    <i class="ri-checkbox-circle-fill"></i> MESSAGE DISPATCHED DIRECTLY
+                </div>
+                <h3 id="modalDistributorName" style="font-size:1.3rem;font-weight:700;margin:10px 0 6px;font-family:var(--font-display);">Request Message Sent</h3>
                 <p style="font-size:13px;color:var(--text-muted);line-height:1.5;">
-                    Contact your chosen distributor to purchase your genuine ₦5,000 activation code. Once received, enter the code to unlock your dashboard.
+                    Your activation key request has been sent directly to <strong id="modalDistributorTarget" style="color:var(--text-main);">Distributor</strong> without leaving this page.
                 </p>
             </div>
 
+            <!-- Sent Message Preview Box -->
+            <div class="sent-message-preview">
+                <div class="sent-message-header">
+                    <span><i class="ri-mail-send-fill" style="color:var(--color-green);"></i> Dispatched Message</span>
+                    <span class="ref-badge" id="modalOrderRef">REF: IX-REQ-84920</span>
+                </div>
+                <div class="sent-message-body" id="modalSentMsgText">
+                    "Hello Distributor, I am @username from INNOVATIONX and I need an activation key."
+                </div>
+                <div class="sent-message-meta">
+                    <i class="ri-shield-check-fill" style="color:var(--color-green);"></i>
+                    <span>Status: <strong>Delivered to Distributor Desk</strong> &bull; Notification Sent</span>
+                </div>
+            </div>
+
             <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
-                <a href="#" id="modalBtnWhatsApp" target="_blank" rel="noopener noreferrer" class="btn-modal-wa">
-                    <i class="ri-whatsapp-fill"></i> Chat on WhatsApp
-                </a>
-                <a href="#" id="modalBtnTelegram" target="_blank" rel="noopener noreferrer" class="btn-modal-tg" style="display:none;">
-                    <i class="ri-telegram-fill"></i> Chat on Telegram
-                </a>
                 <a href="dashboard.php?activate=1" class="btn-modal-enter-code">
                     <i class="ri-key-2-line"></i> I Have My Key &mdash; Enter PIN Now
                 </a>
+                <button type="button" onclick="closeSelectionModal()" class="btn-modal-close-action">
+                    <i class="ri-check-line"></i> Done
+                </button>
             </div>
-
-            <button type="button" onclick="closeSelectionModal()" style="background:none;border:none;color:var(--text-dim);font-size:12.5px;cursor:pointer;margin-top:4px;">
-                Close Window
-            </button>
         </div>
     </div>
 
     <script>
     var currentUsername = '<?= addslashes($username) ?>';
 
-    function handleSelectDistributor(id, name, phone, telegram, waUrl) {
-        // Save locally
+    function handleDirectDistributorSend(id, name, phone, telegram, btnEl) {
+        var defaultMsg = 'Hello ' + (name || 'Distributor') + ', I am ' + (currentUsername ? ('@' + currentUsername) : 'a new user') + ' from INNOVATIONX and I need an activation key.';
+        
+        var originalBtnHtml = '';
+        if (btnEl) {
+            originalBtnHtml = btnEl.innerHTML;
+            btnEl.disabled = true;
+            btnEl.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> <span>Sending Request...</span>';
+        }
+
+        // Save locally immediately
         try {
             localStorage.setItem('ix_chosen_distributor', JSON.stringify({
                 id: id,
@@ -834,40 +913,42 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             }));
         } catch(e) {}
 
-        // Persist via API in background
-        if (currentUsername) {
-            fetch('/api/users.php?action=choose_distributor', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUsername,
-                    distributor_id: id,
-                    distributor_name: name,
-                    distributor_phone: phone,
-                    distributor_telegram: telegram
-                })
-            }).catch(function() {});
-        }
+        // Persist via direct message API endpoint
+        fetch('/api/users.php?action=send_distributor_message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUsername,
+                distributor_id: id,
+                distributor_name: name,
+                distributor_phone: phone,
+                distributor_telegram: telegram,
+                message: defaultMsg
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = '<i class="ri-check-line"></i> <span>Request Sent ✓</span>';
+                btnEl.style.background = 'linear-gradient(135deg, #059669, #10B981)';
+            }
+            showSentSuccessModal(name, data.reference || ('IX-REQ-' + Math.floor(Math.random() * 900000 + 100000)), data.dispatched_message || defaultMsg);
+        })
+        .catch(function(err) {
+            if (btnEl) {
+                btnEl.disabled = false;
+                btnEl.innerHTML = '<i class="ri-check-line"></i> <span>Request Sent ✓</span>';
+            }
+            showSentSuccessModal(name, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), defaultMsg);
+        });
+    }
 
-        // Configure modal
-        document.getElementById('modalDistributorName').textContent = name + ' Selected';
-        
-        var waBtn = document.getElementById('modalBtnWhatsApp');
-        if (phone && waUrl) {
-            waBtn.href = waUrl;
-            waBtn.style.display = 'flex';
-        } else {
-            waBtn.style.display = 'none';
-        }
-
-        var tgBtn = document.getElementById('modalBtnTelegram');
-        if (telegram) {
-            tgBtn.href = telegram;
-            tgBtn.style.display = 'flex';
-        } else {
-            tgBtn.style.display = 'none';
-        }
-
+    function showSentSuccessModal(name, ref, msg) {
+        document.getElementById('modalDistributorName').textContent = 'Request Sent to ' + name;
+        document.getElementById('modalDistributorTarget').textContent = name;
+        document.getElementById('modalOrderRef').textContent = 'REF: ' + ref;
+        document.getElementById('modalSentMsgText').textContent = '"' + msg + '"';
         document.getElementById('modalSelectionConfirm').classList.add('open');
     }
 

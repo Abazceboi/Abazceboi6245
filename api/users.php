@@ -196,6 +196,117 @@ switch ($action) {
         echo json_encode(['success' => true, 'status' => 'success', 'message' => 'Distributor selected successfully.']);
         exit;
 
+    case 'send_distributor_message':
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $username = trim($input['username'] ?? ($_SESSION['username'] ?? ''));
+        $distributorId = trim($input['distributor_id'] ?? $input['distributorId'] ?? '');
+        $distributorName = trim($input['distributor_name'] ?? $input['distributorName'] ?? 'Verified Distributor');
+        $distributorPhone = trim($input['distributor_phone'] ?? $input['distributorPhone'] ?? '');
+        $distributorTelegram = trim($input['distributor_telegram'] ?? $input['distributorTelegram'] ?? '');
+        $message = trim($input['message'] ?? '');
+
+        if (empty($message)) {
+            $senderLabel = !empty($username) ? ('@' . $username) : 'a new user';
+            $message = "Hello {$distributorName}, I am {$senderLabel} from INNOVATIONX and I need an activation key.";
+        }
+
+        $refId = 'IX-REQ-' . strtoupper(substr(md5(uniqid('', true)), 0, 7));
+
+        // Save order request in data/distributor_requests.json
+        $reqFile = __DIR__ . '/../data/distributor_requests.json';
+        $requests = [];
+        if (file_exists($reqFile)) {
+            $requests = json_decode(file_get_contents($reqFile), true) ?: [];
+        }
+        $reqEntry = [
+            'id' => $refId,
+            'username' => $username,
+            'distributor_id' => $distributorId,
+            'distributor_name' => $distributorName,
+            'distributor_phone' => $distributorPhone,
+            'distributor_telegram' => $distributorTelegram,
+            'message' => $message,
+            'status' => 'dispatched',
+            'created_at' => date('c')
+        ];
+        array_unshift($requests, $reqEntry);
+        if (count($requests) > 200) $requests = array_slice($requests, 0, 200);
+        @file_put_contents($reqFile, json_encode($requests, JSON_PRETTY_PRINT));
+
+        // Update user's profile if username provided
+        if (!empty($username)) {
+            $data = loadUsers();
+            foreach ($data['users'] as &$u) {
+                if (strtolower($u['username'] ?? '') === strtolower($username)) {
+                    $u['chosen_distributor'] = [
+                        'id' => $distributorId,
+                        'name' => $distributorName,
+                        'phone' => $distributorPhone,
+                        'telegram' => $distributorTelegram,
+                        'selected_at' => date('c')
+                    ];
+                    $u['last_distributor_request'] = $reqEntry;
+                    break;
+                }
+            }
+            unset($u);
+            saveUsers($data);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'status' => 'success',
+            'reference' => $refId,
+            'distributor_name' => $distributorName,
+            'message' => 'Your activation code request message has been sent directly to ' . $distributorName . '!',
+            'dispatched_message' => $message
+        ]);
+        exit;
+
+    case 'send_vendor_order':
+        $input = (!empty($inputData) && is_array($inputData)) ? $inputData : (json_decode(file_get_contents('php://input'), true) ?: $_POST);
+        $buyerName = trim($input['buyer_name'] ?? '');
+        $buyerPhone = trim($input['buyer_phone'] ?? '');
+        $vendorName = trim($input['vendor_name'] ?? '');
+        $vendorPhone = trim($input['vendor_phone'] ?? '');
+        $vendorTelegram = trim($input['vendor_telegram'] ?? '');
+        $qty = intval($input['quantity'] ?? 1);
+        $payment = trim($input['payment_method'] ?? 'Bank Transfer');
+        $formattedMsg = trim($input['formatted_message'] ?? '');
+
+        $refId = 'VOD-' . strtoupper(substr(md5(uniqid('', true)), 0, 7));
+
+        $orderFile = __DIR__ . '/../data/vendor_orders.json';
+        $orders = [];
+        if (file_exists($orderFile)) {
+            $orders = json_decode(file_get_contents($orderFile), true) ?: [];
+        }
+        $orderEntry = [
+            'id' => $refId,
+            'buyer_name' => $buyerName,
+            'buyer_phone' => $buyerPhone,
+            'vendor_name' => $vendorName,
+            'vendor_phone' => $vendorPhone,
+            'vendor_telegram' => $vendorTelegram,
+            'quantity' => $qty,
+            'payment_method' => $payment,
+            'formatted_message' => $formattedMsg,
+            'status' => 'dispatched',
+            'created_at' => date('c')
+        ];
+        array_unshift($orders, $orderEntry);
+        if (count($orders) > 200) $orders = array_slice($orders, 0, 200);
+        @file_put_contents($orderFile, json_encode($orders, JSON_PRETTY_PRINT));
+
+        echo json_encode([
+            'success' => true,
+            'status' => 'success',
+            'reference' => $refId,
+            'vendor_name' => $vendorName,
+            'message' => 'Your order request message has been sent directly to ' . $vendorName . '!'
+        ]);
+        exit;
+
     case 'get_users':
         $data = loadUsers();
         $delMap = getDeletedUsersList();

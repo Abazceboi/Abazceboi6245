@@ -5158,6 +5158,164 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return;
                 }
 
+                if (action === 'choose_distributor' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const distributorId = (parsed.distributor_id || parsed.distributorId || '').trim();
+                    const distributorName = (parsed.distributor_name || parsed.distributorName || '').trim();
+                    const distributorPhone = (parsed.distributor_phone || parsed.distributorPhone || '').trim();
+                    const distributorTelegram = (parsed.distributor_telegram || parsed.distributorTelegram || '').trim();
+
+                    if (!username) {
+                        res.end(JSON.stringify({ success: false, error: 'Username required' }));
+                        return;
+                    }
+
+                    if (!usersData.users) usersData.users = [];
+                    usersData.users.forEach(u => {
+                        if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                            u.chosen_distributor = {
+                                id: distributorId,
+                                name: distributorName,
+                                phone: distributorPhone,
+                                telegram: distributorTelegram,
+                                selected_at: new Date().toISOString()
+                            };
+                        }
+                    });
+
+                    try {
+                        const uDir = path.dirname(usersFile);
+                        if (!fs.existsSync(uDir)) fs.mkdirSync(uDir, { recursive: true });
+                        fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                    } catch(e) {}
+
+                    res.end(JSON.stringify({ success: true, status: 'success', message: 'Distributor selected successfully.' }));
+                    return;
+                }
+
+                if (action === 'send_distributor_message' && req.method === 'POST') {
+                    const username = (parsed.username || '').trim();
+                    const distributorId = (parsed.distributor_id || parsed.distributorId || '').trim();
+                    const distributorName = (parsed.distributor_name || parsed.distributorName || 'Verified Distributor').trim();
+                    const distributorPhone = (parsed.distributor_phone || parsed.distributorPhone || '').trim();
+                    const distributorTelegram = (parsed.distributor_telegram || parsed.distributorTelegram || '').trim();
+                    let message = (parsed.message || '').trim();
+
+                    if (!message) {
+                        const senderLabel = username ? ('@' + username) : 'a new user';
+                        message = `Hello ${distributorName}, I am ${senderLabel} from INNOVATIONX and I need an activation key.`;
+                    }
+
+                    const refId = 'IX-REQ-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+                    const reqFile = path.join(PUBLIC_DIR, 'data', 'distributor_requests.json');
+                    let requests = [];
+                    if (fs.existsSync(reqFile)) {
+                        try { requests = JSON.parse(fs.readFileSync(reqFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(requests)) requests = [];
+
+                    const reqEntry = {
+                        id: refId,
+                        username: username,
+                        distributor_id: distributorId,
+                        distributor_name: distributorName,
+                        distributor_phone: distributorPhone,
+                        distributor_telegram: distributorTelegram,
+                        message: message,
+                        status: 'dispatched',
+                        created_at: new Date().toISOString()
+                    };
+                    requests.unshift(reqEntry);
+                    if (requests.length > 200) requests = requests.slice(0, 200);
+
+                    try {
+                        const rDir = path.dirname(reqFile);
+                        if (!fs.existsSync(rDir)) fs.mkdirSync(rDir, { recursive: true });
+                        fs.writeFileSync(reqFile, JSON.stringify(requests, null, 2));
+                    } catch(e) {}
+
+                    if (username) {
+                        if (!usersData.users) usersData.users = [];
+                        usersData.users.forEach(u => {
+                            if ((u.username || '').toLowerCase() === username.toLowerCase()) {
+                                u.chosen_distributor = {
+                                    id: distributorId,
+                                    name: distributorName,
+                                    phone: distributorPhone,
+                                    telegram: distributorTelegram,
+                                    selected_at: new Date().toISOString()
+                                };
+                                u.last_distributor_request = reqEntry;
+                            }
+                        });
+                        try {
+                            fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
+                        } catch(e) {}
+                    }
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        reference: refId,
+                        distributor_name: distributorName,
+                        message: `Your activation code request message has been sent directly to ${distributorName}!`,
+                        dispatched_message: message
+                    }));
+                    return;
+                }
+
+                if (action === 'send_vendor_order' && req.method === 'POST') {
+                    const buyerName = (parsed.buyer_name || '').trim();
+                    const buyerPhone = (parsed.buyer_phone || '').trim();
+                    const vendorName = (parsed.vendor_name || '').trim();
+                    const vendorPhone = (parsed.vendor_phone || '').trim();
+                    const vendorTelegram = (parsed.vendor_telegram || '').trim();
+                    const qty = parseInt(parsed.quantity) || 1;
+                    const payment = (parsed.payment_method || 'Bank Transfer').trim();
+                    const formattedMsg = (parsed.formatted_message || '').trim();
+
+                    const refId = 'VOD-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+                    const orderFile = path.join(PUBLIC_DIR, 'data', 'vendor_orders.json');
+                    let orders = [];
+                    if (fs.existsSync(orderFile)) {
+                        try { orders = JSON.parse(fs.readFileSync(orderFile, 'utf8')); } catch(e){}
+                    }
+                    if (!Array.isArray(orders)) orders = [];
+
+                    const orderEntry = {
+                        id: refId,
+                        buyer_name: buyerName,
+                        buyer_phone: buyerPhone,
+                        vendor_name: vendorName,
+                        vendor_phone: vendorPhone,
+                        vendor_telegram: vendorTelegram,
+                        quantity: qty,
+                        payment_method: payment,
+                        formatted_message: formattedMsg,
+                        status: 'dispatched',
+                        created_at: new Date().toISOString()
+                    };
+                    orders.unshift(orderEntry);
+                    if (orders.length > 200) orders = orders.slice(0, 200);
+
+                    try {
+                        const oDir = path.dirname(orderFile);
+                        if (!fs.existsSync(oDir)) fs.mkdirSync(oDir, { recursive: true });
+                        fs.writeFileSync(orderFile, JSON.stringify(orders, null, 2));
+                    } catch(e) {}
+
+                    res.end(JSON.stringify({
+                        success: true,
+                        status: 'success',
+                        reference: refId,
+                        vendor_name: vendorName,
+                        message: `Your order request message has been sent directly to ${vendorName}!`
+                    }));
+                    return;
+                }
+
                 res.end(JSON.stringify({ success: false, error: 'Invalid action', valid_roles: validRoles, role_labels: roleLabels }));
                 return;
             }

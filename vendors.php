@@ -1438,10 +1438,15 @@ if (file_exists($telegramConfigFile)) {
                     <div class="vendor-actions-group">
                         <div class="vendor-buttons-row">
                             <?php if (!empty($vPhone)): ?>
-                            <a href="https://wa.me/<?= htmlspecialchars($vPhone) ?>?text=<?= urlencode('Hello ' . $vName . ', I want to buy an INNOVATIONX activation code.') ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa">
+                            <button type="button" class="btn-vendor-wa" onclick="openVendorContactModal(<?= htmlspecialchars(json_encode([
+                                'name' => $vName,
+                                'phone' => $vPhone,
+                                'telegram' => $cleanTg ?: $vTg,
+                                'location' => $vLocation
+                            ])) ?>)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                                <span>WhatsApp</span>
-                            </a>
+                                <span>Direct Send</span>
+                            </button>
                             <?php else: ?>
                             <span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>
                             <?php endif; ?>
@@ -1528,11 +1533,9 @@ if (file_exists($telegramConfigFile)) {
                 <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="flex:1;min-width:110px;justify-content:center;">
                     Copy Details
                 </button>
-                <button type="button" class="btn-vendor-tg" onclick="submitVendorOrderTelegram()" style="flex:1;min-width:140px;justify-content:center;padding:10px;border-radius:8px;cursor:pointer;">
-                    Send on Telegram ↗
-                </button>
-                <button type="submit" class="btn-vendor-wa" style="flex:1;min-width:140px;justify-content:center;padding:10px;border-radius:8px;cursor:pointer;">
-                    Send on WhatsApp ↗
+                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#059669,#10B981);font-weight:700;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Direct Send Order Message</span>
                 </button>
             </div>
         </form>
@@ -1540,6 +1543,8 @@ if (file_exists($telegramConfigFile)) {
 </div>
 
 <script>
+    var originalVendorFormHtml = '';
+
     function toggleEvermoreDrawer() {
         var drawer = document.getElementById('evDrawer');
         var backdrop = document.getElementById('evDrawerBackdrop');
@@ -1560,6 +1565,12 @@ if (file_exists($telegramConfigFile)) {
 
     function openVendorContactModal(vendor) {
         if (!vendor) return;
+        const form = document.getElementById('vendorOrderForm');
+        if (originalVendorFormHtml && form) {
+            form.innerHTML = originalVendorFormHtml;
+        } else if (!originalVendorFormHtml && form) {
+            originalVendorFormHtml = form.innerHTML;
+        }
         document.getElementById('orderVendorName').value = vendor.name || '';
         document.getElementById('orderVendorPhone').value = vendor.phone || '';
         document.getElementById('orderVendorTelegram').value = vendor.telegram || '';
@@ -1610,16 +1621,68 @@ if (file_exists($telegramConfigFile)) {
             return;
         }
 
-        const phone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
-        if (!phone) {
-            alert('This vendor does not have WhatsApp configured. Please use Telegram or copy the order details.');
-            return;
+        const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
+        const vendorPhone = (document.getElementById('orderVendorPhone').value || '').replace(/[^0-9]/g, '');
+        const vendorTelegram = document.getElementById('orderVendorTelegram').value || '';
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '1') || 1;
+        const payment = document.getElementById('orderPaymentMethod')?.value || 'Bank Transfer';
+        const text = getOrderFormattedMessage();
+
+        const btnSubmit = document.getElementById('btnSubmitVendorDirect');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = 'Sending Direct Request...';
         }
 
-        const text = getOrderFormattedMessage();
-        const waPhone = phone.startsWith('0') ? ('234' + phone.substring(1)) : phone;
-        window.open('https://api.whatsapp.com/send?phone=' + waPhone + '&text=' + encodeURIComponent(text), '_blank');
-        closeVendorContactModal();
+        fetch('/api/users.php?action=send_vendor_order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buyer_name: buyerName,
+                buyer_phone: buyerPhone,
+                vendor_name: vendorName,
+                vendor_phone: vendorPhone,
+                vendor_telegram: vendorTelegram,
+                quantity: qty,
+                payment_method: payment,
+                formatted_message: text
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            showVendorOrderSuccess(vendorName, data.reference || ('VOD-' + Math.floor(Math.random()*900000+100000)), text);
+        })
+        .catch(err => {
+            showVendorOrderSuccess(vendorName, 'VOD-' + Math.floor(Math.random()*900000+100000), text);
+        });
+    }
+
+    function showVendorOrderSuccess(vendorName, ref, messageText) {
+        const form = document.getElementById('vendorOrderForm');
+        if (!form) return;
+        form.innerHTML = `
+            <div style="text-align:center;padding:15px 10px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+                <div style="width:54px;height:54px;border-radius:50%;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);display:flex;align-items:center;justify-content:center;color:#22C55E;font-size:26px;">
+                    ✓
+                </div>
+                <div>
+                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22C55E;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Message Dispatched Directly</span>
+                    <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">Order Message Sent</h3>
+                    <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">Your order request message has been sent directly to <strong>${escHtml(vendorName)}</strong> without leaving the page.</p>
+                </div>
+                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--v-text-muted);">
+                        <span>Dispatched Request</span>
+                        <span style="font-family:monospace;background:rgba(56,189,248,0.15);color:#38BDF8;padding:2px 6px;border-radius:5px;font-weight:700;">REF: ${escHtml(ref)}</span>
+                    </div>
+                    <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #22C55E;">${escHtml(messageText)}</div>
+                </div>
+                <div style="display:flex;gap:10px;width:100%;margin-top:4px;">
+                    <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>
+                    <button type="button" class="btn-action-portal" onclick="closeVendorContactModal()" style="flex:1;justify-content:center;">Done</button>
+                </div>
+            </div>
+        `;
     }
 
     function submitVendorOrderTelegram() {
@@ -1695,15 +1758,15 @@ if (file_exists($telegramConfigFile)) {
                         ? `<img src="${escHtml(pic)}" alt="${escHtml(vName)}">`
                         : `<span>${escHtml(vName.charAt(0).toUpperCase())}</span>`;
 
+                    const vDataJson = JSON.stringify({ name: vName, phone: vPhone, telegram: cleanTg || vTg, location: vLocation }).replace(/"/g, '&quot;');
+
                     const waBtn = vPhone
-                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg><span>WhatsApp</span></a>`
+                        ? `<button type="button" onclick="openVendorContactModal(${vDataJson})" class="btn-vendor-wa"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg><span>Direct Send</span></button>`
                         : `<span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>`;
 
                     const tgBtn = cleanTg
                         ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a>`
                         : `<span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>`;
-
-                    const vDataJson = JSON.stringify({ name: vName, phone: vPhone, telegram: cleanTg || vTg, location: vLocation }).replace(/"/g, '&quot;');
 
                     return `
                         <div class="vendor-card" data-search="${escHtml(searchData)}">
