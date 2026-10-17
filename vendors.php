@@ -1533,7 +1533,7 @@ if (file_exists($telegramConfigFile)) {
                 <button type="button" class="btn-action-portal" onclick="copyOrderMessage()" style="flex:1;min-width:110px;justify-content:center;">
                     Copy Details
                 </button>
-                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#059669,#10B981);font-weight:700;">
+                <button type="submit" id="btnSubmitVendorDirect" class="btn-vendor-wa" style="flex:2;min-width:180px;justify-content:center;padding:12px 16px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0284C7,#00D4F0);color:#060F1E;font-weight:800;border:none;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>Direct Send Order Message</span>
                 </button>
@@ -1662,20 +1662,20 @@ if (file_exists($telegramConfigFile)) {
         if (!form) return;
         form.innerHTML = `
             <div style="text-align:center;padding:15px 10px;display:flex;flex-direction:column;align-items:center;gap:12px;">
-                <div style="width:54px;height:54px;border-radius:50%;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);display:flex;align-items:center;justify-content:center;color:#22C55E;font-size:26px;">
+                <div style="width:54px;height:54px;border-radius:50%;background:rgba(0,212,240,0.15);border:1px solid rgba(0,212,240,0.4);display:flex;align-items:center;justify-content:center;color:#00D4F0;font-size:26px;">
                     ✓
                 </div>
                 <div>
-                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22C55E;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Message Dispatched Directly</span>
+                    <span style="display:inline-block;padding:3px 9px;border-radius:9999px;background:rgba(0,212,240,0.14);border:1px solid rgba(0,212,240,0.35);color:#00D4F0;font-size:10.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Message Dispatched Directly</span>
                     <h3 style="font-size:1.2rem;font-weight:700;margin:6px 0 4px;color:var(--v-text);">Order Message Sent</h3>
                     <p style="font-size:12.5px;color:var(--v-text-muted);margin:0;">Your order request message has been sent directly to <strong>${escHtml(vendorName)}</strong> without leaving the page.</p>
                 </div>
-                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                <div style="width:100%;text-align:left;background:rgba(0,0,0,0.25);border:1px solid rgba(0,212,240,0.25);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--v-text-muted);">
                         <span>Dispatched Request</span>
                         <span style="font-family:monospace;background:rgba(56,189,248,0.15);color:#38BDF8;padding:2px 6px;border-radius:5px;font-weight:700;">REF: ${escHtml(ref)}</span>
                     </div>
-                    <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #22C55E;">${escHtml(messageText)}</div>
+                    <div style="font-size:12px;line-height:1.4;color:var(--v-text);white-space:pre-wrap;background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:6px;border-left:3px solid #00D4F0;">${escHtml(messageText)}</div>
                 </div>
                 <div style="display:flex;gap:10px;width:100%;margin-top:4px;">
                     <a href="dashboard.php?activate=1" class="btn-action-portal" style="flex:1;text-align:center;justify-content:center;text-decoration:none;">Enter Code</a>

@@ -74,8 +74,10 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
     <style>
         :root {
             --color-primary: #0284C7;
-            --color-green: #22C55E;
-            --color-green-dark: #16A34A;
+            --color-vibrant: #38BDF8;
+            --color-cyan: #00D4F0;
+            --color-cyan-dim: rgba(0, 212, 240, 0.12);
+            --color-border-cyan: rgba(0, 212, 240, 0.32);
             --page-bg: #060B14;
             --card-bg: #0C1527;
             --card-border: rgba(255, 255, 255, 0.08);
@@ -122,7 +124,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             transform: translateX(-50%);
             width: 600px;
             height: 350px;
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, rgba(2, 132, 199, 0.06) 50%, transparent 75%);
+            background: radial-gradient(circle, rgba(0, 212, 240, 0.12) 0%, rgba(2, 132, 199, 0.06) 50%, transparent 75%);
             pointer-events: none;
             z-index: 0;
         }
@@ -160,8 +162,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             width: 28px;
             height: 28px;
             border-radius: 8px;
-            background: linear-gradient(135deg, #0284C7, #22C55E);
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #0284C7, #00D4F0);
+            color: #060F1E;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -250,9 +252,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             margin-left: auto;
             font-size: 11px;
             font-weight: 700;
-            color: #22C55E;
-            background: rgba(34, 197, 94, 0.12);
-            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #00D4F0;
+            background: rgba(0, 212, 240, 0.12);
+            border: 1px solid rgba(0, 212, 240, 0.32);
             padding: 3px 9px;
             border-radius: 9999px;
             display: inline-flex;
@@ -266,9 +268,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: var(--color-green);
+            background: rgba(0, 212, 240, 0.14);
+            border: 1px solid rgba(0, 212, 240, 0.4);
+            color: #00D4F0;
             font-size: 11px;
             font-weight: 800;
             padding: 4px 10px;
@@ -279,7 +281,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
 
         .sent-message-preview {
             background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(34, 197, 94, 0.25);
+            border: 1px solid rgba(0, 212, 240, 0.25);
             border-radius: 14px;
             padding: 14px;
             text-align: left;
@@ -321,7 +323,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             background: rgba(255, 255, 255, 0.03);
             padding: 10px 12px;
             border-radius: 8px;
-            border-left: 3px solid var(--color-green);
+            border-left: 3px solid #00D4F0;
         }
 
         .sent-message-meta {
@@ -401,9 +403,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         }
 
         .social-circle-btn:hover {
-            background: rgba(34, 197, 94, 0.18);
-            border-color: rgba(34, 197, 94, 0.4);
-            color: var(--color-green);
+            background: rgba(0, 212, 240, 0.16);
+            border-color: rgba(0, 212, 240, 0.4);
+            color: #00D4F0;
             transform: translateY(-2px);
         }
 
@@ -421,7 +423,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         }
 
         .distributor-card:hover {
-            border-color: rgba(34, 197, 94, 0.4);
+            border-color: rgba(0, 212, 240, 0.35);
         }
 
         .distributor-header {
@@ -436,8 +438,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             height: 68px;
             border-radius: 50%;
             padding: 2.5px;
-            border: 2.5px solid var(--color-green);
-            box-shadow: 0 0 18px rgba(34, 197, 94, 0.35);
+            border: 2.5px solid #00D4F0;
+            box-shadow: 0 0 18px rgba(0, 212, 240, 0.32);
             flex-shrink: 0;
         }
 
@@ -454,7 +456,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             height: 100%;
             border-radius: 50%;
             background: linear-gradient(135deg, #10243C, #060F1E);
-            color: var(--color-green);
+            color: #00D4F0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -486,9 +488,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
-            color: var(--color-green);
+            background: rgba(0, 212, 240, 0.14);
+            border: 1px solid rgba(0, 212, 240, 0.38);
+            color: #00D4F0;
             font-size: 10.5px;
             font-weight: 800;
             padding: 3px 8px;
@@ -544,8 +546,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         }
 
         .contact-row:hover {
-            border-color: rgba(34, 197, 94, 0.35);
-            background: rgba(34, 197, 94, 0.06);
+            border-color: rgba(0, 212, 240, 0.35);
+            background: rgba(0, 212, 240, 0.05);
         }
 
         .contact-icon-box {
@@ -560,8 +562,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         }
 
         .contact-icon-box.whatsapp {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22C55E;
+            background: rgba(0, 212, 240, 0.15);
+            color: #00D4F0;
         }
 
         .contact-icon-box.telegram {
@@ -596,27 +598,28 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         /* Primary Action: Select Distributor */
         .btn-select-distributor {
             width: 100%;
-            background: linear-gradient(135deg, var(--color-green-dark), var(--color-green));
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #0284C7, #00D4F0);
+            color: #060F1E;
             border: none;
             border-radius: 14px;
             padding: 14px 20px;
             font-family: var(--font-display);
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.3px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+            box-shadow: 0 4px 18px rgba(0, 212, 240, 0.32);
             transition: all 0.2s;
         }
 
         .btn-select-distributor:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.45);
+            box-shadow: 0 8px 24px rgba(0, 212, 240, 0.45);
+            opacity: 0.96;
         }
 
         /* Selection Confirmation Modal */
@@ -641,10 +644,10 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             width: 100%;
             max-width: 440px;
             background: #0B1424;
-            border: 1px solid rgba(34, 197, 94, 0.4);
+            border: 1px solid rgba(0, 212, 240, 0.35);
             border-radius: 22px;
             padding: 28px 22px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(34, 197, 94, 0.2);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 212, 240, 0.18);
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -660,12 +663,12 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.4);
+            background: rgba(0, 212, 240, 0.15);
+            border: 1px solid rgba(0, 212, 240, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--color-green);
+            color: #00D4F0;
             font-size: 28px;
             margin: 0 auto;
         }
@@ -866,15 +869,15 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             <!-- Sent Message Preview Box -->
             <div class="sent-message-preview">
                 <div class="sent-message-header">
-                    <span><i class="ri-mail-send-fill" style="color:var(--color-green);"></i> Dispatched Message</span>
+                    <span><i class="ri-mail-send-fill" style="color:var(--color-cyan);"></i> Dispatched Message</span>
                     <span class="ref-badge" id="modalOrderRef">REF: IX-REQ-84920</span>
                 </div>
                 <div class="sent-message-body" id="modalSentMsgText">
                     "Hello Distributor, I am @username from INNOVATIONX and I need an activation key."
                 </div>
                 <div class="sent-message-meta">
-                    <i class="ri-shield-check-fill" style="color:var(--color-green);"></i>
-                    <span>Status: <strong>Delivered to Distributor Desk</strong> &bull; Notification Sent</span>
+                    <i class="ri-shield-check-fill" style="color:var(--color-cyan);"></i>
+                    <span>Status: <strong style="color:var(--color-cyan);">Delivered to Distributor Desk</strong> &bull; Notification Sent</span>
                 </div>
             </div>
 
@@ -931,7 +934,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             if (btnEl) {
                 btnEl.disabled = false;
                 btnEl.innerHTML = '<i class="ri-check-line"></i> <span>Request Sent ✓</span>';
-                btnEl.style.background = 'linear-gradient(135deg, #059669, #10B981)';
+                btnEl.style.background = 'linear-gradient(135deg, #0284C7, #00D4F0)';
+                btnEl.style.color = '#060F1E';
             }
             showSentSuccessModal(name, data.reference || ('IX-REQ-' + Math.floor(Math.random() * 900000 + 100000)), data.dispatched_message || defaultMsg);
         })
@@ -939,6 +943,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             if (btnEl) {
                 btnEl.disabled = false;
                 btnEl.innerHTML = '<i class="ri-check-line"></i> <span>Request Sent ✓</span>';
+                btnEl.style.background = 'linear-gradient(135deg, #0284C7, #00D4F0)';
+                btnEl.style.color = '#060F1E';
             }
             showSentSuccessModal(name, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), defaultMsg);
         });
