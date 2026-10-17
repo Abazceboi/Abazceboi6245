@@ -35,8 +35,61 @@ function getPricingData($defaults) {
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_pricing';
 
+if ($action === 'get_profit_stats') {
+    $pricing = getPricingData($defaultPricing);
+    $regFee = floatval($pricing['reg_fee'] ?? 5000);
+    $refComm = floatval($pricing['ref_commission'] ?? 3000);
+    $indirectComm = floatval($pricing['indirect_ref_commission'] ?? 200);
+    $deductionsPerReg = $refComm + $indirectComm;
+    $netProfitPerReg = $regFee - $deductionsPerReg;
+    $netMarginPct = ($regFee > 0) ? round(($netProfitPerReg / $regFee) * 100, 2) : 0;
+
+    $uData = readStorageJson('data/users.json', ['users' => []]);
+    $users = $uData['users'] ?? (is_array($uData) ? $uData : []);
+    $totalUsers = count($users);
+    $activatedCount = 0;
+    foreach ($users as $u) {
+        if (!empty($u['is_activated']) || !empty($u['coupon_activated']) || !empty($u['coupon_pin_used'])) {
+            $activatedCount++;
+        }
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'model' => [
+            'reg_fee' => $regFee,
+            'direct_deduction' => $refComm,
+            'indirect_deduction' => $indirectComm,
+            'total_deductions_per_reg' => $deductionsPerReg,
+            'net_profit_per_reg' => $netProfitPerReg,
+            'net_margin_percentage' => $netMarginPct,
+            'formula' => "Net Profit = ₦{$regFee} (Gross Registration) - ₦{$refComm} (Direct Referral) - ₦{$indirectComm} (Indirect Referral/Fee) = ₦{$netProfitPerReg}"
+        ],
+        'stats' => [
+            'total_registered_users' => $totalUsers,
+            'activated_users' => $activatedCount,
+            'pending_activation_users' => max(0, $totalUsers - $activatedCount),
+            'gross_revenue' => $totalUsers * $regFee,
+            'total_direct_deductions' => $totalUsers * $refComm,
+            'total_indirect_deductions' => $totalUsers * $indirectComm,
+            'total_deductions' => $totalUsers * $deductionsPerReg,
+            'total_net_profit' => $totalUsers * $netProfitPerReg,
+            'activated_gross_revenue' => $activatedCount * $regFee,
+            'activated_total_deductions' => $activatedCount * $deductionsPerReg,
+            'activated_net_profit' => $activatedCount * $netProfitPerReg
+        ]
+    ]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET' || $action === 'get_pricing') {
     $pricing = getPricingData($defaultPricing);
+    $regFee = floatval($pricing['reg_fee'] ?? 5000);
+    $refComm = floatval($pricing['ref_commission'] ?? 3000);
+    $indirectComm = floatval($pricing['indirect_ref_commission'] ?? 200);
+    $pricing['net_profit_per_reg'] = $regFee - $refComm - $indirectComm;
+    $pricing['deductions_per_reg'] = $refComm + $indirectComm;
+    $pricing['net_margin_pct'] = ($regFee > 0) ? round(($pricing['net_profit_per_reg'] / $regFee) * 100, 2) : 0;
     echo json_encode(['status' => 'success', 'pricing' => $pricing]);
     exit;
 }

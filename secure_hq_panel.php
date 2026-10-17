@@ -928,10 +928,106 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-value" id="kpiOverviewEcoLikes" style="color:#ef4444;">0</div>
           <div class="stat-sub">Total opportunity likes</div>
         </div>
+        <div class="stat-card" style="border:1px solid rgba(16,185,129,0.3);background:linear-gradient(180deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%);">
+          <div class="stat-label" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Platform Net Profit</span>
+            <span class="badge" style="background:rgba(16,185,129,0.18);color:#10B981;font-size:10px;padding:2px 6px;border:1px solid rgba(16,185,129,0.3);">₦1,800/reg</span>
+          </div>
+          <div class="stat-value" id="kpiNetProfit" style="color:#10B981;font-weight:800;">₦0</div>
+          <div class="stat-sub" id="kpiNetProfitSub">₦5k gross - ₦3k ref - ₦200 net fee</div>
+        </div>
         <div class="stat-card">
           <div class="stat-label">Coupon PINs</div>
           <div class="stat-value" id="kpiOverviewCoupons" style="color:var(--purple);">0</div>
           <div class="stat-sub">Available and redeemed PINs</div>
+        </div>
+      </div>
+
+      <!-- ══ PLATFORM REVENUE & NET PROFIT ECONOMICS CARD ══ -->
+      <div class="card" style="margin-top:20px;border:1px solid rgba(16,185,129,0.25);">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;color:#10B981;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:16px;">
+                <span>Platform Net Profit &amp; Registration Economics</span>
+                <span class="badge" style="background:rgba(16,185,129,0.16);color:#10B981;border:1px solid rgba(16,185,129,0.3);font-size:11px;">Formula: ₦5k - ₦3k - ₦200 = ₦1,800</span>
+              </div>
+              <div class="card-sub">Real-time accounting of platform profit per member registration: ₦5,000 fee less ₦3,000 direct referral and ₦200 indirect referral.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="filter-pills" style="display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;">
+              <button type="button" class="btn btn-xs active" id="btnProfitViewAll" onclick="switchProfitMode('all')" style="border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;">All Registered (<span id="profitCntAll">0</span>)</button>
+              <button type="button" class="btn btn-xs" id="btnProfitViewAct" onclick="switchProfitMode('activated')" style="border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;">Activated Only (<span id="profitCntAct">0</span>)</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="loadAdminOverview()">Refresh</button>
+          </div>
+        </div>
+
+        <div style="padding:16px 20px;">
+          <!-- 4-Column Breakdown Tiles -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:14px;margin-bottom:20px;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Gross Registration</div>
+              <div style="font-size:20px;font-weight:800;color:var(--txt);margin:4px 0;" id="profitGrossRev">₦0</div>
+              <div style="font-size:11.5px;color:var(--txt-3);" id="profitGrossSub">₦5,000 per user</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Direct Ref Deductions</div>
+              <div style="font-size:20px;font-weight:800;color:var(--amber);margin:4px 0;" id="profitDirectDeduct">-₦0</div>
+              <div style="font-size:11.5px;color:var(--txt-3);" id="profitDirectSub">-₦3,000 per user (60%)</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Indirect Ref Deductions</div>
+              <div style="font-size:20px;font-weight:800;color:var(--purple);margin:4px 0;" id="profitIndirectDeduct">-₦0</div>
+              <div style="font-size:11.5px;color:var(--txt-3);" id="profitIndirectSub">-₦200 per user (4%)</div>
+            </div>
+            <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:14px;">
+              <div style="font-size:11.5px;color:#10B981;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Net Profit Retained</div>
+              <div style="font-size:22px;font-weight:900;color:#10B981;margin:4px 0;" id="profitNetRetained">₦0</div>
+              <div style="font-size:11.5px;color:var(--txt-2);" id="profitNetMarginSub">₦1,800 per user (36.0% Margin)</div>
+            </div>
+          </div>
+
+          <!-- Interactive Registration Net Profit Simulator -->
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+              <div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--txt);">Registration Volume Net Profit Simulator</div>
+                <div style="font-size:11.5px;color:var(--txt-3);">Simulate gross revenue, total payouts, and retained net profit for target registration milestones.</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(50)" style="font-size:11px;">50 Regs</button>
+                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(100)" style="font-size:11px;">100 Regs</button>
+                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(500)" style="font-size:11px;">500 Regs</button>
+                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(1000)" style="font-size:11px;">1,000 Regs</button>
+                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(5000)" style="font-size:11px;">5,000 Regs</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:center;">
+              <div>
+                <label class="form-label" style="font-size:11.5px;margin-bottom:6px;">Target Registrations</label>
+                <input type="number" id="profitSimInput" class="form-input" value="100" min="1" max="1000000" oninput="calculateProfitSimulation()" style="font-size:14px;font-weight:700;">
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 16px;flex-wrap:wrap;gap:12px;">
+                <div>
+                  <div style="font-size:11px;color:var(--txt-3);">Simulated Gross (5k)</div>
+                  <div style="font-size:14px;font-weight:700;color:var(--txt);" id="simGross">₦500,000</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--txt-3);">Total Deductions (3k + 200)</div>
+                  <div style="font-size:14px;font-weight:700;color:var(--danger);" id="simDeductions">-₦320,000</div>
+                </div>
+                <div style="border-left:1px solid var(--border);padding-left:14px;">
+                  <div style="font-size:11px;color:#10B981;font-weight:700;">Simulated Net Profit (1.8k)</div>
+                  <div style="font-size:16px;font-weight:900;color:#10B981;" id="simNetProfit">₦180,000</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2076,41 +2172,101 @@ input,textarea,select{font-family:var(--ff);}
 
     <!-- ══ TAB: PRICING & RATES ════════════════════════════════════════════ -->
     <div id="tab-pricing" class="tab-content">
-      <div class="card" style="max-width:600px;">
-        <div class="card-header">
-          <div class="card-title">Platform Rates & Commission</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;align-items:start;">
+        <!-- Card 1: Pricing Form -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header">
+            <div class="card-title">Platform Rates &amp; Commission</div>
+            <div class="card-sub">Configure member entry fee, referral compensation, and withdrawal rules.</div>
+          </div>
+          <form onsubmit="handleSavePricing(event)">
+            <div class="form-group">
+              <label class="form-label">Registration Fee (₦)</label>
+              <input type="number" class="form-input" id="cfgRegFee" value="5000" oninput="updatePricingNetProfitCard()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Direct Referral Commission Cash (₦)</label>
+              <input type="number" class="form-input" id="cfgRefComm" value="3000" oninput="updatePricingNetProfitCard()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Indirect Referral Commission Cash (Level 2) (₦)</label>
+              <input type="number" class="form-input" id="cfgIndirectRefComm" value="200" oninput="updatePricingNetProfitCard()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Points Withdrawal (Tasks & Surveys)</label>
+              <div style="position:relative;">
+                <input type="number" class="form-input" id="cfgMinPointsWd" value="1000" min="100" style="padding-right:50px;">
+                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">PTS</span>
+              </div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing earned points from tasks and surveys. Pure points (1:1), zero conversion rate.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Affiliate Cash Withdrawal (₦)</label>
+              <div style="position:relative;">
+                <input type="number" class="form-input" id="cfgMinCashWd" value="5000" min="500" style="padding-right:50px;">
+                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">₦</span>
+              </div>
+              <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing cash earnings from affiliate referrals.</div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnSavePricing">Save Settings</button>
+          </form>
         </div>
-        <form onsubmit="handleSavePricing(event)">
-          <div class="form-group">
-            <label class="form-label">Registration Fee (₦)</label>
-            <input type="number" class="form-input" id="cfgRegFee" value="5000">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Direct Referral Commission Cash (₦)</label>
-            <input type="number" class="form-input" id="cfgRefComm" value="3000">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Indirect Referral Commission Cash (Level 2) (₦)</label>
-            <input type="number" class="form-input" id="cfgIndirectRefComm" value="200">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Minimum Points Withdrawal (Tasks & Surveys)</label>
-            <div style="position:relative;">
-              <input type="number" class="form-input" id="cfgMinPointsWd" value="1000" min="100" style="padding-right:50px;">
-              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">PTS</span>
+
+        <!-- Card 2: Net Profit Unit Economics Breakdown -->
+        <div class="card" style="margin-bottom:0;border:1px solid rgba(16,185,129,0.3);background:linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(16,185,129,0.01) 100%);">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Net Profit Calculation &amp; Unit Economics</span>
+              </div>
+              <div class="card-sub">Dynamic real-time accounting breakdown per registered account</div>
             </div>
-            <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing earned points from tasks and surveys. Pure points (1:1), zero conversion rate.</div>
+            <span class="badge" id="priceUnitMarginBadge" style="background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.3);font-weight:700;">36.0% Margin</span>
           </div>
-          <div class="form-group">
-            <label class="form-label">Minimum Affiliate Cash Withdrawal (₦)</label>
-            <div style="position:relative;">
-              <input type="number" class="form-input" id="cfgMinCashWd" value="5000" min="500" style="padding-right:50px;">
-              <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">₦</span>
+
+          <div style="padding-top:10px;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--txt);">Registration Fee (Gross Revenue)</div>
+                  <div style="font-size:11.5px;color:var(--txt-3);">Total paid by registrant / coupon PIN face value</div>
+                </div>
+                <div style="font-size:16px;font-weight:800;color:var(--txt);" id="priceUnitGross">₦5,000</div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--amber);">Less: Direct Referral Deduction</div>
+                  <div style="font-size:11.5px;color:var(--txt-3);">Credited to immediate upline sponsor</div>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:var(--amber);" id="priceUnitDirect">-₦3,000</div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--purple);">Less: Indirect Referral Deduction</div>
+                  <div style="font-size:11.5px;color:var(--txt-3);">Credited to 2nd-tier upline / network processing</div>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:var(--purple);" id="priceUnitIndirect">-₦200</div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;">
+                <div>
+                  <div style="font-size:14px;font-weight:800;color:#10B981;">= Platform Net Profit</div>
+                  <div style="font-size:11.5px;color:var(--txt-2);">Retained platform revenue per registration</div>
+                </div>
+                <div style="font-size:22px;font-weight:900;color:#10B981;" id="priceUnitNet">₦1,800</div>
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing cash earnings from affiliate referrals.</div>
+
+            <!-- Formula Summary Box -->
+            <div style="background:rgba(255,255,255,0.02);border:1px dashed rgba(16,185,129,0.3);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--txt-2);line-height:1.6;">
+              <div style="font-weight:700;color:var(--txt);margin-bottom:4px;">Official Calculation Rule:</div>
+              <div>When a user registers for <strong>₦5,000</strong>, <strong>₦3,000</strong> is deducted for direct affiliate commission, and <strong>₦200</strong> is deducted for 2nd-tier indirect commission. The remaining <strong>₦1,800</strong> is the platform net profit.</div>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary" id="btnSavePricing">Save Settings</button>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -5628,7 +5784,28 @@ async function loadPricingData() {
     } else if (p.min_withdrawal) {
       document.getElementById('cfgMinCashWd').value = p.min_withdrawal;
     }
+    updatePricingNetProfitCard();
   } catch(e){}
+}
+
+function updatePricingNetProfitCard() {
+  const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
+  const refComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
+  const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
+  const deductions = refComm + indirectComm;
+  const netProfit = regFee - deductions;
+  const margin = regFee > 0 ? ((netProfit / regFee) * 100).toFixed(1) : 0;
+
+  const feeEl = document.getElementById('priceUnitGross');
+  if (feeEl) feeEl.textContent = '₦' + regFee.toLocaleString();
+  const dirEl = document.getElementById('priceUnitDirect');
+  if (dirEl) dirEl.textContent = '-₦' + refComm.toLocaleString();
+  const indEl = document.getElementById('priceUnitIndirect');
+  if (indEl) indEl.textContent = '-₦' + indirectComm.toLocaleString();
+  const netEl = document.getElementById('priceUnitNet');
+  if (netEl) netEl.textContent = '₦' + netProfit.toLocaleString();
+  const marginEl = document.getElementById('priceUnitMarginBadge');
+  if (marginEl) marginEl.textContent = `${margin}% Margin`;
 }
 
 async function handleSavePricing(e) {
@@ -5654,6 +5831,8 @@ async function handleSavePricing(e) {
     const d = await r.json();
     if (d.status === 'success' || d.success) {
       toast('Platform rates saved successfully!', 'success');
+      updatePricingNetProfitCard();
+      loadAdminOverview();
     }
   } catch(e){
     toast('Network error saving rates', 'error');
@@ -6831,7 +7010,102 @@ async function loadAdminOverview() {
     if (cashEl) cashEl.textContent = '₦' + totalCash.toLocaleString();
     const subEl = document.getElementById('kpiTotalSiteSub');
     if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
+
+    renderProfitEconomicsCard();
   } catch(e) {}
+}
+
+let currentProfitViewMode = 'all';
+
+function switchProfitMode(mode) {
+  currentProfitViewMode = mode;
+  const btnAll = document.getElementById('btnProfitViewAll');
+  const btnAct = document.getElementById('btnProfitViewAct');
+  if (btnAll) btnAll.classList.toggle('active', mode === 'all');
+  if (btnAct) btnAct.classList.toggle('active', mode === 'activated');
+  renderProfitEconomicsCard();
+}
+
+function renderProfitEconomicsCard() {
+  const users = window.allUsersList || [];
+  const totalCount = users.length;
+  let actCount = 0;
+  users.forEach(u => {
+    if (u.is_activated || u.coupon_activated || u.coupon_pin_used) actCount++;
+  });
+
+  const cntAllEl = document.getElementById('profitCntAll');
+  if (cntAllEl) cntAllEl.textContent = totalCount;
+  const cntActEl = document.getElementById('profitCntAct');
+  if (cntActEl) cntActEl.textContent = actCount;
+
+  const count = (currentProfitViewMode === 'activated') ? actCount : totalCount;
+  const modeLabel = (currentProfitViewMode === 'activated') ? 'activated users' : 'registered accounts';
+
+  const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
+  const directComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
+  const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
+  const totalDeduct = directComm + indirectComm;
+  const netProfitPerUser = regFee - totalDeduct;
+  const marginPct = regFee > 0 ? ((netProfitPerUser / regFee) * 100).toFixed(1) : 0;
+
+  const grossTotal = count * regFee;
+  const directTotal = count * directComm;
+  const indirectTotal = count * indirectComm;
+  const netTotal = count * netProfitPerUser;
+
+  const grossEl = document.getElementById('profitGrossRev');
+  if (grossEl) grossEl.textContent = '₦' + grossTotal.toLocaleString();
+  const grossSub = document.getElementById('profitGrossSub');
+  if (grossSub) grossSub.textContent = `₦${regFee.toLocaleString()} × ${count} ${modeLabel}`;
+
+  const dirEl = document.getElementById('profitDirectDeduct');
+  if (dirEl) dirEl.textContent = '-₦' + directTotal.toLocaleString();
+  const dirSub = document.getElementById('profitDirectSub');
+  if (dirSub) dirSub.textContent = `-₦${directComm.toLocaleString()} × ${count} (Direct Upline Payouts)`;
+
+  const indEl = document.getElementById('profitIndirectDeduct');
+  if (indEl) indEl.textContent = '-₦' + indirectTotal.toLocaleString();
+  const indSub = document.getElementById('profitIndirectSub');
+  if (indSub) indSub.textContent = `-₦${indirectComm.toLocaleString()} × ${count} (Tier-2 Network Payouts)`;
+
+  const netEl = document.getElementById('profitNetRetained');
+  if (netEl) netEl.textContent = '₦' + netTotal.toLocaleString();
+  const marginSub = document.getElementById('profitNetMarginSub');
+  if (marginSub) marginSub.textContent = `₦${netProfitPerUser.toLocaleString()} net profit per user (${marginPct}% Margin)`;
+
+  const kpiEl = document.getElementById('kpiNetProfit');
+  if (kpiEl) kpiEl.textContent = '₦' + (totalCount * netProfitPerUser).toLocaleString();
+  const kpiSub = document.getElementById('kpiNetProfitSub');
+  if (kpiSub) kpiSub.textContent = `₦${netProfitPerUser.toLocaleString()}/reg (${actCount} activated / ${totalCount} total)`;
+
+  calculateProfitSimulation();
+}
+
+function setProfitSimCount(n) {
+  const inp = document.getElementById('profitSimInput');
+  if (inp) {
+    inp.value = n;
+    calculateProfitSimulation();
+  }
+}
+
+function calculateProfitSimulation() {
+  const inp = document.getElementById('profitSimInput');
+  const count = parseInt(inp ? inp.value : 100, 10) || 0;
+  const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
+  const directComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
+  const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
+  const deductPerUser = directComm + indirectComm;
+  const netPerUser = regFee - deductPerUser;
+
+  const simGross = document.getElementById('simGross');
+  if (simGross) simGross.textContent = '₦' + (count * regFee).toLocaleString();
+  const simDeduct = document.getElementById('simDeductions');
+  if (simDeduct) simDeduct.textContent = '-₦' + (count * deductPerUser).toLocaleString();
+  const simNet = document.getElementById('simNetProfit');
+  if (simNet) simNet.textContent = '₦' + (count * netPerUser).toLocaleString();
+}
 
   // Update active surveys counter
   try {

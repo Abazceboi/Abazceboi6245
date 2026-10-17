@@ -2590,6 +2590,60 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     try { pricing = Object.assign(pricing, JSON.parse(fs.readFileSync(pricingFile, 'utf8'))); } catch(e){}
                 }
 
+                const regFee = parseFloat(pricing.reg_fee) || 5000;
+                const refComm = parseFloat(pricing.ref_commission) || 3000;
+                const indirectComm = parseFloat(pricing.indirect_ref_commission) || 200;
+                const deductions = refComm + indirectComm;
+                const netProfitPerReg = regFee - deductions;
+                const netMarginPct = regFee > 0 ? ((netProfitPerReg / regFee) * 100).toFixed(1) : 0;
+
+                pricing.net_profit_per_reg = netProfitPerReg;
+                pricing.deductions_per_reg = deductions;
+                pricing.net_margin_pct = parseFloat(netMarginPct);
+
+                if (action === 'get_profit_stats') {
+                    let totalUsers = 0;
+                    let activatedCount = 0;
+                    try {
+                        const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                        if (fs.existsSync(usersFile)) {
+                            const uObj = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            const uList = Array.isArray(uObj.users) ? uObj.users : (Array.isArray(uObj) ? uObj : []);
+                            totalUsers = uList.length;
+                            uList.forEach(u => {
+                                if (u.is_activated || u.coupon_activated || u.coupon_pin_used) activatedCount++;
+                            });
+                        }
+                    } catch(e){}
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        model: {
+                            reg_fee: regFee,
+                            direct_deduction: refComm,
+                            indirect_deduction: indirectComm,
+                            total_deductions_per_reg: deductions,
+                            net_profit_per_reg: netProfitPerReg,
+                            net_margin_percentage: parseFloat(netMarginPct),
+                            formula: `Net Profit = ₦${regFee.toLocaleString()} (Gross Registration) - ₦${refComm.toLocaleString()} (Direct Referral) - ₦${indirectComm.toLocaleString()} (Indirect Referral/Fee) = ₦${netProfitPerReg.toLocaleString()}`
+                        },
+                        stats: {
+                            total_registered_users: totalUsers,
+                            activated_users: activatedCount,
+                            pending_activation_users: Math.max(0, totalUsers - activatedCount),
+                            gross_revenue: totalUsers * regFee,
+                            total_direct_deductions: totalUsers * refComm,
+                            total_indirect_deductions: totalUsers * indirectComm,
+                            total_deductions: totalUsers * deductions,
+                            total_net_profit: totalUsers * netProfitPerReg,
+                            activated_gross_revenue: activatedCount * regFee,
+                            activated_total_deductions: activatedCount * deductions,
+                            activated_net_profit: activatedCount * netProfitPerReg
+                        }
+                    }));
+                    return;
+                }
+
                 if (req.method === 'POST' || action === 'save_pricing') {
                     pricing = Object.assign(pricing, parsed);
                     delete pricing.points_rate;
