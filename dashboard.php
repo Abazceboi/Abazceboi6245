@@ -2826,27 +2826,8 @@ html[data-theme="light"] .special-portal-card.uploader,
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
           <div style="text-align:right;">
             <div style="font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;">All-Time Cash</div>
-            <div id="topEarnersMyTotalCash" style="font-size:22px;font-weight:800;color:var(--green);letter-spacing:-0.5px;">₦0.00</div>
+            <div id="topEarnersMyTotalCash" style="font-size:24px;font-weight:800;color:var(--green);letter-spacing:-0.5px;">₦0.00</div>
           </div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Direct Referrals</div>
-          <div id="topEarnersMyDirect" style="font-size:14px;font-weight:700;color:#38BDF8;margin-top:2px;">₦0.00</div>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Indirect Referrals</div>
-          <div id="topEarnersMyIndirect" style="font-size:14px;font-weight:700;color:#F59E0B;margin-top:2px;">₦0.00</div>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Lifetime Paid Out</div>
-          <div id="topEarnersMyWithdrawn" style="font-size:14px;font-weight:700;color:var(--txt);margin-top:2px;">₦0.00</div>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;">Points Included</div>
-          <div style="font-size:14px;font-weight:700;color:#94A3B8;margin-top:2px;">0 PTS (Excluded)</div>
         </div>
       </div>
     </div>
@@ -2881,14 +2862,12 @@ html[data-theme="light"] .special-portal-card.uploader,
             <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
               <th style="padding:12px 10px;width:70px;">Rank</th>
               <th style="padding:12px 10px;">Earner</th>
-              <th style="padding:12px 10px;">Direct (L1)</th>
-              <th style="padding:12px 10px;">Indirect (L2)</th>
               <th style="padding:12px 10px;text-align:right;">All-Time Cash</th>
             </tr>
           </thead>
           <tbody id="topEarnersTableBody">
             <tr>
-              <td colspan="5" style="text-align:center;padding:32px;color:var(--txt-3);">Loading top earners leaderboard...</td>
+              <td colspan="3" style="text-align:center;padding:32px;color:var(--txt-3);">Loading top earners leaderboard...</td>
             </tr>
           </tbody>
         </table>
@@ -4792,9 +4771,6 @@ async function loadTopEarners() {
       }
 
       if (totalCash) totalCash.textContent = '₦' + Number(u.all_time_cash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (directEl) directEl.textContent = '₦' + Number(u.direct_referral_earnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (indirectEl) indirectEl.textContent = '₦' + Number(u.indirect_referral_earnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (withEl) withEl.textContent = '₦' + Number(u.cash_withdrawn || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     // 2. Render Top 3 Podium
@@ -4809,20 +4785,15 @@ async function loadTopEarners() {
         const theme = podiumColors[i] || podiumColors[2];
         const isMe = p.is_current_user;
         return `
-          <div style="background:${theme.bg};border:1px solid ${theme.border};box-shadow:${theme.shadow};border-radius:14px;padding:20px;text-align:center;position:relative;overflow:hidden;">
+          <div style="background:${theme.bg};border:1px solid ${theme.border};box-shadow:${theme.shadow};border-radius:14px;padding:22px;text-align:center;position:relative;overflow:hidden;">
             ${isMe ? '<span style="position:absolute;top:10px;right:10px;background:rgba(56,189,248,0.2);color:#38BDF8;border:1px solid rgba(56,189,248,0.4);font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">YOU</span>' : ''}
-            <div style="font-size:32px;line-height:1;margin-bottom:8px;">${theme.icon}</div>
+            <div style="font-size:34px;line-height:1;margin-bottom:8px;">${theme.icon}</div>
             <span style="display:inline-block;font-size:11px;font-weight:800;color:${theme.color};text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${theme.label}</span>
             <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:2px;">@${p.username}</div>
             <div style="font-size:11px;color:var(--txt-3);margin-bottom:12px;">${p.role_label}</div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:6px;">
-              <div style="font-size:10px;color:var(--txt-3);text-transform:uppercase;">All-Time Cash</div>
-              <div style="font-size:18px;font-weight:800;color:var(--green);margin-top:2px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            </div>
-            <div style="display:flex;justify-content:center;gap:12px;margin-top:10px;font-size:11px;color:var(--txt-3);">
-              <span>Direct: ₦${Number(p.direct_referral_earnings).toLocaleString('en-US')}</span>
-              <span>&bull;</span>
-              <span>Indirect: ₦${Number(p.indirect_referral_earnings).toLocaleString('en-US')}</span>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:6px;">
+              <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.4px;">All-Time Cash</div>
+              <div style="font-size:20px;font-weight:800;color:var(--green);margin-top:3px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
           </div>
         `;
@@ -4834,7 +4805,7 @@ async function loadTopEarners() {
 
   } catch(err) {
     if (tableBody) {
-      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#EF4444;">Network error while loading top earners. Please click Refresh Rankings.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:#EF4444;">Network error while loading top earners. Please click Refresh Rankings.</td></tr>';
     }
   }
 }
@@ -4843,7 +4814,7 @@ function renderTopEarnersTable(list) {
   const tableBody = document.getElementById('topEarnersTableBody');
   if (!tableBody) return;
   if (!list || list.length === 0) {
-    tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--txt-3);">No earners found matching your search.</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--txt-3);">No earners found matching your search.</td></tr>';
     return;
   }
 
@@ -4878,15 +4849,8 @@ function renderTopEarnersTable(list) {
             </div>
           </div>
         </td>
-        <td style="padding:12px 10px;vertical-align:middle;">
-          <div style="font-weight:700;color:#38BDF8;">₦${Number(item.direct_referral_earnings).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        </td>
-        <td style="padding:12px 10px;vertical-align:middle;">
-          <div style="font-weight:700;color:#F59E0B;">₦${Number(item.indirect_referral_earnings).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        </td>
         <td style="padding:12px 10px;vertical-align:middle;text-align:right;">
           <div style="font-size:15px;font-weight:800;color:var(--green);">₦${Number(item.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div style="font-size:10.5px;color:var(--txt-3);">Gross Cash</div>
         </td>
       </tr>
     `;
