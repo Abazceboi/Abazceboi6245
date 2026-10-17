@@ -551,15 +551,16 @@ if (file_exists($telegramConfigFile)) {
         box-shadow: 0 18px 44px -4px rgba(2, 132, 199, 0.35), inset 0 1px 0 rgba(56, 189, 248, 0.3);
     }
 
-    .vendor-top-row {
+    .vendor-header {
         display: flex;
         align-items: center;
         gap: 14px;
+        margin-bottom: 6px;
     }
 
     .vendor-photo-box {
-        width: 52px;
-        height: 52px;
+        width: 54px;
+        height: 54px;
         border-radius: 14px;
         background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(56, 189, 248, 0.1));
         border: 1.5px solid rgba(56, 189, 248, 0.35);
@@ -584,8 +585,8 @@ if (file_exists($telegramConfigFile)) {
     /* Live Online Status Badge on Avatar */
     .vendor-online-indicator {
         position: absolute;
-        bottom: -3px;
-        right: -3px;
+        bottom: -2px;
+        right: -2px;
         width: 14px;
         height: 14px;
         display: flex;
@@ -616,23 +617,16 @@ if (file_exists($telegramConfigFile)) {
         100% { transform: scale(0.95); opacity: 0; }
     }
 
-    .vendor-info-col {
+    .vendor-meta {
         flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 5px;
-    }
-
-    .vendor-name-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        gap: 3px;
     }
 
     .vendor-name {
-        font-size: 1.05rem;
+        font-size: 1.08rem;
         font-weight: 800;
         color: #FFFFFF;
         white-space: nowrap;
@@ -642,11 +636,30 @@ if (file_exists($telegramConfigFile)) {
         letter-spacing: -0.015em;
     }
 
+    .vendor-location {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        color: var(--v-text-muted);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 4px;
+    }
+
+    .vendor-pill-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .pill-verified {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 3px 8px;
+        padding: 2px 8px;
         border-radius: 9999px;
         background: rgba(16, 185, 129, 0.14);
         border: 1px solid rgba(16, 185, 129, 0.35);
@@ -654,27 +667,7 @@ if (file_exists($telegramConfigFile)) {
         font-size: 0.68rem;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        flex-shrink: 0;
-    }
-
-    .vendor-sub-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .vendor-location {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.78rem;
-        color: var(--v-text-muted);
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        letter-spacing: 0.4px;
     }
 
     .pill-rating {
@@ -688,46 +681,6 @@ if (file_exists($telegramConfigFile)) {
         font-size: 0.72rem;
         color: #F59E0B;
         font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    /* Trust / Instant Delivery Strip */
-    .vendor-trust-strip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: rgba(2, 132, 199, 0.05);
-        border: 1px solid rgba(56, 189, 248, 0.14);
-        font-size: 0.75rem;
-    }
-
-    .vendor-trust-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--v-text-muted);
-        font-weight: 600;
-    }
-
-    .vendor-status-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #10B981;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
-        display: inline-block;
-    }
-
-    .vendor-trust-tag {
-        font-weight: 700;
-        color: #38BDF8;
-        font-size: 0.72rem;
-        letter-spacing: 0.2px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
     }
 
     .vendor-actions-group {
@@ -1110,19 +1063,6 @@ if (file_exists($telegramConfigFile)) {
         color: #D97706 !important;
     }
 
-    [data-theme="light"] .vendor-trust-strip {
-        background: #F8FAFC !important;
-        border-color: #E2E8F0 !important;
-    }
-
-    [data-theme="light"] .vendor-trust-item {
-        color: #475569 !important;
-    }
-
-    [data-theme="light"] .vendor-trust-tag {
-        color: #0284C7 !important;
-    }
-
     [data-theme="light"] .btn-vendor-wa {
         background: #ECFDF5 !important;
         color: #047857 !important;
@@ -1465,48 +1405,34 @@ if (file_exists($telegramConfigFile)) {
                     $searchData = strtolower($vName . ' ' . $vLocation);
                 ?>
                 <div class="vendor-card" data-search="<?= htmlspecialchars($searchData) ?>">
-                    <div class="vendor-top-row">
-                        <div class="vendor-photo-box">
-                            <?php if ($hasImg): ?>
-                                <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($vName) ?>">
-                            <?php else: ?>
-                                <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
-                            <?php endif; ?>
-                            <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
-                                <span class="badge-pulse"></span>
-                                <span class="badge-dot"></span>
+                    <div>
+                        <div class="vendor-header">
+                            <div class="vendor-photo-box">
+                                <?php if ($hasImg): ?>
+                                    <img src="<?= htmlspecialchars($pic) ?>" alt="<?= htmlspecialchars($vName) ?>">
+                                <?php else: ?>
+                                    <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
+                                <?php endif; ?>
+                                <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
+                                    <span class="badge-pulse"></span>
+                                    <span class="badge-dot"></span>
+                                </div>
+                            </div>
+                            <div class="vendor-meta">
+                                <div class="vendor-name"><?= htmlspecialchars($vName) ?></div>
+                                <div class="vendor-location"><?= htmlspecialchars($vLocation) ?></div>
+                                <div class="vendor-pill-row">
+                                    <span class="pill-verified">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                        Verified
+                                    </span>
+                                    <span class="pill-rating">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        5.0
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div class="vendor-info-col">
-                            <div class="vendor-name-row">
-                                <span class="vendor-name"><?= htmlspecialchars($vName) ?></span>
-                                <span class="pill-verified">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Verified
-                                </span>
-                            </div>
-                            <div class="vendor-sub-row">
-                                <span class="vendor-location">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    <?= htmlspecialchars($vLocation) ?>
-                                </span>
-                                <span class="pill-rating">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                    5.0 Rating
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="vendor-trust-strip">
-                        <div class="vendor-trust-item">
-                            <span class="vendor-status-dot"></span>
-                            <span>Instant Code Delivery</span>
-                        </div>
-                        <span class="vendor-trust-tag">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            Official Partner
-                        </span>
                     </div>
 
                     <div class="vendor-actions-group">
@@ -1781,44 +1707,30 @@ if (file_exists($telegramConfigFile)) {
 
                     return `
                         <div class="vendor-card" data-search="${escHtml(searchData)}">
-                            <div class="vendor-top-row">
-                                <div class="vendor-photo-box">
-                                    ${avatarHtml}
-                                    <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
-                                        <span class="badge-pulse"></span>
-                                        <span class="badge-dot"></span>
+                            <div>
+                                <div class="vendor-header">
+                                    <div class="vendor-photo-box">
+                                        ${avatarHtml}
+                                        <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
+                                            <span class="badge-pulse"></span>
+                                            <span class="badge-dot"></span>
+                                        </div>
+                                    </div>
+                                    <div class="vendor-meta">
+                                        <div class="vendor-name">${escHtml(vName)}</div>
+                                        <div class="vendor-location">${escHtml(vLocation)}</div>
+                                        <div class="vendor-pill-row">
+                                            <span class="pill-verified">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                                Verified
+                                            </span>
+                                            <span class="pill-rating">
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                5.0
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="vendor-info-col">
-                                    <div class="vendor-name-row">
-                                        <span class="vendor-name">${escHtml(vName)}</span>
-                                        <span class="pill-verified">
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                            Verified
-                                        </span>
-                                    </div>
-                                    <div class="vendor-sub-row">
-                                        <span class="vendor-location">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                            ${escHtml(vLocation)}
-                                        </span>
-                                        <span class="pill-rating">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                            5.0 Rating
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="vendor-trust-strip">
-                                <div class="vendor-trust-item">
-                                    <span class="vendor-status-dot"></span>
-                                    <span>Instant Code Delivery</span>
-                                </div>
-                                <span class="vendor-trust-tag">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    Official Partner
-                                </span>
                             </div>
 
                             <div class="vendor-actions-group">
