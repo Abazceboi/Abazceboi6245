@@ -492,6 +492,278 @@ input,textarea,select{font-family:var(--ff);}
     margin-left:0 !important;
   }
 }
+
+/* ══ Platform Maintenance Mode Animated Switch & Widgets ══ */
+.maint-topbar-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 4px 10px 4px 12px;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+.maint-topbar-widget:hover {
+  border-color: var(--border-mid);
+}
+.maint-topbar-widget.active {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.18);
+}
+.maint-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.maint-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseMaintGreen 2s infinite cubic-bezier(0.66, 0, 0, 1);
+  transition: all 0.3s ease;
+}
+.maint-topbar-widget.active .maint-status-dot {
+  background: var(--amber);
+  animation: pulseMaintAmber 1.4s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+@keyframes pulseMaintGreen {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+@keyframes pulseMaintAmber {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); }
+  70% { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+.maint-status-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--txt-2);
+  transition: color 0.25s ease;
+}
+.maint-topbar-widget.active .maint-status-text {
+  color: #F59E0B;
+}
+
+/* Compact Topbar Switch */
+.maint-toggle-switch {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+}
+.maint-switch-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: background-color 0.28s ease, box-shadow 0.28s ease;
+  position: relative;
+}
+[data-theme="light"] .maint-switch-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+.maint-toggle-switch.is-on .maint-switch-track {
+  background: #F59E0B;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+.maint-switch-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  transform: translateX(0);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.maint-toggle-switch.is-on .maint-switch-thumb {
+  transform: translateX(16px);
+}
+.maint-switch-spinner {
+  display: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #07090F;
+  border-radius: 50%;
+  animation: maintSpin 0.6s linear infinite;
+}
+.maint-toggle-switch.is-busy .maint-switch-spinner {
+  display: block;
+}
+@keyframes maintSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Control Card in Overview */
+.maint-control-card {
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.maint-control-card.active {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 28px rgba(245, 158, 11, 0.08);
+}
+.maint-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+.maint-control-card.active .maint-card-icon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+}
+
+/* Hero Switch Banner */
+.maint-switch-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-wrap: wrap;
+}
+.maint-control-card.active .maint-switch-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.maint-switch-info {
+  flex: 1;
+  min-width: 260px;
+}
+.maint-switch-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 4px;
+}
+.maint-switch-title strong {
+  color: var(--green);
+  transition: color 0.25s ease;
+}
+.maint-control-card.active .maint-switch-title strong {
+  color: #F59E0B;
+}
+.maint-switch-desc {
+  font-size: 12.5px;
+  color: var(--txt-2);
+  line-height: 1.5;
+}
+.maint-switch-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Large Hero Switch Button */
+.maint-hero-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  padding: 8px 16px 8px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.maint-hero-switch:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-mid);
+  transform: translateY(-1px);
+}
+.maint-hero-switch:active {
+  transform: scale(0.98);
+}
+.maint-hero-switch.is-on {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.maint-hero-track {
+  width: 52px;
+  height: 28px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.maint-hero-switch.is-on .maint-hero-track {
+  background: #F59E0B;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+}
+.maint-hero-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transform: translateX(0);
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10B981;
+}
+.maint-hero-switch.is-on .maint-hero-thumb {
+  transform: translateX(24px);
+  color: #F59E0B;
+}
+.maint-thumb-icon-off,
+.maint-thumb-icon-on {
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.maint-thumb-icon-on {
+  display: none;
+}
+.maint-hero-switch.is-on .maint-thumb-icon-off {
+  display: none;
+}
+.maint-hero-switch.is-on .maint-thumb-icon-on {
+  display: block;
+}
+.maint-hero-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--txt);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .maint-switch-banner { flex-direction: column; align-items: stretch; }
+  .maint-switch-cta { justify-content: flex-start; }
+}
 </style>
 </head>
 <body>
@@ -532,7 +804,8 @@ input,textarea,select{font-family:var(--ff);}
     </button>
     <button class="nav-item" data-perm="ecosystem" onclick="switchAdminTab('ecosystem', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      Innovation Ecosystem
+      <span>Innovation Ecosystem</span>
+      <span class="badge" id="navEcoPendingBadge" style="display:none;background:#F59E0B;color:#000;font-size:10px;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:auto;">0</span>
     </button>
     <button class="nav-item" data-perm="users" onclick="switchAdminTab('users', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -585,6 +858,21 @@ input,textarea,select{font-family:var(--ff);}
     </button>
     <span class="topbar-title" id="adminTopbarTitle">Overview</span>
     <div class="topbar-actions">
+      <!-- Master Site Maintenance Mode Switch (Topbar Pill) -->
+      <div class="maint-topbar-widget" id="maintTopbarWidget" title="Platform Maintenance Mode Switch">
+        <div class="maint-status-indicator" id="maintStatusIndicator">
+          <span class="maint-status-dot" id="maintStatusDot"></span>
+          <span class="maint-status-text" id="maintStatusText">SITE LIVE</span>
+        </div>
+        <button type="button" class="maint-toggle-switch" id="topbarMaintToggle" role="switch" aria-checked="false" onclick="toggleSiteMaintenance()" title="Toggle Maintenance Mode">
+          <span class="maint-switch-track">
+            <span class="maint-switch-thumb" id="topbarMaintThumb">
+              <span class="maint-switch-spinner" id="topbarMaintSpinner"></span>
+            </span>
+          </span>
+        </button>
+      </div>
+
       <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
@@ -640,6 +928,120 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-label">Coupon PINs</div>
           <div class="stat-value" id="kpiOverviewCoupons" style="color:var(--purple);">0</div>
           <div class="stat-sub">Available and redeemed PINs</div>
+        </div>
+      </div>
+
+      <!-- ══ SITE STATUS & MAINTENANCE MODE CONTROL PANEL ══ -->
+      <div class="card maint-control-card" id="maintControlCard" style="margin-top:20px;">
+        <div class="card-header maint-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="maint-card-icon" id="maintCardIcon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div>
+              <div class="card-title" style="display:flex;align-items:center;gap:10px;font-size:15px;">
+                <span>Platform System Status &amp; Maintenance Mode</span>
+                <span class="badge" id="maintOverviewBadge" style="background:rgba(16,185,129,0.14);color:#10B981;border:1px solid rgba(16,185,129,0.25);">OPERATIONAL</span>
+              </div>
+              <div class="card-sub">Control global public access, deploy maintenance screens with 3D animation, and broadcast upgrade notices.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <a href="includes/maintenance_view.php" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Preview Maintenance Screen</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="maint-card-body" style="padding-top:10px;">
+          <!-- Main Interactive Toggle Banner -->
+          <div class="maint-switch-banner" id="maintSwitchBanner">
+            <div class="maint-switch-info">
+              <div class="maint-switch-title" id="maintBannerTitle">Maintenance Mode is currently <strong id="maintBannerState">OFF</strong></div>
+              <div class="maint-switch-desc" id="maintBannerDesc">All public routes and member areas are completely accessible. Activating maintenance mode will immediately lock public access and display the high-tech 3D spatial maintenance interface.</div>
+            </div>
+            <div class="maint-switch-cta">
+              <button type="button" class="maint-hero-switch" id="overviewMaintToggle" role="switch" aria-checked="false" onclick="toggleSiteMaintenance()" title="Toggle Maintenance Mode">
+                <span class="maint-hero-track">
+                  <span class="maint-hero-thumb" id="overviewMaintThumb">
+                    <svg class="maint-thumb-icon-off" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg class="maint-thumb-icon-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </span>
+                </span>
+                <span class="maint-hero-label" id="overviewMaintBtnLabel">Turn Maintenance ON</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Configuration Form -->
+          <form id="maintConfigForm" onsubmit="saveMaintenanceSettings(event)" style="margin-top:16px;">
+            <div class="form-row" style="grid-template-columns: 2fr 1fr; margin-bottom:12px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">
+                  <span>Maintenance Headline / Title</span>
+                  <span class="label-hint">Shown in 3D header</span>
+                </label>
+                <input type="text" id="cfgMaintTitle" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. Platform Infrastructure Optimization">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">
+                  <span>Estimated Time of Completion (ETA)</span>
+                  <span class="label-hint">Shown in telemetry panel</span>
+                </label>
+                <input type="text" id="cfgMaintEta" class="form-input" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;" placeholder="e.g. 15 Minutes or 2:00 PM UTC">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">
+                <span>Public Notice / Reason Message</span>
+                <span class="label-hint">Visible to all visitors during maintenance</span>
+              </label>
+              <textarea id="cfgMaintMessage" rows="2" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;resize:vertical;" placeholder="Describe the ongoing maintenance or system upgrade..."></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+              <button type="submit" class="btn btn-primary" id="btnSaveMaintConfig" style="display:inline-flex;align-items:center;gap:8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Save &amp; Broadcast Notice</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Recent Payout & Withdrawal Requests Card in Overview -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Recent Payout &amp; Withdrawal Requests</span>
+            </div>
+            <div class="card-sub">Real-time withdrawal queue. Review, approve bank settlements, and change status from Processing to Paid.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="loadAdminOverview()">Refresh</button>
+            <button class="btn btn-primary btn-sm" onclick="switchTab('withdrawals')">Open Withdrawals Tab &rarr;</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Amount</th>
+                <th>Wallet</th>
+                <th>Bank &amp; Account</th>
+                <th>Beneficiary Name</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="overviewWithdrawalsTableBody">
+              <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--txt-3);">Loading payout requests...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1247,20 +1649,34 @@ input,textarea,select{font-family:var(--ff);}
             <label class="form-label">Affiliate Balance Fee (NGN)</label>
             <input type="number" class="form-input" id="adminEcoCashFee" min="0" step="1" required placeholder="e.g. 300">
           </div>
-          <div class="form-group" style="margin-bottom:0;display:flex;flex-direction:column;gap:8px;">
+          <div class="form-group" style="margin-bottom:0;display:flex;flex-direction:column;gap:6px;">
             <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
               <input type="checkbox" id="adminEcoAllowMemberPosts" checked>
               <span>Allow Member Uploads</span>
             </label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
-              <input type="checkbox" id="adminEcoAutoApprove">
-              <span>Auto-Approve Submissions</span>
-            </label>
+            <div style="font-size:11.5px;color:var(--amber);display:flex;align-items:center;gap:5px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Anti-Scam: Mandatory Admin Review</span>
+            </div>
           </div>
           <div>
             <button type="submit" class="btn btn-secondary" id="btnSaveEcoSettings" style="width:100%;">Save Settings</button>
           </div>
         </form>
+      </div>
+
+      <!-- Pending Submissions Alert Banner -->
+      <div id="adminEcoPendingAlertBanner" style="display:none;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:12px 16px;margin-bottom:16px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;color:#F59E0B;flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--txt);">Pending Ecosystem Submissions Awaiting Approval</div>
+            <div style="font-size:12px;color:var(--txt-2);">You have submissions waiting for anti-scam review. Inspect details and approve to make them live.</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="filterAdminEcoPendingOnly()" style="border-color:rgba(245,158,11,0.5);color:#F59E0B;font-weight:700;">View Pending (<span id="adminEcoPendingBannerCount">0</span>)</button>
       </div>
 
       <!-- Listings Table Card -->
@@ -1724,11 +2140,26 @@ input,textarea,select{font-family:var(--ff);}
         </div>
       </div>
 
-      <!-- Pending Payout Requests Card -->
+      <!-- Withdrawal Transactions & Settlement Queue Card -->
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">Pending Payout Requests</div>
-          <button class="btn btn-ghost btn-sm" onclick="loadWithdrawalsData()">Refresh</button>
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Withdrawal Transactions &amp; Settlement Queue</span>
+            </div>
+            <div class="card-sub">Review withdrawal requests, authorize bank settlements, and change status from Processing to Paid.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <!-- Filter Pills -->
+            <div class="filter-pills" style="display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;">
+              <button type="button" class="btn btn-xs wd-filter-btn active" id="btnFilterWdAll" onclick="filterWithdrawalsTab('all')" style="border-radius:7px;padding:4px 10px;font-size:11.5px;font-weight:600;">All (<span id="cntWdAll">0</span>)</button>
+              <button type="button" class="btn btn-xs wd-filter-btn" id="btnFilterWdPending" onclick="filterWithdrawalsTab('pending')" style="border-radius:7px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--amber);">Processing (<span id="cntWdPending">0</span>)</button>
+              <button type="button" class="btn btn-xs wd-filter-btn" id="btnFilterWdPaid" onclick="filterWithdrawalsTab('paid')" style="border-radius:7px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--green);">Paid (<span id="cntWdPaid">0</span>)</button>
+              <button type="button" class="btn btn-xs wd-filter-btn" id="btnFilterWdRejected" onclick="filterWithdrawalsTab('rejected')" style="border-radius:7px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--danger);">Rejected (<span id="cntWdRejected">0</span>)</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="loadWithdrawalsData()">Refresh</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table class="data-table">
@@ -1741,11 +2172,12 @@ input,textarea,select{font-family:var(--ff);}
                 <th>Account</th>
                 <th>Account Name</th>
                 <th>Date</th>
+                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="withdrawalsTableBody">
-              <tr><td colspan="8" style="text-align:center;padding:20px;">Loading withdrawals...</td></tr>
+              <tr><td colspan="9" style="text-align:center;padding:20px;">Loading withdrawals...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1761,11 +2193,15 @@ input,textarea,select{font-family:var(--ff);}
         <form onsubmit="handleSavePricing(event)">
           <div class="form-group">
             <label class="form-label">Registration Fee (₦)</label>
-            <input type="number" class="form-input" id="cfgRegFee" value="1000">
+            <input type="number" class="form-input" id="cfgRegFee" value="5000">
           </div>
           <div class="form-group">
-            <label class="form-label">Referral Commission Cash (₦)</label>
-            <input type="number" class="form-input" id="cfgRefComm" value="500">
+            <label class="form-label">Direct Referral Commission Cash (₦)</label>
+            <input type="number" class="form-input" id="cfgRefComm" value="3000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Indirect Referral Commission Cash (Level 2) (₦)</label>
+            <input type="number" class="form-input" id="cfgIndirectRefComm" value="200">
           </div>
           <div class="form-group">
             <label class="form-label">Minimum Points Withdrawal (Tasks & Surveys)</label>
@@ -2295,21 +2731,43 @@ input,textarea,select{font-family:var(--ff);}
           <input type="text" class="form-input" id="adminPostEcoTitle" required placeholder="e.g. VIP Ambassador Program, Exclusive VTU API">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Category</label>
-            <select class="form-input" id="adminPostEcoCategory" required>
-              <option value="Business Opportunity">Business Opportunity</option>
-              <option value="Digital Product">Digital Product</option>
-              <option value="Gigs & Services">Gigs & Services</option>
-              <option value="Tech & Tools">Tech & Tools</option>
-              <option value="Crypto & Web3">Crypto & Web3</option>
-              <option value="Other">Other</option>
-            </select>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="adminPostEcoCategory" required>
+            <option value="Business Opportunity">Business Opportunity</option>
+            <option value="Digital Product">Digital Product</option>
+            <option value="Gigs & Services">Gigs & Services</option>
+            <option value="Tech & Tools">Tech & Tools</option>
+            <option value="Crypto & Web3">Crypto & Web3</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Optional Price Tag Section for Admin -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--txt);cursor:pointer;margin-bottom:0;">
+              <input type="checkbox" id="adminPostEcoHasPrice" onchange="toggleAdminEcoPriceOption()" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+              <span>Does this official post warrant a price tag?</span>
+            </label>
+            <span class="item-tag" id="adminEcoPriceStatusBadge" style="font-size:10px;padding:2px 6px;color:var(--green);border-color:rgba(16,185,129,0.3);">Price Tag Active</span>
           </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Deal / Price Tag</label>
-            <input type="text" class="form-input" id="adminPostEcoPrice" placeholder="e.g. Free Official Access, Wholesale Rates">
+          <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">
+            Enable if this official offer has a price, discount, or package fee. Uncheck if this is a free access, announcement, or general opportunity.
+          </div>
+
+          <div id="adminEcoPriceFieldsWrap" style="margin-top:10px;">
+            <div class="form-group" style="margin-bottom:6px;">
+              <label class="form-label" style="font-size:11.5px;">Price Tag / Deal Terms</label>
+              <input type="text" class="form-input" id="adminPostEcoPrice" placeholder="e.g. Free Official Access, ₦5,000, Wholesale Rates">
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+              <span style="font-size:10.5px;color:var(--txt-3);">Presets:</span>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAdminEcoPricePreset('Free Access')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">Free Access</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAdminEcoPricePreset('₦5,000')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">₦5,000</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAdminEcoPricePreset('₦10,000')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">₦10,000</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setAdminEcoPricePreset('Negotiable / Contact')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">Negotiable / Contact</button>
+            </div>
           </div>
         </div>
 
@@ -2333,6 +2791,51 @@ input,textarea,select{font-family:var(--ff);}
         <button type="submit" class="btn btn-primary" id="btnAdminSubmitEco">Publish Official Post</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: Admin Review Ecosystem Listing Details -->
+<div class="modal-backdrop" id="modalAdminViewEcoItem">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <div class="modal-title" id="adminViewEcoModalTitle">Review Ecosystem Listing</div>
+      <button class="modal-close" onclick="closeModal('modalAdminViewEcoItem')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div id="adminViewEcoPendingAlert" style="display:none;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:10px 14px;font-size:12px;color:#D97706;align-items:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Pending Admin Approval:</strong> Inspect link, offer pitch, price tag, and author details to prevent scams before publishing live to all members.</span>
+      </div>
+
+      <div id="adminViewEcoImageWrap" style="display:none;width:100%;max-height:220px;overflow:hidden;border-radius:8px;border:1px solid var(--border);">
+        <img id="adminViewEcoImage" src="" alt="Banner" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span class="badge badge-neutral" id="adminViewEcoCategory">Category</span>
+          <span id="adminViewEcoStatusBadge"></span>
+        </div>
+        <span style="font-size:13.5px;font-weight:700;color:var(--green);" id="adminViewEcoPrice">Price Tag</span>
+      </div>
+
+      <div style="font-size:16px;font-weight:700;color:var(--txt);line-height:1.35;" id="adminViewEcoTitle"></div>
+      <div style="font-size:13px;color:var(--txt-2);line-height:1.6;white-space:pre-line;background:var(--surface);padding:12px;border-radius:8px;border:1px solid var(--border);" id="adminViewEcoDesc"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:var(--txt-2);background:var(--surface);padding:12px;border-radius:8px;border:1px solid var(--border);">
+        <div>Author: <strong style="color:var(--txt);" id="adminViewEcoAuthor">-</strong></div>
+        <div>Fee Paid: <strong style="color:var(--accent);" id="adminViewEcoFee">-</strong></div>
+        <div>Submitted: <span id="adminViewEcoDate">-</span></div>
+        <div>Contact Link: <a href="#" target="_blank" rel="noopener noreferrer" id="adminViewEcoLink" style="color:var(--accent);text-decoration:underline;">Open Link</a></div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modalAdminViewEcoItem')">Close</button>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn btn-ghost" id="btnAdminModalReject" onclick="rejectCurrentAdminEcoItem()" style="color:var(--amber);">Reject</button>
+        <button type="button" class="btn btn-primary" id="btnAdminModalApprove" onclick="approveCurrentAdminEcoItem()">Approve &amp; Publish Live</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -4752,39 +5255,138 @@ async function demoteVendorToMember(username, name) {
 // ═══════════════════════════════════════════════════════════════════════════
 // WITHDRAWALS LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
+let allWithdrawalsList = [];
+let currentWdFilter = 'all';
+
+function getWithdrawalStatusBadge(status) {
+  const st = (status || 'processing').toLowerCase();
+  if (st === 'paid' || st === 'approved') {
+    return '<span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">Paid</span>';
+  } else if (st === 'rejected' || st === 'declined') {
+    return '<span class="badge" style="background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">Rejected</span>';
+  }
+  return '<span class="badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">Processing</span>';
+}
+
+function getWithdrawalActionHtml(w) {
+  const st = (w.status || 'processing').toLowerCase();
+  const id = esc(w.id || w.txn_id || '');
+  if (st === 'paid' || st === 'approved') {
+    return '<span style="color:#10B981;font-weight:700;font-size:11.5px;display:inline-flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paid</span>';
+  } else if (st === 'rejected' || st === 'declined') {
+    return '<span style="color:#EF4444;font-size:11.5px;font-weight:600;">Declined</span>';
+  }
+  return `<div style="display:flex;gap:6px;">
+    <button class="btn btn-success btn-xs" onclick="approveWithdrawal('${id}')" style="font-weight:700;padding:4px 10px;">Approve (Pay)</button>
+    <button class="btn btn-danger btn-xs" onclick="rejectWithdrawal('${id}')" style="padding:4px 8px;">Reject</button>
+  </div>`;
+}
+
+function filterWithdrawalsTab(filter) {
+  currentWdFilter = filter;
+  ['all','pending','paid','rejected'].forEach(f => {
+    const btn = document.getElementById('btnFilterWd' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (btn) {
+      if (f === filter) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+  renderWithdrawalsTable();
+}
+
+function renderWithdrawalsTable() {
+  const tbody = document.getElementById('withdrawalsTableBody');
+  if (!tbody) return;
+
+  let filtered = allWithdrawalsList;
+  if (currentWdFilter === 'pending') {
+    filtered = allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'pending' || st === 'processing';
+    });
+  } else if (currentWdFilter === 'paid') {
+    filtered = allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'paid' || st === 'approved';
+    });
+  } else if (currentWdFilter === 'rejected') {
+    filtered = allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'rejected' || st === 'declined';
+    });
+  }
+
+  if (!filtered.length) {
+    const emptyMsg = currentWdFilter === 'all' ? 'No withdrawal transactions recorded yet.' : `No ${currentWdFilter} withdrawals found.`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--txt-3);">${emptyMsg}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(w => {
+    const amtStr = w.amount_formatted || ('₦' + Number(w.amount || 0).toLocaleString());
+    const walletLabel = esc(w.wallet_type || (w.service_type === 'task' ? 'Task Points' : 'Referral Cash'));
+    const dateStr = esc(w.date_formatted || w.created_at || '');
+    return `
+      <tr>
+        <td><strong>@${esc(w.username)}</strong></td>
+        <td><strong style="color:var(--txt);">${amtStr}</strong></td>
+        <td><span style="font-size:11.5px;color:var(--txt-2);">${walletLabel}</span></td>
+        <td>${esc(w.bank_name || w.bank || '-')}</td>
+        <td style="font-family:monospace;font-size:12px;">${esc(w.account_number || w.account || '-')}</td>
+        <td>${esc(w.account_name || w.beneficiary_name || '-')}</td>
+        <td style="font-size:11px;color:var(--txt-3);white-space:nowrap;">${dateStr}</td>
+        <td>${getWithdrawalStatusBadge(w.status)}</td>
+        <td>${getWithdrawalActionHtml(w)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
 async function loadWithdrawalsData() {
   loadWithdrawalSettings();
-  const tbody = document.getElementById('withdrawalsTableBody');
   try {
-    const r = await fetch('/api/withdrawals.php?action=get_pending');
+    const r = await fetch('/api/withdrawals.php?action=get_requests&_t=' + Date.now());
     const d = await r.json();
-    const list = d.requests || d.withdrawals || [];
-    document.getElementById('kpiPayouts').textContent = list.length;
+    allWithdrawalsList = d.requests || d.withdrawals || [];
 
-    if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--txt-3);">No pending payouts.</td></tr>';
-      return;
-    }
-    tbody.innerHTML = list.map(w => `
-      <tr>
-        <td><strong>${esc(w.username)}</strong></td>
-        <td><strong>₦${Number(w.amount).toLocaleString()}</strong></td>
-        <td>${esc(w.wallet_type || 'cash')}</td>
-        <td>${esc(w.bank_name || '-')}</td>
-        <td>${esc(w.account_number || '-')}</td>
-        <td>${esc(w.account_name || '-')}</td>
-        <td style="font-size:11px;">${esc(w.created_at || '')}</td>
-        <td>
-          <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${esc(w.id)}')">Approve</button>
-          <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${esc(w.id)}')">Reject</button>
-        </td>
-      </tr>
-    `).join('');
-  } catch(e){}
+    const pendingCount = (allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'pending' || st === 'processing';
+    })).length;
+    const paidCount = (allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'paid' || st === 'approved';
+    })).length;
+    const rejectedCount = (allWithdrawalsList.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'rejected' || st === 'declined';
+    })).length;
+
+    const elKpi = document.getElementById('kpiPayouts');
+    if (elKpi) elKpi.textContent = pendingCount;
+
+    const cAll = document.getElementById('cntWdAll');
+    if (cAll) cAll.textContent = allWithdrawalsList.length;
+    const cPend = document.getElementById('cntWdPending');
+    if (cPend) cPend.textContent = pendingCount;
+    const cPaid = document.getElementById('cntWdPaid');
+    if (cPaid) cPaid.textContent = paidCount;
+    const cRej = document.getElementById('cntWdRejected');
+    if (cRej) cRej.textContent = rejectedCount;
+
+    renderWithdrawalsTable();
+  } catch(e) {
+    console.error('Error loading withdrawals:', e);
+  }
 }
 
 async function approveWithdrawal(id) {
-  const ok = await confirmAction({ title: 'Approve Payout', message: 'Mark this payout as approved and settled to member bank?', confirmText: 'Approve Payout', confirmClass: 'btn-success' });
+  const ok = await confirmAction({ 
+    title: 'Approve & Mark as Paid', 
+    message: 'Authorize bank settlement for this payout? The status will immediately change from Processing to Paid.', 
+    confirmText: 'Approve (Mark Paid)', 
+    confirmClass: 'btn-success' 
+  });
   if (!ok) return;
   try {
     const r = await fetch('/api/withdrawals.php?action=approve_withdrawal', {
@@ -4794,15 +5396,24 @@ async function approveWithdrawal(id) {
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      toast('Payout approved successfully!', 'success');
+      toast('Payout approved! Status changed from Processing to Paid.', 'success');
       loadWithdrawalsData();
       loadAdminOverview();
+    } else {
+      toast(d.message || d.error || 'Failed to approve payout', 'error');
     }
-  } catch(e){}
+  } catch(e) {
+    toast('Network error approving payout', 'error');
+  }
 }
 
 async function rejectWithdrawal(id) {
-  const ok = await confirmAction({ title: 'Reject Payout', message: 'Reject this payout and return funds to member wallet?', confirmText: 'Reject Payout', confirmClass: 'btn-danger' });
+  const ok = await confirmAction({ 
+    title: 'Reject Payout', 
+    message: 'Reject this payout request and return funds to member wallet?', 
+    confirmText: 'Reject & Refund', 
+    confirmClass: 'btn-danger' 
+  });
   if (!ok) return;
   try {
     const r = await fetch('/api/withdrawals.php?action=reject_withdrawal', {
@@ -4812,11 +5423,15 @@ async function rejectWithdrawal(id) {
     });
     const d = await r.json();
     if (d.status === 'success' || d.success) {
-      toast('Payout rejected', 'info');
+      toast('Payout rejected and refunded', 'info');
       loadWithdrawalsData();
       loadAdminOverview();
+    } else {
+      toast(d.message || d.error || 'Failed to reject payout', 'error');
     }
-  } catch(e){}
+  } catch(e) {
+    toast('Network error rejecting payout', 'error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -5017,6 +5632,7 @@ async function loadPricingData() {
     const p = d.pricing || {};
     if (p.reg_fee) document.getElementById('cfgRegFee').value = p.reg_fee;
     if (p.ref_commission) document.getElementById('cfgRefComm').value = p.ref_commission;
+    if (p.indirect_ref_commission) document.getElementById('cfgIndirectRefComm').value = p.indirect_ref_commission;
     if (p.min_points_withdrawal !== undefined) {
       document.getElementById('cfgMinPointsWd').value = p.min_points_withdrawal;
     } else if (p.min_withdrawal) {
@@ -5035,8 +5651,9 @@ async function handleSavePricing(e) {
   const minPts = parseFloat(document.getElementById('cfgMinPointsWd').value) || 1000;
   const minCash = parseFloat(document.getElementById('cfgMinCashWd').value) || 5000;
   const payload = {
-    reg_fee: parseFloat(document.getElementById('cfgRegFee').value) || 1000,
-    ref_commission: parseFloat(document.getElementById('cfgRefComm').value) || 500,
+    reg_fee: parseFloat(document.getElementById('cfgRegFee').value) || 5000,
+    ref_commission: parseFloat(document.getElementById('cfgRefComm').value) || 3000,
+    indirect_ref_commission: parseFloat(document.getElementById('cfgIndirectRefComm').value) || 200,
     min_points_withdrawal: minPts,
     min_cash_withdrawal: minCash,
     min_withdrawal: minCash
@@ -5488,6 +6105,29 @@ async function loadAdminEcosystem() {
       if (kViews) kViews.textContent = views;
       if (kLikes) kLikes.textContent = likes;
 
+      // Update Sidebar pending counter badge
+      const navBadge = document.getElementById('navEcoPendingBadge');
+      if (navBadge) {
+        if (pending > 0) {
+          navBadge.textContent = pending;
+          navBadge.style.display = 'inline-block';
+        } else {
+          navBadge.style.display = 'none';
+        }
+      }
+
+      // Update Pending Alert Banner
+      const banner = document.getElementById('adminEcoPendingAlertBanner');
+      const bannerCount = document.getElementById('adminEcoPendingBannerCount');
+      if (banner) {
+        if (pending > 0) {
+          banner.style.display = 'flex';
+          if (bannerCount) bannerCount.textContent = pending;
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+
       renderAdminEcoTable(adminEcoItems);
     } else {
       let items = customEco.filter(it => !deletedEco.includes(it.id));
@@ -5517,11 +6157,22 @@ function filterAdminEcoTable() {
     list = list.filter(it =>
       (it.title || '').toLowerCase().includes(q) ||
       (it.author || '').toLowerCase().includes(q) ||
+      (it.price_tag || '').toLowerCase().includes(q) ||
       (it.description || '').toLowerCase().includes(q)
     );
   }
   renderAdminEcoTable(list);
 }
+
+function filterAdminEcoPendingOnly() {
+  const sel = document.getElementById('adminEcoStatusFilter');
+  if (sel) {
+    sel.value = 'pending';
+    filterAdminEcoTable();
+  }
+}
+
+let currentAdminReviewEcoId = null;
 
 function renderAdminEcoTable(list) {
   const tbody = document.getElementById('adminEcoTableBody');
@@ -5546,9 +6197,9 @@ function renderAdminEcoTable(list) {
     let statusBadge = '';
     const st = (item.status || 'active').toLowerCase();
     if (st === 'pending') {
-      statusBadge = '<span class="badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);">Pending Approval</span>';
+      statusBadge = '<span class="badge" style="background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-weight:700;">Pending Approval</span>';
     } else if (st === 'rejected') {
-      statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);">Rejected</span>';
+      statusBadge = '<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;">Rejected</span>';
     } else if (st === 'paused') {
       statusBadge = '<span class="badge badge-paused">Paused</span>';
     } else {
@@ -5558,34 +6209,38 @@ function renderAdminEcoTable(list) {
     let actionsHtml = '';
     if (st === 'pending') {
       actionsHtml = `
+        <button class="btn btn-secondary btn-sm" onclick="openAdminViewEcoModal('${esc(item.id)}')" title="Review details &amp; anti-scam check">Review</button>
         <button class="btn btn-primary btn-sm" onclick="approveAdminEcoItem('${esc(item.id)}')" title="Approve and make listing live">Approve</button>
         <button class="btn btn-ghost btn-sm" onclick="rejectAdminEcoItem('${esc(item.id)}')" style="color:var(--amber);" title="Reject submission">Reject</button>
-        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
         <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
       `;
     } else if (st === 'rejected') {
       actionsHtml = `
+        <button class="btn btn-secondary btn-sm" onclick="openAdminViewEcoModal('${esc(item.id)}')" title="View details">View</button>
         <button class="btn btn-primary btn-sm" onclick="approveAdminEcoItem('${esc(item.id)}')" title="Re-approve submission">Approve</button>
-        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
         <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
       `;
     } else {
       actionsHtml = `
+        <button class="btn btn-secondary btn-sm" onclick="openAdminViewEcoModal('${esc(item.id)}')" title="View details">View</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleAdminEcoStatus('${esc(item.id)}')">
           ${st === 'active' ? 'Pause' : 'Activate'}
         </button>
-        ${item.contact_link ? `<a href="${esc(item.contact_link)}" target="_blank" class="btn btn-secondary btn-sm" title="Open Link">Link</a>` : ''}
         <button class="btn btn-danger btn-sm" onclick="deleteAdminEcoItem('${esc(item.id)}')">Delete</button>
       `;
     }
 
+    const priceTagHtml = item.price_tag && item.price_tag.trim()
+      ? `<span style="color:var(--green);font-weight:700;background:rgba(16,185,129,0.1);padding:1px 6px;border-radius:4px;border:1px solid rgba(16,185,129,0.2);">${esc(item.price_tag)}</span>`
+      : '<span style="color:var(--txt-3);font-size:11px;">No price tag</span>';
+
     return `
-      <tr>
+      <tr style="${st === 'pending' ? 'background:rgba(245,158,11,0.03);' : ''}">
         <td>
           <div style="font-weight:600;color:var(--txt);line-height:1.35;">${esc(item.title)}</div>
           <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
             ${badgeType}
-            <span style="color:var(--green);font-weight:600;">${esc(item.price_tag || '')}</span>
+            ${priceTagHtml}
           </div>
         </td>
         <td><span class="badge badge-neutral" style="white-space:nowrap;">${esc(item.category)}</span></td>
@@ -5605,6 +6260,75 @@ function renderAdminEcoTable(list) {
       </tr>
     `;
   }).join('');
+}
+
+function openAdminViewEcoModal(id) {
+  const item = adminEcoItems.find(x => x.id === id);
+  if (!item) return;
+  currentAdminReviewEcoId = id;
+
+  document.getElementById('adminViewEcoTitle').textContent = item.title;
+  document.getElementById('adminViewEcoCategory').textContent = item.category;
+  document.getElementById('adminViewEcoDesc').textContent = item.description;
+  document.getElementById('adminViewEcoAuthor').textContent = item.author;
+  document.getElementById('adminViewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'No Price Tag (Free / Open)';
+  document.getElementById('adminViewEcoFee').textContent = item.is_official ? 'Free (Admin Post)' : (item.payment_method === 'points' ? (item.fee_paid + ' PTS') : ((item.fee_paid || 0).toLocaleString() + ' NGN'));
+  document.getElementById('adminViewEcoDate').textContent = item.created_at || 'Recently';
+
+  const linkEl = document.getElementById('adminViewEcoLink');
+  if (linkEl) {
+    if (item.contact_link) {
+      linkEl.href = item.contact_link;
+      linkEl.style.display = 'inline';
+    } else {
+      linkEl.style.display = 'none';
+    }
+  }
+
+  const isPending = (item.status || '').toLowerCase() === 'pending';
+  const alertEl = document.getElementById('adminViewEcoPendingAlert');
+  if (alertEl) alertEl.style.display = isPending ? 'flex' : 'none';
+
+  const stBadge = document.getElementById('adminViewEcoStatusBadge');
+  if (stBadge) {
+    if (isPending) {
+      stBadge.innerHTML = '<span class="badge" style="background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-weight:700;">Pending Approval</span>';
+    } else if (item.status === 'rejected') {
+      stBadge.innerHTML = '<span class="badge" style="background:rgba(239,68,68,0.18);color:#EF4444;border:1px solid rgba(239,68,68,0.4);font-weight:700;">Rejected</span>';
+    } else {
+      stBadge.innerHTML = '<span class="badge badge-active">Active &amp; Approved</span>';
+    }
+  }
+
+  const imgWrap = document.getElementById('adminViewEcoImageWrap');
+  const imgEl = document.getElementById('adminViewEcoImage');
+  if (imgWrap && imgEl) {
+    if (item.image_url) {
+      imgEl.src = item.image_url;
+      imgWrap.style.display = 'block';
+    } else {
+      imgWrap.style.display = 'none';
+    }
+  }
+
+  const btnApprove = document.getElementById('btnAdminModalApprove');
+  const btnReject = document.getElementById('btnAdminModalReject');
+  if (btnApprove) btnApprove.style.display = isPending || item.status === 'rejected' ? 'inline-block' : 'none';
+  if (btnReject) btnReject.style.display = isPending ? 'inline-block' : 'none';
+
+  openModal('modalAdminViewEcoItem');
+}
+
+async function approveCurrentAdminEcoItem() {
+  if (!currentAdminReviewEcoId) return;
+  closeModal('modalAdminViewEcoItem');
+  await approveAdminEcoItem(currentAdminReviewEcoId);
+}
+
+async function rejectCurrentAdminEcoItem() {
+  if (!currentAdminReviewEcoId) return;
+  closeModal('modalAdminViewEcoItem');
+  await rejectAdminEcoItem(currentAdminReviewEcoId);
 }
 
 async function approveAdminEcoItem(id) {
@@ -5702,7 +6426,45 @@ async function handleSaveEcoSettings(e) {
   }
 }
 
+function toggleAdminEcoPriceOption() {
+  const chk = document.getElementById('adminPostEcoHasPrice');
+  const wrap = document.getElementById('adminEcoPriceFieldsWrap');
+  const badge = document.getElementById('adminEcoPriceStatusBadge');
+  const inp = document.getElementById('adminPostEcoPrice');
+  if (!chk || !wrap) return;
+  if (chk.checked) {
+    wrap.style.display = 'block';
+    if (badge) {
+      badge.textContent = 'Price Tag Active';
+      badge.style.color = 'var(--green)';
+      badge.style.borderColor = 'rgba(16,185,129,0.3)';
+    }
+  } else {
+    wrap.style.display = 'none';
+    if (inp) inp.value = '';
+    if (badge) {
+      badge.textContent = 'No Price Tag';
+      badge.style.color = 'var(--txt-3)';
+      badge.style.borderColor = 'var(--border)';
+    }
+  }
+}
+
+function setAdminEcoPricePreset(val) {
+  const inp = document.getElementById('adminPostEcoPrice');
+  const chk = document.getElementById('adminPostEcoHasPrice');
+  if (chk && !chk.checked) {
+    chk.checked = true;
+    toggleAdminEcoPriceOption();
+  }
+  if (inp) {
+    inp.value = val;
+    inp.focus();
+  }
+}
+
 function openAdminPostEcoModal() {
+  toggleAdminEcoPriceOption();
   openModal('modalAdminPostEcosystem');
 }
 
@@ -5710,7 +6472,8 @@ async function handleAdminPostEcoSubmit(e) {
   e.preventDefault();
   const title = document.getElementById('adminPostEcoTitle')?.value.trim();
   const category = document.getElementById('adminPostEcoCategory')?.value;
-  const price = document.getElementById('adminPostEcoPrice')?.value.trim();
+  const hasPrice = document.getElementById('adminPostEcoHasPrice')?.checked !== false;
+  const price = hasPrice ? (document.getElementById('adminPostEcoPrice')?.value.trim() || '') : '';
   const link = document.getElementById('adminPostEcoLink')?.value.trim();
   const desc = document.getElementById('adminPostEcoDesc')?.value.trim();
   const image = document.getElementById('adminPostEcoImage')?.value.trim();
@@ -5729,6 +6492,7 @@ async function handleAdminPostEcoSubmit(e) {
       body: JSON.stringify({
         title: title,
         category: category,
+        has_price: hasPrice,
         price_tag: price,
         contact_link: link,
         description: desc,
@@ -5848,18 +6612,216 @@ async function deleteAdminEcoItem(id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// UTILS
+// PLATFORM MAINTENANCE MODE CONTROLLER
+// ═══════════════════════════════════════════════════════════════════════════
+let currentMaintenanceState = false;
+let isTogglingMaintenance = false;
+
+async function loadMaintenanceStatus() {
+  try {
+    const res = await fetch('/api/maintenance.php?action=get_status&_t=' + Date.now(), {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    const data = await res.json();
+    if (data && data.status === 'success' && data.maintenance) {
+      updateMaintenanceUI(data.maintenance);
+    }
+  } catch (err) {
+    console.error('Error fetching maintenance status:', err);
+  }
+}
+
+function updateMaintenanceUI(maint) {
+  currentMaintenanceState = Boolean(maint && maint.enabled);
+
+  // 1. Topbar Switch & Badge
+  const topbarWidget = document.getElementById('maintTopbarWidget');
+  const topbarToggle = document.getElementById('topbarMaintToggle');
+  const topbarText = document.getElementById('maintStatusText');
+
+  if (topbarWidget && topbarToggle && topbarText) {
+    if (currentMaintenanceState) {
+      topbarWidget.classList.add('active');
+      topbarToggle.classList.add('is-on');
+      topbarToggle.setAttribute('aria-checked', 'true');
+      topbarText.textContent = 'MAINTENANCE ON';
+    } else {
+      topbarWidget.classList.remove('active');
+      topbarToggle.classList.remove('is-on');
+      topbarToggle.setAttribute('aria-checked', 'false');
+      topbarText.textContent = 'SITE LIVE';
+    }
+  }
+
+  // 2. Overview Card & Hero Switch
+  const card = document.getElementById('maintControlCard');
+  const badge = document.getElementById('maintOverviewBadge');
+  const bannerState = document.getElementById('maintBannerState');
+  const heroToggle = document.getElementById('overviewMaintToggle');
+  const heroLabel = document.getElementById('overviewMaintBtnLabel');
+
+  if (card && badge && bannerState && heroToggle && heroLabel) {
+    if (currentMaintenanceState) {
+      card.classList.add('active');
+      badge.textContent = 'MAINTENANCE MODE';
+      badge.style.background = 'rgba(245,158,11,0.15)';
+      badge.style.color = '#F59E0B';
+      badge.style.borderColor = 'rgba(245,158,11,0.35)';
+      bannerState.textContent = 'ACTIVE (LOCKED)';
+      bannerState.style.color = '#F59E0B';
+      heroToggle.classList.add('is-on');
+      heroToggle.setAttribute('aria-checked', 'true');
+      heroLabel.textContent = 'Deactivate Maintenance (Go Live)';
+    } else {
+      card.classList.remove('active');
+      badge.textContent = 'OPERATIONAL & LIVE';
+      badge.style.background = 'rgba(16,185,129,0.14)';
+      badge.style.color = '#10B981';
+      badge.style.borderColor = 'rgba(16,185,129,0.25)';
+      bannerState.textContent = 'OFF (PUBLIC)';
+      bannerState.style.color = '#10B981';
+      heroToggle.classList.remove('is-on');
+      heroToggle.setAttribute('aria-checked', 'false');
+      heroLabel.textContent = 'Turn Maintenance ON';
+    }
+  }
+
+  // 3. Form Input fields
+  const titleInput = document.getElementById('cfgMaintTitle');
+  const msgInput = document.getElementById('cfgMaintMessage');
+  const etaInput = document.getElementById('cfgMaintEta');
+  if (titleInput && (!titleInput.value || document.activeElement !== titleInput)) {
+    titleInput.value = maint.title || '';
+  }
+  if (msgInput && (!msgInput.value || document.activeElement !== msgInput)) {
+    msgInput.value = maint.message || '';
+  }
+  if (etaInput && (!etaInput.value || document.activeElement !== etaInput)) {
+    etaInput.value = maint.estimated_end || '';
+  }
+}
+
+async function toggleSiteMaintenance(desiredState = null) {
+  if (isTogglingMaintenance) return;
+  isTogglingMaintenance = true;
+
+  const newState = desiredState !== null ? desiredState : !currentMaintenanceState;
+  const topbarToggle = document.getElementById('topbarMaintToggle');
+  if (topbarToggle) topbarToggle.classList.add('is-busy');
+
+  try {
+    const res = await fetch('/api/maintenance.php?action=toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: newState })
+    });
+    const data = await res.json();
+    if (data && data.status === 'success') {
+      updateMaintenanceUI(data.maintenance);
+      if (typeof toast === 'function') {
+        if (newState) {
+          toast('Maintenance Mode ACTIVATED. Public visitors now see the 3D maintenance portal.', 'info');
+        } else {
+          toast('Maintenance Mode DEACTIVATED. Site is now live to all members.', 'success');
+        }
+      }
+    } else {
+      if (typeof toast === 'function') toast(data.message || 'Failed to toggle maintenance mode', 'error');
+    }
+  } catch (err) {
+    console.error('Error toggling maintenance mode:', err);
+    if (typeof toast === 'function') toast('Network error updating maintenance state', 'error');
+  } finally {
+    isTogglingMaintenance = false;
+    if (topbarToggle) topbarToggle.classList.remove('is-busy');
+  }
+}
+
+async function saveMaintenanceSettings(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const btn = document.getElementById('btnSaveMaintConfig');
+  const title = document.getElementById('cfgMaintTitle')?.value || '';
+  const message = document.getElementById('cfgMaintMessage')?.value || '';
+  const estimated_end = document.getElementById('cfgMaintEta')?.value || '';
+
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-block;animation:maintSpin 0.6s linear infinite;margin-right:6px;">↻</span> Saving Notice...';
+  }
+
+  try {
+    const res = await fetch('/api/maintenance.php?action=save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title,
+        message: message,
+        estimated_end: estimated_end,
+        enabled: currentMaintenanceState
+      })
+    });
+    const data = await res.json();
+    if (data && data.status === 'success') {
+      updateMaintenanceUI(data.maintenance);
+      if (typeof toast === 'function') toast('Maintenance settings and public broadcast saved successfully.', 'success');
+    } else {
+      if (typeof toast === 'function') toast(data.message || 'Failed to save maintenance settings', 'error');
+    }
+  } catch (err) {
+    console.error('Error saving maintenance settings:', err);
+    if (typeof toast === 'function') toast('Network error saving settings', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // OVERVIEW COMMAND CENTER LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 async function loadAdminOverview() {
-  // Update pending payouts counter
+  loadMaintenanceStatus();
+  // Update pending payouts counter and Overview table
   try {
-    const r = await fetch('/api/withdrawals.php?action=get_pending');
+    const r = await fetch('/api/withdrawals.php?action=get_requests&_t=' + Date.now());
     const d = await r.json();
     const list = d.requests || d.withdrawals || [];
+    const pendingCount = (list.filter(w => {
+      const st = (w.status || '').toLowerCase();
+      return st === 'pending' || st === 'processing';
+    })).length;
     const el = document.getElementById('kpiPayouts');
-    if (el) el.textContent = list.length;
+    if (el) el.textContent = pendingCount;
+
+    const ovTbody = document.getElementById('overviewWithdrawalsTableBody');
+    if (ovTbody) {
+      if (!list.length) {
+        ovTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--txt-3);">No withdrawal requests submitted yet.</td></tr>';
+      } else {
+        ovTbody.innerHTML = list.slice(0, 10).map(w => {
+          const amtStr = w.amount_formatted || ('₦' + Number(w.amount || 0).toLocaleString());
+          const walletLabel = esc(w.wallet_type || (w.service_type === 'task' ? 'Task Points' : 'Referral Cash'));
+          const dateStr = esc(w.date_formatted || w.created_at || '');
+          const bankAcc = `${esc(w.bank_name || w.bank || '-')} • <span style="font-family:monospace;">${esc(w.account_number || w.account || '-')}</span>`;
+          return `
+            <tr>
+              <td><strong>@${esc(w.username)}</strong></td>
+              <td><strong style="color:var(--txt);">${amtStr}</strong></td>
+              <td><span style="font-size:11.5px;color:var(--txt-2);">${walletLabel}</span></td>
+              <td>${bankAcc}</td>
+              <td>${esc(w.account_name || w.beneficiary_name || '-')}</td>
+              <td style="font-size:11px;color:var(--txt-3);white-space:nowrap;">${dateStr}</td>
+              <td>${typeof getWithdrawalStatusBadge === 'function' ? getWithdrawalStatusBadge(w.status) : esc(w.status || 'Processing')}</td>
+              <td>${typeof getWithdrawalActionHtml === 'function' ? getWithdrawalActionHtml(w) : ''}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
   } catch(e) {}
 
   // Update registered users counter & total site amount
@@ -6273,6 +7235,7 @@ function esc(str) {
 document.addEventListener('DOMContentLoaded', () => {
   applySubAdminPermissions();
   restoreAdminActiveTab();
+  loadMaintenanceStatus();
   loadAdminOverview();
   loadPricingData();
   loadSurveysData();

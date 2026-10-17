@@ -17,9 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../includes/storage_helper.php';
 
 $defaultPricing = [
-    'reg_fee' => 1000,
-    'ref_commission' => 500,
-    'vendor_wholesale' => 800,
+    'reg_fee' => 5000,
+    'ref_commission' => 3000,
+    'indirect_ref_commission' => 200,
+    'vendor_wholesale' => 4000,
     'task_points_reward' => 150,
     'min_points_withdrawal' => 1000,
     'min_cash_withdrawal' => 5000,
@@ -47,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($input['reg_fee'])) $pricing['reg_fee'] = floatval($input['reg_fee']);
     if (isset($input['ref_commission'])) $pricing['ref_commission'] = floatval($input['ref_commission']);
+    if (isset($input['indirect_ref_commission'])) $pricing['indirect_ref_commission'] = floatval($input['indirect_ref_commission']);
     if (isset($input['vendor_wholesale'])) $pricing['vendor_wholesale'] = floatval($input['vendor_wholesale']);
     if (isset($input['min_points_withdrawal'])) $pricing['min_points_withdrawal'] = floatval($input['min_points_withdrawal']);
     if (isset($input['min_cash_withdrawal'])) {

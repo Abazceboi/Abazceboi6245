@@ -17,9 +17,9 @@ export class RevenueForecaster {
         this.monthlyTasksEl = document.getElementById('calcMonthlyTasks');
         this.monthlyCashEl = document.getElementById('calcMonthlyCash');
         this.monthlyTotalEl = document.getElementById('calcMonthlyTotal');
-        const taskRate = this.card ? parseInt(this.card.dataset.taskRate || '150', 10) : 150;
-        const refRate = this.card ? parseInt(this.card.dataset.referralRate || '250', 10) : 250;
-        const fee = this.card ? parseInt(this.card.dataset.regFee || '500', 10) : 500;
+        const taskRate = this.card ? parseInt(String(this.card.dataset.taskRate || '150').replace(/,/g, ''), 10) : 150;
+        const refRate = this.card ? parseInt(String(this.card.dataset.referralRate || '3000').replace(/,/g, ''), 10) : 3000;
+        const fee = this.card ? parseInt(String(this.card.dataset.regFee || '5000').replace(/,/g, ''), 10) : 5000;
         this.state = {
             dailyTasks: this.tasksSlider ? parseInt(this.tasksSlider.value, 10) : 10,
             dailyReferrals: this.refsSlider ? parseInt(this.refsSlider.value, 10) : 2,

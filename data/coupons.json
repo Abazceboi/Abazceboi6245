@@ -219,5 +219,13 @@
     "usedBy": null,
     "used_at": null,
     "created_at": "2026-10-03T20:13:40.863Z"
+  },
+  {
+    "code": "INX-TEST-1792230627758",
+    "pin": "INX-TEST-1792230627758",
+    "amount": 5000,
+    "status": "active",
+    "is_used": false,
+    "created_at": "2026-10-17T09:50:27.763Z"
   }
 ]

@@ -316,7 +316,7 @@ if ($action === 'toggle_manual' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Request management
-if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
+if ($action === 'get_requests' || $action === 'get_user_withdrawals' || $action === 'get_pending' || $action === 'get_all' || $action === 'get_all_withdrawals') {
     $reqs = readStorageJson('data/withdrawals.json', []);
     if (!is_array($reqs)) $reqs = [];
     $filterUser = $_GET['username'] ?? '';
@@ -325,7 +325,33 @@ if ($action === 'get_requests' || $action === 'get_user_withdrawals') {
             return strtolower($r['username'] ?? '') === strtolower($filterUser);
         }));
     }
-    echo json_encode(['status' => 'success', 'requests' => $reqs]);
+
+    $pendingReqs = array_values(array_filter($reqs, function($r) {
+        $st = strtolower($r['status'] ?? '');
+        return ($st === 'pending' || $st === 'processing');
+    }));
+    $paidReqs = array_values(array_filter($reqs, function($r) {
+        $st = strtolower($r['status'] ?? '');
+        return ($st === 'paid' || $st === 'approved');
+    }));
+    $rejectedReqs = array_values(array_filter($reqs, function($r) {
+        $st = strtolower($r['status'] ?? '');
+        return ($st === 'rejected' || $st === 'declined');
+    }));
+
+    // If caller specifically requested get_pending without requesting all, we provide pending list while still exposing full metadata
+    echo json_encode([
+        'status' => 'success',
+        'requests' => $reqs,
+        'withdrawals' => $reqs,
+        'pending' => $pendingReqs,
+        'paid' => $paidReqs,
+        'rejected' => $rejectedReqs,
+        'pending_count' => count($pendingReqs),
+        'paid_count' => count($paidReqs),
+        'rejected_count' => count($rejectedReqs),
+        'total_count' => count($reqs)
+    ]);
     exit;
 }
 
@@ -529,8 +555,8 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'net_amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' PTS'),
         'wallet_type' => $targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
         'service_type' => $targetWallet,
-        'status' => 'Pending',
-        'status_label' => 'QUEUED FOR INSTANT SETTLEMENT',
+        'status' => 'Processing',
+        'status_label' => 'Processing',
         'created_at' => date('Y-m-d H:i:s', $now),
         'date_formatted' => $dateFormatted,
         'security_hash' => $secHash,
@@ -588,41 +614,162 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-if ($action === 'approve_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-    $id = $input['id'] ?? '';
+if (($action === 'approve_request' || $action === 'approve_withdrawal') && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = !empty($jsonInput) ? $jsonInput : (json_decode(file_get_contents('php://input'), true) ?? $_POST);
+    $id = trim($input['id'] ?? ($input['txn_id'] ?? ''));
     $reqs = readStorageJson('data/withdrawals.json', []);
     if (!is_array($reqs)) $reqs = [];
+    $found = false;
+    $targetUsername = '';
+    $targetAmount = 0;
+    $targetBank = '';
+    $targetAcc = '';
+
     foreach ($reqs as &$r) {
         if (($r['id'] ?? '') === $id || ($r['txn_id'] ?? '') === $id) {
-            $r['status'] = 'Approved';
+            $r['status'] = 'Paid';
+            $r['status_label'] = 'Paid';
             $r['approved_at'] = date('Y-m-d H:i:s');
+            $r['paid_at'] = date('Y-m-d H:i:s');
+            $found = true;
+            $targetUsername = $r['username'] ?? '';
+            $targetAmount = $r['amount'] ?? 0;
+            $targetBank = $r['bank_name'] ?? ($r['bank'] ?? 'Bank Account');
+            $targetAcc = $r['account_number'] ?? ($r['account'] ?? '');
             break;
         }
     }
     unset($r);
-    writeStorageJson('data/withdrawals.json', $reqs);
-    echo json_encode(['status' => 'success', 'message' => 'Withdrawal request approved!']);
+
+    if ($found) {
+        writeStorageJson('data/withdrawals.json', $reqs);
+
+        // Update user activity ledger in users.json
+        if (!empty($targetUsername)) {
+            $usersData = readStorageJson('data/users.json', ['users' => []]);
+            if (isset($usersData['users']) && is_array($usersData['users'])) {
+                foreach ($usersData['users'] as &$u) {
+                    if (strtolower($u['username'] ?? '') === strtolower($targetUsername)) {
+                        if (isset($u['activity_ledger']) && is_array($u['activity_ledger'])) {
+                            foreach ($u['activity_ledger'] as &$ledgerItem) {
+                                if (isset($ledgerItem['receipt']) && is_array($ledgerItem['receipt'])) {
+                                    if (($ledgerItem['receipt']['id'] ?? '') === $id || ($ledgerItem['receipt']['txn_id'] ?? '') === $id) {
+                                        $ledgerItem['receipt']['status'] = 'Paid';
+                                        $ledgerItem['receipt']['status_label'] = 'Paid';
+                                        $ledgerItem['receipt']['paid_at'] = date('Y-m-d H:i:s');
+                                    }
+                                }
+                            }
+                            unset($ledgerItem);
+                        }
+                        break;
+                    }
+                }
+                unset($u);
+                writeStorageJson('data/users.json', $usersData);
+            }
+
+            // Also send in-app notification
+            $notifs = readStorageJson('data/notifications.json', []);
+            if (!is_array($notifs)) $notifs = [];
+            $notifId = 'notif_' . time() . '_' . rand(100, 999);
+            $amtStr = is_numeric($targetAmount) ? '₦' . number_format($targetAmount, 2) : $targetAmount;
+            $notifs[] = [
+                'id' => $notifId,
+                'target_username' => $targetUsername,
+                'title' => 'Withdrawal Settled & Paid',
+                'message' => "Your withdrawal payout of {$amtStr} has been approved and paid to {$targetBank} ({$targetAcc}). Status: Paid.",
+                'type' => 'success',
+                'created_at' => date('Y-m-d H:i:s'),
+                'read' => false
+            ];
+            writeStorageJson('data/notifications.json', $notifs);
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Withdrawal request approved and status marked as Paid!',
+            'id' => $id,
+            'withdrawal_status' => 'Paid'
+        ]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Withdrawal transaction not found.']);
+    }
     exit;
 }
 
-if ($action === 'reject_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-    $id = $input['id'] ?? '';
+if (($action === 'reject_request' || $action === 'reject_withdrawal') && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = !empty($jsonInput) ? $jsonInput : (json_decode(file_get_contents('php://input'), true) ?? $_POST);
+    $id = trim($input['id'] ?? ($input['txn_id'] ?? ''));
     $reason = $input['reason'] ?? 'Declined by administration';
     $reqs = readStorageJson('data/withdrawals.json', []);
     if (!is_array($reqs)) $reqs = [];
+    $found = false;
+    $targetUsername = '';
+    $targetAmount = 0;
+    $targetWallet = 'affiliate';
+
     foreach ($reqs as &$r) {
         if (($r['id'] ?? '') === $id || ($r['txn_id'] ?? '') === $id) {
             $r['status'] = 'Rejected';
+            $r['status_label'] = 'Rejected';
             $r['rejection_reason'] = $reason;
             $r['rejected_at'] = date('Y-m-d H:i:s');
+            $found = true;
+            $targetUsername = $r['username'] ?? '';
+            $targetAmount = floatval($r['amount'] ?? 0);
+            $targetWallet = ($r['service_type'] ?? '') === 'task' ? 'task' : 'affiliate';
             break;
         }
     }
     unset($r);
-    writeStorageJson('data/withdrawals.json', $reqs);
-    echo json_encode(['status' => 'success', 'message' => 'Withdrawal request rejected.']);
+
+    if ($found) {
+        writeStorageJson('data/withdrawals.json', $reqs);
+
+        // Refund user balance and update ledger
+        if (!empty($targetUsername)) {
+            $usersData = readStorageJson('data/users.json', ['users' => []]);
+            if (isset($usersData['users']) && is_array($usersData['users'])) {
+                foreach ($usersData['users'] as &$u) {
+                    if (strtolower($u['username'] ?? '') === strtolower($targetUsername)) {
+                        if ($targetWallet === 'task') {
+                            $pts = intval($u['remaining_pts'] ?? $u['pointsBalance'] ?? 0) + intval(ceil($targetAmount));
+                            $u['remaining_pts'] = $pts;
+                            $u['pointsBalance'] = $pts;
+                        } else {
+                            $csh = floatval($u['remaining_cash'] ?? $u['cashBalance'] ?? 0) + $targetAmount;
+                            $u['remaining_cash'] = $csh;
+                            $u['cashBalance'] = $csh;
+                        }
+                        if (isset($u['activity_ledger']) && is_array($u['activity_ledger'])) {
+                            foreach ($u['activity_ledger'] as &$ledgerItem) {
+                                if (isset($ledgerItem['receipt']) && is_array($ledgerItem['receipt'])) {
+                                    if (($ledgerItem['receipt']['id'] ?? '') === $id || ($ledgerItem['receipt']['txn_id'] ?? '') === $id) {
+                                        $ledgerItem['receipt']['status'] = 'Rejected';
+                                        $ledgerItem['receipt']['status_label'] = 'Rejected';
+                                    }
+                                }
+                            }
+                            unset($ledgerItem);
+                        }
+                        break;
+                    }
+                }
+                unset($u);
+                writeStorageJson('data/users.json', $usersData);
+            }
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Withdrawal request rejected and funds returned to member wallet.',
+            'id' => $id,
+            'withdrawal_status' => 'Rejected'
+        ]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Withdrawal transaction not found.']);
+    }
     exit;
 }
 

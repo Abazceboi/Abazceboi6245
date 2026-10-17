@@ -51,6 +51,10 @@ require_once __DIR__ . '/includes/header.php';
  </li>
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+ <span>Indirect Referral Cash Reward: <strong>₦<?= INDIRECT_REFERRAL_BONUS ?> Real Cash / 2nd-Tier Downline</strong></span>
+ </li>
+ <li>
+ <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
  <span>Free Daily Lucky Spin Wheel: <strong>Win PTS & Cash</strong></span>
  </li>
  <li>

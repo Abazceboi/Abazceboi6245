@@ -354,9 +354,32 @@ button, a, input, select, textarea, .admin-card, .dash-panel {
 }
 
 [data-theme="light"] .footer {
-  background: #F1F5F9 !important;
+  background: #F8FAFC !important;
   border-top: 1px solid #E2E8F0 !important;
+  color: #64748B !important;
 }
+
+[data-theme="light"] .footer-brand,
+[data-theme="light"] .footer-brand span {
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .footer p {
+  color: #64748B !important;
+}
+
+[data-theme="light"] .footer-links a {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .footer-links a:hover {
+  color: #0284C7 !important;
+}
+
+[data-theme="light"] .footer-links span {
+  color: #94A3B8 !important;
+}
+
 
 /* ===== Hero Tag Badge & Title in Light Mode ===== */
 [data-theme="light"] .hero-tag-badge {

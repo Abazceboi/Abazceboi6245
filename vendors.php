@@ -514,58 +514,115 @@ if (file_exists($telegramConfigFile)) {
         gap: 20px;
     }
 
+    /* Vendors Grid */
+    .vendors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 22px;
+    }
+
     .vendor-card {
-        background: var(--v-bg-card);
-        border: 1px solid var(--v-border);
-        border-radius: 14px;
-        padding: 18px 18px 16px;
+        background: linear-gradient(180deg, #10192A 0%, #0A101D 100%);
+        border: 1px solid rgba(56, 189, 248, 0.16);
+        border-radius: 18px;
+        padding: 22px 20px 20px;
         display: flex;
         flex-direction: column;
-        gap: 13px;
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        gap: 15px;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
         box-sizing: border-box;
         width: 100%;
     }
+    .vendor-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #38BDF8, #0284C7, transparent);
+        opacity: 0.8;
+    }
     .vendor-card:hover {
-        border-color: rgba(56, 189, 248, 0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.35);
+        border-color: rgba(56, 189, 248, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 18px 44px -4px rgba(2, 132, 199, 0.35), inset 0 1px 0 rgba(56, 189, 248, 0.3);
     }
 
     .vendor-top-row {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
     }
 
     .vendor-photo-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(56, 189, 248, 0.08));
-        border: 1.5px solid rgba(56, 189, 248, 0.25);
-        overflow: hidden;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(56, 189, 248, 0.1));
+        border: 1.5px solid rgba(56, 189, 248, 0.35);
+        position: relative;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.15rem;
+        font-size: 1.3rem;
         font-weight: 800;
         color: #38BDF8;
         font-family: var(--font-display);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
     }
     .vendor-photo-box img {
         width: 100%;
         height: 100%;
+        border-radius: 12px;
         object-fit: cover;
+    }
+
+    /* Live Online Status Badge on Avatar */
+    .vendor-online-indicator {
+        position: absolute;
+        bottom: -3px;
+        right: -3px;
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+    .badge-pulse {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #10B981;
+        opacity: 0.75;
+        animation: vendorPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .badge-dot {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        border: 2px solid #0B1120;
+    }
+    @keyframes vendorPulse {
+        0% { transform: scale(0.95); opacity: 0.8; }
+        70% { transform: scale(2.2); opacity: 0; }
+        100% { transform: scale(0.95); opacity: 0; }
     }
 
     .vendor-info-col {
         flex: 1;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
     }
 
     .vendor-name-row {
@@ -573,33 +630,32 @@ if (file_exists($telegramConfigFile)) {
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-bottom: 3px;
     }
 
     .vendor-name {
-        font-size: 1rem;
-        font-weight: 700;
+        font-size: 1.05rem;
+        font-weight: 800;
         color: #FFFFFF;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         font-family: var(--font-display);
-        letter-spacing: -0.01em;
+        letter-spacing: -0.015em;
     }
 
     .pill-verified {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 2px 7px;
+        padding: 3px 8px;
         border-radius: 9999px;
         background: rgba(16, 185, 129, 0.14);
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        border: 1px solid rgba(16, 185, 129, 0.35);
         color: #34D399;
         font-size: 0.68rem;
-        font-weight: 700;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
         flex-shrink: 0;
     }
 
@@ -613,9 +669,10 @@ if (file_exists($telegramConfigFile)) {
     .vendor-location {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
         font-size: 0.78rem;
         color: var(--v-text-muted);
+        font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -624,8 +681,12 @@ if (file_exists($telegramConfigFile)) {
     .pill-rating {
         display: inline-flex;
         align-items: center;
-        gap: 3px;
-        font-size: 0.74rem;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.28);
+        font-size: 0.72rem;
         color: #F59E0B;
         font-weight: 700;
         flex-shrink: 0;
@@ -636,11 +697,11 @@ if (file_exists($telegramConfigFile)) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 10px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 0.73rem;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: rgba(2, 132, 199, 0.05);
+        border: 1px solid rgba(56, 189, 248, 0.14);
+        font-size: 0.75rem;
     }
 
     .vendor-trust-item {
@@ -648,28 +709,40 @@ if (file_exists($telegramConfigFile)) {
         align-items: center;
         gap: 6px;
         color: var(--v-text-muted);
+        font-weight: 600;
     }
 
     .vendor-status-dot {
-        width: 6px;
-        height: 6px;
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
         background: #10B981;
-        box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
         display: inline-block;
     }
 
     .vendor-trust-tag {
-        font-weight: 600;
+        font-weight: 700;
         color: #38BDF8;
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         letter-spacing: 0.2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .vendor-actions-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .vendor-buttons-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 10px;
         width: 100%;
         box-sizing: border-box;
     }
@@ -678,41 +751,42 @@ if (file_exists($telegramConfigFile)) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border-radius: 8px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #4ADE80;
-        border: 1px solid rgba(34, 197, 94, 0.3);
-        font-size: 0.8rem;
+        gap: 7px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        font-size: 0.82rem;
         font-weight: 700;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.2s ease;
         box-sizing: border-box;
     }
     .btn-vendor-wa:hover {
-        background: #16A34A;
+        background: #10B981;
         color: #FFFFFF;
-        border-color: #16A34A;
+        border-color: #10B981;
         transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
     }
 
     .btn-vendor-tg {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border-radius: 8px;
+        gap: 7px;
+        padding: 10px 14px;
+        border-radius: 10px;
         background: rgba(14, 165, 233, 0.12);
         color: #38BDF8;
         border: 1px solid rgba(14, 165, 233, 0.3);
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         font-weight: 700;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.2s ease;
         box-sizing: border-box;
     }
     .btn-vendor-tg:hover {
@@ -720,6 +794,7 @@ if (file_exists($telegramConfigFile)) {
         color: #FFFFFF;
         border-color: #0284C7;
         transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
     }
 
     .btn-vendor-order {
@@ -727,23 +802,25 @@ if (file_exists($telegramConfigFile)) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 7px;
-        padding: 10px 14px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #D97706, #B45309);
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0284C7 0%, #0099D8 50%, #0284C7 100%);
         color: #FFFFFF;
-        font-size: 0.82rem;
+        font-size: 0.86rem;
         font-weight: 700;
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
+        letter-spacing: 0.3px;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35);
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         box-sizing: border-box;
     }
     .btn-vendor-order:hover {
-        background: linear-gradient(135deg, #B45309, #92400E);
+        background: linear-gradient(135deg, #0369A1 0%, #0284C7 50%, #38BDF8 100%);
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(217, 119, 6, 0.35);
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+        border-color: #38BDF8;
     }
 
     /* Contact Order Modal */
@@ -992,12 +1069,20 @@ if (file_exists($telegramConfigFile)) {
     [data-theme="light"] .vendor-card {
         background: #FFFFFF !important;
         border-color: #E2E8F0 !important;
-        box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+        box-shadow: 0 10px 28px -4px rgba(2, 132, 199, 0.07), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    [data-theme="light"] .vendor-card::before {
+        background: linear-gradient(90deg, transparent, #0284C7, #38BDF8, transparent) !important;
     }
 
     [data-theme="light"] .vendor-card:hover {
-        border-color: #CBD5E1 !important;
-        box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.08) !important;
+        border-color: #38BDF8 !important;
+        box-shadow: 0 16px 36px -4px rgba(2, 132, 199, 0.16) !important;
+    }
+
+    [data-theme="light"] .badge-dot {
+        border-color: #FFFFFF !important;
     }
 
     [data-theme="light"] .vendor-name {
@@ -1009,8 +1094,8 @@ if (file_exists($telegramConfigFile)) {
     }
 
     [data-theme="light"] .vendor-photo-box {
-        background: #EFF6FF !important;
-        border-color: #BFDBFE !important;
+        background: linear-gradient(135deg, #E0F2FE, #BAE6FD) !important;
+        border-color: #7DD3FC !important;
         color: #0284C7 !important;
     }
 
@@ -1021,12 +1106,18 @@ if (file_exists($telegramConfigFile)) {
     }
 
     [data-theme="light"] .pill-rating {
+        background: #FFFBEB !important;
+        border-color: #FDE68A !important;
         color: #D97706 !important;
     }
 
     [data-theme="light"] .vendor-trust-strip {
         background: #F8FAFC !important;
         border-color: #E2E8F0 !important;
+    }
+
+    [data-theme="light"] .vendor-trust-item {
+        color: #475569 !important;
     }
 
     [data-theme="light"] .vendor-trust-tag {
@@ -1058,10 +1149,55 @@ if (file_exists($telegramConfigFile)) {
     }
 
     [data-theme="light"] .btn-vendor-order {
-        background: linear-gradient(135deg, #D97706, #B45309) !important;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
         color: #FFFFFF !important;
-        border: none !important;
-        box-shadow: 0 4px 14px rgba(217, 119, 6, 0.2) !important;
+        border: 1px solid #0284C7 !important;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.28) !important;
+    }
+
+    [data-theme="light"] .btn-vendor-order:hover {
+        background: linear-gradient(135deg, #0369A1 0%, #0284C7 100%) !important;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4) !important;
+    }
+
+    /* Enhanced Footer Contrast & Visibility in Light Mode (Image 2 Fix) */
+    [data-theme="light"] .footer {
+        background: #F8FAFC !important;
+        border-top: 1px solid #E2E8F0 !important;
+        color: #334155 !important;
+    }
+
+    [data-theme="light"] .footer-brand,
+    [data-theme="light"] .footer-brand span {
+        color: #0F172A !important;
+        font-weight: 800 !important;
+    }
+
+    [data-theme="light"] .footer p {
+        color: #475569 !important;
+    }
+
+    [data-theme="light"] .footer a {
+        color: #0284C7 !important;
+    }
+
+    [data-theme="light"] .footer-links a {
+        color: #334155 !important;
+        font-weight: 500 !important;
+    }
+
+    [data-theme="light"] .footer-links a:hover {
+        color: #0284C7 !important;
+    }
+
+    [data-theme="light"] .footer-dot {
+        color: #94A3B8 !important;
+    }
+
+    [data-theme="light"] .logo-icon {
+        background: linear-gradient(135deg, #0284C7, #38BDF8) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
     }
 
     /* Light Theme Floating Header */
@@ -1337,6 +1473,10 @@ if (file_exists($telegramConfigFile)) {
                             <?php else: ?>
                                 <span><?= strtoupper(substr($vName, 0, 1)) ?></span>
                             <?php endif; ?>
+                            <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
+                                <span class="badge-pulse"></span>
+                                <span class="badge-dot"></span>
+                            </div>
                         </div>
                         <div class="vendor-info-col">
                             <div class="vendor-name-row">
@@ -1353,7 +1493,7 @@ if (file_exists($telegramConfigFile)) {
                                 </span>
                                 <span class="pill-rating">
                                     <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                    5.0
+                                    5.0 Rating
                                 </span>
                             </div>
                         </div>
@@ -1364,14 +1504,17 @@ if (file_exists($telegramConfigFile)) {
                             <span class="vendor-status-dot"></span>
                             <span>Instant Code Delivery</span>
                         </div>
-                        <span class="vendor-trust-tag">Official Partner</span>
+                        <span class="vendor-trust-tag">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Official Partner
+                        </span>
                     </div>
 
-                    <div>
+                    <div class="vendor-actions-group">
                         <div class="vendor-buttons-row">
                             <?php if (!empty($vPhone)): ?>
                             <a href="https://wa.me/<?= htmlspecialchars($vPhone) ?>?text=<?= urlencode('Hello ' . $vName . ', I want to buy an INNOVATIONX activation code.') ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                                 <span>WhatsApp</span>
                             </a>
                             <?php else: ?>
@@ -1380,7 +1523,7 @@ if (file_exists($telegramConfigFile)) {
 
                             <?php if (!empty($cleanTg)): ?>
                             <a href="<?= htmlspecialchars($cleanTg) ?>" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                                 <span>Telegram</span>
                             </a>
                             <?php else: ?>
@@ -1394,7 +1537,7 @@ if (file_exists($telegramConfigFile)) {
                             'telegram' => $cleanTg ?: $vTg,
                             'location' => $vLocation
                         ])) ?>)">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
                             <span>Request Activation Code</span>
                         </button>
                     </div>
@@ -1628,11 +1771,11 @@ if (file_exists($telegramConfigFile)) {
                         : `<span>${escHtml(vName.charAt(0).toUpperCase())}</span>`;
 
                     const waBtn = vPhone
-                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg><span>WhatsApp</span></a>`
+                        ? `<a href="https://wa.me/${escHtml(vPhone)}?text=${encodeURIComponent('Hello ' + vName + ', I want to buy an INNOVATIONX activation code.')}" target="_blank" rel="noopener noreferrer" class="btn-vendor-wa"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg><span>WhatsApp</span></a>`
                         : `<span class="btn-vendor-wa" style="opacity:0.5;pointer-events:none;">No WhatsApp</span>`;
 
                     const tgBtn = cleanTg
-                        ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a>`
+                        ? `<a href="${escHtml(cleanTg)}" target="_blank" rel="noopener noreferrer" class="btn-vendor-tg"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></a>`
                         : `<span class="btn-vendor-tg" style="opacity:0.5;pointer-events:none;">No Telegram</span>`;
 
                     const vDataJson = JSON.stringify({ name: vName, phone: vPhone, telegram: cleanTg || vTg, location: vLocation }).replace(/"/g, '&quot;');
@@ -1640,7 +1783,13 @@ if (file_exists($telegramConfigFile)) {
                     return `
                         <div class="vendor-card" data-search="${escHtml(searchData)}">
                             <div class="vendor-top-row">
-                                <div class="vendor-photo-box">${avatarHtml}</div>
+                                <div class="vendor-photo-box">
+                                    ${avatarHtml}
+                                    <div class="vendor-online-indicator" title="Vendor Active &amp; Ready">
+                                        <span class="badge-pulse"></span>
+                                        <span class="badge-dot"></span>
+                                    </div>
+                                </div>
                                 <div class="vendor-info-col">
                                     <div class="vendor-name-row">
                                         <span class="vendor-name">${escHtml(vName)}</span>
@@ -1656,7 +1805,7 @@ if (file_exists($telegramConfigFile)) {
                                         </span>
                                         <span class="pill-rating">
                                             <svg width="11" height="11" viewBox="0 0 24 24" fill="#F59E0B" stroke="#F59E0B" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                            5.0
+                                            5.0 Rating
                                         </span>
                                     </div>
                                 </div>
@@ -1667,16 +1816,19 @@ if (file_exists($telegramConfigFile)) {
                                     <span class="vendor-status-dot"></span>
                                     <span>Instant Code Delivery</span>
                                 </div>
-                                <span class="vendor-trust-tag">Official Partner</span>
+                                <span class="vendor-trust-tag">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Official Partner
+                                </span>
                             </div>
 
-                            <div>
+                            <div class="vendor-actions-group">
                                 <div class="vendor-buttons-row">
                                     ${waBtn}
                                     ${tgBtn}
                                 </div>
                                 <button type="button" class="btn-vendor-order" onclick="openVendorContactModal(${vDataJson})">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1.5 1.5L4 19l-2 3 3-2 13.5-13.5M16 5l3 3"/></svg>
                                     <span>Request Activation Code</span>
                                 </button>
                             </div>

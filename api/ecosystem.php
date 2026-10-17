@@ -69,7 +69,8 @@ if ($action === 'get_items') {
             'title'             => $item['title'] ?? '',
             'category'          => $item['category'] ?? 'General Opportunity',
             'description'       => $item['description'] ?? '',
-            'price_tag'         => $item['price_tag'] ?? 'Deal Available',
+            'price_tag'         => $item['price_tag'] ?? '',
+            'has_price'         => isset($item['has_price']) ? !empty($item['has_price']) : (!empty($item['price_tag']) && strtolower(trim($item['price_tag'])) !== 'no price'),
             'author'            => $item['author'] ?? 'Member',
             'author_role'       => $item['author_role'] ?? 'member',
             'is_official'       => !empty($item['is_official']),
@@ -184,7 +185,8 @@ if ($action === 'create_item') {
     $title       = trim($input['title'] ?? '');
     $category    = trim($input['category'] ?? 'Business Opportunity');
     $description = trim($input['description'] ?? '');
-    $priceTag    = trim($input['price_tag'] ?? 'Deal Available');
+    $hasPrice    = isset($input['has_price']) ? !empty($input['has_price']) : (!empty($input['price_tag']) && strtolower(trim($input['price_tag'])) !== 'no price');
+    $priceTag    = $hasPrice ? trim($input['price_tag'] ?? '') : '';
     $contactLink = trim($input['contact_link'] ?? '');
     $imageUrl    = trim($input['image_url'] ?? '');
     $username    = trim($input['username'] ?? '');
@@ -248,7 +250,7 @@ if ($action === 'create_item') {
                     array_unshift($u['activity_ledger'], [
                         'time'         => date('d/m/Y, H:i'),
                         'type'         => 'Ecosystem Listing Fee',
-                        'desc'         => "Published ecosystem opportunity: {$title}",
+                        'desc'         => "Submitted ecosystem opportunity: {$title} (Pending Admin Review)",
                         'reward_type'  => 'points',
                         'reward_value' => -$ptsRequired
                     ]);
@@ -271,7 +273,7 @@ if ($action === 'create_item') {
                     array_unshift($u['activity_ledger'], [
                         'time'         => date('d/m/Y, H:i'),
                         'type'         => 'Ecosystem Listing Fee',
-                        'desc'         => "Published ecosystem opportunity: {$title}",
+                        'desc'         => "Submitted ecosystem opportunity: {$title} (Pending Admin Review)",
                         'reward_type'  => 'cash',
                         'reward_value' => -$cashRequired
                     ]);
@@ -294,6 +296,7 @@ if ($action === 'create_item') {
         'category'          => $category,
         'description'       => $description,
         'price_tag'         => $priceTag,
+        'has_price'         => $hasPrice,
         'author'            => $isAdmin ? 'InnovationX HQ' : $username,
         'author_role'       => $isAdmin ? 'admin' : 'member',
         'is_official'       => $isAdmin,
@@ -304,7 +307,7 @@ if ($action === 'create_item') {
         'fee_paid'          => $feePaid,
         'views'             => 0,
         'likes'             => [],
-        'status'            => ($isAdmin || !empty($settings['auto_approve'])) ? 'active' : 'pending',
+        'status'            => $isAdmin ? 'active' : 'pending',
         'created_at'        => date('Y-m-d H:i:s')
     ];
 
@@ -314,8 +317,8 @@ if ($action === 'create_item') {
 
     $isLive = ($newItem['status'] === 'active');
     $msg = $isLive
-        ? 'Opportunity published to the Innovation Ecosystem successfully!'
-        : 'Opportunity submitted successfully! Listing fee deducted. Your listing is pending admin review and approval before going live.';
+        ? 'Official opportunity published to the Innovation Ecosystem successfully!'
+        : 'Payment received! Your post is currently PENDING admin review and approval. Once an admin verifies it to prevent scams, your post will go live to all members.';
 
     echo json_encode([
         'status'     => 'success',

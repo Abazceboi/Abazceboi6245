@@ -243,7 +243,8 @@ $actPopupDismissLabel = !empty($actPopupConfig['dismiss_label']) ? $actPopupConf
 // Pricing and withdrawal thresholds from central storage
 $pricing     = readStorageJson('config/app_pricing.json', []);
 $wdSettings  = readStorageJson('config/withdrawal_settings.json', []);
-$refBonus    = floatval($pricing['ref_commission'] ?? 500);
+$refBonus          = floatval($pricing['ref_commission'] ?? 3000);
+$indirectRefBonus  = floatval($pricing['indirect_ref_commission'] ?? 200);
 $minCashWd   = floatval($pricing['min_cash_withdrawal'] ?? ($pricing['min_withdrawal'] ?? ($wdSettings['affiliate']['min_amount'] ?? 5000)));
 $minTaskWd   = floatval($pricing['min_points_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 1000));
 $appMinWd    = $minCashWd;
@@ -349,6 +350,7 @@ if ($actDownlines > $referralCount) {
   --mono:        'Space Mono', monospace;
   --shadow:      0 8px 32px rgba(0,0,0,0.45);
   --trans:       0.18s ease;
+  --bg-input:    #0D1117;
 }
 [data-theme="light"] {
   --bg:         #F4F6FB;
@@ -362,6 +364,7 @@ if ($actDownlines > $referralCount) {
   --txt-3:      #64748B;
   --accent:     #2563EB;
   --shadow:     0 8px 32px rgba(0,0,0,0.08);
+  --bg-input:   #FFFFFF;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;padding-bottom:120px;overflow-x:hidden;}
@@ -571,11 +574,14 @@ input,textarea,select{font-family:var(--ff);}
 }
 
 /* Global Fancy Select */
-.form-select {
+.form-select, select.form-input, select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+  background-color: var(--bg-input, var(--surface));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338BDF8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--txt);
@@ -586,21 +592,49 @@ input,textarea,select{font-family:var(--ff);}
   outline: none;
   cursor: pointer;
   transition: all var(--trans);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.form-select:hover {
+.form-select:hover, select.form-input:hover, select:hover {
   border-color: var(--border-mid);
   background-color: var(--card-hover);
 }
-.form-select:focus {
+.form-select:focus, select.form-input:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
 }
-.form-select option {
-  background: #0F172A;
+.form-select option, select.form-input option, select option {
+  background-color: #0F172A;
   color: #F8FAFC;
   padding: 12px;
   font-size: 13px;
+}
+
+[data-theme="light"] .form-select,
+[data-theme="light"] select.form-input,
+[data-theme="light"] select {
+  background-color: #FFFFFF !important;
+  color: #0D1117 !important;
+  border-color: #CBD5E1 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230284C7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .form-select:hover,
+[data-theme="light"] select.form-input:hover,
+[data-theme="light"] select:hover {
+  border-color: #94A3B8 !important;
+  background-color: #F8FAFC !important;
+}
+[data-theme="light"] .form-select:focus,
+[data-theme="light"] select.form-input:focus,
+[data-theme="light"] select:focus {
+  border-color: #0284C7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2) !important;
+}
+[data-theme="light"] .form-select option,
+[data-theme="light"] select.form-input option,
+[data-theme="light"] select option {
+  background-color: #FFFFFF !important;
+  color: #0D1117 !important;
 }
 
 /* ═══════════════════════════ LUXURY FLOATING DOCK ═════════════════════ */
@@ -2469,24 +2503,32 @@ html[data-theme="light"] .special-portal-card.uploader,
         <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--accent);" id="refDisplayCount"><?= (int)$referralCount ?></div>
-          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Referrals</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:12px;margin-top:16px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:20px;font-weight:700;color:var(--accent);" id="refDisplayCount"><?= (int)$referralCount ?></div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Direct Downlines</div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
-          <div style="font-size:22px;font-weight:700;color:var(--green);">₦<?= number_format($referralEarnings, 2) ?></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:20px;font-weight:700;color:var(--green);">₦<?= number_format($referralEarnings, 2) ?></div>
           <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Total Earned Cash</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:20px;font-weight:700;color:#38BDF8;">₦<?= number_format($refBonus) ?></div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Direct Bonus (Level 1)</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:20px;font-weight:700;color:#F59E0B;">₦<?= number_format($indirectRefBonus) ?></div>
+          <div style="font-size:11px;color:var(--txt-3);margin-top:2px;">Indirect Bonus (Level 2)</div>
         </div>
       </div>
     </div>
 
-    <!-- Direct Referred Earners Directory -->
+    <!-- Direct & Indirect Referred Earners Directory -->
     <div class="card" style="margin-top:20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div>
           <div class="card-title" style="margin-bottom:2px;">Referred Earners Directory</div>
-          <div class="card-sub">Members registered through your personal referral link with their verified Gmail address.</div>
+          <div class="card-sub">Members registered through your referral network (Direct Level 1 and Indirect Level 2).</div>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" onclick="loadReferrals()">Refresh Directory</button>
       </div>
@@ -2496,6 +2538,7 @@ html[data-theme="light"] .special-portal-card.uploader,
           <thead>
             <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
               <th style="padding:10px 12px;">Earner Username</th>
+              <th style="padding:10px 12px;">Network Tier</th>
               <th style="padding:10px 12px;">Gmail Address</th>
               <th style="padding:10px 12px;">Date Joined</th>
               <th style="padding:10px 12px;">Status</th>
@@ -2652,6 +2695,41 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div style="margin-top:16px;">
         <button class="btn btn-primary" onclick="openModal('modalWithdraw')">Request Withdrawal</button>
       </div>
+
+      <!-- Member Withdrawal Transactions History Card -->
+      <div class="card" style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;display:flex;align-items:center;gap:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Withdrawal Transactions</span>
+            </div>
+            <div class="card-sub">Track real-time status of your withdrawal requests from Processing to Paid.</div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="loadUserWithdrawalHistory()">Refresh History</button>
+        </div>
+
+        <div class="table-container" style="overflow-x:auto;">
+          <table class="table" style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
+                <th style="padding:10px 12px;">Reference ID</th>
+                <th style="padding:10px 12px;">Amount</th>
+                <th style="padding:10px 12px;">Source Wallet</th>
+                <th style="padding:10px 12px;">Destination Bank</th>
+                <th style="padding:10px 12px;">Date</th>
+                <th style="padding:10px 12px;">Status</th>
+                <th style="padding:10px 12px;text-align:right;">Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="userWithdrawalsTableBody">
+              <tr>
+                <td colspan="7" style="text-align:center;padding:24px;color:var(--txt-3);">Loading your withdrawal transactions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2690,6 +2768,9 @@ html[data-theme="light"] .special-portal-card.uploader,
       </div>
     </div>
 
+    <!-- Dedicated Submissions & Pending Approval Status Section -->
+    <div id="ecoMySubmissionsSection" style="display:none;margin-bottom:18px;"></div>
+
     <!-- Filter and search bar -->
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -2701,6 +2782,8 @@ html[data-theme="light"] .special-portal-card.uploader,
           <option value="all">All Listings</option>
           <option value="official">Official Verified Only</option>
           <option value="member">Member Posts Only</option>
+          <option value="my_posts">My Submissions (All)</option>
+          <option value="pending">My Pending Approval</option>
         </select>
       </div>
 
@@ -3016,21 +3099,45 @@ html[data-theme="light"] .special-portal-card.uploader,
           <input type="text" class="form-input" id="postEcoTitle" required placeholder="e.g. Graphic Design Gig, VTU Portal, Affiliate Tool">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Category</label>
-            <select class="form-input" id="postEcoCategory" required>
-              <option value="Business Opportunity">Business Opportunity</option>
-              <option value="Digital Product">Digital Product</option>
-              <option value="Gigs & Services">Gigs & Services</option>
-              <option value="Tech & Tools">Tech & Tools</option>
-              <option value="Crypto & Web3">Crypto & Web3</option>
-              <option value="Other">Other</option>
-            </select>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="postEcoCategory" required>
+            <option value="Business Opportunity">Business Opportunity</option>
+            <option value="Digital Product">Digital Product</option>
+            <option value="Gigs & Services">Gigs & Services</option>
+            <option value="Tech & Tools">Tech & Tools</option>
+            <option value="Crypto & Web3">Crypto & Web3</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Optional Price Tag Section -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--txt);cursor:pointer;margin-bottom:0;">
+              <input type="checkbox" id="postEcoHasPrice" onchange="toggleEcoPriceOption()" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+              <span>Does this post warrant a price tag?</span>
+            </label>
+            <span class="item-tag" id="ecoPriceStatusBadge" style="font-size:10px;padding:2px 6px;color:var(--green);border-color:rgba(16,185,129,0.3);">Price Tag Active</span>
           </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Deal / Price Tag</label>
-            <input type="text" class="form-input" id="postEcoPrice" placeholder="e.g. Free, 5,000 NGN, 20% Comm">
+          <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">
+            Enable this if your post warrants a price tag (e.g. digital product, fee, paid gig). Uncheck if this post is free or an open opportunity.
+          </div>
+
+          <div id="ecoPriceFieldsWrap" style="margin-top:10px;">
+            <div class="form-group" style="margin-bottom:6px;">
+              <label class="form-label" style="font-size:11.5px;">Price Tag Amount / Deal Terms</label>
+              <input type="text" class="form-input" id="postEcoPrice" placeholder="e.g. ₦5,000, ₦10,000, $25, 20% Comm">
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+              <span style="font-size:10.5px;color:var(--txt-3);">Quick Presets:</span>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('Free')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">Free</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('₦2,000')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">₦2,000</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('₦5,000')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">₦5,000</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('₦10,000')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">₦10,000</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('Negotiable')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">Negotiable</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="setEcoPricePreset('Contact for Price')" style="font-size:10.5px;padding:2px 7px;border-radius:4px;">Contact for Price</button>
+            </div>
           </div>
         </div>
 
@@ -3132,7 +3239,7 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Bank Name</label>
-          <select class="form-input" id="editBankName" required style="background:var(--bg-input, #121420);color:var(--txt, #FFFFFF);cursor:pointer;">
+          <select class="form-select" id="editBankName" required>
             <option value="">-- Select Your Bank --</option>
             <?php foreach ($nigerianBanks as $nb): ?>
               <option value="<?= htmlspecialchars($nb) ?>" <?= ($bankName === $nb) ? 'selected' : '' ?>>
@@ -3499,7 +3606,7 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div id="popupModalMessage" style="font-size:14px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;"></div>
     <div style="display:flex;gap:12px;justify-content:center;">
       <button type="button" class="btn btn-ghost" onclick="closeModal('modalAnnouncementPopup')">Dismiss</button>
-      <a href="dashboard.php" class="btn btn-primary" id="popupModalCtaBtn" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Explore</a>
+      <a href="dashboard.php#surveys" class="btn btn-primary" id="popupModalCtaBtn" onclick="handleAnnouncementCtaClick(event)" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">View Survey</a>
     </div>
   </div>
 </div>
@@ -3558,7 +3665,7 @@ html[data-theme="light"] .special-portal-card.uploader,
     <p id="newUserActPopupMessage" style="font-size:13.5px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;"><?= htmlspecialchars($actPopupMessage) ?></p>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button type="button" class="btn btn-ghost" id="newUserActPopupDismissBtn" onclick="dismissNewUserActivationPopup()"><?= htmlspecialchars($actPopupDismissLabel) ?></button>
-      <a href="<?= htmlspecialchars($actPopupCtaUrl) ?>" class="btn btn-primary" id="newUserActPopupCtaBtn" onclick="dismissNewUserActivationPopup()" style="background:linear-gradient(135deg, #10B981, #059669);border-color:#10B981;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;"><?= htmlspecialchars($actPopupCtaLabel) ?></a>
+      <a href="<?= htmlspecialchars($actPopupCtaUrl) ?>" class="btn btn-primary" id="newUserActPopupCtaBtn" onclick="handleNewUserActCtaClick(event)" style="background:linear-gradient(135deg, #10B981, #059669);border-color:#10B981;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;"><?= htmlspecialchars($actPopupCtaLabel) ?></a>
     </div>
   </div>
 </div>
@@ -3828,6 +3935,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }, 1000);
+
+  if (typeof loadUserWithdrawalHistory === 'function') {
+    loadUserWithdrawalHistory();
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4082,7 +4193,7 @@ async function loadReferrals() {
       }
       if (tbody) {
         if (d.referrals.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--txt-3);font-size:12.5px;">No downline earners referred yet. Share your link above to begin earning commissions!</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt-3);font-size:12.5px;">No downline earners referred yet. Share your link above to begin earning commissions!</td></tr>';
         } else {
           tbody.innerHTML = d.referrals.map(u => {
             const isAct = u.is_activated === true || u.is_activated === 1 || u.is_activated === '1';
@@ -4090,8 +4201,13 @@ async function loadReferrals() {
             const badgeColor = isAct ? 'var(--green)' : 'var(--red)';
             const statusLabel = isAct ? 'Activated' : 'Pending Activation';
             const formattedDate = u.created_at ? esc(u.created_at.substring(0, 10)) : 'Recent';
+            const isIndirect = u.tier === 'indirect';
+            const tierBadge = isIndirect
+              ? `<span class="item-tag" style="background:rgba(245,158,11,0.12);color:#F59E0B;font-size:11px;font-weight:700;">Indirect (₦200)</span>`
+              : `<span class="item-tag" style="background:rgba(56,189,248,0.12);color:#38BDF8;font-size:11px;font-weight:700;">Direct (₦3,000)</span>`;
             return `<tr style="border-bottom:1px solid var(--border);">
               <td style="padding:12px;font-weight:600;color:var(--txt);">${esc(u.username || 'Member')}</td>
+              <td style="padding:12px;">${tierBadge}</td>
               <td style="padding:12px;color:var(--txt-2);">${esc(u.email || 'No email provided')}</td>
               <td style="padding:12px;color:var(--txt-3);font-size:12px;">${formattedDate}</td>
               <td style="padding:12px;">
@@ -4116,7 +4232,43 @@ function dismissNewUserActivationPopup() {
     document.cookie = key + "=1; Path=/; Max-Age=31536000; SameSite=Lax";
   } catch(e){}
   closeModal('modalNewUserActivationPopup');
-  window.location.reload();
+}
+
+function handleNewUserActCtaClick(e) {
+  if (e) {
+    try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+  }
+  dismissNewUserActivationPopup();
+
+  const ctaBtn = document.getElementById('newUserActPopupCtaBtn');
+  const targetUrl = (ctaBtn ? (ctaBtn.getAttribute('href') || '') : '').trim();
+  const label = (ctaBtn ? ctaBtn.textContent : '').trim().toLowerCase();
+
+  if (targetUrl.includes('survey') || label.includes('survey')) {
+    switchTab('surveys');
+    if (typeof loadSurveys === 'function') loadSurveys();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return false;
+  }
+
+  for (const t of TABS) {
+    if (targetUrl.includes('#' + t) || targetUrl === t || label.includes(t)) {
+      switchTab(t);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+  }
+
+  if (targetUrl && !targetUrl.includes('dashboard.php') && !targetUrl.startsWith('#')) {
+    window.location.href = targetUrl;
+  } else if (targetUrl.includes('#')) {
+    const tabPart = targetUrl.split('#')[1];
+    if (tabPart && TABS.includes(tabPart)) {
+      switchTab(tabPart);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+  return false;
 }
 
 async function checkNewUserActivationPopup() {
@@ -4160,6 +4312,76 @@ async function checkNewUserActivationPopup() {
 // ═══════════════════════════════════════════════════════════════════════════
 // POP-UP ANNOUNCEMENT CHECK
 // ═══════════════════════════════════════════════════════════════════════════
+function handleAnnouncementCtaClick(e) {
+  if (e) {
+    try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+  }
+  closeModal('modalAnnouncementPopup');
+
+  const ctaBtn = document.getElementById('popupModalCtaBtn');
+  const targetUrl = (ctaBtn ? (ctaBtn.getAttribute('data-url') || ctaBtn.getAttribute('href') || '') : '').trim();
+  const label = (ctaBtn ? ctaBtn.textContent : '').trim().toLowerCase();
+
+  // If destination is survey or label mentions survey
+  if (targetUrl.includes('survey') || label.includes('survey')) {
+    switchTab('surveys');
+    if (typeof loadSurveys === 'function') loadSurveys();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return false;
+  }
+
+  // Check any other dashboard tab
+  for (const t of TABS) {
+    if (targetUrl.includes('#' + t) || targetUrl.endsWith('#' + t) || label.includes(t)) {
+      switchTab(t);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+  }
+
+  if (targetUrl && targetUrl !== '#' && !targetUrl.includes('dashboard.php')) {
+    window.location.href = targetUrl;
+  } else if (targetUrl.includes('#')) {
+    const tabPart = targetUrl.split('#')[1];
+    if (tabPart && TABS.includes(tabPart)) {
+      switchTab(tabPart);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.location.href = targetUrl;
+    }
+  } else {
+    // Default fallback to surveys
+    switchTab('surveys');
+    if (typeof loadSurveys === 'function') loadSurveys();
+  }
+  return false;
+}
+
+// Global delegated listener: When any "View Survey" or survey link/button is clicked inside any modal/popup
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('a, button');
+  if (!target) return;
+  const text = (target.textContent || '').trim().toLowerCase();
+  const href = (target.getAttribute('href') || target.getAttribute('data-url') || '').trim().toLowerCase();
+
+  if (text === 'view survey' || text === 'view surveys' || text.includes('view survey')) {
+    // Dismiss any modal popup currently visible
+    closeModal('modalAnnouncementPopup');
+    closeModal('modalNewUserActivationPopup');
+    const openBackdrop = target.closest('.modal-backdrop');
+    if (openBackdrop) {
+      openBackdrop.classList.remove('open', 'active');
+      const anyOpen = document.querySelector('.modal-backdrop.open, .modal-backdrop.active');
+      if (!anyOpen) document.body.style.overflow = '';
+    }
+
+    try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+    switchTab('surveys');
+    if (typeof loadSurveys === 'function') loadSurveys();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}, true);
+
 async function checkAnnouncementPopup() {
   <?php if (!$isActivated): ?>
   return;
@@ -4189,6 +4411,7 @@ async function checkAnnouncementPopup() {
       if (popup.cta_label && popup.cta_url) {
         ctaBtn.textContent = popup.cta_label;
         ctaBtn.href = popup.cta_url;
+        ctaBtn.setAttribute('data-url', popup.cta_url);
         ctaBtn.style.display = 'inline-flex';
       } else {
         ctaBtn.style.display = 'none';
@@ -4233,7 +4456,7 @@ function switchTab(tab, btn) {
   if (tab === 'tasks') loadTasks();
   if (tab === 'surveys') loadSurveys();
   if (tab === 'referrals') loadReferrals();
-  if (tab === 'wallet') { syncLivePricing(); syncLiveProfile(); }
+  if (tab === 'wallet') { syncLivePricing(); syncLiveProfile(); loadUserWithdrawalHistory(); }
   if (tab === 'ecosystem') loadEcosystem();
   if (tab === 'vendor') loadVendorTabData();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -5716,6 +5939,9 @@ async function executeWithdrawalReq() {
       // Open official withdrawal receipt modal
       openModal('modalWithdrawReceipt');
       toast('Withdrawal submitted successfully!', 'success');
+      if (typeof loadUserWithdrawalHistory === 'function') {
+        loadUserWithdrawalHistory();
+      }
 
       // Clear input and pending data
       pendingWithdrawalData = null;
@@ -5822,6 +6048,108 @@ function printReceipt() {
   window.print();
 }
 
+let userWithdrawalsCache = [];
+
+async function loadUserWithdrawalHistory() {
+  const tbody = document.getElementById('userWithdrawalsTableBody');
+  if (!tbody) return;
+  try {
+    const r = await fetch(`/api/withdrawals.php?action=get_user_withdrawals&username=${encodeURIComponent(CURRENT_USER)}&_t=${Date.now()}`);
+    const d = await r.json();
+    const list = d.requests || d.withdrawals || [];
+    userWithdrawalsCache = list;
+
+    if (!list.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px 16px;color:var(--txt-3);">
+            <div style="font-size:14px;font-weight:600;color:var(--txt-2);margin-bottom:4px;">No withdrawal transactions yet</div>
+            <div style="font-size:12px;">When you request a payout, your settlement status from Processing to Paid will appear here.</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = list.map(w => {
+      const amtStr = w.amount_formatted || ('₦' + Number(w.amount || 0).toLocaleString());
+      const walletLabel = esc(w.wallet_type || (w.service_type === 'task' ? 'Task Points' : 'Referral Cash'));
+      const bankInfo = `${esc(w.bank_name || w.bank || 'Bank')} <span style="font-family:monospace;color:var(--txt-3);">(${esc(w.account_number || w.account || '••••••••')})</span>`;
+      const dateStr = esc(w.date_formatted || w.created_at || 'Recently');
+      const st = (w.status || 'processing').toLowerCase();
+      
+      let badgeHtml = '<span class="badge" style="background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Processing</span>';
+      if (st === 'paid' || st === 'approved') {
+        badgeHtml = '<span class="badge" style="background:rgba(34,197,94,0.15);color:#4ADE80;border:1px solid rgba(34,197,94,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Paid</span>';
+      } else if (st === 'rejected' || st === 'declined') {
+        badgeHtml = '<span class="badge" style="background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;">Rejected</span>';
+      }
+
+      const id = esc(w.id || w.txn_id || '');
+      return `
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:12px;font-family:monospace;font-size:12px;color:#7DD3FC;font-weight:600;">${id}</td>
+          <td style="padding:12px;font-weight:700;color:var(--txt);">${amtStr}</td>
+          <td style="padding:12px;color:var(--txt-2);font-size:12px;">${walletLabel}</td>
+          <td style="padding:12px;color:var(--txt-2);font-size:12px;">${bankInfo}</td>
+          <td style="padding:12px;color:var(--txt-3);font-size:11.5px;white-space:nowrap;">${dateStr}</td>
+          <td style="padding:12px;">${badgeHtml}</td>
+          <td style="padding:12px;text-align:right;">
+            <button type="button" class="btn btn-ghost btn-xs" onclick="viewUserReceiptById('${id}')" style="font-size:11px;padding:3px 8px;">View Receipt</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    console.error('Failed to load user withdrawal history:', e);
+  }
+}
+
+function viewUserReceiptById(id) {
+  const item = userWithdrawalsCache.find(w => (w.id === id || w.txn_id === id));
+  if (!item) return;
+
+  const amtStr = item.amount_formatted || ('₦' + Number(item.amount || 0).toLocaleString());
+  const bankName = item.bank_name || item.bank || 'OPay Digital Services';
+  const accNo = item.account_number || item.account || '••••••••';
+  const accName = item.account_name || item.beneficiary_name || CURRENT_USER;
+  const txnId = item.txn_id || item.id || id;
+  const dateStr = item.date_formatted || item.created_at || 'Just now';
+  const walletLabel = item.wallet_type || (item.service_type === 'task' ? 'Task Points Wallet' : 'Referral Cash Wallet');
+  const st = (item.status || 'processing').toLowerCase();
+  const isPaid = (st === 'paid' || st === 'approved');
+
+  document.getElementById('rcptAmount').textContent = amtStr;
+  document.getElementById('rcptTxnId').textContent = txnId;
+  document.getElementById('rcptBank').textContent = bankName;
+  document.getElementById('rcptAccount').textContent = accNo;
+  document.getElementById('rcptName').textContent = accName;
+  document.getElementById('rcptWallet').textContent = walletLabel;
+  document.getElementById('rcptDate').textContent = dateStr;
+  
+  const statusEl = document.getElementById('rcptStatusText');
+  if (statusEl) {
+    if (isPaid) {
+      statusEl.textContent = 'Paid';
+      statusEl.style.background = 'rgba(34,197,94,0.15)';
+      statusEl.style.color = '#4ADE80';
+      statusEl.style.borderColor = 'rgba(34,197,94,0.3)';
+    } else if (st === 'rejected' || st === 'declined') {
+      statusEl.textContent = 'Rejected';
+      statusEl.style.background = 'rgba(239,68,68,0.15)';
+      statusEl.style.color = '#F87171';
+      statusEl.style.borderColor = 'rgba(239,68,68,0.3)';
+    } else {
+      statusEl.textContent = 'Processing';
+      statusEl.style.background = 'rgba(245,158,11,0.15)';
+      statusEl.style.color = '#FBBF24';
+      statusEl.style.borderColor = 'rgba(245,158,11,0.3)';
+    }
+  }
+
+  openModal('modalWithdrawReceipt');
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // INNOVATION ECOSYSTEM (OPPORTUNITIES, PRODUCTS, VIEWS, LIKES)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -5909,6 +6237,10 @@ function filterEcosystemItems() {
     list = list.filter(it => it.is_official);
   } else if (filterType === 'member') {
     list = list.filter(it => !it.is_official);
+  } else if (filterType === 'my_posts') {
+    list = list.filter(it => (it.author || '').toLowerCase() === (CURRENT_USER || '').toLowerCase());
+  } else if (filterType === 'pending') {
+    list = list.filter(it => (it.author || '').toLowerCase() === (CURRENT_USER || '').toLowerCase() && (it.status || '').toLowerCase() === 'pending');
   }
 
   if (query) {
@@ -5916,6 +6248,7 @@ function filterEcosystemItems() {
       (it.title || '').toLowerCase().includes(query) ||
       (it.description || '').toLowerCase().includes(query) ||
       (it.category || '').toLowerCase().includes(query) ||
+      (it.price_tag || '').toLowerCase().includes(query) ||
       (it.author || '').toLowerCase().includes(query)
     );
   }
@@ -5924,7 +6257,81 @@ function filterEcosystemItems() {
 }
 
 function renderEcosystemGrid() {
+  renderMySubmissions();
   filterEcosystemItems();
+}
+
+function renderMySubmissions() {
+  const container = document.getElementById('ecoMySubmissionsSection');
+  if (!container) return;
+  const myItems = allEcosystemItems.filter(it => (it.author || '').toLowerCase() === (CURRENT_USER || '').toLowerCase());
+  if (!myItems.length) {
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  container.style.display = 'block';
+  const pendingCount = myItems.filter(it => (it.status || '').toLowerCase() === 'pending').length;
+
+  container.innerHTML = `
+    <div style="background:var(--card);border:1px solid ${pendingCount > 0 ? 'rgba(245,158,11,0.45)' : 'var(--border)'};border-radius:var(--radius-lg);padding:14px 18px;box-shadow:0 4px 18px rgba(0,0,0,0.06);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:30px;height:30px;border-radius:8px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px;">
+              <span>Your Ecosystem Submissions</span>
+              ${pendingCount > 0 ? `<span class="badge" style="background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-size:11px;font-weight:800;padding:2px 8px;">${pendingCount} Pending Approval</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openPostEcosystemModal()" style="font-size:11.5px;padding:5px 12px;">+ Post New Opportunity</button>
+      </div>
+
+      ${pendingCount > 0 ? `
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:#D97706;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span><strong>Anti-Scam Verification:</strong> Your newly paid post has been submitted and is PENDING admin approval. To avoid scams, other members cannot see it until verified and approved by admin.</span>
+        </div>
+      ` : ''}
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${myItems.map(it => {
+          const isPending = (it.status || '').toLowerCase() === 'pending';
+          const isRejected = (it.status || '').toLowerCase() === 'rejected';
+          let stBadge = '';
+          if (isPending) {
+            stBadge = `<span class="badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-weight:700;font-size:10.5px;">Pending Admin Approval</span>`;
+          } else if (isRejected) {
+            stBadge = `<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;font-size:10.5px;">Rejected</span>`;
+          } else {
+            stBadge = `<span class="badge" style="background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.3);font-weight:700;font-size:10.5px;">Active &amp; Live</span>`;
+          }
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border);flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <span style="font-weight:700;font-size:13.5px;color:var(--txt);">${esc(it.title)}</span>
+                  ${stBadge}
+                  ${it.price_tag && it.price_tag.trim() ? `<span style="font-size:11.5px;font-weight:700;color:var(--green);background:rgba(16,185,129,0.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.25);">${esc(it.price_tag)}</span>` : '<span style="font-size:11px;color:var(--txt-3);">No price tag</span>'}
+                </div>
+                <div style="font-size:11.5px;color:var(--txt-3);margin-top:3px;">
+                  Category: <strong>${esc(it.category)}</strong> &bull; Submitted: ${esc(it.created_at || 'Recently')}
+                  ${isPending ? ' &bull; <span style="color:#F59E0B;font-weight:600;">Visible ONLY to you until Admin approves</span>' : ''}
+                  ${isRejected && it.reject_reason ? ` &bull; <span style="color:#EF4444;">Reason: ${esc(it.reject_reason)}</span>` : ''}
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="openViewEcosystemModal('${esc(it.id)}')" style="font-size:11px;padding:5px 10px;">Preview Post</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function renderEcosystemList(list) {
@@ -5938,12 +6345,15 @@ function renderEcosystemList(list) {
 
   grid.innerHTML = list.map(item => {
     const isOfficial = Boolean(item.is_official);
+    const isPending = (item.status || '').toLowerCase() === 'pending';
+    const isRejected = (item.status || '').toLowerCase() === 'rejected';
+
     let badgeHtml = '';
     if (isOfficial) {
       badgeHtml = '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;border-color:rgba(59,130,246,0.25);">Official Verified</span>';
-    } else if (item.status === 'pending') {
-      badgeHtml = '<span class="item-tag" style="background:rgba(245,158,11,0.15);color:var(--amber);font-weight:700;border-color:rgba(245,158,11,0.35);">Pending Admin Review</span>';
-    } else if (item.status === 'rejected') {
+    } else if (isPending) {
+      badgeHtml = '<span class="item-tag" style="background:rgba(245,158,11,0.18);color:#F59E0B;font-weight:700;border-color:rgba(245,158,11,0.4);">Pending Admin Approval</span>';
+    } else if (isRejected) {
       badgeHtml = '<span class="item-tag" style="background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;border-color:rgba(239,68,68,0.35);">Rejected</span>';
     } else {
       badgeHtml = '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
@@ -5952,9 +6362,20 @@ function renderEcosystemList(list) {
     const likesCount = item.likes_count || 0;
     const viewsCount = item.views || 0;
 
+    const cardStyle = isPending
+      ? 'border:1.5px dashed rgba(245,158,11,0.7);background:rgba(245,158,11,0.02);'
+      : '';
+
     return `
-      <div class="eco-card" id="ecoCard_${esc(item.id)}">
+      <div class="eco-card" id="ecoCard_${esc(item.id)}" style="${cardStyle}">
         <div>
+          ${isPending ? `
+            <div style="background:rgba(245,158,11,0.12);color:#F59E0B;font-size:11px;font-weight:700;padding:5px 9px;border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(245,158,11,0.3);">
+              <span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:inline-block;"></span>
+              <span>Pending Admin Review &bull; Only Visible to You</span>
+            </div>
+          ` : ''}
+
           ${item.image_url ? `
             <div style="width:100%;height:130px;border-radius:8px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
               <img src="${esc(item.image_url)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
@@ -5965,7 +6386,7 @@ function renderEcosystemList(list) {
               <span class="item-tag">${esc(item.category)}</span>
               ${badgeHtml}
             </div>
-            ${item.price_tag ? `<span style="font-size:12px;font-weight:700;color:var(--green);">${esc(item.price_tag)}</span>` : ''}
+            ${item.price_tag && item.price_tag.trim() ? `<span style="font-size:12px;font-weight:700;color:var(--green);background:rgba(16,185,129,0.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.25);">${esc(item.price_tag)}</span>` : ''}
           </div>
 
           <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px;line-height:1.35;">${esc(item.title)}</div>
@@ -6041,15 +6462,21 @@ async function openViewEcosystemModal(id) {
   document.getElementById('viewEcoModalTitle').textContent = item.title;
   document.getElementById('viewEcoHeading').textContent = item.title;
   document.getElementById('viewEcoCategory').textContent = item.category;
-  document.getElementById('viewEcoPrice').textContent = item.price_tag || 'Deal Available';
+  document.getElementById('viewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'No Price Tag (General / Free Offer)';
   document.getElementById('viewEcoDescription').textContent = item.description;
   document.getElementById('viewEcoAuthor').textContent = item.author;
 
   const badgeEl = document.getElementById('viewEcoBadge');
   if (badgeEl) {
-    badgeEl.innerHTML = item.is_official
-      ? '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;">Official Verified</span>'
-      : '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;">Member Post</span>';
+    if (item.is_official) {
+      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;">Official Verified</span>';
+    } else if ((item.status || '').toLowerCase() === 'pending') {
+      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(245,158,11,0.18);color:#F59E0B;font-weight:700;border:1px solid rgba(245,158,11,0.4);">Pending Admin Approval</span>';
+    } else if ((item.status || '').toLowerCase() === 'rejected') {
+      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;border:1px solid rgba(239,68,68,0.35);">Rejected</span>';
+    } else {
+      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+    }
   }
 
   const imgWrap = document.getElementById('viewEcoImageWrapper');
@@ -6100,6 +6527,43 @@ async function openViewEcosystemModal(id) {
   } catch(err) {}
 }
 
+function toggleEcoPriceOption() {
+  const chk = document.getElementById('postEcoHasPrice');
+  const wrap = document.getElementById('ecoPriceFieldsWrap');
+  const badge = document.getElementById('ecoPriceStatusBadge');
+  const inp = document.getElementById('postEcoPrice');
+  if (!chk || !wrap) return;
+  if (chk.checked) {
+    wrap.style.display = 'block';
+    if (badge) {
+      badge.textContent = 'Price Tag Active';
+      badge.style.color = 'var(--green)';
+      badge.style.borderColor = 'rgba(16,185,129,0.3)';
+    }
+  } else {
+    wrap.style.display = 'none';
+    if (inp) inp.value = '';
+    if (badge) {
+      badge.textContent = 'No Price Tag';
+      badge.style.color = 'var(--txt-3)';
+      badge.style.borderColor = 'var(--border)';
+    }
+  }
+}
+
+function setEcoPricePreset(val) {
+  const inp = document.getElementById('postEcoPrice');
+  const chk = document.getElementById('postEcoHasPrice');
+  if (chk && !chk.checked) {
+    chk.checked = true;
+    toggleEcoPriceOption();
+  }
+  if (inp) {
+    inp.value = val;
+    inp.focus();
+  }
+}
+
 function openPostEcosystemModal() {
   try {
     const ptsBal = getUserPoints();
@@ -6110,6 +6574,7 @@ function openPostEcosystemModal() {
     if (cashBalEl) cashBalEl.textContent = Math.floor(cashBal).toLocaleString();
     updateEcoFeeBadges();
     updateEcoPaySelection();
+    toggleEcoPriceOption();
     openModal('modalPostEcosystemItem');
   } catch (err) {
     console.error('Error opening ecosystem modal:', err);
@@ -6149,7 +6614,8 @@ async function handlePostEcosystemSubmit(e) {
   e.preventDefault();
   const title = document.getElementById('postEcoTitle')?.value.trim();
   const category = document.getElementById('postEcoCategory')?.value;
-  const price = document.getElementById('postEcoPrice')?.value.trim();
+  const hasPrice = document.getElementById('postEcoHasPrice')?.checked !== false;
+  const price = hasPrice ? (document.getElementById('postEcoPrice')?.value.trim() || '') : '';
   const link = document.getElementById('postEcoLink')?.value.trim();
   const desc = document.getElementById('postEcoDesc')?.value.trim();
   const image = document.getElementById('postEcoImage')?.value.trim();
@@ -6170,6 +6636,7 @@ async function handlePostEcosystemSubmit(e) {
       body: JSON.stringify({
         title: title,
         category: category,
+        has_price: hasPrice,
         price_tag: price,
         contact_link: link,
         description: desc,
@@ -6180,7 +6647,7 @@ async function handlePostEcosystemSubmit(e) {
     });
     const d = await r.json();
     if (d.status === 'success') {
-      toast(d.message || 'Opportunity submitted to the Innovation Ecosystem!', 'success');
+      toast(d.message || 'Payment received! Your post is currently PENDING admin approval.', 'success');
       closeModal('modalPostEcosystemItem');
 
       if (d.item) {
@@ -6213,10 +6680,10 @@ async function handlePostEcosystemSubmit(e) {
       loadEcosystem();
       syncLiveProfile();
     } else {
-      toast(d.message || 'Error publishing opportunity', 'error');
+      toast(d.message || 'Error submitting opportunity', 'error');
     }
   } catch(err) {
-    toast('Network error publishing opportunity', 'error');
+    toast('Network error submitting opportunity', 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Pay & Publish'; }
   }

@@ -179,9 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Global Platform Rates Configuration
     window.IX_CONFIG = Object.assign({
-        taskPointRate: calcCard && calcCard.dataset.taskRate ? parseInt(calcCard.dataset.taskRate, 10) : 150,
-        referralCashRate: calcCard && calcCard.dataset.referralRate ? parseInt(calcCard.dataset.referralRate, 10) : 250,
-        registrationFee: calcCard && calcCard.dataset.regFee ? parseInt(calcCard.dataset.regFee, 10) : 500
+        taskPointRate: calcCard && calcCard.dataset.taskRate ? parseInt(String(calcCard.dataset.taskRate).replace(/,/g, ''), 10) : 150,
+        referralCashRate: calcCard && calcCard.dataset.referralRate ? parseInt(String(calcCard.dataset.referralRate).replace(/,/g, ''), 10) : 3000,
+        registrationFee: calcCard && calcCard.dataset.regFee ? parseInt(String(calcCard.dataset.regFee).replace(/,/g, ''), 10) : 5000
     }, window.IX_CONFIG || {});
 
     const taskSlider = document.getElementById('calcTasks');

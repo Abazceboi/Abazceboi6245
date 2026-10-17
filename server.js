@@ -95,7 +95,7 @@ function renderPhpFile(filePath, context = {}) {
         return '';
     });
 
-    let dynPricing = { reg_fee: 1000, ref_commission: 500, min_points_withdrawal: 1000, min_cash_withdrawal: 5000, min_withdrawal: 5000 };
+    let dynPricing = { reg_fee: 5000, ref_commission: 3000, indirect_ref_commission: 200, min_points_withdrawal: 1000, min_cash_withdrawal: 5000, min_withdrawal: 5000 };
     try {
         const apFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
         if (fs.existsSync(apFile)) {
@@ -103,8 +103,9 @@ function renderPhpFile(filePath, context = {}) {
         }
     } catch(e) {}
 
-    const dynRegFee = Number(context.regFee || dynPricing.reg_fee || 1000);
-    const dynRefComm = Number(context.refBonus || dynPricing.ref_commission || 500);
+    const dynRegFee = Number(context.regFee || dynPricing.reg_fee || 5000);
+    const dynRefComm = Number(context.refBonus || dynPricing.ref_commission || 3000);
+    const dynIndirectRefComm = Number(context.indirectRefBonus || dynPricing.indirect_ref_commission || 200);
     const dynMinCashWd = Number(context.minCashWd || dynPricing.min_cash_withdrawal || dynPricing.min_withdrawal || 5000);
     const dynMinPointsWd = Number(context.minTaskWd || dynPricing.min_points_withdrawal || 1000);
 
@@ -112,12 +113,22 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_TAGLINE\)\s*\?>/g, 'Where SoftLife Meets High-Yield Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_VERSION\)\s*\?>/g, '1.0');
     content = content.replace(/<\?=\s*htmlspecialchars\(SUPPORT_EMAIL\)\s*\?>/g, 'Supportinnovationx@gmail.com');
+    content = content.replace(/data-referral-rate="<\?=\s*REFERRAL_CASH_BONUS\s*\?>"/g, 'data-referral-rate="' + dynRefComm + '"');
+    content = content.replace(/data-reg-fee="<\?=\s*MEMBERSHIP_FEE\s*\?>"/g, 'data-reg-fee="' + dynRegFee + '"');
     content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, dynRegFee.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*TASK_POINTS_RATE\s*\?>/g, '150');
     content = content.replace(/<\?=\s*REFERRAL_CASH_BONUS\s*\?>/g, dynRefComm.toLocaleString('en-US'));
+    content = content.replace(/<\?=\s*INDIRECT_REFERRAL_BONUS\s*\?>/g, dynIndirectRefComm.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*number_format\(MIN_WITHDRAWAL_NAIRA\)\s*\?>/g, dynMinCashWd.toLocaleString('en-US'));
     content = content.replace(/<\?=\s*MIN_WITHDRAWAL_NAIRA\s*\?>/g, String(dynMinCashWd));
     content = content.replace(/<\?=\s*WHATSAPP_SUPPORT\s*\?>/g, '2347037765714');
+    const maintInfo = context.maintenance || {};
+    const maintTitle = maintInfo.title || 'Platform Infrastructure Optimization';
+    const maintDesc = maintInfo.message || 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.';
+    const maintEta = maintInfo.estimated_end || '15 Minutes';
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$maintTitle\)\s*\?>/g, maintTitle);
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$maintDesc\)\s*\?>/g, maintDesc);
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$maintEta\)\s*\?>/g, maintEta);
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$username\)\s*\?>/g, context.username || 'Member');
@@ -880,11 +891,13 @@ const server = http.createServer((req, res) => {
                         // Award Referral Commission ONLY now that downline has activated with a coupon
                         if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
                             const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
-                            let commAmount = 500;
+                            let commAmount = 3000;
+                            let indirectCommAmount = 200;
                             if (fs.existsSync(pricingFile)) {
                                 try {
                                     const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                                    commAmount = parseFloat(pData.ref_commission || 500);
+                                    if (pData.ref_commission !== undefined) commAmount = parseFloat(pData.ref_commission) || 3000;
+                                    if (pData.indirect_ref_commission !== undefined) indirectCommAmount = parseFloat(pData.indirect_ref_commission) || 200;
                                 } catch(e){}
                             }
                             const refTarget = (userRecord.referred_by || '').trim().toLowerCase();
@@ -900,7 +913,7 @@ const server = http.createServer((req, res) => {
                                 refUser.activity_ledger.unshift({
                                     time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
                                     type: 'Referral Commission',
-                                    desc: `Earned ₦${commAmount.toFixed(2)} affiliate commission: downline @${username} purchased and activated coupon PIN`,
+                                    desc: `Earned ₦${commAmount.toFixed(2)} direct affiliate commission: downline @${username} purchased and activated coupon PIN`,
                                     reward_type: 'cash',
                                     reward_value: commAmount
                                 });
@@ -913,18 +926,57 @@ const server = http.createServer((req, res) => {
                                 if (!Array.isArray(notifs)) notifs = [];
                                 notifs.unshift({
                                     id: 'notif-' + Date.now(),
-                                    title: 'Referral Bonus Credited',
-                                    msg: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
-                                    message: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                    title: 'Direct Referral Bonus Credited',
+                                    msg: `You earned ₦${commAmount.toFixed(2)} direct referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                    message: `You earned ₦${commAmount.toFixed(2)} direct referral commission! Your downline @${username} has verified and activated their coupon code.`,
                                     target: refUser.username,
                                     time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                                     created_at: new Date().toISOString()
                                 });
+
+                                // Award Indirect Affiliate Bonus (Tier 2 Upline)
+                                if (refUser.referred_by && indirectCommAmount > 0) {
+                                    const indRefTarget = (refUser.referred_by || '').trim().toLowerCase();
+                                    const indRefTargetUpper = (refUser.referred_by || '').trim().toUpperCase();
+                                    const indirectRefUser = (usersData.users || []).find(x => 
+                                        ((x.username || '').toLowerCase() === indRefTarget || (x.referral_code || '').toUpperCase() === indRefTargetUpper) &&
+                                        (x.username || '').toLowerCase() !== (refUser.username || '').toLowerCase() &&
+                                        (x.username || '').toLowerCase() !== (userRecord.username || '').toLowerCase()
+                                    );
+                                    if (indirectRefUser) {
+                                        indirectRefUser.remaining_cash = (parseFloat(indirectRefUser.remaining_cash) || 0) + indirectCommAmount;
+                                        indirectRefUser.cashBalance = indirectRefUser.remaining_cash;
+                                        indirectRefUser.referral_earnings = (parseFloat(indirectRefUser.referral_earnings) || 0) + indirectCommAmount;
+                                        indirectRefUser.indirect_referral_earnings = (parseFloat(indirectRefUser.indirect_referral_earnings) || 0) + indirectCommAmount;
+                                        indirectRefUser.indirect_referral_count = (parseInt(indirectRefUser.indirect_referral_count) || 0) + 1;
+                                        indirectRefUser.total_earned = (parseFloat(indirectRefUser.total_earned) || 0) + indirectCommAmount;
+                                        if (!indirectRefUser.activity_ledger) indirectRefUser.activity_ledger = [];
+                                        indirectRefUser.activity_ledger.unshift({
+                                            time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                                            type: 'Indirect Referral Commission',
+                                            desc: `Earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate commission: 2nd-tier downline @${username} (referred by @${refUser.username}) activated account`,
+                                            reward_type: 'cash',
+                                            reward_value: indirectCommAmount
+                                        });
+
+                                        notifs.unshift({
+                                            id: 'notif-' + (Date.now() + 1),
+                                            title: 'Indirect Referral Bonus Credited',
+                                            msg: `You earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate bonus! 2nd-generation downline @${username} (referred by @${refUser.username}) has activated their account.`,
+                                            message: `You earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate bonus! 2nd-generation downline @${username} (referred by @${refUser.username}) has activated their account.`,
+                                            target: indirectRefUser.username,
+                                            time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                                            created_at: new Date().toISOString()
+                                        });
+                                    }
+                                }
+
                                 fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
                             }
 
                             userRecord.referral_commission_awarded = true;
                             userRecord.referral_commission_amount = commAmount;
+                            userRecord.indirect_referral_commission_amount = indirectCommAmount;
                             userRecord.referral_commission_at = new Date().toISOString();
                         }
 
@@ -1031,8 +1083,8 @@ const server = http.createServer((req, res) => {
                     if (quantity < 1) quantity = 1;
                     if (quantity > 500) quantity = 500;
 
-                    let dynRegFee = 1000;
-                    let dynWholesale = 800;
+                    let dynRegFee = 5000;
+                    let dynWholesale = 4000;
                     try {
                         const pFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                         if (fs.existsSync(pFile)) {
@@ -1184,7 +1236,7 @@ const server = http.createServer((req, res) => {
                         return;
                     }
                     const isUploader = (code.includes('UPL') || (target.type && target.type.includes('UPL')) || target.channel === 'UPLOADER');
-                    let dynRegFee = 1000;
+                    let dynRegFee = 5000;
                     try {
                         const pFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                         if (fs.existsSync(pFile)) {
@@ -1273,11 +1325,13 @@ const server = http.createServer((req, res) => {
                                 // Award Referral Commission ONLY now that downline has activated with a coupon
                                 if (userRecord.referred_by && !userRecord.referral_commission_awarded) {
                                     const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
-                                    let commAmount = 500;
+                                    let commAmount = 3000;
+                                    let indirectCommAmount = 200;
                                     if (fs.existsSync(pricingFile)) {
                                         try {
                                             const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
-                                            commAmount = parseFloat(pData.ref_commission || 500);
+                                            if (pData.ref_commission !== undefined) commAmount = parseFloat(pData.ref_commission) || 3000;
+                                            if (pData.indirect_ref_commission !== undefined) indirectCommAmount = parseFloat(pData.indirect_ref_commission) || 200;
                                         } catch(e){}
                                     }
                                     const refTarget = (userRecord.referred_by || '').trim().toLowerCase();
@@ -1293,7 +1347,7 @@ const server = http.createServer((req, res) => {
                                         refUser.activity_ledger.unshift({
                                             time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
                                             type: 'Referral Commission',
-                                            desc: `Earned ₦${commAmount.toFixed(2)} affiliate commission: downline @${username} purchased and activated coupon PIN`,
+                                            desc: `Earned ₦${commAmount.toFixed(2)} direct affiliate commission: downline @${username} purchased and activated coupon PIN`,
                                             reward_type: 'cash',
                                             reward_value: commAmount
                                         });
@@ -1306,18 +1360,57 @@ const server = http.createServer((req, res) => {
                                         if (!Array.isArray(notifs)) notifs = [];
                                         notifs.unshift({
                                             id: 'notif-' + Date.now(),
-                                            title: 'Referral Bonus Credited',
-                                            msg: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
-                                            message: `You earned ₦${commAmount.toFixed(2)} referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                            title: 'Direct Referral Bonus Credited',
+                                            msg: `You earned ₦${commAmount.toFixed(2)} direct referral commission! Your downline @${username} has verified and activated their coupon code.`,
+                                            message: `You earned ₦${commAmount.toFixed(2)} direct referral commission! Your downline @${username} has verified and activated their coupon code.`,
                                             target: refUser.username,
                                             time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
                                             created_at: new Date().toISOString()
                                         });
+
+                                        // Award Indirect Affiliate Bonus (Tier 2 Upline)
+                                        if (refUser.referred_by && indirectCommAmount > 0) {
+                                            const indRefTarget = (refUser.referred_by || '').trim().toLowerCase();
+                                            const indRefTargetUpper = (refUser.referred_by || '').trim().toUpperCase();
+                                            const indirectRefUser = users.find(x => 
+                                                ((x.username || '').toLowerCase() === indRefTarget || (x.referral_code || '').toUpperCase() === indRefTargetUpper) &&
+                                                (x.username || '').toLowerCase() !== (refUser.username || '').toLowerCase() &&
+                                                (x.username || '').toLowerCase() !== (userRecord.username || '').toLowerCase()
+                                            );
+                                            if (indirectRefUser) {
+                                                indirectRefUser.remaining_cash = (parseFloat(indirectRefUser.remaining_cash) || 0) + indirectCommAmount;
+                                                indirectRefUser.cashBalance = indirectRefUser.remaining_cash;
+                                                indirectRefUser.referral_earnings = (parseFloat(indirectRefUser.referral_earnings) || 0) + indirectCommAmount;
+                                                indirectRefUser.indirect_referral_earnings = (parseFloat(indirectRefUser.indirect_referral_earnings) || 0) + indirectCommAmount;
+                                                indirectRefUser.indirect_referral_count = (parseInt(indirectRefUser.indirect_referral_count) || 0) + 1;
+                                                indirectRefUser.total_earned = (parseFloat(indirectRefUser.total_earned) || 0) + indirectCommAmount;
+                                                if (!indirectRefUser.activity_ledger) indirectRefUser.activity_ledger = [];
+                                                indirectRefUser.activity_ledger.unshift({
+                                                    time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+                                                    type: 'Indirect Referral Commission',
+                                                    desc: `Earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate commission: 2nd-tier downline @${username} (referred by @${refUser.username}) activated account`,
+                                                    reward_type: 'cash',
+                                                    reward_value: indirectCommAmount
+                                                });
+
+                                                notifs.unshift({
+                                                    id: 'notif-' + (Date.now() + 1),
+                                                    title: 'Indirect Referral Bonus Credited',
+                                                    msg: `You earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate bonus! 2nd-generation downline @${username} (referred by @${refUser.username}) has activated their account.`,
+                                                    message: `You earned ₦${indirectCommAmount.toFixed(2)} indirect affiliate bonus! 2nd-generation downline @${username} (referred by @${refUser.username}) has activated their account.`,
+                                                    target: indirectRefUser.username,
+                                                    time: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                                                    created_at: new Date().toISOString()
+                                                });
+                                            }
+                                        }
+
                                         fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
                                     }
 
                                     userRecord.referral_commission_awarded = true;
                                     userRecord.referral_commission_amount = commAmount;
+                                    userRecord.indirect_referral_commission_amount = indirectCommAmount;
                                     userRecord.referral_commission_at = new Date().toISOString();
                                 }
 
@@ -2398,9 +2491,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
             if (cleanUrl.includes('pricing.php') || action === 'get_pricing' || action === 'save_pricing') {
                 const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                 let pricing = {
-                    reg_fee: 1000,
-                    ref_commission: 500,
-                    vendor_wholesale: 800,
+                    reg_fee: 5000,
+                    ref_commission: 3000,
+                    indirect_ref_commission: 200,
+                    vendor_wholesale: 4000,
                     min_points_withdrawal: 1000,
                     min_cash_withdrawal: 5000,
                     min_withdrawal: 5000,
@@ -2413,6 +2507,15 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 if (req.method === 'POST' || action === 'save_pricing') {
                     pricing = Object.assign(pricing, parsed);
                     delete pricing.points_rate;
+                    if (parsed.reg_fee !== undefined) {
+                        pricing.reg_fee = parseFloat(parsed.reg_fee) || 5000;
+                    }
+                    if (parsed.ref_commission !== undefined) {
+                        pricing.ref_commission = parseFloat(parsed.ref_commission) || 3000;
+                    }
+                    if (parsed.indirect_ref_commission !== undefined) {
+                        pricing.indirect_ref_commission = parseFloat(parsed.indirect_ref_commission) || 200;
+                    }
                     if (parsed.min_points_withdrawal !== undefined) {
                         pricing.min_points_withdrawal = parseFloat(parsed.min_points_withdrawal) || 1000;
                     }
@@ -2453,7 +2556,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 let bcastData = {
                     banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
                     welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' },
-                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Surveys', cta_url: 'dashboard.php#surveys', frequency: 'session' },
+                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Survey', cta_url: 'dashboard.php#surveys', frequency: 'session' },
                     activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' },
                     activation_popup: { enabled: true, title: 'Account Activated Successfully!', message: 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.', cta_label: 'Start Earning Now', cta_url: 'dashboard.php#tasks', dismiss_label: 'Continue to Dashboard' }
                 };
@@ -2601,7 +2704,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             title: item.title || '',
                             category: item.category || 'General Opportunity',
                             description: item.description || '',
-                            price_tag: item.price_tag || 'Deal Available',
+                            price_tag: item.price_tag || '',
+                            has_price: item.has_price !== undefined ? Boolean(item.has_price) : Boolean(item.price_tag && item.price_tag.toLowerCase() !== 'no price'),
                             author: item.author || 'Member',
                             author_role: item.author_role || 'member',
                             is_official: Boolean(item.is_official),
@@ -2687,7 +2791,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const title = (parsed.title || '').trim();
                     const category = (parsed.category || 'Business Opportunity').trim();
                     const description = (parsed.description || '').trim();
-                    const priceTag = (parsed.price_tag || 'Deal Available').trim();
+                    const hasPrice = parsed.has_price !== undefined ? Boolean(parsed.has_price) : Boolean(parsed.price_tag && parsed.price_tag.toLowerCase() !== 'no price');
+                    const priceTag = hasPrice ? (parsed.price_tag || '').trim() : '';
                     const contactLink = (parsed.contact_link || '').trim();
                     const imageUrl = (parsed.image_url || '').trim();
                     const username = (parsed.username || '').trim();
@@ -2749,7 +2854,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             targetUser.activity_ledger.unshift({
                                 time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                                 type: 'Ecosystem Listing Fee',
-                                desc: `Published ecosystem opportunity: ${title}`,
+                                desc: `Submitted ecosystem opportunity: ${title} (Pending Admin Review)`,
                                 reward_type: 'points',
                                 reward_value: -ptsReq
                             });
@@ -2769,7 +2874,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             targetUser.activity_ledger.unshift({
                                 time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                                 type: 'Ecosystem Listing Fee',
-                                desc: `Published ecosystem opportunity: ${title}`,
+                                desc: `Submitted ecosystem opportunity: ${title} (Pending Admin Review)`,
                                 reward_type: 'cash',
                                 reward_value: -cashReq
                             });
@@ -2784,6 +2889,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         category: category,
                         description: description,
                         price_tag: priceTag,
+                        has_price: hasPrice,
                         author: isAdmin ? 'InnovationX HQ' : username,
                         author_role: isAdmin ? 'admin' : 'member',
                         is_official: isAdmin,
@@ -2794,7 +2900,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         fee_paid: feePaid,
                         views: 0,
                         likes: [],
-                        status: (isAdmin || ecoSettings.auto_approve) ? 'active' : 'pending',
+                        status: isAdmin ? 'active' : 'pending',
                         created_at: new Date().toISOString()
                     };
 
@@ -2803,8 +2909,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     const isLive = (newItem.status === 'active');
                     const msg = isLive
-                        ? 'Opportunity published to the Innovation Ecosystem successfully!'
-                        : 'Opportunity submitted successfully! Listing fee deducted. Your listing is pending admin review and approval before going live.';
+                        ? 'Official opportunity published to the Innovation Ecosystem successfully!'
+                        : 'Payment received! Your post is currently PENDING admin review and approval. Once an admin verifies it to prevent scams, your post will go live to all members.';
 
                     res.end(JSON.stringify({
                         status: 'success',
@@ -3277,7 +3383,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 return;
             }
 
-            if (cleanUrl.includes('uploader_requests.php') || action === 'get_requests' || action === 'submit_request' || action === 'approve_request' || action === 'reject_request' || action === 'pay_with_wallet') {
+            if (cleanUrl.includes('uploader_requests.php')) {
                 const reqFile = path.join(PUBLIC_DIR, 'config', 'uploader_requests.json');
                 let requests = [];
                 if (fs.existsSync(reqFile)) {
@@ -3400,6 +3506,67 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 }
 
                 res.end(JSON.stringify({ status: 'success', config: adsConfig }));
+                return;
+            }
+
+            // Platform Maintenance Mode Controller API
+            if (cleanUrl.includes('maintenance.php')) {
+                const maintFile = path.join(PUBLIC_DIR, 'config', 'maintenance.json');
+                let maintConfig = {
+                    enabled: false,
+                    title: 'Platform Infrastructure Optimization',
+                    message: 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.',
+                    estimated_end: '15 Minutes',
+                    updated_at: new Date().toISOString()
+                };
+                if (fs.existsSync(maintFile)) {
+                    try { maintConfig = Object.assign(maintConfig, JSON.parse(fs.readFileSync(maintFile, 'utf8'))); } catch(e){}
+                }
+
+                if (action === 'get_status' || (!action && req.method === 'GET')) {
+                    res.end(JSON.stringify({ status: 'success', maintenance: maintConfig }));
+                    return;
+                }
+
+                if (action === 'toggle' && req.method === 'POST') {
+                    if (parsed && parsed.enabled !== undefined) {
+                        maintConfig.enabled = Boolean(parsed.enabled);
+                    } else {
+                        maintConfig.enabled = !maintConfig.enabled;
+                    }
+                    maintConfig.updated_at = new Date().toISOString();
+                    const configDir = path.dirname(maintFile);
+                    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+                    fs.writeFileSync(maintFile, JSON.stringify(maintConfig, null, 2));
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: maintConfig.enabled ? 'Maintenance mode ACTIVATED.' : 'Maintenance mode DEACTIVATED. Site is live.',
+                        maintenance: maintConfig
+                    }));
+                    return;
+                }
+
+                if ((action === 'save' || req.method === 'POST') && parsed) {
+                    if (parsed.enabled !== undefined) {
+                        maintConfig.enabled = Boolean(parsed.enabled);
+                    }
+                    if (parsed.title) maintConfig.title = String(parsed.title).trim();
+                    if (parsed.message) maintConfig.message = String(parsed.message).trim();
+                    if (parsed.estimated_end !== undefined) maintConfig.estimated_end = String(parsed.estimated_end).trim();
+                    maintConfig.updated_at = new Date().toISOString();
+
+                    const configDir = path.dirname(maintFile);
+                    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+                    fs.writeFileSync(maintFile, JSON.stringify(maintConfig, null, 2));
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: maintConfig.enabled ? 'Maintenance mode settings saved and ACTIVATED.' : 'Maintenance mode settings saved. Site is live.',
+                        maintenance: maintConfig
+                    }));
+                    return;
+                }
+
+                res.end(JSON.stringify({ status: 'error', message: 'Invalid action' }));
                 return;
             }
 
@@ -3645,7 +3812,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return;
                 }
 
-                if (action === 'get_requests' || action === 'get_user_withdrawals') {
+                if (action === 'get_requests' || action === 'get_user_withdrawals' || action === 'get_pending' || action === 'get_all' || action === 'get_all_withdrawals') {
                     let reqs = [];
                     if (fs.existsSync(reqsFile)) {
                         try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
@@ -3655,7 +3822,32 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     if (filterUser) {
                         reqs = reqs.filter(r => (r.username || '').toLowerCase() === filterUser.toLowerCase());
                     }
-                    res.end(JSON.stringify({ status: 'success', requests: reqs }));
+
+                    const pendingReqs = reqs.filter(r => {
+                        const st = (r.status || '').toLowerCase();
+                        return st === 'pending' || st === 'processing';
+                    });
+                    const paidReqs = reqs.filter(r => {
+                        const st = (r.status || '').toLowerCase();
+                        return st === 'paid' || st === 'approved';
+                    });
+                    const rejectedReqs = reqs.filter(r => {
+                        const st = (r.status || '').toLowerCase();
+                        return st === 'rejected' || st === 'declined';
+                    });
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        requests: reqs,
+                        withdrawals: reqs,
+                        pending: pendingReqs,
+                        paid: paidReqs,
+                        rejected: rejectedReqs,
+                        pending_count: pendingReqs.length,
+                        paid_count: paidReqs.length,
+                        rejected_count: rejectedReqs.length,
+                        total_count: reqs.length
+                    }));
                     return;
                 }
 
@@ -3795,8 +3987,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         net_amount_formatted: '₦' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                         wallet_type: targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
                         service_type: targetWallet,
-                        status: 'Pending',
-                        status_label: 'QUEUED FOR INSTANT SETTLEMENT',
+                        status: 'Processing',
+                        status_label: 'Processing',
                         created_at: now.toISOString(),
                         date_formatted: dateFormatted,
                         security_hash: secHash,
@@ -3833,38 +4025,154 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return;
                 }
 
-                if (action === 'approve_request' && req.method === 'POST') {
+                if ((action === 'approve_request' || action === 'approve_withdrawal') && req.method === 'POST') {
                     let reqs = [];
                     if (fs.existsSync(reqsFile)) {
                         try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
                     }
-                    const targetId = parsed.id || '';
+                    const targetId = (parsed.id || parsed.txn_id || '').trim();
+                    let found = false;
+                    let targetUsername = '';
+                    let targetAmount = 0;
+                    let targetBank = '';
+                    let targetAcc = '';
+
                     reqs.forEach(r => {
                         if (r.id === targetId || r.txn_id === targetId) {
-                            r.status = 'Approved';
+                            r.status = 'Paid';
+                            r.status_label = 'Paid';
                             r.approved_at = new Date().toISOString();
+                            r.paid_at = new Date().toISOString();
+                            found = true;
+                            targetUsername = r.username || '';
+                            targetAmount = r.amount || 0;
+                            targetBank = r.bank_name || r.bank || 'Bank Account';
+                            targetAcc = r.account_number || r.account || '';
                         }
                     });
-                    fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
-                    res.end(JSON.stringify({ status: 'success', message: 'Withdrawal request approved!' }));
+
+                    if (found) {
+                        fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+
+                        // Update user ledger in users.json
+                        if (targetUsername) {
+                            const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                            if (fs.existsSync(usersFile)) {
+                                try {
+                                    const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                                    const userObj = (uData.users || []).find(u => (u.username || '').toLowerCase() === targetUsername.toLowerCase());
+                                    if (userObj && Array.isArray(userObj.activity_ledger)) {
+                                        userObj.activity_ledger.forEach(item => {
+                                            if (item.receipt && (item.receipt.id === targetId || item.receipt.txn_id === targetId)) {
+                                                item.receipt.status = 'Paid';
+                                                item.receipt.status_label = 'Paid';
+                                                item.receipt.paid_at = new Date().toISOString();
+                                            }
+                                        });
+                                        fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                                    }
+                                } catch(e){}
+                            }
+
+                            // Add notification
+                            const notifsFile = path.join(PUBLIC_DIR, 'data', 'notifications.json');
+                            let notifs = [];
+                            if (fs.existsSync(notifsFile)) {
+                                try { notifs = JSON.parse(fs.readFileSync(notifsFile, 'utf8')); } catch(e){}
+                            }
+                            if (!Array.isArray(notifs)) notifs = [];
+                            notifs.push({
+                                id: 'notif_' + Date.now() + '_' + Math.floor(Math.random() * 900 + 100),
+                                target_username: targetUsername,
+                                title: 'Withdrawal Settled & Paid',
+                                message: `Your withdrawal payout of ₦${Number(targetAmount).toLocaleString()} has been approved and paid to ${targetBank} (${targetAcc}). Status: Paid.`,
+                                type: 'success',
+                                created_at: new Date().toISOString(),
+                                read: false
+                            });
+                            fs.writeFileSync(notifsFile, JSON.stringify(notifs, null, 2));
+                        }
+
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            message: 'Withdrawal request approved and status marked as Paid!',
+                            id: targetId,
+                            withdrawal_status: 'Paid'
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Withdrawal transaction not found.' }));
+                    }
                     return;
                 }
 
-                if (action === 'reject_request' && req.method === 'POST') {
+                if ((action === 'reject_request' || action === 'reject_withdrawal') && req.method === 'POST') {
                     let reqs = [];
                     if (fs.existsSync(reqsFile)) {
                         try { reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8')); } catch(e){}
                     }
-                    const targetId = parsed.id || '';
+                    const targetId = (parsed.id || parsed.txn_id || '').trim();
+                    const reason = parsed.reason || 'Declined by administration';
+                    let found = false;
+                    let targetUsername = '';
+                    let targetAmount = 0;
+                    let targetWallet = 'affiliate';
+
                     reqs.forEach(r => {
                         if (r.id === targetId || r.txn_id === targetId) {
                             r.status = 'Rejected';
-                            r.rejection_reason = parsed.reason || 'Declined by administration';
+                            r.status_label = 'Rejected';
+                            r.rejection_reason = reason;
                             r.rejected_at = new Date().toISOString();
+                            found = true;
+                            targetUsername = r.username || '';
+                            targetAmount = parseFloat(r.amount) || 0;
+                            targetWallet = (r.service_type === 'task') ? 'task' : 'affiliate';
                         }
                     });
-                    fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
-                    res.end(JSON.stringify({ status: 'success', message: 'Withdrawal request rejected.' }));
+
+                    if (found) {
+                        fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+
+                        // Refund user balance
+                        if (targetUsername) {
+                            const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                            if (fs.existsSync(usersFile)) {
+                                try {
+                                    const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                                    const userObj = (uData.users || []).find(u => (u.username || '').toLowerCase() === targetUsername.toLowerCase());
+                                    if (userObj) {
+                                        if (targetWallet === 'task') {
+                                            const pts = parseInt(userObj.remaining_pts !== undefined ? userObj.remaining_pts : (userObj.pointsBalance || 0)) + Math.ceil(targetAmount);
+                                            userObj.remaining_pts = pts;
+                                            userObj.pointsBalance = pts;
+                                        } else {
+                                            const csh = parseFloat(userObj.remaining_cash !== undefined ? userObj.remaining_cash : (userObj.cashBalance || 0)) + targetAmount;
+                                            userObj.remaining_cash = csh;
+                                            userObj.cashBalance = csh;
+                                        }
+                                        if (Array.isArray(userObj.activity_ledger)) {
+                                            userObj.activity_ledger.forEach(item => {
+                                                if (item.receipt && (item.receipt.id === targetId || item.receipt.txn_id === targetId)) {
+                                                    item.receipt.status = 'Rejected';
+                                                    item.receipt.status_label = 'Rejected';
+                                                }
+                                            });
+                                        }
+                                        fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                                    }
+                                } catch(e){}
+                            }
+                        }
+
+                        res.end(JSON.stringify({
+                            status: 'success',
+                            message: 'Withdrawal request rejected and funds returned to member wallet.',
+                            id: targetId,
+                            withdrawal_status: 'Rejected'
+                        }));
+                    } else {
+                        res.end(JSON.stringify({ status: 'error', message: 'Withdrawal transaction not found.' }));
+                    }
                     return;
                 }
 
@@ -4416,7 +4724,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const userRefCode = user ? (user.referral_code || '').toUpperCase() : '';
                     const inxUpper = ('INX-' + uname).toUpperCase();
                     const inxRaw = user ? ('INX-' + user.username).toUpperCase() : '';
+                    const directUsernames = new Set();
                     const referrals = [];
+
+                    // 1. Direct (Level 1) Referrals
                     (usersData.users || []).forEach(u => {
                         const refBy = (u.referred_by || u.referredBy || '').trim();
                         if (refBy && (
@@ -4425,18 +4736,50 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             refBy.toUpperCase() === inxUpper ||
                             refBy.toUpperCase() === inxRaw
                         )) {
+                            directUsernames.add((u.username || '').toLowerCase());
                             referrals.push({
                                 username: u.username || '',
                                 email: u.email || '',
                                 full_name: u.full_name || u.fullName || u.username || '',
                                 created_at: u.created_at || '',
+                                tier: 'direct',
+                                tier_label: 'Direct (Level 1)',
+                                bonus_amount: 3000,
                                 is_activated: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated),
                                 status: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated) ? 'Activated' : 'Pending Activation'
                             });
                         }
                     });
-                    const activatedCount = referrals.filter(r => r.is_activated).length;
-                    res.end(JSON.stringify({ success: true, status: 'success', referrals: referrals, count: activatedCount, total_count: referrals.length }));
+
+                    // 2. Indirect (Level 2) Referrals
+                    (usersData.users || []).forEach(u => {
+                        const refBy = (u.referred_by || u.referredBy || '').trim().toLowerCase();
+                        if (refBy && directUsernames.has(refBy) && (u.username || '').toLowerCase() !== uname) {
+                            referrals.push({
+                                username: u.username || '',
+                                email: u.email || '',
+                                full_name: u.full_name || u.fullName || u.username || '',
+                                created_at: u.created_at || '',
+                                tier: 'indirect',
+                                tier_label: 'Indirect (Level 2)',
+                                bonus_amount: 200,
+                                referred_via: refBy,
+                                is_activated: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated),
+                                status: Boolean(u.is_activated || u.coupon_pin_used || u.coupon_activated) ? 'Activated' : 'Pending Activation'
+                            });
+                        }
+                    });
+
+                    const activatedDirect = referrals.filter(r => r.tier === 'direct' && r.is_activated).length;
+                    const activatedIndirect = referrals.filter(r => r.tier === 'indirect' && r.is_activated).length;
+                    res.end(JSON.stringify({ 
+                        success: true, 
+                        status: 'success', 
+                        referrals: referrals, 
+                        count: activatedDirect, 
+                        indirect_count: activatedIndirect,
+                        total_count: referrals.length 
+                    }));
                     return;
                 }
 
@@ -5928,8 +6271,9 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         const pricingFile = path.join(PUBLIC_DIR, 'config', 'app_pricing.json');
                         let appMinPointsWd = 1000;
                         let appMinCashWd = 5000;
-                        let regFee = 1000;
-                        let refBonus = 500;
+                        let regFee = 5000;
+                        let refBonus = 3000;
+                        let indirectRefBonus = 200;
                         if (fs.existsSync(pricingFile)) {
                             try {
                                 const pData = JSON.parse(fs.readFileSync(pricingFile, 'utf8'));
@@ -5938,10 +6282,12 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 else if (pData.min_withdrawal) appMinCashWd = parseFloat(pData.min_withdrawal);
                                 if (pData.reg_fee) regFee = parseFloat(pData.reg_fee);
                                 if (pData.ref_commission) refBonus = parseFloat(pData.ref_commission);
+                                if (pData.indirect_ref_commission) indirectRefBonus = parseFloat(pData.indirect_ref_commission);
                             } catch(e) {}
                         }
                         context.regFee = regFee;
                         context.refBonus = refBonus;
+                        context.indirectRefBonus = indirectRefBonus;
                         context.minCashWd = appMinCashWd;
                         context.minTaskWd = appMinPointsWd;
                         context.totalLiquidNaira = (context.userCash || 0);
@@ -5966,6 +6312,33 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
                     if (context.adminAuthStep < 2) {
                         renderPinChallengePage(res);
+                        return;
+                    }
+                }
+
+                // Global Maintenance Mode Enforcement
+                const maintFile = path.join(PUBLIC_DIR, 'config', 'maintenance.json');
+                let isMaint = false;
+                let maintData = null;
+                if (fs.existsSync(maintFile)) {
+                    try {
+                        maintData = JSON.parse(fs.readFileSync(maintFile, 'utf8'));
+                        isMaint = Boolean(maintData && maintData.enabled);
+                    } catch(e){}
+                }
+                const isAdminRoute = ['secure_hq_panel', 'admin', 'login'].some(p => cleanUrl.includes(p));
+                const isBypass = urlObj.searchParams.get('admin_bypass') === '1' || urlObj.searchParams.get('bypass') === '1';
+
+                if (isMaint && !isAdminRoute && !context.isAdmin && !isBypass) {
+                    const maintViewPath = path.join(PUBLIC_DIR, 'includes', 'maintenance_view.php');
+                    if (fs.existsSync(maintViewPath)) {
+                        const renderedMaint = renderPhpFile(maintViewPath, { maintenance: maintData || {} });
+                        res.writeHead(503, {
+                            'Content-Type': 'text/html; charset=UTF-8',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Retry-After': '300'
+                        });
+                        res.end(renderedMaint);
                         return;
                     }
                 }

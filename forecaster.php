@@ -36,7 +36,7 @@ require_once __DIR__ . '/includes/header.php';
  <div class="calc-field">
  <label>
  <span id="calcRefLabel">Daily Direct Referrals (₦<?= REFERRAL_CASH_BONUS ?> Cash each)</span>
- <span class="val" id="calcRefVal">2 Referrals (₦500)</span>
+ <span class="val" id="calcRefVal">2 Referrals (₦6,000)</span>
  </label>
  <input type="range" min="0" max="20" value="2" class="calc-range" id="calcRefs" aria-label="Daily referrals slider">
  </div>
@@ -52,10 +52,10 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
- <span class="res-sub-val cash-val" id="calcDailyCash">₦500</span>
+ <span class="res-sub-val cash-val" id="calcDailyCash">₦6,000</span>
  </div>
  </div>
- <div class="res-total" id="calcDailyTotal">1,500 PTS + ₦500</div>
+ <div class="res-total" id="calcDailyTotal">1,500 PTS + ₦6,000</div>
  </div>
 
  <div class="calc-res-item">
@@ -67,10 +67,10 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
- <span class="res-sub-val cash-val" id="calcWeeklyCash">₦3,500</span>
+ <span class="res-sub-val cash-val" id="calcWeeklyCash">₦42,000</span>
  </div>
  </div>
- <div class="res-total" id="calcWeeklyTotal">10.5k PTS + ₦3,500</div>
+ <div class="res-total" id="calcWeeklyTotal">10.5k PTS + ₦42,000</div>
  </div>
 
  <div class="calc-res-item featured-forecast">
@@ -82,10 +82,10 @@ require_once __DIR__ . '/includes/header.php';
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
- <span class="res-sub-val cash-val" id="calcMonthlyCash">₦15,000</span>
+ <span class="res-sub-val cash-val" id="calcMonthlyCash">₦180,000</span>
  </div>
  </div>
- <div class="res-total highlight" id="calcMonthlyTotal">45k PTS + ₦15,000</div>
+ <div class="res-total highlight" id="calcMonthlyTotal">45k PTS + ₦180,000</div>
  </div>
  </div>
 

@@ -39,7 +39,9 @@ if ($action === 'get_status' || $_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($action === 'toggle' || $action === 'save' || $_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     
-    if (isset($input['enabled'])) {
+    if ($action === 'toggle' && !isset($input['enabled'])) {
+        $maintenance['enabled'] = empty($maintenance['enabled']);
+    } elseif (isset($input['enabled'])) {
         $maintenance['enabled'] = filter_var($input['enabled'], FILTER_VALIDATE_BOOLEAN);
     }
     if (!empty($input['title'])) {

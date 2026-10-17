@@ -317,14 +317,16 @@ if ($action === 'activate_coupon') {
     }
     unset($u);
 
-    // Credit referrer upon genuine activation
+    // Credit direct and indirect referrers upon genuine activation
     if (!empty($downlineReferrer) && !$alreadyAwarded) {
         $pricing = readStorageJson('config/app_pricing.json', []);
-        $commAmount = floatval($pricing['ref_commission'] ?? 500);
-        if ($commAmount <= 0) $commAmount = 500;
+        $commAmount = floatval($pricing['ref_commission'] ?? 3000);
+        if ($commAmount <= 0) $commAmount = 3000;
+        $indirectComm = floatval($pricing['indirect_ref_commission'] ?? 200);
 
         $refTargetLower = strtolower($downlineReferrer);
         $refTargetUpper = strtoupper($downlineReferrer);
+        $directReferrerUpline = null;
 
         foreach ($jsonUsers as &$refUser) {
             $rUser = strtolower($refUser['username'] ?? '');
@@ -339,6 +341,7 @@ if ($action === 'activate_coupon') {
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;
                 $refUser['referral_count'] = intval($refUser['referral_count'] ?? 0) + 1;
                 $refUser['total_earned'] = floatval($refUser['total_earned'] ?? 0) + $commAmount;
+                $directReferrerUpline = trim($refUser['referred_by'] ?? ($refUser['referredBy'] ?? ''));
 
                 if (!isset($refUser['activity_ledger']) || !is_array($refUser['activity_ledger'])) {
                     $refUser['activity_ledger'] = [];
@@ -346,7 +349,7 @@ if ($action === 'activate_coupon') {
                 array_unshift($refUser['activity_ledger'], [
                     'time' => date('d/m/Y, H:i'),
                     'type' => 'Referral Commission',
-                    'desc' => "Earned ₦" . number_format($commAmount, 2) . " affiliate commission: downline @{$username} purchased and activated coupon PIN",
+                    'desc' => "Earned ₦" . number_format($commAmount, 2) . " direct affiliate commission: downline @{$username} purchased and activated coupon PIN",
                     'reward_type' => 'cash',
                     'reward_value' => $commAmount
                 ]);
@@ -355,9 +358,9 @@ if ($action === 'activate_coupon') {
                 if (!is_array($allNotifs)) $allNotifs = [];
                 array_unshift($allNotifs, [
                     'id' => 'notif-' . uniqid(),
-                    'title' => 'Referral Bonus Credited',
-                    'msg' => "You earned ₦" . number_format($commAmount, 2) . " referral commission! Your downline @{$username} has verified and activated their coupon code.",
-                    'message' => "You earned ₦" . number_format($commAmount, 2) . " referral commission! Your downline @{$username} has verified and activated their coupon code.",
+                    'title' => 'Direct Referral Bonus Credited',
+                    'msg' => "You earned ₦" . number_format($commAmount, 2) . " direct referral commission! Your downline @{$username} has verified and activated their coupon code.",
+                    'message' => "You earned ₦" . number_format($commAmount, 2) . " direct referral commission! Your downline @{$username} has verified and activated their coupon code.",
                     'target' => $refUser['username'],
                     'time' => date('d M Y, H:i'),
                     'created_at' => date('c')
@@ -368,10 +371,56 @@ if ($action === 'activate_coupon') {
         }
         unset($refUser);
 
+        // Credit Indirect Referrer (Tier 2 / Level 2 Upline)
+        if (!empty($directReferrerUpline) && $indirectComm > 0) {
+            $indLower = strtolower($directReferrerUpline);
+            $indUpper = strtoupper($directReferrerUpline);
+            foreach ($jsonUsers as &$indUser) {
+                $iUser = strtolower($indUser['username'] ?? '');
+                $iCode = strtoupper(trim($indUser['referral_code'] ?? ''));
+                $iInx = strtoupper('INX-' . $iUser);
+                if (($iUser === $indLower || ($iCode && $iCode === $indUpper) || $iInx === $indUpper) && $iUser !== strtolower($username) && $iUser !== $refTargetLower) {
+                    $indUser['remaining_cash'] = floatval($indUser['remaining_cash'] ?? 0) + $indirectComm;
+                    $indUser['cashBalance'] = $indUser['remaining_cash'];
+                    $indUser['referral_earnings'] = floatval($indUser['referral_earnings'] ?? 0) + $indirectComm;
+                    $indUser['indirect_referral_earnings'] = floatval($indUser['indirect_referral_earnings'] ?? 0) + $indirectComm;
+                    $indUser['indirect_referral_count'] = intval($indUser['indirect_referral_count'] ?? 0) + 1;
+                    $indUser['total_earned'] = floatval($indUser['total_earned'] ?? 0) + $indirectComm;
+
+                    if (!isset($indUser['activity_ledger']) || !is_array($indUser['activity_ledger'])) {
+                        $indUser['activity_ledger'] = [];
+                    }
+                    array_unshift($indUser['activity_ledger'], [
+                        'time' => date('d/m/Y, H:i'),
+                        'type' => 'Indirect Referral Commission',
+                        'desc' => "Earned ₦" . number_format($indirectComm, 2) . " indirect affiliate commission: 2nd-tier downline @{$username} activated account",
+                        'reward_type' => 'cash',
+                        'reward_value' => $indirectComm
+                    ]);
+
+                    $allNotifs = readStorageJson('data/notifications.json', []);
+                    if (!is_array($allNotifs)) $allNotifs = [];
+                    array_unshift($allNotifs, [
+                        'id' => 'notif-' . uniqid(),
+                        'title' => 'Indirect Referral Bonus Credited',
+                        'msg' => "You earned ₦" . number_format($indirectComm, 2) . " indirect affiliate bonus! 2nd-tier downline @{$username} has activated their account.",
+                        'message' => "You earned ₦" . number_format($indirectComm, 2) . " indirect affiliate bonus! 2nd-tier downline @{$username} has activated their account.",
+                        'target' => $indUser['username'],
+                        'time' => date('d M Y, H:i'),
+                        'created_at' => date('c')
+                    ]);
+                    writeStorageJson('data/notifications.json', $allNotifs);
+                    break;
+                }
+            }
+            unset($indUser);
+        }
+
         foreach ($jsonUsers as &$u) {
             if (strtolower($u['username'] ?? '') === strtolower($username)) {
                 $u['referral_commission_awarded'] = true;
                 $u['referral_commission_amount'] = $commAmount;
+                $u['indirect_referral_commission_amount'] = $indirectComm;
                 $u['referral_commission_at'] = date('c');
                 break;
             }
