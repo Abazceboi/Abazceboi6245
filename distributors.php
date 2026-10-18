@@ -6,7 +6,7 @@ require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/includes/storage_helper.php';
 require_once __DIR__ . '/includes/auth_helper.php';
 
-$pageTitle = 'Official Distributors | ' . (defined('APP_NAME') ? APP_NAME : 'INNOVATIONX');
+$pageTitle = 'Official Distributors | ' . (defined('APP_NAME') ? APP_NAME : 'KAIRUSNETWORK');
 $pageDesc = 'Choose your verified platform distributor to obtain your account activation key.';
 
 // Resolve current authenticated user if logged in
@@ -36,8 +36,8 @@ if (!is_array($distributors) || empty($distributors)) {
 
 $telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
 $telegramConfig = [
-    'channel_link' => 'https://t.me/innovationx_official',
-    'support_link' => 'https://t.me/innovationx_support',
+    'channel_link' => 'https://t.me/kairusnetwork_official',
+    'support_link' => 'https://t.me/kairusnetwork_support',
 ];
 if (file_exists($telegramConfigFile)) {
     $loadedTel = json_decode(file_get_contents($telegramConfigFile), true);
@@ -803,8 +803,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         <!-- Top bar -->
         <div class="top-bar">
             <a href="index.php" class="brand-pill">
-                <span class="brand-badge">IX</span>
-                <span>INNOVATIONX</span>
+                <span class="brand-badge">KN</span>
+                <span>KAIRUSNETWORK</span>
             </a>
             <div style="display:flex;align-items:center;gap:8px;">
                 <a href="dashboard.php" class="action-link">
@@ -829,7 +829,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         <div class="social-help-row">
             <div class="social-help-label">
                 <span>More Help?</span>
-                <span>Follow InnovationX on social media</span>
+                <span>Follow KairusNetwork on social media</span>
             </div>
             <div class="social-icons-group">
                 <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="social-circle-btn" title="Telegram">
@@ -1085,7 +1085,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
 
         var phoneStr = buyerPhone ? (' (' + buyerPhone + ')') : '';
         return 'Hello ' + vendorName + ', my name is ' + buyerName + phoneStr + '.\n\n' +
-               'I want to purchase ' + qty + ' INNOVATIONX activation code(s) for ₦' + total + '.\n' +
+               'I want to purchase ' + qty + ' KairusNetwork activation code(s) for ₦' + total + '.\n' +
                'Payment method: ' + payment + '.\n\n' +
                'Please send your payment details so I can make payment and receive my code(s).';
     }
@@ -1162,7 +1162,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         }).catch(function() {});
 
         // Show dispatched confirmation screen in modal
-        showDistributorOrderSuccess(vendorName, 'IX-REQ-' + Math.floor(Math.random() * 900000 + 100000), messageText, waUrl, 'whatsapp');
+        showDistributorOrderSuccess(vendorName, 'KN-REQ-' + Math.floor(Math.random() * 900000 + 100000), messageText, waUrl, 'whatsapp');
     }
 
     function submitDistributorTelegramOrder() {
@@ -1203,7 +1203,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         } else if (rawTg.startsWith('http')) {
             tgUrl = rawTg;
         } else {
-            tgUrl = 'https://t.me/innovationx_official';
+            tgUrl = 'https://t.me/kairusnetwork_official';
         }
 
         var tgFullUrl = tgUrl + (tgUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(messageText);

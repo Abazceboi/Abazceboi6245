@@ -55,8 +55,8 @@ $defaultVendors = [
 
 $defaultTelegram = [
     'enabled' => true,
-    'channel_link' => 'https://t.me/innovationx_official',
-    'support_link' => 'https://t.me/innovationx_support',
+    'channel_link' => 'https://t.me/kairusnetwork_official',
+    'support_link' => 'https://t.me/kairusnetwork_support',
     'popup_title' => 'Join Our Official Telegram Community',
     'popup_badge' => 'Official Community',
     'popup_description' => 'Get instant daily task drops, vendor coupon codes, free airtime flash giveaways, and 24/7 direct admin support. Join over 50,000+ active Nigerian earners!',
@@ -223,12 +223,13 @@ if ($action === 'get_vendors_activity') {
 
         $referralsCount = 0;
         $activeReferrals = 0;
+        $vRefCodeKn = strtoupper('KN-' . $uName);
         $vRefCode = strtoupper('INX-' . $uName);
 
         foreach ($users as $u) {
             $refBy = strtolower(trim($u['referred_by'] ?? $u['referredBy'] ?? ''));
             $refCode = strtoupper(trim($u['referred_by_code'] ?? ''));
-            if ($refBy === $uName || ($vRefCode && $refCode === $vRefCode)) {
+            if ($refBy === $uName || ($vRefCodeKn && $refCode === $vRefCodeKn) || ($vRefCode && $refCode === $vRefCode)) {
                 $referralsCount++;
                 if (!empty($u['is_activated']) || !empty($u['coupon_activated']) || !empty($u['coupon_pin_used'])) {
                     $activeReferrals++;
@@ -529,7 +530,7 @@ if ($action === 'update_vendor_profile' && $_SERVER['REQUEST_METHOD'] === 'POST'
 echo json_encode([
     'success' => true,
     'status' => 'active',
-    'service' => 'INNOVATIONX Vendors & Telegram Hub',
+    'service' => 'KAIRUSNETWORK Vendors & Telegram Hub',
     'vendors' => $vendors,
     'telegram' => $telegram
 ]);

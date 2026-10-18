@@ -3,7 +3,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 /**
- * INNOVATIONX — Member Dashboard
+ * KAIRUSNETWORK — Member Dashboard
  * Fresh modern design with floating bottom dock, ATM card wallet, and zero emojis.
  */
 require_once __DIR__ . '/config/app.php';
@@ -39,7 +39,7 @@ $userFullName   = $authUser['fullName'] ?? $username;
 $bankName       = '';
 $accountNumber  = '';
 $accountName    = '';
-$referralCode   = 'INX-' . strtoupper($username);
+$referralCode   = 'KN-' . strtoupper($username);
 $referralCount  = 0;
 $referralEarnings = 0.00;
 $tasksCompleted = 0;
@@ -236,12 +236,12 @@ if ($isActivated) {
 $bcastConfig = readStorageJson('config/broadcasts.json', []);
 $actSettings = $bcastConfig['activation_lock'] ?? [
     'title' => 'Account Activation Required',
-    'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
+    'message' => 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
     'cta_label' => 'Contact Verified Vendors',
     'cta_url' => 'distributors.php'
 ];
 $actTitle = !empty($actSettings['title']) ? $actSettings['title'] : 'Account Activation Required';
-$actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+$actMessage = !empty($actSettings['message']) ? $actSettings['message'] : 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
 $actCtaLabel = !empty($actSettings['cta_label']) ? $actSettings['cta_label'] : 'Contact Verified Vendors';
 $actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'distributors.php';
 
@@ -249,13 +249,13 @@ $actCtaUrl = !empty($actSettings['cta_url']) ? $actSettings['cta_url'] : 'distri
 $actPopupConfig = $bcastConfig['activation_popup'] ?? [
     'enabled' => true,
     'title' => 'Account Activated Successfully!',
-    'message' => "Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
+    'message' => "Congratulations on activating your KAIRUSNETWORK account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
     'cta_label' => 'Start Earning Now',
     'cta_url' => 'dashboard.php#tasks',
     'dismiss_label' => 'Continue to Dashboard'
 ];
 $actPopupTitle = !empty($actPopupConfig['title']) ? $actPopupConfig['title'] : 'Account Activated Successfully!';
-$actPopupMessage = !empty($actPopupConfig['message']) ? $actPopupConfig['message'] : 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.';
+$actPopupMessage = !empty($actPopupConfig['message']) ? $actPopupConfig['message'] : 'Congratulations on activating your KAIRUSNETWORK account! Your member profile is now fully unlocked.';
 $actPopupCtaLabel = !empty($actPopupConfig['cta_label']) ? $actPopupConfig['cta_label'] : 'Start Earning Now';
 $actPopupCtaUrl = !empty($actPopupConfig['cta_url']) ? $actPopupConfig['cta_url'] : 'dashboard.php#tasks';
 $actPopupDismissLabel = !empty($actPopupConfig['dismiss_label']) ? $actPopupConfig['dismiss_label'] : 'Continue to Dashboard';
@@ -283,6 +283,9 @@ $referralLink = $appUrl . '/register.php?ref=' . urlencode($username);
 $referredUsersList = [];
 $uLower = strtolower($username);
 $rCodeUpper = strtoupper($referralCode);
+$rKnUpper = strtoupper('KN-' . $username);
+$rKnMd5_1 = strtoupper('KN-' . substr(md5($uLower . 'ref'), 0, 8));
+$rKnMd5_2 = strtoupper('KN-' . substr(md5($username . 'ref'), 0, 8));
 $rInxUpper = strtoupper('INX-' . $username);
 $rInxMd5_1 = strtoupper('INX-' . substr(md5($uLower . 'ref'), 0, 8));
 $rInxMd5_2 = strtoupper('INX-' . substr(md5($username . 'ref'), 0, 8));
@@ -293,6 +296,9 @@ foreach ($allUsers as $au) {
     if (!empty($refBy) && (
         strtolower($refBy) === $uLower ||
         ($rCodeUpper && strtoupper($refBy) === $rCodeUpper) ||
+        strtoupper($refBy) === $rKnUpper ||
+        strtoupper($refBy) === $rKnMd5_1 ||
+        strtoupper($refBy) === $rKnMd5_2 ||
         strtoupper($refBy) === $rInxUpper ||
         strtoupper($refBy) === $rInxMd5_1 ||
         strtoupper($refBy) === $rInxMd5_2 ||
@@ -345,7 +351,7 @@ if ($actDownlines > $referralCount) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Member Dashboard — InnovationX</title>
+<title>Member Dashboard — KairusNetwork</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -2488,9 +2494,9 @@ html[data-theme="light"] .special-portal-card.uploader,
 <!-- Top Floating Pill Bar (Modern island navigation) -->
 <header class="top-pill-wrapper">
   <div class="top-pill-bar">
-    <a href="dashboard.php" class="brand-pill" title="InnovationX Dashboard">
-      <div class="brand-mark">IX</div>
-      <div class="brand-text">Innovation<span>X</span></div>
+    <a href="dashboard.php" class="brand-pill" title="KairusNetwork Dashboard">
+      <div class="brand-mark">KN</div>
+      <div class="brand-text">Kairus<span>Network</span></div>
     </a>
 
     <div class="top-pill-center">
@@ -2560,9 +2566,9 @@ html[data-theme="light"] .special-portal-card.uploader,
   <div id="tab-home" class="tab-panel active">
     <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));">
       <div class="stat-card">
-        <div class="stat-label">Points Balance</div>
+        <div class="stat-label">KRN Balance</div>
         <div class="stat-value" id="statPtsOverview" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
-        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Task points &amp; platform credits</div>
+        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">KRN task points &amp; platform credits</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Cash Balance</div>
@@ -2719,8 +2725,8 @@ html[data-theme="light"] .special-portal-card.uploader,
               <span class="atm-card-type">PLATINUM DEBIT</span>
             </div>
             <div class="atm-brand-badge">
-              <span class="atm-brand-logo">IX</span>
-              <span class="atm-brand-title">INNOVATION<span>X</span></span>
+              <span class="atm-brand-logo">KN</span>
+              <span class="atm-brand-title">KAIRUS<span>NETWORK</span></span>
             </div>
           </div>
 
@@ -2800,9 +2806,9 @@ html[data-theme="light"] .special-portal-card.uploader,
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;">
         <div class="stat-card">
-          <div class="stat-label">Task Points Wallet</div>
-          <div class="stat-value" id="statPtsWallet" style="color:var(--accent);"><?= number_format($userPoints) ?> PTS</div>
-          <div class="stat-sub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
+          <div class="stat-label">KRN Points Wallet</div>
+          <div class="stat-value" id="statPtsWallet" style="color:var(--accent);"><?= number_format($userPoints) ?> KRN</div>
+          <div class="stat-sub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> KRN</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Referral Cash Wallet</div>
@@ -2961,12 +2967,12 @@ html[data-theme="light"] .special-portal-card.uploader,
         </div>
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--txt);">Listing Pricing</div>
-          <div style="font-size:11.5px;color:var(--txt-3);" id="ecoFeeDisplayNotice">Publish your post for <strong id="ecoPtsFeeNotice"><?= $ecoPtsFee ?> PTS</strong> or <strong id="ecoCashFeeNotice"><?= number_format($ecoCashFee) ?> NGN</strong> affiliate earnings.</div>
+          <div style="font-size:11.5px;color:var(--txt-3);" id="ecoFeeDisplayNotice">Publish your post for <strong id="ecoPtsFeeNotice"><?= $ecoPtsFee ?> KRN</strong> or <strong id="ecoCashFeeNotice"><?= number_format($ecoCashFee) ?> NGN</strong> affiliate earnings.</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
         <div style="font-size:11.5px;color:var(--txt-2);">
-          <span>Your PTS: </span><strong style="color:var(--accent);" id="ecoUserPtsBadge"><?= number_format($userPoints) ?></strong>
+          <span>Your KRN: </span><strong style="color:var(--accent);" id="ecoUserPtsBadge"><?= number_format($userPoints) ?></strong>
         </div>
         <div style="font-size:11.5px;color:var(--txt-2);">
           <span>Affiliate Balance: </span><strong style="color:var(--green);" id="ecoUserCashBadge"><?= number_format($userCash) ?> NGN</strong>
@@ -3394,8 +3400,8 @@ html[data-theme="light"] .special-portal-card.uploader,
           <div style="display:flex;flex-direction:column;gap:8px;">
             <label class="eco-pay-option" style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="points" checked onchange="updateEcoPaySelection()">
-              <span style="flex:1;">Pay with Points (<strong id="ecoModalPtsFee"><?= $ecoPtsFee ?> PTS</strong>)</span>
-              <span style="font-size:11px;color:var(--accent);">Bal: <span id="ecoModalPtsBal">0</span> PTS</span>
+              <span style="flex:1;">Pay with KRN (<strong id="ecoModalPtsFee"><?= $ecoPtsFee ?> KRN</strong>)</span>
+              <span style="font-size:11px;color:var(--accent);">Bal: <span id="ecoModalPtsBal">0</span> KRN</span>
             </label>
             <label class="eco-pay-option" style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--txt-2);cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid var(--border);">
               <input type="radio" name="ecoPayMethod" value="affiliate_balance" onchange="updateEcoPaySelection()">
@@ -3610,8 +3616,8 @@ html[data-theme="light"] .special-portal-card.uploader,
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </div>
               <div class="fancy-trigger-text">
-                <div class="fancy-trigger-title" id="wdWalletTitle">Task Points Wallet</div>
-                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
+                <div class="fancy-trigger-title" id="wdWalletTitle">KRN Points Wallet</div>
+                <div class="fancy-trigger-sub" id="wdWalletSub">Min payout: <span class="min-task-display"><?= number_format($minTaskWd) ?></span> KRN</div>
               </div>
             </div>
             <div class="fancy-chevron">
@@ -3621,15 +3627,15 @@ html[data-theme="light"] .special-portal-card.uploader,
 
           <!-- Floating Fancy Options Menu -->
           <div class="fancy-dropdown-menu" id="wdWalletMenu" role="listbox">
-            <div class="fancy-option selected" data-value="task" data-title="Task Points Wallet" data-sub="Min payout: <?= number_format($minTaskWd) ?> PTS" data-icon="points" onclick="selectFancyOption('wdWalletDropdown', this)">
+            <div class="fancy-option selected" data-value="task" data-title="KRN Points Wallet" data-sub="Min payout: <?= number_format($minTaskWd) ?> KRN" data-icon="points" onclick="selectFancyOption('wdWalletDropdown', this)">
               <div class="fancy-option-icon points-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </div>
               <div class="fancy-option-info">
-                <div class="fancy-option-name">Task Points Wallet</div>
+                <div class="fancy-option-name">KRN Points Wallet</div>
                 <div class="fancy-option-desc">Earnings from completed tasks & video surveys</div>
               </div>
-              <div class="fancy-option-badge">Min <span class="min-task-display"><?= number_format($minTaskWd) ?></span> PTS</div>
+              <div class="fancy-option-badge">Min <span class="min-task-display"><?= number_format($minTaskWd) ?></span> KRN</div>
               <div class="fancy-option-check">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -3765,8 +3771,8 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div class="receipt-header">
       <div class="receipt-brand-row">
         <div class="receipt-logo">
-          <span class="rcpt-logo-mark">IX</span>
-          <span class="rcpt-logo-text">INNOVATIONX</span>
+          <span class="rcpt-logo-mark">KN</span>
+          <span class="rcpt-logo-text">KAIRUSNETWORK</span>
         </div>
         <span class="rcpt-type-tag">Transfer Receipt</span>
       </div>
@@ -3886,7 +3892,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 
     <div style="text-align:left;margin-bottom:14px;">
       <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-2);margin-bottom:6px;">Coupon Activation PIN</label>
-      <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter') submitAccountActivation()">
+      <input type="text" id="activationPinInput" class="form-input" placeholder="e.g. KN-AFF-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;" onkeydown="if(event.key==='Enter') submitAccountActivation()">
     </div>
 
     <div style="text-align:left;margin-bottom:16px;">
@@ -3921,7 +3927,7 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:center;gap:16px;font-size:12px;">
       <a href="logout.php" style="color:var(--txt-3);text-decoration:none;">Sign Out</a>
       <span style="color:var(--border);">|</span>
-      <a href="https://t.me/InnovationXHQ" target="_blank" style="color:var(--txt-3);text-decoration:none;">Telegram Community</a>
+      <a href="https://t.me/kairusnetwork_official" target="_blank" style="color:var(--txt-3);text-decoration:none;">Telegram Community</a>
     </div>
   </div>
 <?php endif; ?>
@@ -3953,7 +3959,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 // INITIALIZATION & STATE
 // ═══════════════════════════════════════════════════════════════════════════
 const CURRENT_USER = document.getElementById('dataUser')?.dataset.user || 'Member';
-const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'INX-MEMBER';
+const REF_CODE = document.getElementById('dataRefCode')?.dataset.code || 'KN-MEMBER';
 
 let userPoints = parseInt(document.getElementById('dataPtsBal')?.dataset.pts || '<?= (int)$userPoints ?>') || 0;
 let userCash = parseFloat(document.getElementById('dataCashBal')?.dataset.cash || '<?= (float)$userCash ?>') || 0;
@@ -3965,7 +3971,7 @@ function updateUserPointsDisplay(newPts, skipSync = false) {
   const pOverview = document.getElementById('statPtsOverview');
   if (pOverview) pOverview.textContent = userPoints.toLocaleString();
   const pWallet = document.getElementById('statPtsWallet');
-  if (pWallet) pWallet.textContent = userPoints.toLocaleString() + ' PTS';
+  if (pWallet) pWallet.textContent = userPoints.toLocaleString() + ' KRN';
   const ecoPts = document.getElementById('ecoUserPtsBadge');
   if (ecoPts) ecoPts.textContent = userPoints.toLocaleString();
   const modalPts = document.getElementById('ecoModalPtsBal');
@@ -4161,7 +4167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pEl.value = cachedPhone;
   }
   const eEl = document.getElementById('setEmail');
-  if (eEl && cachedEmail && (!eEl.value || eEl.value.includes('@innovationx.test'))) {
+  if (eEl && cachedEmail && (!eEl.value || eEl.value.includes('.test'))) {
     eEl.value = cachedEmail;
   }
   const fEl = document.getElementById('setFullName');
@@ -4459,9 +4465,9 @@ async function syncLivePricing() {
 
       const optTask = document.querySelector('.fancy-option[data-value="task"]');
       if (optTask) {
-        optTask.dataset.sub = `Min payout: ${minTask.toLocaleString()} PTS`;
+        optTask.dataset.sub = `Min payout: ${minTask.toLocaleString()} KRN`;
         const badge = optTask.querySelector('.fancy-option-badge');
-        if (badge) badge.innerHTML = `Min <span class="min-task-display">${minTask.toLocaleString()}</span> PTS`;
+        if (badge) badge.innerHTML = `Min <span class="min-task-display">${minTask.toLocaleString()}</span> KRN`;
       }
       const optCash = document.querySelector('.fancy-option[data-value="cash"]');
       if (optCash) {
@@ -4476,7 +4482,7 @@ async function syncLivePricing() {
         if (activeWallet === 'cash') {
           triggerSub.innerHTML = `Min payout: ₦<span class="min-cash-display">${minCash.toLocaleString()}</span>`;
         } else {
-          triggerSub.innerHTML = `Min payout: <span class="min-task-display">${minTask.toLocaleString()}</span> PTS`;
+          triggerSub.innerHTML = `Min payout: <span class="min-task-display">${minTask.toLocaleString()}</span> KRN`;
         }
       }
     }
@@ -5478,7 +5484,7 @@ function renderTasks(list) {
       <div class="grid-item-card">
         <div class="item-head">
           <div class="item-title">${esc(t.title)}</div>
-          <div class="item-pts">+${t.reward_points} PTS</div>
+          <div class="item-pts">+${t.reward_points} KRN</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           ${formatBadge}
@@ -5918,7 +5924,7 @@ function renderSurveys(list) {
       <div class="grid-item-card" style="${isFull ? 'opacity:0.88;border-color:rgba(239,68,68,0.25);' : ''}">
         <div class="item-head">
           <div class="item-title">${esc(s.title)}</div>
-          <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} PTS</div>
+          <div class="item-pts" style="background:rgba(139,92,246,0.12);color:var(--purple);">+${s.reward_points} KRN</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           ${formatBadge}
@@ -6006,7 +6012,7 @@ function renderSurveyStep() {
     }
 
     html += `<div style="font-size:12px;color:var(--txt-3);background:var(--surface);padding:10px;border-radius:8px;">
-      ${questions.length ? `Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.` : `Review and submit to claim <strong style="color:var(--purple);">+${activeSurvey.reward_points} PTS</strong>.`}
+      ${questions.length ? `Answer ${questions.length} questions correctly to earn <strong style="color:var(--purple);">+${activeSurvey.reward_points} KRN</strong>.` : `Review and submit to claim <strong style="color:var(--purple);">+${activeSurvey.reward_points} KRN</strong>.`}
     </div>`;
     body.innerHTML = html;
 
@@ -6159,7 +6165,7 @@ function showSurveyResult(res) {
       <div style="font-size:32px;font-weight:800;color:${res.passed ? 'var(--green)' : 'var(--red)'};">${res.score}%</div>
       <div style="font-size:15px;font-weight:700;margin:6px 0;">${res.passed ? 'Survey Passed!' : 'Survey Completed'}</div>
       <div style="font-size:13px;color:var(--txt-2);margin-bottom:12px;">${esc(res.message)}</div>
-      ${res.passed ? `<div style="font-size:13px;font-weight:700;color:var(--green);padding:10px;background:rgba(16,185,129,0.1);border-radius:8px;">+${res.reward_points} PTS Credited to Wallet</div>` : ''}
+      ${res.passed ? `<div style="font-size:13px;font-weight:700;color:var(--green);padding:10px;background:rgba(16,185,129,0.1);border-radius:8px;">+${res.reward_points} KRN Credited to Wallet</div>` : ''}
     </div>
   `;
   footer.innerHTML = `<button class="btn btn-primary" onclick="closeModal('modalSurveyRunner');renderSurveys(allSurveysList);">Done</button>`;
@@ -6324,7 +6330,7 @@ function proceedToWithdrawalConfirm() {
   const minTask = parseFloat(document.getElementById('dataMinTaskWd')?.dataset.min || 1000);
   const min = type === 'cash' ? minCash : minTask;
   const prefix = type === 'cash' ? '₦' : '';
-  const suffix = type === 'cash' ? '' : ' PTS';
+  const suffix = type === 'cash' ? '' : ' KRN';
 
   if (!amount || isNaN(amount) || amount < min) {
     toast(`Minimum payout is ${prefix}${min.toLocaleString()}${suffix}`, 'error');
@@ -6348,7 +6354,7 @@ function proceedToWithdrawalConfirm() {
     return;
   }
   if (type === 'task' && amount > ptsBal) {
-    toast(`Insufficient balance in Task Points Wallet (${ptsBal.toLocaleString()} PTS)`, 'error');
+    toast(`Insufficient balance in KRN Points Wallet (${ptsBal.toLocaleString()} KRN)`, 'error');
     return;
   }
 
@@ -6357,10 +6363,10 @@ function proceedToWithdrawalConfirm() {
     amount: amount
   };
 
-  const walletLabel = type === 'cash' ? 'Referral Cash Wallet' : 'Task Points Wallet';
+  const walletLabel = type === 'cash' ? 'Referral Cash Wallet' : 'KRN Points Wallet';
   const amountStr = type === 'cash' 
     ? ('₦' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
-    : (amount.toLocaleString('en-US') + ' PTS');
+    : (amount.toLocaleString('en-US') + ' KRN');
   const bankName = localStorage.getItem('ix_bank_name_' + CURRENT_USER) || localStorage.getItem('ix_bank_name') || document.getElementById('atmBankName')?.textContent.trim() || '';
   const accNo = localStorage.getItem('ix_bank_acc_' + CURRENT_USER) || localStorage.getItem('ix_bank_acc') || document.getElementById('atmCardNumber')?.textContent.replace(/\s+/g,'').trim() || '';
   const accName = localStorage.getItem('ix_bank_holder_' + CURRENT_USER) || localStorage.getItem('ix_bank_holder') || document.getElementById('atmCardHolder')?.textContent.trim() || CURRENT_USER;
@@ -6770,9 +6776,9 @@ function updateEcoFeeBadges() {
   const cashEl = document.getElementById('ecoCashFeeNotice');
   const mPtsFee = document.getElementById('ecoModalPtsFee');
   const mCashFee = document.getElementById('ecoModalCashFee');
-  if (ptsEl) ptsEl.textContent = ptsFee + ' PTS';
+  if (ptsEl) ptsEl.textContent = ptsFee + ' KRN';
   if (cashEl) cashEl.textContent = cashFee.toLocaleString() + ' NGN';
-  if (mPtsFee) mPtsFee.textContent = ptsFee + ' PTS';
+  if (mPtsFee) mPtsFee.textContent = ptsFee + ' KRN';
   if (mCashFee) mCashFee.textContent = cashFee.toLocaleString() + ' NGN';
 }
 
@@ -7153,10 +7159,10 @@ function updateEcoPaySelection() {
 
   if (method === 'points') {
     if (curPts < ptsFee) {
-      if (msg) msg.textContent = 'Insufficient points. You need ' + ptsFee + ' PTS but have ' + curPts + ' PTS.';
+      if (msg) msg.textContent = 'Insufficient points. You need ' + ptsFee + ' KRN but have ' + curPts + ' KRN.';
       if (btn) btn.disabled = true;
     } else {
-      if (msg) msg.textContent = 'Listing fee of ' + ptsFee + ' PTS will be deducted from your points balance.';
+      if (msg) msg.textContent = 'Listing fee of ' + ptsFee + ' KRN will be deducted from your points balance.';
       if (btn) btn.disabled = false;
     }
   } else {
@@ -7508,7 +7514,7 @@ function getVendorTabDispatchText(showAlerts = true) {
     return null;
   }
   const regUrl = window.location.origin + '/register.php?pin=' + encodeURIComponent(pin);
-  return `Hello ${name}, here is your INNOVATIONX activation code: ${pin}\n\nRegister here:\n${regUrl}`;
+  return `Hello ${name}, here is your KairusNetwork activation code: ${pin}\n\nRegister here:\n${regUrl}`;
 }
 
 function copyVendorTabDispatchText() {

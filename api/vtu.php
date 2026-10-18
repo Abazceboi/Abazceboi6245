@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - VTU Telecoms & Airtime API Gateway Engine
+ * KAIRUSNETWORK - VTU Telecoms & Airtime API Gateway Engine
  * Full integration for PrimeBiller, VTpass, ClubKonnect, HusmoData, and Custom REST APIs.
  * Supports live Airtime and Data bundle purchases using unified API credentials.
  */
@@ -27,7 +27,7 @@ $defaultConfig = [
     'api_key' => '',
     'api_secret' => '',
     'api_mode' => 'sandbox', // 'live' or 'sandbox'
-    'points_per_naira' => 1.0, // Admin configurable: How many PTS = ₦1
+    'points_per_naira' => 1.0, // Admin configurable: How many KRN = ₦1
     
     // Per-network airtime selling rates (% of face value charged to user)
     'airtime_rates' => [
@@ -374,7 +374,7 @@ if ($action === 'buy_airtime' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($paySource === 'points' && $userPoints < $amountChargedPoints) {
                 echo json_encode([
                     'status' => 'error',
-                    'message' => 'Insufficient points balance. You need ' . $amountChargedPoints . ' PTS, but have ' . $userPoints . ' PTS.'
+                    'message' => 'Insufficient points balance. You need ' . $amountChargedPoints . ' KRN, but have ' . $userPoints . ' KRN.'
                 ]);
                 exit;
             } else if ($paySource !== 'points' && $userCash < $amountChargedNaira) {
@@ -521,7 +521,7 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($paySource === 'points' && $userPoints < $amountPoints) {
                 echo json_encode([
                     'status' => 'error',
-                    'message' => 'Insufficient points balance. You need ' . $amountPoints . ' PTS, but have ' . $userPoints . ' PTS.'
+                    'message' => 'Insufficient points balance. You need ' . $amountPoints . ' KRN, but have ' . $userPoints . ' KRN.'
                 ]);
                 exit;
             } else if ($paySource !== 'points' && $userCash < $amountNaira) {
@@ -624,7 +624,7 @@ if ($action === 'buy_data' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // Default fallback
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX PrimeBiller & VTU Telecoms Engine',
+    'service' => 'KAIRUSNETWORK PrimeBiller & VTU Telecoms Engine',
     'version' => '1.0',
     'mode' => $config['api_mode']
 ]);

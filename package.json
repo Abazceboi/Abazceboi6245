@@ -1,7 +1,7 @@
 {
-  "name": "innovationx",
+  "name": "kairusnetwork",
   "version": "1.0.0",
-  "description": "INNOVATIONX — Luxury High-Yield Daily Earnings Platform",
+  "description": "KAIRUSNETWORK — Luxury High-Yield Daily Earnings Platform",
   "main": "server.js",
   "scripts": {
     "compile": "tsc",
@@ -18,7 +18,7 @@
     "railway",
     "fintech"
   ],
-  "author": "INNOVATIONX Team",
+  "author": "KAIRUSNETWORK Team",
   "license": "MIT",
   "devDependencies": {
     "prisma": "^6.4.1",

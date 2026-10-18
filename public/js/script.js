@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Dynamic Interactive Engine
+ * KAIRUSNETWORK — Dynamic Interactive Engine
  * Purple Luxury Theme & Superior Features
  * Pure code - Zero Emojis
  */
@@ -226,29 +226,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const monthlyCash = dailyCash * 30;
 
         // Update Slider Labels dynamically
-        if (calcTaskLabel) calcTaskLabel.textContent = `Daily Sponsored Tasks (${taskRate.toLocaleString()} PTS each)`;
+        if (calcTaskLabel) calcTaskLabel.textContent = `Daily Sponsored Tasks (${taskRate.toLocaleString()} KRN each)`;
         if (calcRefLabel) calcRefLabel.textContent = `Daily Direct Referrals (₦${refRate.toLocaleString()} Cash each)`;
 
         // Update Slider value pills
-        if (taskVal) taskVal.textContent = `${tasks} Tasks (${dailyPoints.toLocaleString()} PTS)`;
+        if (taskVal) taskVal.textContent = `${tasks} Tasks (${dailyPoints.toLocaleString()} KRN)`;
         if (refVal) refVal.textContent = `${refs} Referrals (₦${dailyCash.toLocaleString()})`;
 
         // Daily forecast card
-        if (dailyTasksEl) dailyTasksEl.textContent = `${dailyPoints.toLocaleString()} PTS`;
+        if (dailyTasksEl) dailyTasksEl.textContent = `${dailyPoints.toLocaleString()} KRN`;
         if (dailyCashEl) dailyCashEl.textContent = `₦${dailyCash.toLocaleString()}`;
-        if (dailyTotalEl) dailyTotalEl.textContent = `${dailyPoints.toLocaleString()} PTS + ₦${dailyCash.toLocaleString()}`;
+        if (dailyTotalEl) dailyTotalEl.textContent = `${dailyPoints.toLocaleString()} KRN + ₦${dailyCash.toLocaleString()}`;
 
         // Weekly forecast card
         const kWeeklyPoints = (weeklyPoints >= 1000) ? (weeklyPoints / 1000).toFixed(1).replace('.0', '') + 'k' : weeklyPoints.toLocaleString();
-        if (weeklyTasksEl) weeklyTasksEl.textContent = `${weeklyPoints.toLocaleString()} PTS`;
+        if (weeklyTasksEl) weeklyTasksEl.textContent = `${weeklyPoints.toLocaleString()} KRN`;
         if (weeklyCashEl) weeklyCashEl.textContent = `₦${weeklyCash.toLocaleString()}`;
-        if (weeklyTotalEl) weeklyTotalEl.textContent = `${kWeeklyPoints} PTS + ₦${weeklyCash.toLocaleString()}`;
+        if (weeklyTotalEl) weeklyTotalEl.textContent = `${kWeeklyPoints} KRN + ₦${weeklyCash.toLocaleString()}`;
 
         // Monthly forecast card
         const kMonthlyPoints = (monthlyPoints >= 1000) ? (monthlyPoints / 1000).toFixed(0) + 'k' : monthlyPoints.toLocaleString();
-        if (monthlyTasksEl) monthlyTasksEl.textContent = `${monthlyPoints.toLocaleString()} PTS`;
+        if (monthlyTasksEl) monthlyTasksEl.textContent = `${monthlyPoints.toLocaleString()} KRN`;
         if (monthlyCashEl) monthlyCashEl.textContent = `₦${monthlyCash.toLocaleString()}`;
-        if (monthlyTotalEl) monthlyTotalEl.textContent = `${kMonthlyPoints} PTS + ₦${monthlyCash.toLocaleString()}`;
+        if (monthlyTotalEl) monthlyTotalEl.textContent = `${kMonthlyPoints} KRN + ₦${monthlyCash.toLocaleString()}`;
     }
 
     // Global helper to immediately update platform rates live
@@ -431,13 +431,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wheelCanvas) {
         const ctx = wheelCanvas.getContext('2d');
         const segments = [
-            { text: '150 PTS', color: '#2E124D', textColor: '#FFFFFF' },
+            { text: '150 KRN', color: '#2E124D', textColor: '#FFFFFF' },
             { text: '500MB', color: '#1B0930', textColor: '#C59B4B' },
             { text: '₦200', color: '#3A1860', textColor: '#FFFFFF' },
-            { text: '300 PTS', color: '#150626', textColor: '#C59B4B' },
+            { text: '300 KRN', color: '#150626', textColor: '#C59B4B' },
             { text: '1GB DATA', color: '#2E124D', textColor: '#FFFFFF' },
             { text: '₦500', color: '#1B0930', textColor: '#C59B4B' },
-            { text: '100 PTS', color: '#3A1860', textColor: '#FFFFFF' },
+            { text: '100 KRN', color: '#3A1860', textColor: '#FFFFFF' },
             { text: '2GB DATA', color: '#150626', textColor: '#C59B4B' }
         ];
 

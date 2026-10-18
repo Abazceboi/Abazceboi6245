@@ -1,5 +1,5 @@
 -- ==========================================================
--- INNOVATIONX PostgreSQL / MySQL Schema
+-- KAIRUSNETWORK PostgreSQL / MySQL Schema
 -- Optimized for Railway, Supabase & Standard Web Hosts
 -- ==========================================================
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Adverts & Campaigns API Router
+ * KAIRUSNETWORK - Adverts & Campaigns API Router
  * Supports Viewers Tracking, Clicks, Likes, Video Uploads, and Verification Timers
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -170,6 +170,6 @@ if ($action === 'delete_advert' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX Adverts & Campaigns API Gateway',
+    'service' => 'KAIRUSNETWORK Adverts & Campaigns API Gateway',
     'version' => '1.0'
 ]);

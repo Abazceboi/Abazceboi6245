@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Verified Uploader Publishing Studio
+ * KAIRUSNETWORK — Verified Uploader Publishing Studio
  * Dedicated creator workspace for sponsored advertisers and task creators.
  */
 require_once __DIR__ . '/config/app.php';
@@ -45,7 +45,7 @@ if (!$isUploader) {
             <h1>Uploader Studio Access</h1>
             <p>The Uploader Publishing Hub is reserved for accredited sponsors and creators to post sponsored tasks, review submissions, and manage marketing campaigns.</p>
             <a href="dashboard.php" class="btn-primary">Return to Member Dashboard</a>
-            <div><a href="https://t.me/innovationx_support" target="_blank" class="btn-secondary">Contact Support to Apply for Uploader Badge ↗</a></div>
+            <div><a href="https://t.me/kairusnetwork_support" target="_blank" class="btn-secondary">Contact Support to Apply for Uploader Badge ↗</a></div>
         </div>
     </body>
     </html>
@@ -194,7 +194,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Points Awarded</div>
-                <div class="kpi-val" id="kpiPointsAwarded">0 PTS</div>
+                <div class="kpi-val" id="kpiPointsAwarded">0 KRN</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">Creator Status</div>
@@ -330,7 +330,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
                             <td><code>${t.id}</code></td>
                             <td><strong>${escapeHtml(t.title)}</strong></td>
                             <td><span style="font-size:0.75rem;padding:3px 8px;border-radius:4px;background:rgba(56,189,248,0.1);color:#38BDF8">${escapeHtml(t.category || 'Gig')}</span></td>
-                            <td style="color:#10B981;font-weight:700">+${t.reward_points || 150} PTS</td>
+                            <td style="color:#10B981;font-weight:700">+${t.reward_points || 150} KRN</td>
                             <td>${t.remaining_slots || 0} / ${t.total_slots || 0}</td>
                             <td><span style="color:#10B981;font-weight:700">Active</span></td>
                             <td>

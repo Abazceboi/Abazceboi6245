@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Innovation Ecosystem API
+ * KAIRUSNETWORK — Innovation Ecosystem API
  * Handles opportunities, products, views, likes, listing fees, and admin moderation.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -236,7 +236,7 @@ if ($action === 'create_item') {
                     if ($currentPts < $ptsRequired) {
                         echo json_encode([
                             'status' => 'error',
-                            'message' => "Insufficient points. You have {$currentPts} PTS, but {$ptsRequired} PTS are required to publish."
+                            'message' => "Insufficient points. You have {$currentPts} KRN, but {$ptsRequired} KRN are required to publish."
                         ]);
                         exit;
                     }
@@ -297,7 +297,7 @@ if ($action === 'create_item') {
         'description'       => $description,
         'price_tag'         => $priceTag,
         'has_price'         => $hasPrice,
-        'author'            => $isAdmin ? 'InnovationX HQ' : $username,
+        'author'            => $isAdmin ? 'KAIRUSNETWORK HQ' : $username,
         'author_role'       => $isAdmin ? 'admin' : 'member',
         'is_official'       => $isAdmin,
         'is_admin_verified' => $isAdmin,

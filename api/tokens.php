@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Unlisted Tokens P2P & OTC Trading API Router
+ * KAIRUSNETWORK — Unlisted Tokens P2P & OTC Trading API Router
  * Supports VERY, RUBI, and Admin-added custom tokens with proof uploads and order review.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -20,7 +20,7 @@ function getTokenConfig(): array {
         'platform_bank' => [
             'bank_name' => 'OPay Digital Services',
             'account_number' => '8102345678',
-            'account_name' => 'INNOVATIONX OTC TRADING',
+            'account_name' => 'KAIRUSNETWORK OTC TRADING',
             'instructions' => 'Transfer exact amount to the account above and upload receipt proof.'
         ],
         'tokens' => []
@@ -119,7 +119,7 @@ if ($action === 'create_order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $accountName = trim($input['account_name'] ?? '');
     $txReference = trim($input['tx_reference'] ?? '');
     $proofImage = trim($input['proof_image'] ?? '');
-    $escrowMerchant = trim($input['escrow_merchant'] ?? $input['selected_merchant'] ?? 'InnovationX Official Escrow');
+    $escrowMerchant = trim($input['escrow_merchant'] ?? $input['selected_merchant'] ?? 'KAIRUSNETWORK Official Escrow');
 
     if ($amount <= 0 || empty($symbol)) {
         echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Please provide a valid token and amount.', 'error' => 'Please provide a valid token and amount.']);
@@ -393,6 +393,6 @@ if ($action === 'admin_delete_token' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fallback status
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX Unlisted Tokens P2P & OTC Engine',
+    'service' => 'KAIRUSNETWORK Unlisted Tokens P2P & OTC Engine',
     'version' => '1.0'
 ]);

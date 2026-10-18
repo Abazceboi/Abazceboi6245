@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Core TypeScript Type Definitions
+ * KAIRUSNETWORK — Core TypeScript Type Definitions
  */
 
 export interface ForecastState {

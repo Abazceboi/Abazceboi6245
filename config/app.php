@@ -1,9 +1,9 @@
 <?php
 /**
- * INNOVATIONX — Global Application Configuration
+ * KAIRUSNETWORK — Global Application Configuration
  */
 
-define('APP_NAME', 'INNOVATIONX');
+define('APP_NAME', 'KAIRUSNETWORK');
 define('APP_TAGLINE', 'Where SoftLife Meets High-Yield Daily Earnings');
 define('APP_URL', getenv('APP_URL') ?: 'http://localhost:5050');
 define('APP_VERSION', '1.0');
@@ -21,7 +21,7 @@ define('INDIRECT_REFERRAL_BONUS', isset($appPricingConfig['indirect_ref_commissi
 define('MIN_WITHDRAWAL_NAIRA', isset($appPricingConfig['min_withdrawal']) ? floatval($appPricingConfig['min_withdrawal']) : 5000);
 
 // Support & Contacts
-define('SUPPORT_EMAIL', 'Supportinnovationx@gmail.com');
+define('SUPPORT_EMAIL', 'support@kairusnetwork.com');
 define('WHATSAPP_SUPPORT', '2347037765714');
 
 // Load cryptographic session authentication helper

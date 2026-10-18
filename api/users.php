@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — User Role Management API
+ * KAIRUSNETWORK — User Role Management API
  * Endpoints for promoting/demoting users to different roles.
  * 
  * GET  ?action=get_users          → Returns all users with their roles
@@ -207,7 +207,7 @@ switch ($action) {
 
         if (empty($message)) {
             $senderLabel = !empty($username) ? ('@' . $username) : 'a new user';
-            $message = "Hello {$distributorName}, I am {$senderLabel} from INNOVATIONX and I need an activation key.";
+            $message = "Hello {$distributorName}, I am {$senderLabel} from KAIRUSNETWORK and I need an activation key.";
         }
 
         $refId = 'IX-REQ-' . strtoupper(substr(md5(uniqid('', true)), 0, 7));
@@ -844,7 +844,7 @@ switch ($action) {
             $data['users'][] = [
                 'username' => $targetUsername,
                 'full_name' => $targetUsername,
-                'email' => $targetUsername . '@innovationx.internal',
+                'email' => $targetUsername . '@kairusnetwork.internal',
                 'role' => 'member',
                 'role_label' => 'Active Member',
                 'password' => $newPassword,
@@ -929,7 +929,7 @@ switch ($action) {
         $username = strtolower(trim($input['username'] ?? ''));
         $password = trim($input['password'] ?? '');
         $fullName = trim($input['full_name'] ?? $input['fullName'] ?? 'Admin Staff');
-        $email    = trim($input['email'] ?? ($username . '@innovationx.internal'));
+        $email    = trim($input['email'] ?? ($username . '@kairusnetwork.internal'));
         $phone    = trim($input['phone'] ?? '');
         $role     = trim($input['role'] ?? 'sub_admin');
         $permissions = $input['permissions'] ?? [];
@@ -1160,6 +1160,9 @@ switch ($action) {
                 break;
             }
         }
+        $rKnUpper = strtoupper('KN-' . $uLower);
+        $rKnMd5_1 = strtoupper('KN-' . substr(md5($uLower . 'ref'), 0, 8));
+        $rKnMd5_2 = strtoupper('KN-' . substr(md5($username . 'ref'), 0, 8));
         $rInxUpper = strtoupper('INX-' . $uLower);
         $rInxMd5_1 = strtoupper('INX-' . substr(md5($uLower . 'ref'), 0, 8));
         $rInxMd5_2 = strtoupper('INX-' . substr(md5($username . 'ref'), 0, 8));
@@ -1171,6 +1174,9 @@ switch ($action) {
             if (!empty($refBy) && (
                 strtolower($refBy) === $uLower ||
                 ($userRefCode && strtoupper($refBy) === $userRefCode) ||
+                strtoupper($refBy) === $rKnUpper ||
+                strtoupper($refBy) === $rKnMd5_1 ||
+                strtoupper($refBy) === $rKnMd5_2 ||
                 strtoupper($refBy) === $rInxUpper ||
                 strtoupper($refBy) === $rInxMd5_1 ||
                 strtoupper($refBy) === $rInxMd5_2 ||
@@ -1457,7 +1463,7 @@ switch ($action) {
                 'id' => 'usr-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $username)),
                 'username' => $username,
                 'full_name' => !empty($fullName) ? $fullName : $username,
-                'email' => !empty($email) ? $email : (strtolower($username) . '@innovationx.test'),
+                'email' => !empty($email) ? $email : (strtolower($username) . '@kairusnetwork.test'),
                 'phone' => !empty($phone) ? $phone : '',
                 'password' => !empty($newPass) ? $newPass : '',
                 'password_hash' => !empty($newPass) ? password_hash($newPass, PASSWORD_BCRYPT) : '',
@@ -1563,7 +1569,7 @@ switch ($action) {
                 array_unshift($u['activity_ledger'], [
                     'time' => date('d/m/Y, H:i'),
                     'type' => 'Daily Streak',
-                    'desc' => "Claimed Day {$newStreak} Streak Reward: +{$ptsReward} PTS",
+                    'desc' => "Claimed Day {$newStreak} Streak Reward: +{$ptsReward} KRN",
                     'reward_type' => 'points',
                     'reward_value' => $ptsReward
                 ]);

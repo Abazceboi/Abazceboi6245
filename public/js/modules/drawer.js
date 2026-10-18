@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Mobile Navigation Drawer TypeScript Module
+ * KAIRUSNETWORK — Mobile Navigation Drawer TypeScript Module
  */
 export class MobileDrawer {
     constructor() {

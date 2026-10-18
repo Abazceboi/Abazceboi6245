@@ -156,14 +156,17 @@ if ($action === 'register') {
         foreach ($jsonUsers as &$ju) {
             $uName = strtolower($ju['username'] ?? '');
             $uCode = strtoupper(trim($ju['referral_code'] ?? ''));
+            $uKn = strtoupper('KN-' . $uName);
+            $uKnMd5_1 = strtoupper('KN-' . substr(md5($uName . 'ref'), 0, 8));
+            $uKnMd5_2 = strtoupper('KN-' . substr(md5(($ju['username'] ?? '') . 'ref'), 0, 8));
             $uInx = strtoupper('INX-' . $uName);
             $uInxMd5_1 = strtoupper('INX-' . substr(md5($uName . 'ref'), 0, 8));
             $uInxMd5_2 = strtoupper('INX-' . substr(md5(($ju['username'] ?? '') . 'ref'), 0, 8));
             $uRefMd5 = strtoupper('REF-' . substr(md5($uName), 0, 6));
 
-            if ($uName === $refLower || ($uCode && $uCode === $refUpper) || $uInx === $refUpper || $uInxMd5_1 === $refUpper || $uInxMd5_2 === $refUpper || $uRefMd5 === $refUpper) {
+            if ($uName === $refLower || ($uCode && $uCode === $refUpper) || $uKn === $refUpper || $uKnMd5_1 === $refUpper || $uKnMd5_2 === $refUpper || $uInx === $refUpper || $uInxMd5_1 === $refUpper || $uInxMd5_2 === $refUpper || $uRefMd5 === $refUpper) {
                 $canonicalReferrer = $ju['username'];
-                $canonicalRefCode = !empty($ju['referral_code']) ? $ju['referral_code'] : ('INX-' . strtoupper($ju['username']));
+                $canonicalRefCode = !empty($ju['referral_code']) ? $ju['referral_code'] : ('KN-' . strtoupper($ju['username']));
 
                 // Record the canonical referrer relationship. Referrer is only credited after activation PIN redemption.
                 break;
@@ -176,7 +179,7 @@ if ($action === 'register') {
     }
     
     $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-    $referralCode = 'INX-' . strtoupper($username);
+    $referralCode = 'KN-' . strtoupper($username);
     $userId = 'USR-' . strtoupper(substr(md5(uniqid()), 0, 8));
 
     // Try inserting into SQL DB if available
@@ -260,7 +263,7 @@ if ($action === 'register') {
         'phone' => $phone,
         'fullName' => $fullName,
         'is_activated' => $isActivated,
-        'message' => $isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to INNOVATIONX.'
+        'message' => $isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to KAIRUSNETWORK.'
     ]);
     exit;
 }
@@ -331,11 +334,14 @@ if ($action === 'activate_coupon') {
         foreach ($jsonUsers as &$refUser) {
             $rUser = strtolower($refUser['username'] ?? '');
             $rCode = strtoupper(trim($refUser['referral_code'] ?? ''));
+            $rKn = strtoupper('KN-' . $rUser);
+            $rKnMd5_1 = strtoupper('KN-' . substr(md5($rUser . 'ref'), 0, 8));
+            $rKnMd5_2 = strtoupper('KN-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
             $rInx = strtoupper('INX-' . $rUser);
             $rInxMd5_1 = strtoupper('INX-' . substr(md5($rUser . 'ref'), 0, 8));
             $rInxMd5_2 = strtoupper('INX-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
 
-            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
+            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rKn === $refTargetUpper || $rKnMd5_1 === $refTargetUpper || $rKnMd5_2 === $refTargetUpper || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
                 $refUser['remaining_cash'] = floatval($refUser['remaining_cash'] ?? 0) + $commAmount;
                 $refUser['cashBalance'] = $refUser['remaining_cash'];
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;
@@ -378,8 +384,9 @@ if ($action === 'activate_coupon') {
             foreach ($jsonUsers as &$indUser) {
                 $iUser = strtolower($indUser['username'] ?? '');
                 $iCode = strtoupper(trim($indUser['referral_code'] ?? ''));
+                $iKn = strtoupper('KN-' . $iUser);
                 $iInx = strtoupper('INX-' . $iUser);
-                if (($iUser === $indLower || ($iCode && $iCode === $indUpper) || $iInx === $indUpper) && $iUser !== strtolower($username) && $iUser !== $refTargetLower) {
+                if (($iUser === $indLower || ($iCode && $iCode === $indUpper) || $iKn === $indUpper || $iInx === $indUpper) && $iUser !== strtolower($username) && $iUser !== $refTargetLower) {
                     $indUser['remaining_cash'] = floatval($indUser['remaining_cash'] ?? 0) + $indirectComm;
                     $indUser['cashBalance'] = $indUser['remaining_cash'];
                     $indUser['referral_earnings'] = floatval($indUser['referral_earnings'] ?? 0) + $indirectComm;

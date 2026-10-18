@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX - Luxury Custom Dialog & Notification System
+ * KAIRUSNETWORK - Luxury Custom Dialog & Notification System
  * Replaces ugly native browser alert(), confirm(), prompt() with sleek, responsive modals.
  */
 
@@ -237,7 +237,7 @@
 
     function parseDialogText(rawText) {
         let str = String(rawText || '');
-        let title = 'INNOVATIONX Notice';
+        let title = 'KAIRUSNETWORK Notice';
         let body = str;
         let type = 'info';
 
@@ -274,7 +274,7 @@
         initDialogDom();
         return new Promise((resolve) => {
             const {
-                title = 'INNOVATIONX',
+                title = 'KAIRUSNETWORK',
                 message = '',
                 type = 'info',
                 mode = 'alert', // 'alert', 'confirm', 'prompt'

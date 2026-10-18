@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Verify Activation Code | INNOVATIONX Digital Earnings';
-$pageDesc = 'Validate the authenticity of your coupon activation code before registering on INNOVATIONX.';
+$pageTitle = 'Verify Activation Code | KAIRUSNETWORK Digital Earnings';
+$pageDesc = 'Validate the authenticity of your coupon activation code before registering on KAIRUSNETWORK.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 

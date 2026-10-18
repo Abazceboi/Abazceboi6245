@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Site Content & Placeholder Cards Router
+ * KAIRUSNETWORK - Site Content & Placeholder Cards Router
  * Allows Super Admin to dynamically customize any card text and placeholders across the site.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -37,16 +37,16 @@ $defaultContent = [
     'withdraw_min_badge' => 'Min: ₦5,000',
     'advert_card_title' => 'Place an Advert / Launch Campaign',
     'advert_card_badge' => 'Member Ads Hub',
-    'advert_card_desc' => 'Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash.',
+    'advert_card_desc' => 'Promote your business, WhatsApp group, YouTube channel, or app to thousands of active KAIRUSNETWORK members. Fund with Task Points or Referral Cash.',
     'hero_task1_title' => 'Watch 30s clip and perform social task',
-    'hero_task1_badge' => '+150 PTS',
+    'hero_task1_badge' => '+150 KRN',
     'hero_task2_title' => 'Guaranteed daily reward draw on spin and wheel',
     'hero_task2_badge' => 'Free Spin',
     'hero_task3_title' => 'Direct mobile top up from tasks point and bonus',
     'hero_task3_badge' => 'Instant',
     'hero_task4_title' => 'Cash bonus per invited member',
     'hero_task4_badge' => '+ ₦250 Cash',
-    'hero_wallet_btn_text' => 'Claim 100 PTS Welcome Bonus'
+    'hero_wallet_btn_text' => 'Claim 100 KRN Welcome Bonus'
 ];
 
 $saved = readStorageJson('config/site_content.json', []);
@@ -83,6 +83,6 @@ if ($action === 'save_content' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX Content Customizer Router',
+    'service' => 'KAIRUSNETWORK Content Customizer Router',
     'content' => $content
 ]);

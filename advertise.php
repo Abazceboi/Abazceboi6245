@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Place Advert | INNOVATIONX Brand Campaigns';
+$pageTitle = 'Place Advert | KAIRUSNETWORK Brand Campaigns';
 $pageDesc = 'Promote your physical products, digital services, apps, or WhatsApp communities directly to verified Nigerian consumers.';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -141,10 +141,10 @@ require_once __DIR__ . '/includes/header.php';
  <div class="ix-dropdown-sub">Primary Advert Budget Balance</div>
  </div>
  </div>
- <div class="ix-dropdown-item" onclick="selectPubPaySource('task_points', 'Task Points Wallet (0 PTS)', '≈ ₦0.00 Equiv Direct points conversion', '')">
+ <div class="ix-dropdown-item" onclick="selectPubPaySource('task_points', 'KRN Points Wallet (0 KRN)', '≈ ₦0.00 Equiv Direct points conversion', '')">
  <div class="ix-dropdown-icon"></div>
  <div>
- <div class="ix-dropdown-title">Task Points Wallet (0 PTS)</div>
+ <div class="ix-dropdown-title">KRN Points Wallet (0 KRN)</div>
  <div class="ix-dropdown-sub">≈ ₦0.00 Equiv Direct points conversion</div>
  </div>
  </div>
@@ -194,7 +194,7 @@ require_once __DIR__ . '/includes/header.php';
  We create bespoke advertising packages for fintechs, crypto protocols, mobile apps, e-commerce stores, and digital course creators.
  </p>
  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
- <a href="https://wa.me/<?= WHATSAPP_SUPPORT ?>?text=Hello%20INNOVATIONX%20Support,%20I%20want%20to%20book%20a%20Custom%20Enterprise%20Campaign" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex;padding:12px 28px;font-size:0.92rem">
+ <a href="https://wa.me/<?= WHATSAPP_SUPPORT ?>?text=Hello%20KAIRUSNETWORK%20Support,%20I%20want%20to%20book%20a%20Custom%20Enterprise%20Campaign" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex;padding:12px 28px;font-size:0.92rem">
  <span>Book via WhatsApp Desk</span>
  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
  </a>
@@ -218,7 +218,7 @@ require_once __DIR__ . '/includes/header.php';
  <div style="font-size:0.75rem;color:var(--text-gray);margin-bottom:4px">Designated Virtual Account</div>
  <div style="font-size:1.1rem;font-weight:900;color:#7DD3FC;letter-spacing:0.04em">9012345678</div>
  <div style="font-size:0.8rem;color:var(--white-pure);font-weight:700">Moniepoint Microfinance Bank</div>
- <div style="font-size:0.75rem;color:var(--text-muted)">Account Name: INNOVATIONX / Member</div>
+ <div style="font-size:0.75rem;color:var(--text-muted)">Account Name: KAIRUSNETWORK / Member</div>
  </div>
  <div class="withdraw-form-group" style="margin-bottom:16px">
  <label style="font-size:0.78rem">Simulate Instant Deposit Amount (₦)</label>

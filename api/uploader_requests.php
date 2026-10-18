@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Uploader Accreditation & Upgrade Requests API Router
+ * KAIRUSNETWORK - Uploader Accreditation & Upgrade Requests API Router
  * Handles user upgrade requests, payment screenshot verification, and Admin promotions.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -56,7 +56,7 @@ if ($action === 'pay_with_wallet' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'username' => $username,
         'full_name' => $username,
         'phone' => 'N/A',
-        'email' => $username . '@innovationx.internal',
+        'email' => $username . '@kairusnetwork.internal',
         'amount_paid' => 10000,
         'payment_channel' => $walletType,
         'screenshot_url' => 'INTERNAL_WALLET_' . strtoupper($walletType),
@@ -221,6 +221,6 @@ if ($action === 'reject_request' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX Uploader Accreditation Engine',
+    'service' => 'KAIRUSNETWORK Uploader Accreditation Engine',
     'version' => '1.0'
 ]);

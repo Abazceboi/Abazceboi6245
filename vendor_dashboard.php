@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Vendor Portal
+ * KAIRUSNETWORK - Vendor Portal
  * Manage assigned registration activation codes and public vendor directory details.
  */
 require_once __DIR__ . '/config/app.php';
@@ -568,7 +568,7 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
                 return null;
             }
             const regUrl = window.location.origin + '/register.php?pin=' + encodeURIComponent(pin);
-            return `Hello ${name}, here is your INNOVATIONX activation code: ${pin}\n\nRegister here:\n${regUrl}`;
+            return `Hello ${name}, here is your KairusNetwork activation code: ${pin}\n\nRegister here:\n${regUrl}`;
         }
 
         function copyDispatchMessage() {

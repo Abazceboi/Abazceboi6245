@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Payout Notification Toast TypeScript Module
+ * KAIRUSNETWORK — Payout Notification Toast TypeScript Module
  */
 export class PayoutToastManager {
     constructor() {

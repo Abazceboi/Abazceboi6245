@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Sub-Admin Management API
+ * KAIRUSNETWORK - Sub-Admin Management API
  * Handles creation, permissions assignment, credential updates, and status moderation for sub-admins.
  */
 header('Content-Type: application/json; charset=UTF-8');

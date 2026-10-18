@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Revenue Forecaster TypeScript Module
+ * KAIRUSNETWORK — Revenue Forecaster TypeScript Module
  */
 
 import { ForecastState } from '../types/index.js';
@@ -105,25 +105,25 @@ export class RevenueForecaster {
 
         // Update Slider Labels
         if (this.taskValDisplay) {
-            this.taskValDisplay.textContent = `${dailyTasks} Tasks (${this.formatNumber(dailyPoints)} PTS)`;
+            this.taskValDisplay.textContent = `${dailyTasks} Tasks (${this.formatNumber(dailyPoints)} KRN)`;
         }
         if (this.refValDisplay) {
             this.refValDisplay.textContent = `${dailyReferrals} Referrals (₦${this.formatNumber(dailyCash)})`;
         }
 
         // Update Daily Outputs
-        if (this.dailyTasksEl) this.dailyTasksEl.textContent = `${this.formatNumber(dailyPoints)} PTS`;
+        if (this.dailyTasksEl) this.dailyTasksEl.textContent = `${this.formatNumber(dailyPoints)} KRN`;
         if (this.dailyCashEl) this.dailyCashEl.textContent = `₦${this.formatNumber(dailyCash)}`;
-        if (this.dailyTotalEl) this.dailyTotalEl.textContent = `${this.formatNumber(dailyPoints)} PTS + ₦${this.formatNumber(dailyCash)}`;
+        if (this.dailyTotalEl) this.dailyTotalEl.textContent = `${this.formatNumber(dailyPoints)} KRN + ₦${this.formatNumber(dailyCash)}`;
 
         // Update Weekly Outputs
-        if (this.weeklyTasksEl) this.weeklyTasksEl.textContent = `${this.formatNumber(weeklyPoints)} PTS`;
+        if (this.weeklyTasksEl) this.weeklyTasksEl.textContent = `${this.formatNumber(weeklyPoints)} KRN`;
         if (this.weeklyCashEl) this.weeklyCashEl.textContent = `₦${this.formatNumber(weeklyCash)}`;
-        if (this.weeklyTotalEl) this.weeklyTotalEl.textContent = `${this.formatShort(weeklyPoints)} PTS + ₦${this.formatNumber(weeklyCash)}`;
+        if (this.weeklyTotalEl) this.weeklyTotalEl.textContent = `${this.formatShort(weeklyPoints)} KRN + ₦${this.formatNumber(weeklyCash)}`;
 
         // Update Monthly Outputs
-        if (this.monthlyTasksEl) this.monthlyTasksEl.textContent = `${this.formatNumber(monthlyPoints)} PTS`;
+        if (this.monthlyTasksEl) this.monthlyTasksEl.textContent = `${this.formatNumber(monthlyPoints)} KRN`;
         if (this.monthlyCashEl) this.monthlyCashEl.textContent = `₦${this.formatNumber(monthlyCash)}`;
-        if (this.monthlyTotalEl) this.monthlyTotalEl.textContent = `${this.formatShort(monthlyPoints)} PTS + ₦${this.formatNumber(monthlyCash)}`;
+        if (this.monthlyTotalEl) this.monthlyTotalEl.textContent = `${this.formatShort(monthlyPoints)} KRN + ₦${this.formatNumber(monthlyCash)}`;
     }
 }

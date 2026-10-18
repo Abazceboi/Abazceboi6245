@@ -1,6 +1,6 @@
 [
   {
-    "code": "INX-AFF-51B3-A768",
+    "code": "KN-AFF-51B3-A768",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -21,7 +21,7 @@
     "status": "used"
   },
   {
-    "code": "INX-AFF-0448-7424",
+    "code": "KN-AFF-0448-7424",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -41,7 +41,7 @@
     "created_at": "2026-10-03T20:25:55.017Z"
   },
   {
-    "code": "INX-AFF-8FAE-6A04",
+    "code": "KN-AFF-8FAE-6A04",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -61,7 +61,7 @@
     "created_at": "2026-10-03T20:25:55.017Z"
   },
   {
-    "code": "INX-AFF-8943-0ABB",
+    "code": "KN-AFF-8943-0ABB",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -81,7 +81,7 @@
     "created_at": "2026-10-03T20:25:55.017Z"
   },
   {
-    "code": "INX-AFF-C369-B958",
+    "code": "KN-AFF-C369-B958",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -101,7 +101,7 @@
     "created_at": "2026-10-03T20:25:55.017Z"
   },
   {
-    "code": "INX-AFF-2A9D-EC58",
+    "code": "KN-AFF-2A9D-EC58",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -122,7 +122,7 @@
     "status": "used"
   },
   {
-    "code": "INX-UPL-49BD-1AEA",
+    "code": "KN-UPL-49BD-1AEA",
     "channel": "UPLOADER",
     "type": "UPL",
     "type_label": "Uploader License PIN",
@@ -142,7 +142,7 @@
     "created_at": "2026-10-03T20:13:40.875Z"
   },
   {
-    "code": "INX-UPL-50A1-00AC",
+    "code": "KN-UPL-50A1-00AC",
     "channel": "UPLOADER",
     "type": "UPL",
     "type_label": "Uploader License PIN",
@@ -162,7 +162,7 @@
     "created_at": "2026-10-03T20:13:40.875Z"
   },
   {
-    "code": "INX-AFF-AE76-A15D",
+    "code": "KN-AFF-AE76-A15D",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -182,7 +182,7 @@
     "created_at": "2026-10-03T20:13:40.865Z"
   },
   {
-    "code": "INX-AFF-BD36-FCC1",
+    "code": "KN-AFF-BD36-FCC1",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -202,7 +202,7 @@
     "created_at": "2026-10-03T20:13:40.865Z"
   },
   {
-    "code": "INX-AFF-97F8-3DD3",
+    "code": "KN-AFF-97F8-3DD3",
     "channel": "AFFILIATE",
     "type": "AFF",
     "type_label": "Affiliate Membership PIN",
@@ -222,8 +222,8 @@
     "created_at": "2026-10-03T20:13:40.863Z"
   },
   {
-    "code": "INX-TEST-1792230627758",
-    "pin": "INX-TEST-1792230627758",
+    "code": "KN-TEST-1792230627758",
+    "pin": "KN-TEST-1792230627758",
     "amount": 5000,
     "status": "active",
     "is_used": false,

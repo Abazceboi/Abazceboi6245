@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Main TypeScript Application Bootstrap
+ * KAIRUSNETWORK — Main TypeScript Application Bootstrap
  */
 
 import { RevenueForecaster } from './modules/forecaster.js';
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const defaultNotifs = [
-            { title: 'Welcome to INNOVATIONX', msg: 'Your account is active. Complete daily tasks to earn points.', time: 'Just now', link: 'javascript:void(0)' },
+            { title: 'Welcome to KAIRUSNETWORK', msg: 'Your account is active. Complete daily tasks to earn points.', time: 'Just now', link: 'javascript:void(0)' },
             { title: '3 Jobbers Tasks Live', msg: 'New sponsored videos and flyer tasks ready to claim.', time: '10m ago', link: 'javascript:switchDashTab("tasks")' },
             { title: 'Dedicated NUBAN Ready', msg: 'Transfer from any mobile bank app to fund your wallet instantly.', time: '1h ago', link: 'javascript:switchDashTab("overview")' }
         ];
@@ -200,9 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isDashboardOrRegister && nuOverlay && !localStorage.getItem('ix_new_user_popup_seen')) {
         let nuData = {
             active: true,
-            title: "Welcome to INNOVATIONX!",
+            title: "Welcome to KAIRUSNETWORK!",
             body: "Congratulations on joining Nigeria's #1 digital earning ecosystem. Join our official VIP WhatsApp group for daily task alerts and free activation coupon giveaways!",
-            link: "https://chat.whatsapp.com/INNOVATIONX-OFFICIAL",
+            link: "https://chat.whatsapp.com/KAIRUSNETWORK-OFFICIAL",
             btnText: "Join Official WhatsApp Channel",
             icon: "IX"
         };
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             withdraw_min_badge: "Min: ₦5,000",
             advert_card_title: "Place an Advert / Launch Campaign",
             advert_card_badge: "Member Ads Hub",
-            advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash."
+            advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active KAIRUSNETWORK members. Fund with Task Points or Referral Cash."
         };
 
         try {

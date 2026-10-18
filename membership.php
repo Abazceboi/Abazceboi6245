@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Membership Access | INNOVATIONX Digital Earnings Earnings';
-$pageDesc = 'Unlock lifetime membership access for only ₦500 and spin the daily Lucky Spin Wheel on INNOVATIONX.';
+$pageTitle = 'Membership Access | KAIRUSNETWORK Digital Earnings';
+$pageDesc = 'Unlock lifetime membership access for only ₦500 and spin the daily Lucky Spin Wheel on KAIRUSNETWORK.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -39,11 +39,11 @@ require_once __DIR__ . '/includes/header.php';
  <ul class="plan-features">
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
- <span>Welcome Instant Bonus: <strong>100 PTS</strong></span>
+ <span>Welcome Instant Bonus: <strong>100 KRN</strong></span>
  </li>
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
- <span>Daily High-Reward Tasks: <strong><?= TASK_POINTS_RATE ?> PTS / Task</strong></span>
+ <span>Daily High-Reward Tasks: <strong><?= TASK_POINTS_RATE ?> KRN / Task</strong></span>
  </li>
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -55,7 +55,7 @@ require_once __DIR__ . '/includes/header.php';
  </li>
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
- <span>Free Daily Lucky Spin Wheel: <strong>Win PTS & Cash</strong></span>
+ <span>Free Daily Lucky Spin Wheel: <strong>Win KRN & Cash</strong></span>
  </li>
  <li>
  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-vibrant)" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>

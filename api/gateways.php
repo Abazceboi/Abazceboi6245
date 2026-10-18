@@ -18,7 +18,7 @@ $defaultConfig = [
     'default_gateway' => 'paystack',
     'fallback_gateway' => 'flutterwave',
     'multi_api_mode' => 'smart_failover',
-    'webhook_endpoint' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'innovationx.ng') . '/api/gateways.php?action=webhook',
+    'webhook_endpoint' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'kairusnetwork.com') . '/api/gateways.php?action=webhook',
     'gateways' => [
         'paystack' => [
             'enabled' => true,
@@ -73,7 +73,7 @@ $defaultConfig = [
             'name' => 'Direct Bank Transfer / Manual Confirmation',
             'bank_name' => 'Guaranty Trust Bank (GTBank)',
             'account_number' => '0123456789',
-            'account_name' => 'INNOVATIONX ENTERPRISE',
+            'account_name' => 'KAIRUSNETWORK ENTERPRISE',
             'instructions' => 'Transfer exact amount, upload transaction screenshot, and your account will be activated within 5 minutes.'
         ]
     ],

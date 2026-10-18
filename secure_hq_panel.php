@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Admin Control Panel (Complete Rewrite)
+ * KAIRUSNETWORK — Admin Control Panel (Complete Rewrite)
  */
 require_once __DIR__ . '/config/app.php';
 
@@ -110,7 +110,7 @@ if ($adminAuthStep < 2) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin 2-Step Verification | INNOVATIONX</title>
+    <title>Admin 2-Step Verification | KAIRUSNETWORK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -175,7 +175,7 @@ $adminUsername = $authUser['username'] ?? 'Admin';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Management — InnovationX</title>
+<title>Admin Management — KairusNetwork</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -781,7 +781,7 @@ input,textarea,select{font-family:var(--ff);}
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
       </div>
-      <div class="sidebar-logo-name">Innovation<span>X</span> HQ</div>
+      <div class="sidebar-logo-name">KAIRUS<span>NETWORK</span> HQ</div>
     </div>
     <button class="mobile-close-btn" onclick="closeAdminSidebar()" title="Close navigation menu">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1034,7 +1034,7 @@ input,textarea,select{font-family:var(--ff);}
               <div>
                 <span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.5px;">Survey Plan Ready</span>
                 <h4 id="genResultTitleDisplay" style="font-size:15px;font-weight:700;color:var(--txt);margin-top:2px;">Survey Preview</h4>
-                <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Reward: 150 PTS | Available Slots: 100</div>
+                <div style="font-size:12px;color:var(--txt-2);" id="genResultMetaDisplay">Category: General | Questions: 5 | Reward: 150 KRN | Available Slots: 100</div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button type="button" class="btn btn-primary btn-sm" onclick="applyAndPublishGeneratedSurvey()" style="background:#0284C7;border-color:#0284C7;color:#fff;font-weight:700;">
@@ -1068,7 +1068,7 @@ input,textarea,select{font-family:var(--ff);}
                 <button type="button" class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:3px 7px;" onclick="setPreviewSlots(100)">100</button>
               </div>
               <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-                <label style="font-size:12px;font-weight:700;color:var(--txt);">Reward (PTS):</label>
+                <label style="font-size:12px;font-weight:700;color:var(--txt);">Reward (KRN):</label>
                 <input type="number" id="genPreviewReward" class="form-input" min="10" style="width:90px;padding:5px 8px;font-size:13px;font-weight:700;" oninput="updateGeneratedPlanReward(this.value)">
               </div>
             </div>
@@ -1147,7 +1147,7 @@ input,textarea,select{font-family:var(--ff);}
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Reward Points (PTS)</label>
+              <label class="form-label">Reward Points (KRN)</label>
               <input type="number" class="form-input" id="svReward" value="150" min="10" required>
             </div>
             <div class="form-group">
@@ -1282,7 +1282,7 @@ input,textarea,select{font-family:var(--ff);}
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Task Title</label>
-              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. InnovationX Features Guide & Review">
+              <input type="text" class="form-input" id="taskTitle" required placeholder="e.g. KairusNetwork Features Guide & Review">
             </div>
             <div class="form-group">
               <label class="form-label">
@@ -1333,7 +1333,7 @@ input,textarea,select{font-family:var(--ff);}
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Reward Points (PTS)</label>
+              <label class="form-label">Reward Points (KRN)</label>
               <input type="number" class="form-input" id="taskReward" value="150" min="10" required>
             </div>
             <div class="form-group">
@@ -1540,7 +1540,7 @@ input,textarea,select{font-family:var(--ff);}
         </div>
         <form onsubmit="handleSaveEcoSettings(event)" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;align-items:end;">
           <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Points Listing Fee (PTS)</label>
+            <label class="form-label">Points Listing Fee (KRN)</label>
             <input type="number" class="form-input" id="adminEcoPtsFee" min="0" step="1" required placeholder="e.g. 150">
           </div>
           <div class="form-group" style="margin-bottom:0;">
@@ -1883,11 +1883,11 @@ input,textarea,select{font-family:var(--ff);}
             <!-- Minimum & Maximum Payout Limits -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
               <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Minimum Payout (PTS)</label>
+                <label class="form-label">Minimum Payout (KRN)</label>
                 <input type="number" class="form-input" id="taskMinAmount" value="1000" min="100">
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Maximum Payout (PTS)</label>
+                <label class="form-label">Maximum Payout (KRN)</label>
                 <input type="number" class="form-input" id="taskMaxAmount" value="100000" min="500">
               </div>
             </div>
@@ -2106,7 +2106,7 @@ input,textarea,select{font-family:var(--ff);}
               <label class="form-label">Minimum Points Withdrawal (Tasks & Surveys)</label>
               <div style="position:relative;">
                 <input type="number" class="form-input" id="cfgMinPointsWd" value="1000" min="100" style="padding-right:50px;">
-                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">PTS</span>
+                <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--txt-3);">KRN</span>
               </div>
               <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Threshold for withdrawing earned points from tasks and surveys. Pure points (1:1), zero conversion rate.</div>
             </div>
@@ -2286,7 +2286,7 @@ input,textarea,select{font-family:var(--ff);}
             </div>
             <div class="form-group">
               <label class="form-label">Activation Pop-Up Title</label>
-              <input type="text" class="form-input" id="cfgActPopupTitle" placeholder="e.g. Account Activated Successfully! Welcome to InnovationX">
+              <input type="text" class="form-input" id="cfgActPopupTitle" placeholder="e.g. Account Activated Successfully! Welcome to KairusNetwork">
             </div>
             <div class="form-group">
               <label class="form-label">Activation Message / Onboarding Content</label>
@@ -2561,10 +2561,10 @@ input,textarea,select{font-family:var(--ff);}
       </svg>
     </div>
     <div class="modal-title" id="prevActLockTitle" style="font-size:1.4rem;font-weight:900;margin:0 0 8px;color:var(--txt);">Account Activation Required</div>
-    <div id="prevActLockMessage" style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;white-space:pre-line;text-align:center;">Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.</div>
+    <div id="prevActLockMessage" style="font-size:13px;color:var(--txt-3);line-height:1.55;margin:0 0 20px;white-space:pre-line;text-align:center;">Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.</div>
     <div style="text-align:left;margin-bottom:14px;">
       <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--txt-2);margin-bottom:6px;">Coupon Activation PIN</label>
-      <input type="text" class="form-input" placeholder="e.g. INX-AFF-XXXX-XXXX" disabled style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;opacity:0.7;">
+      <input type="text" class="form-input" placeholder="e.g. KN-AFF-XXXX-XXXX" disabled style="text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:15px;padding:12px 14px;opacity:0.7;">
     </div>
     <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:14px;font-weight:800;border-radius:12px;margin-bottom:16px;background:linear-gradient(135deg, #0284C7, #38BDF8);">
       Activate Account Now
@@ -2662,7 +2662,7 @@ input,textarea,select{font-family:var(--ff);}
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Points Balance (PTS)</label>
+          <label class="form-label">Points Balance (KRN)</label>
           <input type="number" class="form-input" id="editPoints">
         </div>
         <div class="form-group">
@@ -3354,7 +3354,7 @@ function generateTopicQuestionsClient(topic, count, style, slots = 100) {
       { question: 'How satisfied are you with the bank withdrawal settlement process?', options: ['Extremely satisfied with fast settlement', 'Satisfied with automated bank transfer', 'Neutral / Would prefer lower minimum limits', 'Looking forward to additional payout gateways'], correct_index: 0 },
       { question: 'Which new feature would provide the greatest value to your membership?', options: ['More high-reward sponsored video surveys', 'Instant mobile wallet peer-to-peer transfers', 'Expanded vendor distribution network', 'Daily streak loyalty cash bonuses'], correct_index: 0 },
       { question: 'How easy was it for you to complete your account registration and onboarding?', options: ['Seamless and straightforward', 'Fast with clear instructions', 'Moderate effort required', 'Very simple on modern smartphones'], correct_index: 0 },
-      { question: 'Would you recommend INNOVATIONX to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
+      { question: 'Would you recommend KAIRUSNETWORK to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
     ];
   } else if (/fintech|bank|payment|money|transfer|opay|palmpay|moniepoint|savings|loan/i.test(tLower)) {
     category = 'Fintech & Digital Banking';
@@ -3544,7 +3544,7 @@ function updateGeneratedPlanSlots(val) {
   if (gEl && document.activeElement !== gEl) gEl.value = num;
   const metaDisplay = document.getElementById('genResultMetaDisplay');
   if (metaDisplay && lastGeneratedSurveyPlan) {
-    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${lastGeneratedSurveyPlan.reward_points} PTS | Available Slots: ${num} ${num === 1 ? 'user' : 'users'}`;
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${lastGeneratedSurveyPlan.reward_points} KRN | Available Slots: ${num} ${num === 1 ? 'user' : 'users'}`;
   }
 }
 
@@ -3558,7 +3558,7 @@ function updateGeneratedPlanReward(val) {
   const metaDisplay = document.getElementById('genResultMetaDisplay');
   if (metaDisplay && lastGeneratedSurveyPlan) {
     const sCount = lastGeneratedSurveyPlan.total_slots || 1;
-    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${num} PTS | Available Slots: ${sCount} ${sCount === 1 ? 'user' : 'users'}`;
+    metaDisplay.textContent = `Category: ${lastGeneratedSurveyPlan.category} | Questions: ${lastGeneratedSurveyPlan.questions.length} | Reward: ${num} KRN | Available Slots: ${sCount} ${sCount === 1 ? 'user' : 'users'}`;
   }
 }
 
@@ -3599,7 +3599,7 @@ function renderGeneratedSurveyResults(plan) {
   const qList = Array.isArray(plan.questions) ? plan.questions : [];
 
   if (metaDisplay) {
-    metaDisplay.textContent = `Category: ${plan.category || 'General'} | Questions: ${qList.length} | Reward: ${plan.reward_points || 150} PTS | Available Slots: ${plan.total_slots} ${plan.total_slots === 1 ? 'user' : 'users'}`;
+    metaDisplay.textContent = `Category: ${plan.category || 'General'} | Questions: ${qList.length} | Reward: ${plan.reward_points || 150} KRN | Available Slots: ${plan.total_slots} ${plan.total_slots === 1 ? 'user' : 'users'}`;
   }
 
   if (qList.length === 0) {
@@ -4078,7 +4078,7 @@ async function loadSurveysData() {
 
       return `<tr>
         <td><strong>${esc(s.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Survey' : 'Written Survey'}</span></td>
-        <td>+${s.reward_points} PTS</td>
+        <td>+${s.reward_points} KRN</td>
         <td>${slotsCell}</td>
         <td>${s.completions || 0}</td>
         <td>${s.expires_at ? esc(s.expires_at.replace('T', ' ')) : 'No expiry'} ${isExp ? '<span class="badge badge-rejected">Expired</span>' : ''}</td>
@@ -4103,7 +4103,7 @@ async function loadSurveysData() {
         const slotsCell = isFull ? `<span class="badge badge-rejected">0 / ${total} (Full)</span>` : `<strong>${left}</strong> / ${total} left`;
         return `<tr>
           <td><strong>${esc(s.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Survey' : 'Written Survey'}</span></td>
-          <td>+${s.reward_points} PTS</td>
+          <td>+${s.reward_points} KRN</td>
           <td>${slotsCell}</td>
           <td>${s.completions || 0}</td>
           <td>${s.expires_at ? esc(s.expires_at.replace('T', ' ')) : 'No expiry'}</td>
@@ -4248,7 +4248,7 @@ async function loadSurveySubmissions() {
         <td><strong>${esc(s.username)}</strong></td>
         <td>${esc(s.survey_title)}</td>
         <td>${s.score}% (${s.correct}/${s.total})</td>
-        <td>+${s.reward_points} PTS</td>
+        <td>+${s.reward_points} KRN</td>
         <td><span class="badge ${s.passed ? 'badge-active' : 'badge-rejected'}">${s.passed ? 'Passed' : 'Failed'}</span></td>
         <td>${esc(s.submitted_at || '')}</td>
       </tr>
@@ -4538,7 +4538,7 @@ async function loadTasksData() {
       return `<tr>
         <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
         <td>${esc(t.category)}</td>
-        <td>+${t.reward_points} PTS</td>
+        <td>+${t.reward_points} KRN</td>
         <td>${t.completions || 0}</td>
         <td>${timingHtml}</td>
         <td>${statusBadge}</td>
@@ -4554,7 +4554,7 @@ async function loadTasksData() {
         return `<tr>
           <td><strong>${esc(t.title)}</strong><br><span class="badge ${isVid ? 'badge-active' : 'badge-neutral'}">${isVid ? 'Video Task' : 'Written Task'}</span></td>
           <td>${esc(t.category)}</td>
-          <td>+${t.reward_points} PTS</td>
+          <td>+${t.reward_points} KRN</td>
           <td>${t.completions || 0}</td>
           <td><span style="color:var(--txt-3);font-size:12px;">Always Open</span></td>
           <td><span class="badge badge-active">Active</span></td>
@@ -4660,7 +4660,7 @@ async function loadTaskSubmissions() {
                   : (s.proof_url ? `<a href="${esc(s.proof_url)}" target="_blank" style="color:var(--accent);text-decoration:underline;">View Link</a>` : 'No proof file')}
         </td>
         <td style="font-size:12px;">${esc(s.notes || '-')}</td>
-        <td>+${s.reward_points} PTS</td>
+        <td>+${s.reward_points} KRN</td>
         <td><span class="badge badge-${s.status}">${esc(s.status)}</span></td>
         <td style="font-size:11px;">${esc(s.submitted_at || '')}</td>
         <td>
@@ -4739,7 +4739,7 @@ async function loadUsersData() {
     const cashEl = document.getElementById('kpiTotalSiteCash');
     if (cashEl) cashEl.textContent = '₦' + totalCash.toLocaleString();
     const subEl = document.getElementById('kpiTotalSiteSub');
-    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
+    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} KRN in member balances`;
 
     window.allUsersList = allUsersList;
     renderUsers(allUsersList);
@@ -4785,7 +4785,7 @@ function renderUsers(list) {
       <td>${esc(u.email || '')}<br><span style="font-size:11px;color:var(--txt-3);">${esc(u.phone || '')}</span></td>
       <td><span style="font-size:12px;color:var(--txt-2);">${esc(regFormatted)}</span></td>
       <td><span class="badge badge-active">${esc(u.role || 'member')}</span></td>
-      <td>${Number(u.remaining_pts || u.pointsBalance || 0).toLocaleString()} PTS</td>
+      <td>${Number(u.remaining_pts || u.pointsBalance || 0).toLocaleString()} KRN</td>
       <td>₦${Number(u.remaining_cash || u.cashBalance || 0).toLocaleString()}</td>
       <td>${statusBadge}</td>
       <td>
@@ -5886,7 +5886,7 @@ async function loadActivationLockSettingsData() {
     const titleInput = document.getElementById('cfgActLockTitle');
     if (titleInput) titleInput.value = act.title || 'Account Activation Required';
     const msgInput = document.getElementById('cfgActLockMessage');
-    if (msgInput) msgInput.value = act.message || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+    if (msgInput) msgInput.value = act.message || 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
     const ctaLabelInput = document.getElementById('cfgActLockCtaLabel');
     if (ctaLabelInput) ctaLabelInput.value = act.cta_label || 'Contact Verified Vendors';
     const ctaUrlInput = document.getElementById('cfgActLockCtaUrl');
@@ -5933,7 +5933,7 @@ async function handleSaveActivationLockSettings(e) {
 
 function previewActivationLockModal() {
   const title = document.getElementById('cfgActLockTitle').value.trim() || 'Account Activation Required';
-  const message = document.getElementById('cfgActLockMessage').value.trim() || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
+  const message = document.getElementById('cfgActLockMessage').value.trim() || 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.';
   const cta_label = document.getElementById('cfgActLockCtaLabel').value.trim() || 'Contact Verified Vendors';
 
   const tEl = document.getElementById('prevActLockTitle');
@@ -5956,7 +5956,7 @@ async function loadActivationPopupSettingsData() {
     const titleInput = document.getElementById('cfgActPopupTitle');
     if (titleInput) titleInput.value = actPopup.title || 'Account Activated Successfully!';
     const msgInput = document.getElementById('cfgActPopupMessage');
-    if (msgInput) msgInput.value = actPopup.message || 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.';
+    if (msgInput) msgInput.value = actPopup.message || 'Congratulations on activating your KAIRUSNETWORK account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.';
     const ctaLabelInput = document.getElementById('cfgActPopupCtaLabel');
     if (ctaLabelInput) ctaLabelInput.value = actPopup.cta_label || 'Start Earning Now';
     const ctaUrlInput = document.getElementById('cfgActPopupCtaUrl');
@@ -6307,7 +6307,7 @@ function renderAdminEcoTable(list) {
     const feeInfo = isOfficial
       ? '<span style="font-size:11.5px;color:var(--txt-3);">Free (Admin)</span>'
       : (item.payment_method === 'points'
-          ? `<strong style="color:var(--accent);">${item.fee_paid} PTS</strong>`
+          ? `<strong style="color:var(--accent);">${item.fee_paid} KRN</strong>`
           : `<strong style="color:var(--green);">${item.fee_paid.toLocaleString()} NGN</strong>`);
 
     let statusBadge = '';
@@ -6388,7 +6388,7 @@ function openAdminViewEcoModal(id) {
   document.getElementById('adminViewEcoDesc').textContent = item.description;
   document.getElementById('adminViewEcoAuthor').textContent = item.author;
   document.getElementById('adminViewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'No Price Tag (Free / Open)';
-  document.getElementById('adminViewEcoFee').textContent = item.is_official ? 'Free (Admin Post)' : (item.payment_method === 'points' ? (item.fee_paid + ' PTS') : ((item.fee_paid || 0).toLocaleString() + ' NGN'));
+  document.getElementById('adminViewEcoFee').textContent = item.is_official ? 'Free (Admin Post)' : (item.payment_method === 'points' ? (item.fee_paid + ' KRN') : ((item.fee_paid || 0).toLocaleString() + ' NGN'));
   document.getElementById('adminViewEcoDate').textContent = item.created_at || 'Recently';
 
   const linkEl = document.getElementById('adminViewEcoLink');
@@ -6629,7 +6629,7 @@ async function handleAdminPostEcoSubmit(e) {
         description: desc,
         image_url: image,
         is_official: true,
-        author: 'InnovationX HQ',
+        author: 'KairusNetwork HQ',
         author_role: 'admin',
         fee_paid: 0,
         views: 0,
@@ -6962,7 +6962,7 @@ async function loadAdminOverview() {
     const cashEl = document.getElementById('kpiTotalSiteCash');
     if (cashEl) cashEl.textContent = '₦' + totalCash.toLocaleString();
     const subEl = document.getElementById('kpiTotalSiteSub');
-    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
+    if (subEl) subEl.textContent = `${totalPts.toLocaleString()} KRN in member balances`;
 
     updateNetProfitCard();
   } catch(e) {}

@@ -25,7 +25,7 @@
     "date_formatted": "17 Oct 2026, 10:11 WAT",
     "security_hash": "36D9E537C7BB754D54BD6B67",
     "settlement_channel": "NIBSS Instant Payment (NIP) / Priority Settlement",
-    "issuer": "INNOVATIONX FINANCIAL CLEARING",
+    "issuer": "KAIRUSNETWORK FINANCIAL CLEARING",
     "rejection_reason": "Test rejection refund",
     "rejected_at": "2026-10-17T09:11:54.371Z"
   },
@@ -55,7 +55,7 @@
     "date_formatted": "17 Oct 2026, 10:11 WAT",
     "security_hash": "B62B22F604F757A0A0687CB4",
     "settlement_channel": "NIBSS Instant Payment (NIP) / Priority Settlement",
-    "issuer": "INNOVATIONX FINANCIAL CLEARING",
+    "issuer": "KAIRUSNETWORK FINANCIAL CLEARING",
     "approved_at": "2026-10-17T09:11:28.469Z",
     "paid_at": "2026-10-17T09:11:28.469Z"
   },
@@ -85,7 +85,7 @@
     "date_formatted": "17 Oct 2026, 10:08 WAT",
     "security_hash": "60C7180043F51544EFD6071F",
     "settlement_channel": "NIBSS Instant Payment (NIP) / Priority Settlement",
-    "issuer": "INNOVATIONX FINANCIAL CLEARING",
+    "issuer": "KAIRUSNETWORK FINANCIAL CLEARING",
     "approved_at": "2026-10-17T09:08:26.617Z",
     "paid_at": "2026-10-17T09:08:26.617Z"
   },
@@ -115,7 +115,7 @@
     "date_formatted": "01 Oct 2026, 00:39 WAT",
     "security_hash": "5EBCEE35DA73D219F44810B2",
     "settlement_channel": "NIBSS Instant Payment (NIP) / Priority Settlement",
-    "issuer": "INNOVATIONX FINANCIAL CLEARING"
+    "issuer": "KAIRUSNETWORK FINANCIAL CLEARING"
   },
   {
     "id": "IX-WD-366105",
@@ -143,6 +143,6 @@
     "date_formatted": "01 Oct 2026, 00:38 WAT",
     "security_hash": "122F7C66ECD397390E68ED23",
     "settlement_channel": "NIBSS Instant Payment (NIP) / Priority Settlement",
-    "issuer": "INNOVATIONX FINANCIAL CLEARING"
+    "issuer": "KAIRUSNETWORK FINANCIAL CLEARING"
   }
 ]

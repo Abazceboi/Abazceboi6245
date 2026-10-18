@@ -109,10 +109,10 @@ function renderPhpFile(filePath, context = {}) {
     const dynMinCashWd = Number(context.minCashWd || dynPricing.min_cash_withdrawal || dynPricing.min_withdrawal || 5000);
     const dynMinPointsWd = Number(context.minTaskWd || dynPricing.min_points_withdrawal || 1000);
 
-    content = content.replace(/<\?=\s*htmlspecialchars\(APP_NAME\)\s*\?>/g, 'INNOVATIONX');
+    content = content.replace(/<\?=\s*htmlspecialchars\(APP_NAME\)\s*\?>/g, 'KAIRUSNETWORK');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_TAGLINE\)\s*\?>/g, 'Where SoftLife Meets High-Yield Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(APP_VERSION\)\s*\?>/g, '1.0');
-    content = content.replace(/<\?=\s*htmlspecialchars\(SUPPORT_EMAIL\)\s*\?>/g, 'Supportinnovationx@gmail.com');
+    content = content.replace(/<\?=\s*htmlspecialchars\(SUPPORT_EMAIL\)\s*\?>/g, 'support@kairusnetwork.com');
     content = content.replace(/data-referral-rate="<\?=\s*REFERRAL_CASH_BONUS\s*\?>"/g, 'data-referral-rate="' + dynRefComm + '"');
     content = content.replace(/data-reg-fee="<\?=\s*MEMBERSHIP_FEE\s*\?>"/g, 'data-reg-fee="' + dynRegFee + '"');
     content = content.replace(/<\?=\s*MEMBERSHIP_FEE\s*\?>/g, dynRegFee.toLocaleString('en-US'));
@@ -124,12 +124,12 @@ function renderPhpFile(filePath, context = {}) {
     content = content.replace(/<\?=\s*WHATSAPP_SUPPORT\s*\?>/g, '2347037765714');
     const maintInfo = context.maintenance || {};
     const maintTitle = maintInfo.title || 'Platform Infrastructure Optimization';
-    const maintDesc = maintInfo.message || 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.';
+    const maintDesc = maintInfo.message || 'KAIRUSNETWORK is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.';
     const maintEta = maintInfo.estimated_end || '15 Minutes';
     content = content.replace(/<\?=\s*htmlspecialchars\(\$maintTitle\)\s*\?>/g, maintTitle);
     content = content.replace(/<\?=\s*htmlspecialchars\(\$maintDesc\)\s*\?>/g, maintDesc);
     content = content.replace(/<\?=\s*htmlspecialchars\(\$maintEta\)\s*\?>/g, maintEta);
-    content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'INNOVATIONX | SoftLife Daily Earnings');
+    content = content.replace(/<\?=\s*htmlspecialchars\(\$pageTitle\)\s*\?>/g, context.pageTitle || 'KAIRUSNETWORK | SoftLife Daily Earnings');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$pageDesc\)\s*\?>/g, context.pageDesc || 'High-Yield Daily Earnings Platform');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$username\)\s*\?>/g, context.username || 'Member');
     content = content.replace(/<\?=\s*htmlspecialchars\(\$userRole\)\s*\?>/g, context.userRole || 'member');
@@ -215,7 +215,7 @@ function renderPhpFile(filePath, context = {}) {
                     const dTel = d.telegram || '';
                     const dPhoto = d.photo || '';
                     const dNote = d.custom_note || ('HELLO ' + String(d.name || '').toUpperCase() + ' I NEED ACCESS KEY');
-                    const waMsg = `Hello ${d.name || 'Distributor'}, I am @${context.username || 'member'} from INNOVATIONX and I need an activation key.`;
+                    const waMsg = `Hello ${d.name || 'Distributor'}, I am @${context.username || 'member'} from KAIRUSNETWORK and I need an activation key.`;
                     const waUrl = `https://wa.me/${dPhone}?text=${encodeURIComponent(waMsg)}`;
                     
                     return `
@@ -341,7 +341,7 @@ function renderPinChallengePage(res, errorMsg = '') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin 2-Step Verification | INNOVATIONX</title>
+    <title>Admin 2-Step Verification | KAIRUSNETWORK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -595,7 +595,7 @@ const server = http.createServer((req, res) => {
                                 id: matchedSub.id,
                                 username: matchedSub.username,
                                 full_name: matchedSub.full_name || matchedSub.fullName || matchedSub.username,
-                                email: (matchedSub.username || '').toLowerCase() + '@innovationx.staff',
+                                email: (matchedSub.username || '').toLowerCase() + '@kairusnetwork.staff',
                                 phone: '',
                                 role: 'sub_admin',
                                 is_sub_admin: true,
@@ -640,7 +640,7 @@ const server = http.createServer((req, res) => {
                             id: 'adm-' + lower,
                             username: canon,
                             full_name: 'System Super Admin',
-                            email: 'admin@innovationx.ng',
+                            email: 'admin@kairusnetwork.com',
                             phone: '08123456789',
                             role: 'super_admin',
                             status: 'active'
@@ -653,7 +653,7 @@ const server = http.createServer((req, res) => {
                             id: 'usr-' + lower,
                             username: username,
                             full_name: username.charAt(0).toUpperCase() + username.slice(1),
-                            email: lower + '@innovationx.test',
+                            email: lower + '@kairusnetwork.test',
                             phone: '08012345678',
                             password: password,
                             role: 'member',
@@ -839,13 +839,15 @@ const server = http.createServer((req, res) => {
                         const matchedReferrer = (usersData.users || []).find(u => {
                             const uName = (u.username || '').toLowerCase();
                             const uCode = (u.referral_code || '').toUpperCase();
+                            const uKn = ('KN-' + uName).toUpperCase();
+                            const uKnRaw = ('KN-' + (u.username || '')).toUpperCase();
                             const uInx = ('INX-' + uName).toUpperCase();
                             const uInxRaw = ('INX-' + (u.username || '')).toUpperCase();
-                            return uName === refLower || (uCode && uCode === refUpper) || uInx === refUpper || uInxRaw === refUpper;
+                            return uName === refLower || (uCode && uCode === refUpper) || uKn === refUpper || uKnRaw === refUpper || uInx === refUpper || uInxRaw === refUpper;
                         });
                         if (matchedReferrer) {
                             canonicalReferrer = matchedReferrer.username;
-                            canonicalRefCode = matchedReferrer.referral_code || ('INX-' + matchedReferrer.username.toUpperCase());
+                            canonicalRefCode = matchedReferrer.referral_code || ('KN-' + matchedReferrer.username.toUpperCase());
                         } else {
                             canonicalReferrer = ref;
                         }
@@ -870,7 +872,7 @@ const server = http.createServer((req, res) => {
                         remaining_cash: 0.00,
                         remaining_pts: isActivated ? 100 : 0,
                         total_earned: 0.00,
-                        referral_code: 'INX-' + username.toUpperCase(),
+                        referral_code: 'KN-' + username.toUpperCase(),
                         referral_count: 0,
                         referral_earnings: 0.00,
                         referred_by: canonicalReferrer,
@@ -899,7 +901,7 @@ const server = http.createServer((req, res) => {
                         phone: phone,
                         fullName: fullName,
                         is_activated: isActivated,
-                        message: isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to INNOVATIONX.'
+                        message: isActivated ? 'Account successfully registered and coupon code redeemed.' : 'Account created successfully! Welcome to KAIRUSNETWORK.'
                     }));
                     return;
                 }
@@ -1171,20 +1173,20 @@ const server = http.createServer((req, res) => {
                         }
                     } catch(e) {}
 
-                    let prefix = 'INX-AFF-';
+                    let prefix = 'KN-AFF-';
                     let channel = 'AFFILIATE';
                     let typeLabel = 'Affiliate Membership PIN';
                     let amount = dynRegFee;
                     let wholesalePrice = dynWholesale;
 
                     if (pinType.includes('UPL')) {
-                        prefix = 'INX-UPL-';
+                        prefix = 'KN-UPL-';
                         channel = 'UPLOADER';
                         typeLabel = 'Uploader License PIN';
                         amount = 2000;
                         wholesalePrice = 1600;
                     } else if (pinType.includes('VIP')) {
-                        prefix = 'INX-VIP-';
+                        prefix = 'KN-VIP-';
                         channel = 'AFFILIATE';
                         typeLabel = 'VIP Access PIN';
                         amount = 5000;
@@ -1404,7 +1406,7 @@ const server = http.createServer((req, res) => {
                         if (uplineInput) {
                             const upLower = uplineInput.toLowerCase();
                             const upUpper = uplineInput.toUpperCase();
-                            const matchedRef = users.find(u => (u.username || '').toLowerCase() === upLower || (u.referral_code || '').toUpperCase() === upUpper || ('INX-' + (u.username || '').toLowerCase()).toUpperCase() === upUpper);
+                            const matchedRef = users.find(u => (u.username || '').toLowerCase() === upLower || (u.referral_code || '').toUpperCase() === upUpper || ('KN-' + (u.username || '').toLowerCase()).toUpperCase() === upUpper || ('INX-' + (u.username || '').toLowerCase()).toUpperCase() === upUpper);
                             userRecord.referred_by = matchedRef ? matchedRef.username : uplineInput;
                         }
 
@@ -1595,7 +1597,7 @@ const server = http.createServer((req, res) => {
                     withdraw_min_badge: "Min: ₦5,000",
                     advert_card_title: "Place an Advert / Launch Campaign",
                     advert_card_badge: "Member Ads Hub",
-                    advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active INNOVATIONX members. Fund with Task Points or Referral Cash."
+                    advert_card_desc: "Promote your business, WhatsApp group, YouTube channel, or app to thousands of active KAIRUSNETWORK members. Fund with Task Points or Referral Cash."
                 };
                 if (fs.existsSync(contentFile)) {
                     try { siteContent = Object.assign(siteContent, JSON.parse(fs.readFileSync(contentFile, 'utf8'))); } catch(e){}
@@ -1943,7 +1945,7 @@ const server = http.createServer((req, res) => {
                                         u.activity_ledger.unshift({
                                             time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                                             type: 'Task Reward',
-                                            desc: `Earned ${actualReward} PTS — ${newSub.task_title}`,
+                                            desc: `Earned ${actualReward} KRN — ${newSub.task_title}`,
                                             reward_type: 'points',
                                             reward_value: actualReward
                                         });
@@ -1997,7 +1999,7 @@ const server = http.createServer((req, res) => {
                                             u.activity_ledger.unshift({
                                                 time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                                                 type: 'Task Reward',
-                                                desc: `Earned ${targetSub.reward_points} PTS for ${targetSub.task_title}`,
+                                                desc: `Earned ${targetSub.reward_points} KRN for ${targetSub.task_title}`,
                                                 reward_type: 'points',
                                                 reward_value: targetSub.reward_points
                                             });
@@ -2104,7 +2106,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
             { question: 'How satisfied are you with the bank withdrawal settlement process?', options: ['Extremely satisfied with fast settlement', 'Satisfied with automated bank transfer', 'Neutral / Would prefer lower minimum limits', 'Looking forward to additional payout gateways'], correct_index: 0 },
             { question: 'Which new feature would provide the greatest value to your membership?', options: ['More high-reward sponsored video surveys', 'Instant mobile wallet peer-to-peer transfers', 'Expanded vendor distribution network', 'Daily streak loyalty cash bonuses'], correct_index: 0 },
             { question: 'How easy was it for you to complete your account registration and onboarding?', options: ['Seamless and straightforward', 'Fast with clear instructions', 'Moderate effort required', 'Very simple on modern smartphones'], correct_index: 0 },
-            { question: 'Would you recommend INNOVATIONX to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
+            { question: 'Would you recommend KAIRUSNETWORK to friends seeking verified digital earning opportunities?', options: ['Definitely yes, I actively share my referral link', 'Yes, to close friends and colleagues', 'Likely after my next withdrawal settlement', 'Already introduced multiple active members'], correct_index: 0 }
         ];
     } else if (/fintech|bank|payment|money|transfer|opay|palmpay|moniepoint|savings|loan/i.test(tLower)) {
         category = 'Fintech & Digital Banking';
@@ -2501,7 +2503,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                             u.activity_ledger.unshift({
                                                 time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                                                 type: 'Survey Reward',
-                                                desc: `Earned ${rewardPts} PTS — ${targetSurvey.title}`,
+                                                desc: `Earned ${rewardPts} KRN — ${targetSurvey.title}`,
                                                 reward_type: 'points',
                                                 reward_value: rewardPts
                                             });
@@ -2694,11 +2696,11 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
             if (cleanUrl.includes('broadcasts.php') || action === 'get_broadcasts') {
                 const bcastFile = path.join(PUBLIC_DIR, 'config', 'broadcasts.json');
                 let bcastData = {
-                    banner: { enabled: true, title: 'Welcome to INNOVATIONX!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
+                    banner: { enabled: true, title: 'Welcome to KAIRUSNETWORK!', message: 'Instant automated bank payouts active 24/7.', cta_label: 'Explore', cta_url: 'dashboard.php' },
                     welcome_modal: { enabled: true, title: 'Earner Orientation', message: 'Connect with 124,000+ active earners.', whatsapp: 'https://chat.whatsapp.com/demo' },
-                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Survey', cta_url: 'dashboard.php#surveys', frequency: 'session' },
-                    activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' },
-                    activation_popup: { enabled: true, title: 'Account Activated Successfully!', message: 'Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.', cta_label: 'Start Earning Now', cta_url: 'dashboard.php#tasks', dismiss_label: 'Continue to Dashboard' }
+                    popup: { enabled: false, title: 'Important Announcement', message: 'Welcome to KairusNetwork! Complete sponsored surveys and daily gigs to earn cash rewards.', cta_label: 'View Survey', cta_url: 'dashboard.php#surveys', frequency: 'session' },
+                    activation_lock: { enabled: true, title: 'Account Activation Required', message: 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.', cta_label: 'Contact Verified Vendors', cta_url: 'vendors.php' },
+                    activation_popup: { enabled: true, title: 'Account Activated Successfully!', message: 'Congratulations on activating your KAIRUSNETWORK account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.', cta_label: 'Start Earning Now', cta_url: 'dashboard.php#tasks', dismiss_label: 'Continue to Dashboard' }
                 };
                 if (fs.existsSync(bcastFile)) {
                     try { bcastData = Object.assign(bcastData, JSON.parse(fs.readFileSync(bcastFile, 'utf8'))); } catch(e){}
@@ -2721,7 +2723,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         bcastData.activation_lock = {
                             enabled: al.enabled !== undefined ? !!al.enabled : true,
                             title: String(al.title || 'Account Activation Required').trim(),
-                            message: String(al.message || 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.').trim(),
+                            message: String(al.message || 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.').trim(),
                             cta_label: String(al.cta_label || 'Contact Verified Vendors').trim(),
                             cta_url: String(al.cta_url || 'vendors.php').trim(),
                             updated_at: new Date().toISOString()
@@ -2981,7 +2983,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         if (payMethod === 'points') {
                             const curPts = parseInt(targetUser.remaining_pts || targetUser.pointsBalance) || 0;
                             if (curPts < ptsReq) {
-                                res.end(JSON.stringify({ status: 'error', message: `Insufficient points. You have ${curPts} PTS, but ${ptsReq} PTS are required to publish.` }));
+                                res.end(JSON.stringify({ status: 'error', message: `Insufficient points. You have ${curPts} KRN, but ${ptsReq} KRN are required to publish.` }));
                                 return;
                             }
                             targetUser.remaining_pts = Math.max(0, curPts - ptsReq);
@@ -3030,7 +3032,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         description: description,
                         price_tag: priceTag,
                         has_price: hasPrice,
-                        author: isAdmin ? 'InnovationX HQ' : username,
+                        author: isAdmin ? 'KairusNetwork HQ' : username,
                         author_role: isAdmin ? 'admin' : 'member',
                         is_official: isAdmin,
                         is_admin_verified: isAdmin,
@@ -3357,7 +3359,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
             if (cleanUrl.includes('tokens.php')) {
                 const tokenConfigFile = path.join(PUBLIC_DIR, 'config', 'tokens_config.json');
                 const tokenOrdersFile = path.join(PUBLIC_DIR, 'config', 'token_orders.json');
-                let tokenConfig = { platform_bank: { bank_name: 'OPay Digital Services', account_number: '8102345678', account_name: 'INNOVATIONX OTC TRADING' }, tokens: [] };
+                let tokenConfig = { platform_bank: { bank_name: 'OPay Digital Services', account_number: '8102345678', account_name: 'KAIRUSNETWORK OTC TRADING' }, tokens: [] };
                 let tokenOrders = [];
                 if (fs.existsSync(tokenConfigFile)) {
                     try { tokenConfig = JSON.parse(fs.readFileSync(tokenConfigFile, 'utf8')); } catch(e){}
@@ -3538,7 +3540,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         username: parsed.username || 'Member',
                         full_name: parsed.username || 'Member',
                         phone: 'N/A',
-                        email: (parsed.username || 'Member') + '@innovationx.internal',
+                        email: (parsed.username || 'Member') + '@kairusnetwork.internal',
                         amount_paid: 10000,
                         payment_channel: walletType,
                         screenshot_url: 'INTERNAL_WALLET_' + walletType.toUpperCase(),
@@ -3655,7 +3657,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 let maintConfig = {
                     enabled: false,
                     title: 'Platform Infrastructure Optimization',
-                    message: 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.',
+                    message: 'KAIRUSNETWORK is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.',
                     estimated_end: '15 Minutes',
                     updated_at: new Date().toISOString()
                 };
@@ -3775,7 +3777,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 status_badge: hasReached ? 'OPEN' : 'LOCKED',
                                 status_text: hasReached
                                     ? "Task withdrawals unlocked: your points balance meets the minimum payout requirement."
-                                    : `Task withdrawals unlock automatically once your balance reaches ${minPts.toLocaleString()} PTS (Current: ${Number(userBalance).toLocaleString()} PTS).`
+                                    : `Task withdrawals unlock automatically once your balance reaches ${minPts.toLocaleString()} KRN (Current: ${Number(userBalance).toLocaleString()} KRN).`
                             };
                         }
                         return {
@@ -3783,7 +3785,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             mode: 'auto_min_reached',
                             auto_open_on_min_reached: true,
                             status_badge: 'AUTO (BY BALANCE)',
-                            status_text: `Task withdrawals open automatically for members who reach ${minPts.toLocaleString()} PTS.`
+                            status_text: `Task withdrawals open automatically for members who reach ${minPts.toLocaleString()} KRN.`
                         };
                     }
 
@@ -4043,7 +4045,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const minAmount = parseFloat(walletSched.min_amount) || defaultMin;
                     if (amount < minAmount) {
                         const prefix = targetWallet === 'affiliate' ? '₦' : '';
-                        const suffix = targetWallet === 'affiliate' ? '' : ' PTS';
+                        const suffix = targetWallet === 'affiliate' ? '' : ' KRN';
                         res.end(JSON.stringify({ status: 'error', message: `Minimum withdrawal amount for this wallet is ${prefix}${minAmount.toLocaleString()}${suffix}.` }));
                         return;
                     }
@@ -4113,7 +4115,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     } else {
                         const ptsNeeded = Math.ceil(amount);
                         if (curPoints < ptsNeeded) {
-                            res.end(JSON.stringify({ status: 'error', message: `Insufficient points balance. Needed: ${ptsNeeded.toLocaleString()} PTS, Available: ${curPoints.toLocaleString()} PTS` }));
+                            res.end(JSON.stringify({ status: 'error', message: `Insufficient points balance. Needed: ${ptsNeeded.toLocaleString()} KRN, Available: ${curPoints.toLocaleString()} KRN` }));
                             return;
                         }
                         curPoints -= ptsNeeded;
@@ -4123,7 +4125,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     const now = new Date();
                     const txnNum = Math.floor(Math.random() * 899999 + 100000);
-                    const txnId = 'IX-WD-' + txnNum;
+                    const txnId = 'KN-WD-' + txnNum;
                     const receiptNo = 'REC-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(txnNum).slice(-4);
                     
                     const bankName = user.bank_name || 'OPay Digital Services';
@@ -4151,7 +4153,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         fee_formatted: '₦0.00 (Zero Fee / Subsidized)',
                         net_amount: amount,
                         net_amount_formatted: '₦' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-                        wallet_type: targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
+                        wallet_type: targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points (KRN) Wallet',
                         service_type: targetWallet,
                         status: 'Processing',
                         status_label: 'Processing',
@@ -4159,7 +4161,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         date_formatted: dateFormatted,
                         security_hash: secHash,
                         settlement_channel: 'NIBSS Instant Payment (NIP) / Priority Settlement',
-                        issuer: 'INNOVATIONX FINANCIAL CLEARING'
+                        issuer: 'KAIRUSNETWORK FINANCIAL CLEARING'
                     };
 
                     let reqs = [];
@@ -4707,7 +4709,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         usersData.users.push({
                             username: targetUsername,
                             full_name: targetUsername,
-                            email: targetUsername + '@innovationx.internal',
+                            email: targetUsername + '@kairusnetwork.internal',
                             role: 'member',
                             role_label: 'Active Member',
                             password: newPassword,
@@ -4772,7 +4774,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const username = (parsed.username || '').trim().toLowerCase();
                     const password = (parsed.password || '').trim();
                     const fullName = (parsed.full_name || parsed.fullName || 'Admin Staff').trim();
-                    const email = (parsed.email || (username + '@innovationx.internal')).trim();
+                    const email = (parsed.email || (username + '@kairusnetwork.internal')).trim();
                     const phone = (parsed.phone || '').trim();
                     const role = (parsed.role || 'sub_admin').trim();
                     const permissions = parsed.permissions || {};
@@ -4961,6 +4963,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const userRefCode = user ? (user.referral_code || '').toUpperCase() : '';
                     const inxUpper = ('INX-' + uname).toUpperCase();
                     const inxRaw = user ? ('INX-' + user.username).toUpperCase() : '';
+                    const knUpper = ('KN-' + uname).toUpperCase();
+                    const knRaw = user ? ('KN-' + user.username).toUpperCase() : '';
                     const directUsernames = new Set();
                     const referrals = [];
 
@@ -4970,6 +4974,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         if (refBy && (
                             refBy.toLowerCase() === uname ||
                             (userRefCode && refBy.toUpperCase() === userRefCode) ||
+                            refBy.toUpperCase() === knUpper ||
+                            refBy.toUpperCase() === knRaw ||
                             refBy.toUpperCase() === inxUpper ||
                             refBy.toUpperCase() === inxRaw
                         )) {
@@ -5197,7 +5203,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             id: 'usr-' + username.toLowerCase().replace(/[^a-z0-9]/g, ''),
                             username: username,
                             full_name: fullName || (username.charAt(0).toUpperCase() + username.slice(1)),
-                            email: email || (username.toLowerCase() + '@innovationx.test'),
+                            email: email || (username.toLowerCase() + '@kairusnetwork.test'),
                             phone: phone || '',
                             password: newPass || '',
                             role: 'member',
@@ -5266,7 +5272,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     user.activity_ledger.unshift({
                         time: new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                         type: 'Daily Streak',
-                        desc: `Claimed Day ${newStreak} Streak Reward: +${ptsReward} PTS`,
+                        desc: `Claimed Day ${newStreak} Streak Reward: +${ptsReward} KRN`,
                         reward_type: 'points',
                         reward_value: ptsReward
                     });
@@ -5326,10 +5332,10 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     if (!message) {
                         const senderLabel = username ? ('@' + username) : 'a new user';
-                        message = `Hello ${distributorName}, I am ${senderLabel} from INNOVATIONX and I need an activation key.`;
+                        message = `Hello ${distributorName}, I am ${senderLabel} from KAIRUSNETWORK and I need an activation key.`;
                     }
 
-                    const refId = 'IX-REQ-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+                    const refId = 'KN-REQ-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
                     const reqFile = path.join(PUBLIC_DIR, 'data', 'distributor_requests.json');
                     let requests = [];
@@ -5453,13 +5459,13 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     enabled: true,
                     daily_free_spins: 1,
                     slices: [
-                        { id: 1, label: '100 PTS', type: 'points', value: 100, color: '#6366F1', weight: 25 },
+                        { id: 1, label: '100 KRN', type: 'points', value: 100, color: '#6366F1', weight: 25 },
                         { id: 2, label: '₦100 Airtime', type: 'airtime', value: 100, color: '#0284C7', weight: 20 },
-                        { id: 3, label: '250 PTS', type: 'points', value: 250, color: '#8B5CF6', weight: 18 },
+                        { id: 3, label: '250 KRN', type: 'points', value: 250, color: '#8B5CF6', weight: 18 },
                         { id: 4, label: '₦200 Airtime', type: 'airtime', value: 200, color: '#0D9488', weight: 14 },
-                        { id: 5, label: '500 PTS', type: 'points', value: 500, color: '#4F46E5', weight: 10 },
+                        { id: 5, label: '500 KRN', type: 'points', value: 500, color: '#4F46E5', weight: 10 },
                         { id: 6, label: '₦500 Airtime', type: 'airtime', value: 500, color: '#F59E0B', weight: 5 },
-                        { id: 7, label: '1,000 PTS', type: 'points', value: 1000, color: '#EC4899', weight: 3 },
+                        { id: 7, label: '1,000 KRN', type: 'points', value: 1000, color: '#EC4899', weight: 3 },
                         { id: 8, label: 'Free Spin', type: 'spin', value: 1, color: '#10B981', weight: 5 }
                     ]
                 };
@@ -5981,7 +5987,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     flw_mode: 'test',
                     manual_bank: 'Guaranty Trust Bank (GTBank)',
                     manual_acc: '0123456789',
-                    manual_name: 'INNOVATIONX ENTERPRISE'
+                    manual_name: 'KAIRUSNETWORK ENTERPRISE'
                 };
                 if (fs.existsSync(gwFile)) {
                     try { gwConfig = Object.assign(gwConfig, JSON.parse(fs.readFileSync(gwFile, 'utf8'))); } catch(e){}
@@ -6130,7 +6136,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     auto_generate_on_reg: true,
                     fee_type: 'free',
                     fee_value: 0,
-                    account_name_prefix: 'INNOVATIONX'
+                    account_name_prefix: 'KAIRUSNETWORK'
                 };
                 if (fs.existsSync(vaConfigFile)) {
                     try { vaConfig = Object.assign(vaConfig, JSON.parse(fs.readFileSync(vaConfigFile, 'utf8'))); } catch(e){}
@@ -6181,7 +6187,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             username: uName,
                             bank_name: vaConfig.default_bank || 'Wema Bank',
                             account_number: randomNuban,
-                            account_name: (vaConfig.account_name_prefix || 'INNOVATIONX') + ' - ' + uName.toUpperCase(),
+                            account_name: (vaConfig.account_name_prefix || 'KAIRUSNETWORK') + ' - ' + uName.toUpperCase(),
                             provider: vaConfig.provider || 'monnify',
                             created_at: new Date().toISOString(),
                             total_deposited: 0,
@@ -6209,7 +6215,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         username: uName,
                         bank_name: selBank,
                         account_number: randomNuban,
-                        account_name: (vaConfig.account_name_prefix || 'INNOVATIONX') + ' - ' + uName.toUpperCase(),
+                        account_name: (vaConfig.account_name_prefix || 'KAIRUSNETWORK') + ' - ' + uName.toUpperCase(),
                         provider: vaConfig.provider || 'monnify',
                         created_at: new Date().toISOString(),
                         total_deposited: 0,
@@ -6239,8 +6245,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 let vendorsList = [];
                 let tgConfig = {
                     enabled: true,
-                    channel_link: 'https://t.me/innovationx_official',
-                    support_link: 'https://t.me/innovationx_support',
+                    channel_link: 'https://t.me/kairusnetwork_official',
+                    support_link: 'https://t.me/kairusnetwork_support',
                     popup_title: 'Join Our Official Telegram Community',
                     popup_description: 'Get instant daily task drops and direct admin support.',
                     popup_button_text: 'Join Telegram Channel ↗',
@@ -6383,11 +6389,12 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         // Match referrals downline
                         let referralsCount = 0;
                         let activeReferrals = 0;
+                        const vRefCodeKn = ('KN-' + uName).toUpperCase();
                         const vRefCode = ('INX-' + uName).toUpperCase();
                         allUsers.forEach(u => {
                             const refBy = String(u.referred_by || u.referredBy || '').toLowerCase();
                             const refCode = String(u.referred_by_code || '').toUpperCase();
-                            if (refBy === uName || (vRefCode && refCode === vRefCode)) {
+                            if (refBy === uName || (vRefCodeKn && refCode === vRefCodeKn) || (vRefCode && refCode === vRefCode)) {
                                 referralsCount++;
                                 if (u.is_activated || u.coupon_activated || u.coupon_pin_used) {
                                     activeReferrals++;
@@ -6584,7 +6591,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 const pointsRate = parseFloat(vtuConfig.points_per_naira) || 1.0;
                 const amountChargedPoints = Math.round(amountChargedNaira * pointsRate);
 
-                const txRef = 'IX-AIR-' + Math.floor(Math.random() * 900000 + 100000);
+                const txRef = 'KN-AIR-' + Math.floor(Math.random() * 900000 + 100000);
 
                 const user = parseSessionCookie(req);
                 const username = parsed.username || (user ? user.username : '');
@@ -6670,7 +6677,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                 const pointsRate = parseFloat(vtuConfig.points_per_naira) || 1.0;
                 const amountPoints = Math.round(amountNaira * pointsRate);
-                const txRef = 'IX-DAT-' + Math.floor(Math.random() * 900000 + 100000);
+                const txRef = 'KN-DAT-' + Math.floor(Math.random() * 900000 + 100000);
 
                 const user = parseSessionCookie(req);
                 const username = parsed.username || (user ? user.username : '');
@@ -6740,7 +6747,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 return;
             }
 
-            res.end(JSON.stringify({ status: 'active', service: 'INNOVATIONX PrimeBiller & VTU Telecoms API Gateway', version: '1.0' }));
+            res.end(JSON.stringify({ status: 'active', service: 'KAIRUSNETWORK PrimeBiller & VTU Telecoms API Gateway', version: '1.0' }));
         };
 
         function roundNumber(num, scale) {
@@ -6895,7 +6902,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                                 );
                                 context.isActivated = isUserAct;
                                 context.welcomeShown = Boolean(userRecord.welcome_shown);
-                                context.referralCode = userRecord.referral_code || ('INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase());
+                                context.referralCode = userRecord.referral_code || ('KN-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase());
                                 const proto = req.headers['x-forwarded-proto'] || 'http';
                                 const host = req.headers.host || 'localhost:5050';
                                 context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
@@ -6906,7 +6913,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             }
                         }
                         if (!context.referralCode) {
-                            context.referralCode = 'INX-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase();
+                            context.referralCode = 'KN-' + crypto.createHash('md5').update((u.username || 'ref') + 'ref').digest('hex').substring(0, 8).toUpperCase();
                             const proto = req.headers['x-forwarded-proto'] || 'http';
                             const host = req.headers.host || 'localhost:5050';
                             context.referralLink = `${proto}://${host}/register.php?ref=${encodeURIComponent(context.referralCode)}`;
@@ -7020,5 +7027,5 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`INNOVATIONX Server running at http://localhost:${PORT}/ and http://0.0.0.0:${PORT}/`);
+    console.log(`KAIRUSNETWORK Server running at http://localhost:${PORT}/ and http://0.0.0.0:${PORT}/`);
 });

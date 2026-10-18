@@ -11,7 +11,7 @@ if (!fs.existsSync(publicDir)) {
 }
 
 // 1. Create public/index.html
-const indexHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>INNOVATIONX</title></head><body></body></html>';
+const indexHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KAIRUSNETWORK</title></head><body></body></html>';
 fs.writeFileSync(path.join(publicDir, 'index.html'), indexHtml, 'utf8');
 
 // 2. Create public/robots.txt

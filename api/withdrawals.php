@@ -1,8 +1,8 @@
 <?php
 /**
- * INNOVATIONX - Withdrawal Settings & Windows Controller API
+ * KAIRUSNETWORK - Withdrawal Settings & Windows Controller API
  * Supports Independent Scheduling for:
- * 1. Task Points Wallet (Manual Toggle vs Automatic Schedule)
+ * 1. Task Points (KRN) Wallet (Manual Toggle vs Automatic Schedule)
  * 2. Affiliate / Referral Cash Wallet (Manual Toggle vs Automatic Schedule)
  */
 ini_set('display_errors', '0');
@@ -105,7 +105,7 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points', $userBalance =
                 'status_badge' => $hasReached ? 'OPEN' : 'LOCKED',
                 'status_text' => $hasReached
                     ? "Task withdrawals unlocked: your points balance meets the minimum payout requirement."
-                    : "Task withdrawals unlock automatically once your balance reaches " . number_format($minPts) . " PTS (Current: " . number_format($userBalance) . " PTS)."
+                    : "Task withdrawals unlock automatically once your balance reaches " . number_format($minPts) . " KRN (Current: " . number_format($userBalance) . " KRN)."
             ];
         }
         return [
@@ -113,7 +113,7 @@ function evaluateWalletSchedule($w, $walletLabel = 'Task Points', $userBalance =
             'mode' => 'auto_min_reached',
             'auto_open_on_min_reached' => true,
             'status_badge' => 'AUTO (BY BALANCE)',
-            'status_text' => "Task withdrawals open automatically for members who reach " . number_format($minPts) . " PTS."
+            'status_text' => "Task withdrawals open automatically for members who reach " . number_format($minPts) . " KRN."
         ];
     }
 
@@ -527,7 +527,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($minAmount <= 0) $minAmount = $defaultMin;
     if ($amount < $minAmount) {
         $prefix = ($targetWallet === 'affiliate') ? '₦' : '';
-        $suffix = ($targetWallet === 'affiliate') ? '' : ' PTS';
+        $suffix = ($targetWallet === 'affiliate') ? '' : ' KRN';
         echo json_encode(['status' => 'error', 'message' => 'Minimum withdrawal amount for this wallet is ' . $prefix . number_format($minAmount) . $suffix . '.']);
         exit;
     }
@@ -546,7 +546,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $ptsNeeded = intval(ceil($amount));
         if ($curPoints < $ptsNeeded) {
-            echo json_encode(['status' => 'error', 'message' => 'Insufficient points balance. Needed: ' . number_format($ptsNeeded) . ' PTS, Available: ' . number_format($curPoints) . ' PTS']);
+            echo json_encode(['status' => 'error', 'message' => 'Insufficient points balance. Needed: ' . number_format($ptsNeeded) . ' KRN, Available: ' . number_format($curPoints) . ' KRN']);
             exit;
         }
         $curPoints -= $ptsNeeded;
@@ -556,7 +556,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $now = time();
     $txnNum = rand(100000, 999999);
-    $txnId = 'IX-WD-' . $txnNum;
+    $txnId = 'KN-WD-' . $txnNum;
     $receiptNo = 'REC-' . date('Ymd', $now) . '-' . substr($txnNum, -4);
 
     $bankName = !empty($user['bank_name']) && $user['bank_name'] !== 'Pending Setup' ? $user['bank_name'] : (!empty($input['bank_name']) ? $input['bank_name'] : 'OPay Digital Services');
@@ -579,12 +579,12 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'account_number' => $accountNumber,
         'account_name' => $accountName,
         'amount' => $amount,
-        'amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' PTS'),
+        'amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' KRN'),
         'fee' => 0,
         'fee_formatted' => '₦0.00 (Zero Fee / Subsidized)',
         'net_amount' => $amount,
-        'net_amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' PTS'),
-        'wallet_type' => $targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points Wallet',
+        'net_amount_formatted' => ($targetWallet === 'affiliate' ? '₦' : '') . number_format($amount, 2) . ($targetWallet === 'affiliate' ? '' : ' KRN'),
+        'wallet_type' => $targetWallet === 'affiliate' ? 'Cash & Referral Wallet' : 'Task Points (KRN) Wallet',
         'service_type' => $targetWallet,
         'status' => 'Processing',
         'status_label' => 'Processing',
@@ -592,7 +592,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'date_formatted' => $dateFormatted,
         'security_hash' => $secHash,
         'settlement_channel' => 'NIBSS Instant Payment (NIP) / Priority Settlement',
-        'issuer' => 'INNOVATIONX FINANCIAL CLEARING'
+        'issuer' => 'KAIRUSNETWORK FINANCIAL CLEARING'
     ];
 
     $reqs = readStorageJson('data/withdrawals.json', []);
@@ -606,7 +606,7 @@ if ($action === 'request_withdrawal' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     array_unshift($user['activity_ledger'], [
         'time' => date('d/m/Y, H:i', $now),
         'type' => 'Withdrawal',
-        'desc' => 'Withdrew ' . ($targetWallet === 'affiliate' ? '₦' . number_format($amount) : number_format($amount) . ' PTS') . ' to ' . $bankName . ' (' . $accountNumber . ')',
+        'desc' => 'Withdrew ' . ($targetWallet === 'affiliate' ? '₦' . number_format($amount) : number_format($amount) . ' KRN') . ' to ' . $bankName . ' (' . $accountNumber . ')',
         'receipt' => $receipt
     ]);
     unset($user);

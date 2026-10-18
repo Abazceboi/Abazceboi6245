@@ -1,6 +1,6 @@
 <?php
 /**
- * Direct Video Upload API for INNOVATIONX Admin & Task Publisher
+ * Direct Video Upload API for KAIRUSNETWORK Admin & Task Publisher
  * Supports both multipart form file uploads and Base64 encoded video payloads.
  */
 header('Content-Type: application/json; charset=UTF-8');

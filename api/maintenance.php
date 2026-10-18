@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Site Maintenance Mode Controller API
+ * KAIRUSNETWORK - Site Maintenance Mode Controller API
  * Allows Super Admin to toggle maintenance mode on/off and broadcast status.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -18,7 +18,7 @@ require_once __DIR__ . '/../includes/storage_helper.php';
 $defaultMaintenance = [
     'enabled' => false,
     'title' => 'Platform Infrastructure Optimization',
-    'message' => 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.',
+    'message' => 'KAIRUSNETWORK is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.',
     'estimated_end' => '15 Minutes',
     'updated_at' => date('Y-m-d H:i:s')
 ];

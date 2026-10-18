@@ -1,44 +1,23 @@
 /**
- * INNOVATIONX — Mobile Navigation Drawer TypeScript Module
+ * KAIRUSNETWORK — Mobile Navigation Drawer TypeScript Module
  */
 export class MobileDrawer {
     constructor() {
         this.hamburger = document.getElementById('hamburger');
         this.drawer = document.getElementById('mobileDrawer');
         this.backdrop = document.querySelector('.drawer-backdrop');
-        this.drawerLinks = document.querySelectorAll('.mobile-drawer a, .simple-modern-drawer a');
+        this.drawerLinks = document.querySelectorAll('.mobile-drawer a, .mobile-drawer button');
         this.init();
     }
     init() {
-        if (!this.drawer) return;
-
-        // Bridge with global handlers
-        window.openLandingDrawer = () => this.open();
-        window.closeLandingDrawer = () => this.close();
-        window.toggleLandingDrawer = () => this.toggle();
-
-        if (this.hamburger && !this.hamburger.dataset.drawerInit) {
-            this.hamburger.dataset.drawerInit = 'true';
+        if (this.hamburger) {
             this.hamburger.addEventListener('click', (e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 this.toggle();
             });
         }
-        if (this.backdrop && !this.backdrop.dataset.drawerInit) {
-            this.backdrop.dataset.drawerInit = 'true';
-            this.backdrop.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.close();
-            });
-        }
-        const closeBtn = document.getElementById('drawerCloseBtn');
-        if (closeBtn && !closeBtn.dataset.drawerInit) {
-            closeBtn.dataset.drawerInit = 'true';
-            closeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.close();
-            });
+        if (this.backdrop) {
+            this.backdrop.addEventListener('click', () => this.close());
         }
         this.drawerLinks.forEach(link => {
             link.addEventListener('click', () => this.close());

@@ -54,20 +54,20 @@ if ($action === 'generate_pins' && ($_SERVER['REQUEST_METHOD'] === 'POST' || !em
         if (!empty($pr['vendor_wholesale'])) $dynWholesale = floatval($pr['vendor_wholesale']);
     }
 
-    $prefix = 'INX-AFF-';
+    $prefix = 'KN-AFF-';
     $channel = 'AFFILIATE';
     $typeLabel = 'Affiliate Membership PIN';
     $amount = $dynRegFee;
     $wholesalePrice = $dynWholesale;
 
     if ($pinType === 'UPL' || strpos($pinType, 'UPL') !== false) {
-        $prefix = 'INX-UPL-';
+        $prefix = 'KN-UPL-';
         $channel = 'UPLOADER';
         $typeLabel = 'Uploader License PIN';
         $amount = 2000.0;
         $wholesalePrice = 1600.0;
     } elseif ($pinType === 'VIP' || strpos($pinType, 'VIP') !== false) {
-        $prefix = 'INX-VIP-';
+        $prefix = 'KN-VIP-';
         $channel = 'AFFILIATE';
         $typeLabel = 'VIP Access PIN';
         $amount = 5000.0;
@@ -299,8 +299,9 @@ if ($action === 'activate' || $action === 'activate_coupon') {
         foreach ($users as $chkRef) {
             $uName = strtolower($chkRef['username'] ?? '');
             $uCode = strtoupper(trim($chkRef['referral_code'] ?? ''));
+            $uKn = strtoupper('KN-' . $uName);
             $uInx = strtoupper('INX-' . $uName);
-            if ($uName === $upLower || ($uCode && $uCode === $upUpper) || $uInx === $upUpper) {
+            if ($uName === $upLower || ($uCode && $uCode === $upUpper) || $uKn === $upUpper || $uInx === $upUpper) {
                 $matchedUpline = $chkRef['username'];
                 break;
             }
@@ -351,11 +352,14 @@ if ($action === 'activate' || $action === 'activate_coupon') {
         foreach ($users as &$refUser) {
             $rUser = strtolower($refUser['username'] ?? '');
             $rCode = strtoupper(trim($refUser['referral_code'] ?? ''));
+            $rKn = strtoupper('KN-' . $rUser);
+            $rKnMd5_1 = strtoupper('KN-' . substr(md5($rUser . 'ref'), 0, 8));
+            $rKnMd5_2 = strtoupper('KN-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
             $rInx = strtoupper('INX-' . $rUser);
             $rInxMd5_1 = strtoupper('INX-' . substr(md5($rUser . 'ref'), 0, 8));
             $rInxMd5_2 = strtoupper('INX-' . substr(md5(($refUser['username'] ?? '') . 'ref'), 0, 8));
 
-            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
+            if ($rUser === $refTargetLower || ($rCode && $rCode === $refTargetUpper) || $rKn === $refTargetUpper || $rKnMd5_1 === $refTargetUpper || $rKnMd5_2 === $refTargetUpper || $rInx === $refTargetUpper || $rInxMd5_1 === $refTargetUpper || $rInxMd5_2 === $refTargetUpper) {
                 $refUser['remaining_cash'] = floatval($refUser['remaining_cash'] ?? 0) + $commAmount;
                 $refUser['cashBalance'] = $refUser['remaining_cash'];
                 $refUser['referral_earnings'] = floatval($refUser['referral_earnings'] ?? 0) + $commAmount;
@@ -404,8 +408,9 @@ if ($action === 'activate' || $action === 'activate_coupon') {
             foreach ($users as &$indUser) {
                 $iUser = strtolower($indUser['username'] ?? '');
                 $iCode = strtoupper(trim($indUser['referral_code'] ?? ''));
+                $iKn = strtoupper('KN-' . $iUser);
                 $iInx = strtoupper('INX-' . $iUser);
-                if (($iUser === $indLower || ($iCode && $iCode === $indUpper) || $iInx === $indUpper) && $iUser !== strtolower($username) && $iUser !== $refTargetLower) {
+                if (($iUser === $indLower || ($iCode && $iCode === $indUpper) || $iKn === $indUpper || $iInx === $indUpper) && $iUser !== strtolower($username) && $iUser !== $refTargetLower) {
                     $indUser['remaining_cash'] = floatval($indUser['remaining_cash'] ?? 0) + $indirectComm;
                     $indUser['cashBalance'] = $indUser['remaining_cash'];
                     $indUser['referral_earnings'] = floatval($indUser['referral_earnings'] ?? 0) + $indirectComm;

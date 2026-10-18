@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Verified Vendors Live Search TypeScript Module
+ * KAIRUSNETWORK — Verified Vendors Live Search TypeScript Module
  */
 
 export class VendorsSearchManager {

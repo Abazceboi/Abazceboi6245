@@ -2,7 +2,7 @@
   "platform_bank": {
     "bank_name": "OPay Digital Services",
     "account_number": "8102345678",
-    "account_name": "INNOVATIONX OTC TRADING",
+    "account_name": "KAIRUSNETWORK OTC TRADING",
     "instructions": "Transfer exact amount to the account above. Take a screenshot of the debit receipt and attach below with the session ID / reference."
   },
   "tokens": [
@@ -17,7 +17,7 @@
       "min_trade": 10,
       "max_trade": 50000,
       "platform_deposit_address": "very1q84m5z9g3k2p7x6w0c1v8b4n7m9l2j5h4k3e",
-      "deposit_memo": "IX-VERY-OTC",
+      "deposit_memo": "KN-VERY-OTC",
       "views_count": 4820,
       "trades_count": 1420,
       "volume_24h": "₦4,850,000",
@@ -33,7 +33,7 @@
       "sell_rate": 430,
       "min_trade": 5,
       "max_trade": 25000,
-      "platform_deposit_address": "rubi_innovationx_desk",
+      "platform_deposit_address": "rubi_kairusnetwork_desk",
       "deposit_memo": "Rubi User ID or Phone",
       "views_count": 3950,
       "trades_count": 1180,

@@ -2,7 +2,7 @@
 header("Location: distributors.php" . (!empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : ''), true, 302);
 exit;
 require_once __DIR__ . '/config/app.php';
-$pageTitle = 'Verified Vendors | ' . (defined('APP_NAME') ? APP_NAME : 'INNOVATIONX');
+$pageTitle = 'Verified Vendors | ' . (defined('APP_NAME') ? APP_NAME : 'KAIRUSNETWORK');
 $pageDesc = 'Purchase your account activation code directly from verified vendors via WhatsApp or Telegram.';
 $hideNavbar = true;
 require_once __DIR__ . '/includes/header.php';
@@ -81,8 +81,8 @@ $vendors = getVendorsPageList();
 
 $telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
 $telegramConfig = [
-    'channel_link' => 'https://t.me/innovationx_official',
-    'support_link' => 'https://t.me/innovationx_support',
+    'channel_link' => 'https://t.me/kairusnetwork_official',
+    'support_link' => 'https://t.me/kairusnetwork_support',
 ];
 if (file_exists($telegramConfigFile)) {
     $loadedTel = json_decode(file_get_contents($telegramConfigFile), true);
@@ -1268,9 +1268,9 @@ if (file_exists($telegramConfigFile)) {
     <div class="ev-header-container">
         <!-- Standalone Brand Logo (Left) -->
         <div class="ev-header-side ev-header-left">
-            <a href="index.php" class="ev-brand-standalone" aria-label="INNOVATIONX home">
-                <div class="ev-brand-badge">IX</div>
-                <span class="ev-brand-name">INNOVATIONX</span>
+            <a href="index.php" class="ev-brand-standalone" aria-label="KAIRUSNETWORK home">
+                <div class="ev-brand-badge">KN</div>
+                <span class="ev-brand-name">KAIRUSNETWORK</span>
             </a>
         </div>
 
@@ -1319,9 +1319,9 @@ if (file_exists($telegramConfigFile)) {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--color-border);">
         <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg, #0284C7, #38BDF8);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-display);font-weight:800;font-size:0.75rem;">
-                IX
+                KN
             </div>
-            <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--color-fg);">INNOVATIONX</span>
+            <span style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--color-fg);">KAIRUSNETWORK</span>
         </div>
         <button type="button" onclick="toggleEvermoreDrawer()" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--color-border);background:transparent;color:var(--color-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1604,7 +1604,7 @@ if (file_exists($telegramConfigFile)) {
         const total = (qty * 5000).toLocaleString();
 
         const phoneStr = buyerPhone ? ` (${buyerPhone})` : '';
-        return `Hello ${vendorName}, my name is ${buyerName}${phoneStr}.\n\nI want to purchase ${qty} INNOVATIONX activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;
+        return `Hello ${vendorName}, my name is ${buyerName}${phoneStr}.\n\nI want to purchase ${qty} KairusNetwork activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;
     }
 
     function copyOrderMessage() {
@@ -1698,7 +1698,7 @@ if (file_exists($telegramConfigFile)) {
         } else if (rawTg.startsWith('http')) {
             tgUrl = rawTg;
         } else {
-            tgUrl = '<?= htmlspecialchars($telegramConfig['support_link'] ?? 'https://t.me/innovationx_support') ?>';
+            tgUrl = '<?= htmlspecialchars($telegramConfig['support_link'] ?? 'https://t.me/kairusnetwork_support') ?>';
         }
 
         const tgFullUrl = tgUrl + (tgUrl.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(text);

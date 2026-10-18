@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Broadcasts & Welcome Modal API Router
+ * KAIRUSNETWORK - Broadcasts & Welcome Modal API Router
  * Stores platform-wide announcements and onboarding modals to config/broadcasts.json
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -18,7 +18,7 @@ require_once __DIR__ . '/../includes/storage_helper.php';
 $defaults = [
     'banner' => [
         'enabled' => true,
-        'title' => 'Welcome to INNOVATIONX v3.5!',
+        'title' => 'Welcome to KAIRUSNETWORK v3.5!',
         'message' => 'Instant bank withdrawals are now active 24/7 across all Nigerian financial institutions.',
         'cta_label' => 'Explore Earnings',
         'cta_url' => 'dashboard.php',
@@ -34,7 +34,7 @@ $defaults = [
     'popup' => [
         'enabled' => false,
         'title' => 'Important Announcement',
-        'message' => 'Welcome to InnovationX! Complete sponsored surveys and daily gigs to earn cash rewards.',
+        'message' => 'Welcome to KAIRUSNETWORK! Complete sponsored surveys and daily gigs to earn cash rewards.',
         'cta_label' => 'View Survey',
         'cta_url' => 'dashboard.php#surveys',
         'frequency' => 'session',
@@ -43,7 +43,7 @@ $defaults = [
     'activation_lock' => [
         'enabled' => true,
         'title' => 'Account Activation Required',
-        'message' => 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
+        'message' => 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.',
         'cta_label' => 'Contact Verified Vendors',
         'cta_url' => 'vendors.php',
         'updated_at' => date('Y-m-d H:i:s')
@@ -51,7 +51,7 @@ $defaults = [
     'activation_popup' => [
         'enabled' => true,
         'title' => 'Account Activated Successfully!',
-        'message' => "Congratulations on activating your INNOVATIONX account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
+        'message' => "Congratulations on activating your KAIRUSNETWORK account! Your member profile is now fully unlocked.\n\nYou now have full access to complete daily micro-tasks, participate in verified surveys, earn affiliate commissions, and request instant bank withdrawals anytime.",
         'cta_label' => 'Start Earning Now',
         'cta_url' => 'dashboard.php#tasks',
         'dismiss_label' => 'Continue to Dashboard',
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data['activation_lock'] = [
             'enabled' => isset($al['enabled']) ? (bool)$al['enabled'] : true,
             'title' => trim($al['title'] ?? 'Account Activation Required'),
-            'message' => trim($al['message'] ?? 'Welcome to INNOVATIONX. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.'),
+            'message' => trim($al['message'] ?? 'Welcome to KAIRUSNETWORK. To gain full access to the member portal, earning tasks, surveys, wallet funding, and bank payouts, please enter your genuine coupon activation PIN.'),
             'cta_label' => trim($al['cta_label'] ?? 'Contact Verified Vendors'),
             'cta_url' => trim($al['cta_url'] ?? 'vendors.php'),
             'updated_at' => date('Y-m-d H:i:s')

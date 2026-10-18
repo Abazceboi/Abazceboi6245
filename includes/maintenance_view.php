@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Spatial Tech Maintenance Mode Experience
+ * KAIRUSNETWORK - Spatial Tech Maintenance Mode Experience
  * Features ultra-smooth 3D orbital gyroscope animation, cyber-core particle glow,
  * real-time system diagnostics, and automatic live reconnection polling.
  */
@@ -14,7 +14,7 @@ if (!isset($maintenance) || !is_array($maintenance)) {
     }
 }
 $maintTitle = !empty($maintenance['title']) ? $maintenance['title'] : 'Platform Infrastructure Optimization';
-$maintDesc = !empty($maintenance['message']) ? $maintenance['message'] : 'INNOVATIONX is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.';
+$maintDesc = !empty($maintenance['message']) ? $maintenance['message'] : 'KAIRUSNETWORK is currently undergoing scheduled core server upgrades and payment gateway optimizations. We will be back online shortly with maximum speed.';
 $maintEta = !empty($maintenance['estimated_end']) ? $maintenance['estimated_end'] : '15 Minutes';
 ?>
 <!DOCTYPE html>
@@ -22,7 +22,7 @@ $maintEta = !empty($maintenance['estimated_end']) ? $maintenance['estimated_end'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-    <title><?= htmlspecialchars($maintTitle) ?> | INNOVATIONX</title>
+    <title><?= htmlspecialchars($maintTitle) ?> | KAIRUSNETWORK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">

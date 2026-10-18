@@ -558,8 +558,8 @@ if (!empty($_GET['error'])) {
     <!-- Centered Login Card -->
     <div class="auth-card">
         <div class="auth-card-head">
-            <a href="index.php" class="auth-logo" aria-label="INNOVATIONX">
-                <div class="auth-logo-badge">IX</div>
+            <a href="index.php" class="auth-logo" aria-label="KAIRUSNETWORK">
+                <div class="auth-logo-badge">KN</div>
                 <span class="auth-logo-text"><?= htmlspecialchars(APP_NAME) ?></span>
             </a>
 

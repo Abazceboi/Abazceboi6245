@@ -2,7 +2,7 @@
 /**
  * REST API: Verify Code Authenticity (Separates Member PIN vs Uploader PIN)
  * Method: POST / GET
- * JSON Payload: { "code": "INX-AFF-7821-VIP" or "INX-UPL-8821-PRO" }
+ * JSON Payload: { "code": "KN-AFF-7821-VIP" or "KN-UPL-8821-PRO" }
  * Outputs status as ACTIVE or USED only.
  */
 

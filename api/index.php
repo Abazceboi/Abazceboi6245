@@ -1,6 +1,6 @@
 <?php
 /**
- * Vercel Serverless Gateway & Router for INNOVATIONX
+ * Vercel Serverless Gateway & Router for KAIRUSNETWORK
  */
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $uri = trim($uri, '/');
@@ -29,7 +29,7 @@ if (file_exists($pageFile)) {
 // 3. Direct file check
 $directFile = $rootDir . '/' . $uri;
 if (!file_exists($directFile) || is_dir($directFile)) {
-    $tmpCandidate = sys_get_temp_dir() . '/innovationx_store/' . $uri;
+    $tmpCandidate = sys_get_temp_dir() . '/kairusnetwork_store/' . $uri;
     if (file_exists($tmpCandidate) && !is_dir($tmpCandidate)) {
         $directFile = $tmpCandidate;
     }

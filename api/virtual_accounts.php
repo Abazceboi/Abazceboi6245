@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Virtual Dedicated Accounts (DVA) & Generator API
+ * KAIRUSNETWORK - Virtual Dedicated Accounts (DVA) & Generator API
  * Handles connection to payment providers (Monnify, Paystack, Flutterwave, OPay, Wema/Providus)
  * or Custom Connected Virtual Account Generation Applications.
  */
@@ -29,7 +29,7 @@ $defaultConfig = [
     'auto_generate_on_reg' => true,
     'fee_type' => 'free', // free, flat, percent
     'fee_value' => 0,
-    'account_name_prefix' => 'INNOVATIONX'
+    'account_name_prefix' => 'KAIRUSNETWORK'
 ];
 
 $savedConfig = readStorageJson('data/virtual_accounts_config.json', []);
@@ -94,7 +94,7 @@ if ($action === 'get_user_account') {
             'username' => $username,
             'bank_name' => $selectedBank,
             'account_number' => $randomNuban,
-            'account_name' => ($config['account_name_prefix'] ?? 'INNOVATIONX') . ' - ' . ucfirst($username),
+            'account_name' => ($config['account_name_prefix'] ?? 'KAIRUSNETWORK') . ' - ' . ucfirst($username),
             'provider' => $config['provider'] ?? 'monnify',
             'created_at' => date('Y-m-d H:i:s'),
             'total_deposited' => 0,
@@ -125,7 +125,7 @@ if ($action === 'generate_account' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'username' => $username,
         'bank_name' => $selectedBank,
         'account_number' => $randomNuban,
-        'account_name' => ($config['account_name_prefix'] ?? 'INNOVATIONX') . ' - ' . ucfirst($username),
+        'account_name' => ($config['account_name_prefix'] ?? 'KAIRUSNETWORK') . ' - ' . ucfirst($username),
         'provider' => $config['provider'] ?? 'monnify',
         'created_at' => date('Y-m-d H:i:s'),
         'total_deposited' => 0,
@@ -169,4 +169,4 @@ if ($action === 'webhook') {
     exit;
 }
 
-echo json_encode(['status' => 'active', 'service' => 'INNOVATIONX Dedicated Virtual Account API', 'version' => '1.0']);
+echo json_encode(['status' => 'active', 'service' => 'KAIRUSNETWORK Dedicated Virtual Account API', 'version' => '1.0']);

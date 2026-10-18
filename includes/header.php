@@ -22,7 +22,7 @@ if (!empty($maintenance['enabled']) && !$isAdminSession && !$isAdminBypass) {
 }
 
 $pageTitle = $pageTitle ?? APP_NAME . ' | ' . APP_TAGLINE;
-$pageDesc = $pageDesc ?? 'Join thousands earning daily with INNOVATIONX. High-yield tasks, instant referral cash, and automated bank payouts.';
+$pageDesc = $pageDesc ?? 'Join thousands earning daily with KAIRUSNETWORK. High-yield tasks, instant referral cash, and automated bank payouts.';
 ?>
 <!DOCTYPE html>
 <html lang="en">

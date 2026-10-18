@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Minimal Spatial Tech Landing Page
+ * KAIRUSNETWORK — Minimal Spatial Tech Landing Page
  * Inspired by the streamlined architecture of evermoreai.africa:
  * Pure spatial tech minimalism with the site's official Sky Blue brand palette (#0284C7 / #38BDF8),
  * full Light Mode and Dark Mode support with seamless theme switcher,
@@ -9,7 +9,7 @@
  * Zero emojis in accordance with strict platform guidelines.
  */
 
-$pageTitle = 'INNOVATIONX | Exist Beyond the Moment';
+$pageTitle = 'KAIRUSNETWORK | Exist Beyond the Moment';
 $pageDesc = 'The premier digital earning platform in Nigeria. Complete daily sponsored tasks and world opinion surveys with automated bank settlements.';
 
 $hideNavbar = true;
@@ -34,8 +34,8 @@ if (!empty($_GET['ref'])) {
 
 $telegramConfigFile = __DIR__ . '/config/telegram_settings.json';
 $telegramConfig = [
-    'channel_link' => 'https://t.me/innovationx_official',
-    'support_link' => 'https://t.me/innovationx_support',
+    'channel_link' => 'https://t.me/kairusnetwork_official',
+    'support_link' => 'https://t.me/kairusnetwork_support',
 ];
 if (file_exists($telegramConfigFile)) {
     $loadedTel = json_decode(file_get_contents($telegramConfigFile), true);
@@ -1038,9 +1038,9 @@ a {
 <!-- Floating Header Navbar -->
 <header class="ev-header">
     <div class="ev-nav-container">
-        <a href="index.php" class="ev-brand" aria-label="INNOVATIONX">
-            <div class="ev-brand-badge">IX</div>
-            <span class="ev-brand-name">INNOVATIONX</span>
+        <a href="index.php" class="ev-brand" aria-label="KAIRUSNETWORK">
+            <div class="ev-brand-badge">KN</div>
+            <span class="ev-brand-name">KAIRUSNETWORK</span>
         </a>
 
         <nav class="ev-nav-capsule">
@@ -1073,8 +1073,8 @@ a {
 <aside class="ev-drawer" id="evDrawer">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:10px;">
-            <div class="ev-brand-badge" style="width:28px;height:28px;font-size:0.75rem;">IX</div>
-            <span class="ev-brand-name">INNOVATIONX</span>
+            <div class="ev-brand-badge" style="width:28px;height:28px;font-size:0.75rem;">KN</div>
+            <span class="ev-brand-name">KAIRUSNETWORK</span>
         </div>
         <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:var(--ev-text);font-size:1.4rem;cursor:pointer;">
             <i class="ri-close-line"></i>
@@ -1116,13 +1116,13 @@ a {
     <div class="ev-container" style="position:relative;z-index:2;">
         <div class="ev-hero-eyebrow">
             <i class="ri-sparkling-2-line"></i>
-            <span>INNOVATIONX PLATFORM</span>
+            <span>KAIRUSNETWORK PLATFORM</span>
         </div>
 
         <h1 class="ev-hero-title">Exist Beyond the Moment</h1>
 
         <p class="ev-hero-lead">
-            INNOVATIONX is built on fundamental beliefs: Your time has value. Complete daily sponsored tasks, share market surveys, and receive automated direct bank settlements.
+            KAIRUSNETWORK is built on fundamental beliefs: Your time has value. Complete daily sponsored tasks, share market surveys, and receive automated direct bank settlements.
         </p>
 
         <div class="ev-hero-cta-group">
@@ -1257,7 +1257,7 @@ a {
 <!-- Footer Section -->
 <footer class="ev-footer-section">
     <div class="ev-wordmark-layer" aria-hidden="true">
-        INNOVATIONX
+        KAIRUSNETWORK
     </div>
 
     <div class="ev-container">
@@ -1268,8 +1268,8 @@ a {
                 <div class="ev-footer-grid">
                     <div>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="ev-brand-badge" style="width:30px;height:30px;font-size:0.75rem;">IX</div>
-                            <span class="ev-brand-name">INNOVATIONX</span>
+                            <div class="ev-brand-badge" style="width:30px;height:30px;font-size:0.75rem;">KN</div>
+                            <span class="ev-brand-name">KAIRUSNETWORK</span>
                         </div>
                         <p class="ev-footer-brand-desc">
                             A digital earning ecosystem built for modern online participation and direct bank settlements across Nigeria.
@@ -1301,7 +1301,7 @@ a {
                 </div>
 
                 <div class="ev-footer-bottom">
-                    <span>&copy; 2026 INNOVATIONX. All rights reserved.</span>
+                    <span>&copy; 2026 KAIRUSNETWORK. All rights reserved.</span>
                     <span class="ev-security-pill">
                         <i class="ri-shield-check-line"></i> Secure & Verified Platform
                     </span>

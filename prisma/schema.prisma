@@ -1,4 +1,4 @@
-// Prisma Schema for INNOVATIONX Platform
+// Prisma Schema for KAIRUSNETWORK Platform
 // Database: PostgreSQL (Optimized for Railway & Supabase)
 
 generator client {
@@ -17,7 +17,7 @@ model User {
   email           String         @unique
   phone           String
   passwordHash    String
-  pointsBalance   Int            @default(100) // 100 PTS Welcome Bonus
+  pointsBalance   Int            @default(100) // 100 KRN Welcome Bonus
   cashBalance     Float          @default(0.0) // Naira Referral Cash
   referralCode    String         @unique
   referredBy      String?

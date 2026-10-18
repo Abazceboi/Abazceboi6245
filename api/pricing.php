@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Platform Financial Pricing API Router
+ * KAIRUSNETWORK - Platform Financial Pricing API Router
  * Persists registration fee, referral commission, wholesale PIN price, and points conversion rate
  * to config/app_pricing.json
  */

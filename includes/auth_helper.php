@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Cryptographic Session & Auth Helper
+ * KAIRUSNETWORK — Cryptographic Session & Auth Helper
  * Solves serverless / Vercel ephemeral session loss on page refresh.
  * Uses HMAC SHA-256 signed browser session cookies with multi-layer persistence.
  */
@@ -279,7 +279,7 @@ function authenticateUserCredentials(string $username, string $password): array 
                         $matchedUser = [
                             'id' => $sa['id'] ?? ('sub_' . $lowerUser),
                             'username' => $sa['username'] ?? $username,
-                            'email' => $lowerUser . '@innovationx.staff',
+                            'email' => $lowerUser . '@kairusnetwork.staff',
                             'phone' => '',
                             'fullName' => $sa['full_name'] ?? $sa['fullName'] ?? $username,
                             'role' => 'sub_admin',
@@ -355,7 +355,7 @@ function authenticateUserCredentials(string $username, string $password): array 
         $matchedUser = [
             'id' => 'adm-' . $lowerUser,
             'username' => $canonicalUsername,
-            'email' => 'admin@innovationx.ng',
+            'email' => 'admin@kairusnetwork.ng',
             'phone' => '08123456789',
             'fullName' => 'System Super Admin',
             'role' => 'super_admin',
@@ -415,7 +415,7 @@ function authenticateUserCredentials(string $username, string $password): array 
         $matchedUser = [
             'id' => 'usr-' . $lowerUser,
             'username' => $username,
-            'email' => $lowerUser . '@innovationx.test',
+            'email' => $lowerUser . '@kairusnetwork.test',
             'phone' => '08012345678',
             'fullName' => ucfirst($username),
             'role' => 'member',

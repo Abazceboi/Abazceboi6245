@@ -1,4 +1,4 @@
-# Dockerfile for INNOVATIONX (PHP 8.2 + TypeScript + PostgreSQL + Apache)
+# Dockerfile for KAIRUSNETWORK (PHP 8.2 + TypeScript + PostgreSQL + Apache)
 # Optimized for Railway.app & Render
 
 FROM php:8.2-apache

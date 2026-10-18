@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Database Connection Handler
+ * KAIRUSNETWORK — Database Connection Handler
  * Supports PostgreSQL (Railway / Supabase / Render) & MySQL with PDO
  * Includes strict connection timeouts to prevent serverless execution hangs.
  */

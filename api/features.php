@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - Feature Flags & Module Visibility Router
+ * KAIRUSNETWORK - Feature Flags & Module Visibility Router
  * Allows Super Admin to dynamically enable or disable any feature across the site.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -136,7 +136,7 @@ if ($action === 'save_flags' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX Feature Flags Engine',
+    'service' => 'KAIRUSNETWORK Feature Flags Engine',
     'flags' => $flags,
     'coupon_rules' => $accessRules
 ]);

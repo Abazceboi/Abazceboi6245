@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Jobbers Unit | INNOVATIONX Web3 Bounties & App Mining';
-$pageDesc = 'Explore verified Web3 crypto airdrop mining, digital micro-gigs, remote tasks, and affiliate opportunities on INNOVATIONX.';
+$pageTitle = 'Jobbers Unit | KAIRUSNETWORK Web3 Bounties & App Mining';
+$pageDesc = 'Explore verified Web3 crypto airdrop mining, digital micro-gigs, remote tasks, and affiliate opportunities on KAIRUSNETWORK.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -49,7 +49,7 @@ require_once __DIR__ . '/includes/header.php';
  <span style="font-size:0.72rem;color:var(--sky-light);font-weight:700">+25% Speed</span>
  </div>
  <div class="job-ref-code-wrap">
- <span class="job-ref-code" id="refVeryChat">INX-VERYCHAT</span>
+ <span class="job-ref-code" id="refVeryChat">KN-VERYCHAT</span>
  <button type="button" class="btn-copy-ref">
  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
  <span>Copy</span>
@@ -84,10 +84,10 @@ require_once __DIR__ . '/includes/header.php';
  <div class="job-ref-box">
  <div class="job-ref-header">
  <span class="job-ref-label">Invite Code</span>
- <span style="font-size:0.72rem;color:var(--sky-light);font-weight:700">500 Bonus PTS</span>
+ <span style="font-size:0.72rem;color:var(--sky-light);font-weight:700">500 Bonus KRN</span>
  </div>
  <div class="job-ref-code-wrap">
- <span class="job-ref-code">INX-TELEQUEST</span>
+ <span class="job-ref-code">KRN-TELEQUEST</span>
  <button type="button" class="btn-copy-ref">
  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
  <span>Copy</span>
@@ -142,7 +142,7 @@ require_once __DIR__ . '/includes/header.php';
  <span style="font-size:0.72rem;color:var(--sky-light);font-weight:700">VIP Bonus</span>
  </div>
  <div class="job-ref-code-wrap">
- <span class="job-ref-code">INX-FINTECH99</span>
+ <span class="job-ref-code">KN-FINTECH99</span>
  <button type="button" class="btn-copy-ref">
  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
  <span>Copy</span>

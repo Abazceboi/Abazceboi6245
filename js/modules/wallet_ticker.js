@@ -12,13 +12,13 @@ export class HeroWalletTicker {
         // Realistic sequence of dynamic earning events
         this.states = [
             { balance: 18450, pts: 2450, ref: 16000 },
-            { balance: 18600, pts: 2600, ref: 16000 }, // +150 PTS video clip reward
+            { balance: 18600, pts: 2600, ref: 16000 }, // +150 KRN video clip reward
             { balance: 18850, pts: 2600, ref: 16250 }, // +₦250 referral commission
-            { balance: 19100, pts: 2850, ref: 16250 }, // +250 PTS spin wheel reward
+            { balance: 19100, pts: 2850, ref: 16250 }, // +250 KRN spin wheel reward
             { balance: 19350, pts: 2850, ref: 16500 }, // +₦250 referral commission
-            { balance: 19650, pts: 3150, ref: 16500 }, // +300 PTS social task
+            { balance: 19650, pts: 3150, ref: 16500 }, // +300 KRN social task
             { balance: 19900, pts: 3150, ref: 16750 }, // +₦250 referral commission
-            { balance: 20400, pts: 3400, ref: 17000 }  // +250 PTS + ₦250 milestone
+            { balance: 20400, pts: 3400, ref: 17000 }  // +250 KRN + ₦250 milestone
         ];
         
         this.currentIndex = 0;

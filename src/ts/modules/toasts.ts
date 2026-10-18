@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Payout Notification Toast TypeScript Module
+ * KAIRUSNETWORK — Payout Notification Toast TypeScript Module
  */
 
 import { PayoutToastData } from '../types/index.js';

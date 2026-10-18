@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Code Verification TypeScript Module
+ * KAIRUSNETWORK — Code Verification TypeScript Module
  * Differentiates Member Registration PIN from Uploader Accreditation PIN
  */
 export class CodeVerifier {

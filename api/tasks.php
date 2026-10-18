@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Tasks API (with expiry/timer support)
+ * KAIRUSNETWORK — Tasks API (with expiry/timer support)
  */
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
@@ -75,7 +75,7 @@ function creditUserPointsTask(string $username, int $points, string $reason): in
             array_unshift($u['activity_ledger'], [
                 'time'         => date('d/m/Y, H:i'),
                 'type'         => 'Task Reward',
-                'desc'         => "Earned {$points} PTS — {$reason}",
+                'desc'         => "Earned {$points} KRN — {$reason}",
                 'reward_type'  => 'points',
                 'reward_value' => $points,
             ]);

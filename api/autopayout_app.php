@@ -17,11 +17,11 @@ if (!is_dir($dataDir)) {
 
 $defaultConfig = [
     'enabled' => true,
-    'app_name' => 'InnovationX NUBAN Instant Core Daemon',
+    'app_name' => 'KAIRUSNETWORK NUBAN Instant Core Daemon',
     'app_endpoint_url' => 'https://api.omanuban-core.net/v2/dispatch',
     'auth_bearer_token' => 'bot_sec_live_98472948729103847192',
     'webhook_secret' => 'whsec_ix_bot_2026_x8934',
-    'callback_url' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'innovationx.ng') . '/api/autopayout_app.php?action=callback',
+    'callback_url' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'kairusnetwork.com') . '/api/autopayout_app.php?action=callback',
     'schedule' => [
         'mode' => 'custom_hours', // '24_7' or 'custom_hours'
         'start_hour' => '00:00',

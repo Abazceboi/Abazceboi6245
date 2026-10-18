@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Jobbers Unit & Referral Copy TypeScript Module
+ * KAIRUSNETWORK — Jobbers Unit & Referral Copy TypeScript Module
  */
 export class JobbersManager {
     constructor() {

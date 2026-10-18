@@ -9,9 +9,9 @@ function isActive($page, $currentPage) {
 <!-- Header & Navbar -->
 <header class="navbar" role="banner">
  <div class="container nav-inner">
- <a href="index.php" class="logo" aria-label="INNOVATIONX Home">
- <div class="logo-icon">IX</div>
- <span>INNOVATIONX</span>
+ <a href="index.php" class="logo" aria-label="KAIRUSNETWORK Home">
+ <div class="logo-icon">KN</div>
+ <span>KAIRUSNETWORK</span>
  </a>
 
  <nav class="nav-pill" role="navigation" aria-label="Main Menu">
@@ -188,7 +188,7 @@ function isActive($page, $currentPage) {
     <div class="smd-header">
         <a href="index.php" class="smd-brand">
             <span class="smd-brand-dot"></span>
-            <span class="smd-brand-text">INNOVATIONX</span>
+            <span class="smd-brand-text">KAIRUSNETWORK</span>
         </a>
         <button type="button" class="smd-close-btn" id="drawerCloseBtn" aria-label="Close Menu" onclick="if(window.closeLandingDrawer)closeLandingDrawer();">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

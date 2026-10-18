@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX - FAQ API Router
+ * KAIRUSNETWORK - FAQ API Router
  * Allows Super Admin to dynamically customize, add, edit, and delete FAQ questions and categories.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -46,5 +46,5 @@ if (($action === 'save' || $action === 'save_faq') && $_SERVER['REQUEST_METHOD']
 
 echo json_encode([
     'status' => 'active',
-    'service' => 'INNOVATIONX FAQ API Router'
+    'service' => 'KAIRUSNETWORK FAQ API Router'
 ]);

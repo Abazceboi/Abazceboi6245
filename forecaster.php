@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Revenue Forecaster | INNOVATIONX Digital Earnings Earnings';
-$pageDesc = 'Calculate and forecast your projected daily, weekly, and monthly earnings on INNOVATIONX in real time.';
+$pageTitle = 'Revenue Forecaster | KAIRUSNETWORK Digital Earnings';
+$pageDesc = 'Calculate and forecast your projected daily, weekly, and monthly earnings on KAIRUSNETWORK in real time.';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -27,8 +27,8 @@ require_once __DIR__ . '/includes/header.php';
  <div class="calc-controls">
  <div class="calc-field">
  <label>
- <span id="calcTaskLabel">Daily Sponsored Tasks (<?= TASK_POINTS_RATE ?> PTS each)</span>
- <span class="val" id="calcTaskVal">10 Tasks (1,500 PTS)</span>
+ <span id="calcTaskLabel">Daily Sponsored Tasks (<?= TASK_POINTS_RATE ?> KRN each)</span>
+ <span class="val" id="calcTaskVal">10 Tasks (1,500 KRN)</span>
  </label>
  <input type="range" min="1" max="30" value="10" class="calc-range" id="calcTasks" aria-label="Daily tasks slider">
  </div>
@@ -47,45 +47,45 @@ require_once __DIR__ . '/includes/header.php';
  <div class="res-label">Daily Forecast</div>
  <div class="res-val-group">
  <div class="res-sub-row">
- <span class="res-sub-label">Task Points:</span>
- <span class="res-sub-val" id="calcDailyTasks">1,500 PTS</span>
+ <span class="res-sub-label">KRN Points:</span>
+ <span class="res-sub-val" id="calcDailyTasks">1,500 KRN</span>
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
  <span class="res-sub-val cash-val" id="calcDailyCash">₦6,000</span>
  </div>
  </div>
- <div class="res-total" id="calcDailyTotal">1,500 PTS + ₦6,000</div>
+ <div class="res-total" id="calcDailyTotal">1,500 KRN + ₦6,000</div>
  </div>
 
  <div class="calc-res-item">
  <div class="res-label">Weekly Forecast (7 Days)</div>
  <div class="res-val-group">
  <div class="res-sub-row">
- <span class="res-sub-label">Task Points:</span>
- <span class="res-sub-val" id="calcWeeklyTasks">10,500 PTS</span>
+ <span class="res-sub-label">KRN Points:</span>
+ <span class="res-sub-val" id="calcWeeklyTasks">10,500 KRN</span>
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
  <span class="res-sub-val cash-val" id="calcWeeklyCash">₦42,000</span>
  </div>
  </div>
- <div class="res-total" id="calcWeeklyTotal">10.5k PTS + ₦42,000</div>
+ <div class="res-total" id="calcWeeklyTotal">10.5k KRN + ₦42,000</div>
  </div>
 
  <div class="calc-res-item featured-forecast">
  <div class="res-label">Monthly Forecast (30 Days)</div>
  <div class="res-val-group">
  <div class="res-sub-row">
- <span class="res-sub-label">Task Points:</span>
- <span class="res-sub-val" id="calcMonthlyTasks">45,000 PTS</span>
+ <span class="res-sub-label">KRN Points:</span>
+ <span class="res-sub-val" id="calcMonthlyTasks">45,000 KRN</span>
  </div>
  <div class="res-sub-row">
  <span class="res-sub-label">Referral Cash:</span>
  <span class="res-sub-val cash-val" id="calcMonthlyCash">₦180,000</span>
  </div>
  </div>
- <div class="res-total highlight" id="calcMonthlyTotal">45k PTS + ₦180,000</div>
+ <div class="res-total highlight" id="calcMonthlyTotal">45k KRN + ₦180,000</div>
  </div>
  </div>
 

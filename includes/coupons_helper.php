@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Centralized Coupon PINs Management & Validation Helper
+ * KAIRUSNETWORK — Centralized Coupon PINs Management & Validation Helper
  * Ensures single-use coupon enforcement across registration, admin generation, and verification.
  */
 
@@ -266,10 +266,10 @@ function validateCouponForRegistration(string $code, ?PDO $pdo = null): array {
     }
 
     // Check code type: Uploader codes cannot be used for registration
-    if (strpos($code, 'UPL') !== false || strpos($code, 'IX-UPL-') === 0 || strpos($code, 'INX-UPL-') === 0) {
+    if (strpos($code, 'UPL') !== false || strpos($code, 'KN-UPL-') === 0 || strpos($code, 'IX-UPL-') === 0 || strpos($code, 'INX-UPL-') === 0) {
         return [
             'valid' => false,
-            'message' => "Invalid Code Type: \"{$code}\" is an Uploader Accreditation Code. It cannot be used for Member Registration. Please input a Member Registration PIN (e.g. INX-AFF-XXXX-XXXX)."
+            'message' => "Invalid Code Type: \"{$code}\" is an Uploader Accreditation Code. It cannot be used for Member Registration. Please input a Member Registration PIN (e.g. KN-AFF-XXXX-XXXX)."
         ];
     }
 
@@ -457,7 +457,7 @@ function validateCouponForUploader(string $code, ?PDO $pdo = null): array {
     if (!$isUploaderType) {
         return [
             'valid' => false,
-            'message' => "Invalid Code Type: \"{$code}\" is a Member Registration PIN. It cannot be used for Uploader Accreditation. Please input a genuine Uploader Accreditation PIN (e.g. INX-UPL-XXXX-XXXX)."
+            'message' => "Invalid Code Type: \"{$code}\" is a Member Registration PIN. It cannot be used for Uploader Accreditation. Please input a genuine Uploader Accreditation PIN (e.g. KN-UPL-XXXX-XXXX)."
         ];
     }
 

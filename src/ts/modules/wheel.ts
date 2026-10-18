@@ -1,5 +1,5 @@
 /**
- * INNOVATIONX — Lucky Spin Wheel TypeScript Module
+ * KAIRUSNETWORK — Lucky Spin Wheel TypeScript Module
  */
 
 import { WheelSlice } from '../types/index.js';
@@ -26,14 +26,14 @@ export class LuckySpinWheel {
         this.currentRotation = 0;
 
         this.slices = [
-            { label: '500 PTS', value: 500, type: 'POINTS', color: '#9333EA' },
+            { label: '500 KRN', value: 500, type: 'POINTS', color: '#9333EA' },
             { label: '₦200 Cash', value: 200, type: 'CASH', color: '#C59B4B' },
-            { label: '1,000 PTS', value: 1000, type: 'POINTS', color: '#3B82F6' },
+            { label: '1,000 KRN', value: 1000, type: 'POINTS', color: '#3B82F6' },
             { label: 'Free Spin', value: 0, type: 'SPIN', color: '#10B981' },
-            { label: '250 PTS', value: 250, type: 'POINTS', color: '#7C3AED' },
+            { label: '250 KRN', value: 250, type: 'POINTS', color: '#7C3AED' },
             { label: '₦500 Cash', value: 500, type: 'CASH', color: '#C59B4B' },
-            { label: '750 PTS', value: 750, type: 'POINTS', color: '#2563EB' },
-            { label: '100 PTS', value: 100, type: 'POINTS', color: '#6B21A8' }
+            { label: '750 KRN', value: 750, type: 'POINTS', color: '#2563EB' },
+            { label: '100 KRN', value: 100, type: 'POINTS', color: '#6B21A8' }
         ];
 
         this.init();

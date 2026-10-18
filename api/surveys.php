@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Surveys API
+ * KAIRUSNETWORK — Surveys API
  * Handles survey CRUD, submissions, video, questions, auto-grading and point crediting.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -78,7 +78,7 @@ function creditUserPoints(string $username, int $points, string $reason): int {
             array_unshift($u['activity_ledger'], [
                 'time'         => date('d/m/Y, H:i'),
                 'type'         => 'Survey Reward',
-                'desc'         => "Earned {$points} PTS — {$reason}",
+                'desc'         => "Earned {$points} KRN — {$reason}",
                 'reward_type'  => 'points',
                 'reward_value' => $points,
             ]);
@@ -235,7 +235,7 @@ function generateTopicQuestions(string $topic, int $count = 5, string $style = '
                 'correct_index' => 0
             ],
             [
-                'question' => "Would you recommend INNOVATIONX to friends seeking verified digital earning opportunities?",
+                'question' => "Would you recommend KAIRUSNETWORK to friends seeking verified digital earning opportunities?",
                 'options' => ["Definitely yes, I actively share my referral link", "Yes, to close friends and colleagues", "Likely after my next withdrawal settlement", "Already introduced multiple active members"],
                 'correct_index' => 0
             ]

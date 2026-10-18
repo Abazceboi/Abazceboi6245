@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Top Networkers | INNOVATIONX Leaderboard';
-$pageDesc = 'Celebrating the top earning affiliates, team leaders, and verified high-volume payout recipients on INNOVATIONX.';
+$pageTitle = 'Top Networkers | KAIRUSNETWORK Leaderboard';
+$pageDesc = 'Celebrating the top earning affiliates, team leaders, and verified high-volume payout recipients on KAIRUSNETWORK.';
 require_once __DIR__ . '/includes/header.php';
 
 $leaders = [];

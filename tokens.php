@@ -10,7 +10,7 @@ $tokensList = $tokensConfig['tokens'] ?? [];
 $platformBank = $tokensConfig['platform_bank'] ?? [
     'bank_name' => 'OPay Digital Services',
     'account_number' => '8102345678',
-    'account_name' => 'INNOVATIONX OTC TRADING',
+    'account_name' => 'KAIRUSNETWORK OTC TRADING',
     'instructions' => 'Transfer exact amount to the account above and upload receipt proof.'
 ];
 ?>
@@ -147,16 +147,16 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                         </span>
                     </div>
 
-                    <input type="hidden" id="selectedMarketplaceOffer" value="InnovationX Official Escrow">
+                    <input type="hidden" id="selectedMarketplaceOffer" value="KairusNetwork Official Escrow">
 
                     <div class="marketplace-offers-grid" id="marketplaceOffersGrid">
                         <!-- Option 1: Official Escrow Desk -->
-                        <div class="marketplace-offer-card active" id="offer_official" onclick="selectMarketplaceOffer('official', 'InnovationX Official Escrow')">
+                        <div class="marketplace-offer-card active" id="offer_official" onclick="selectMarketplaceOffer('official', 'KairusNetwork Official Escrow')">
                             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
                                 <div style="display:flex;align-items:center;gap:8px">
                                     <span style="font-size:1.3rem"></span>
                                     <div>
-                                        <strong style="font-size:0.88rem;color:#FFFFFF;display:block">InnovationX Vault</strong>
+                                        <strong style="font-size:0.88rem;color:#FFFFFF;display:block">KairusNetwork Vault</strong>
                                         <span style="font-size:0.68rem;color:#94A3B8">Official Platform Escrow</span>
                                     </div>
                                 </div>
@@ -339,7 +339,7 @@ $platformBank = $tokensConfig['platform_bank'] ?? [
                                 <div style="font-size:0.95rem;font-weight:900;color:#FFFFFF;word-break:break-all" id="dispDepositAddress">
                                     very1q84m5z9g3k2p7x6w0c1v8b4n7m9l2j5h4k3e
                                 </div>
-                                <div style="font-size:0.74rem;color:#6EE7B7">Memo / Transfer Note: <span id="dispDepositMemo">IX-VERY-OTC</span></div>
+                                <div style="font-size:0.74rem;color:#6EE7B7">Memo / Transfer Note: <span id="dispDepositMemo">KN-VERY-OTC</span></div>
                             </div>
                             <button type="button" id="btnCopyDepositAddress" onclick="copyDepositAddress(this)" class="btn-dash-action btn-dash-secondary" style="height:34px;font-size:0.76rem">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -719,7 +719,7 @@ async function handleTokenTradeSubmit(e) {
                 account_number: payoutAccount,
                 tx_reference: txRef,
                 proof_image: proofB64,
-                escrow_merchant: document.getElementById('selectedMarketplaceOffer')?.value || 'InnovationX Official Escrow'
+                escrow_merchant: document.getElementById('selectedMarketplaceOffer')?.value || 'KairusNetwork Official Escrow'
             })
         });
         const data = await res.json();

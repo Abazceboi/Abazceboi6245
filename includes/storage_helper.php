@@ -1,6 +1,6 @@
 <?php
 /**
- * INNOVATIONX — Centralized Safe Storage Helper
+ * KAIRUSNETWORK — Centralized Safe Storage Helper
  * Provides seamless read/write persistence across both local development
  * and Vercel serverless functions (where /var/task is read-only).
  */
@@ -32,7 +32,7 @@ function getStorageBaseDir(): string {
         $baseDir = $projectRoot;
     } else {
         // Fallback to system temp directory on Vercel serverless
-        $tmpDir = sys_get_temp_dir() . '/innovationx_store';
+        $tmpDir = sys_get_temp_dir() . '/kairusnetwork_store';
         if (!is_dir($tmpDir)) {
             @mkdir($tmpDir, 0777, true);
         }

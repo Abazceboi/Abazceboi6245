@@ -1,4 +1,4 @@
-# INNOVATIONX — Apache Configuration for Railway & Docker
+# KAIRUSNETWORK — Apache Configuration for Railway & Docker
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
