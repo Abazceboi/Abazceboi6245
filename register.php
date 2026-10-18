@@ -45,12 +45,12 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             --color-border-cyan: rgba(0, 212, 240, 0.32);
 
             /* Dark Theme Tokens (Default) */
-            --page-bg: #070D1A;
-            --card-bg: linear-gradient(180deg, #101E35 0%, #0B172B 100%);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-            --input-bg: rgba(255, 255, 255, 0.04);
-            --input-border: rgba(255, 255, 255, 0.1);
+            --page-bg: #050811;
+            --card-bg: linear-gradient(180deg, rgba(16, 30, 53, 0.92) 0%, rgba(11, 23, 43, 0.96) 100%);
+            --card-border: rgba(56, 189, 248, 0.22);
+            --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.12);
             --input-border-focus: #00D4F0;
             --text-main: #FFFFFF;
             --text-muted: #8E9FB5;
@@ -64,19 +64,22 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         }
 
         [data-theme="light"] {
-            --page-bg: #F4F7FC;
-            --card-bg: #FFFFFF;
-            --card-border: #E2E8F0;
-            --card-shadow: 0 20px 45px rgba(2, 132, 199, 0.08);
+            --page-bg: #EEF3FA;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --card-border: rgba(2, 132, 199, 0.18);
+            --card-shadow: 0 20px 45px rgba(2, 132, 199, 0.12);
             --input-bg: #F8FAFC;
             --input-border: #CBD5E1;
             --input-border-focus: #0284C7;
             --text-main: #0F172A;
-            --text-muted: #475569;
+            --text-muted: #334155;
             --text-dim: #64748B;
-            --pill-bg: rgba(2, 132, 199, 0.08);
+            --pill-bg: rgba(2, 132, 199, 0.1);
             --btn-cta-bg: #0284C7;
             --btn-cta-color: #FFFFFF;
+            --color-cyan: #0284C7;
+            --color-cyan-dim: rgba(2, 132, 199, 0.12);
+            --color-border-cyan: rgba(2, 132, 199, 0.32);
         }
 
         * {
@@ -86,7 +89,14 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
         }
 
         body {
-            background: var(--page-bg);
+            background-color: #050811;
+            background-image: 
+                linear-gradient(180deg, rgba(5, 8, 17, 0.86) 0%, rgba(5, 8, 17, 0.75) 45%, rgba(5, 8, 17, 0.90) 100%),
+                url('assets/images/app-bg.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             color: var(--text-main);
             font-family: var(--font-sans);
             min-height: 100vh;
@@ -97,7 +107,14 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             padding: 30px 16px;
             position: relative;
             overflow-x: hidden;
-            transition: background-color 0.25s ease;
+            transition: background 0.25s ease;
+        }
+
+        [data-theme="light"] body {
+            background-color: #EEF3FA;
+            background-image: 
+                linear-gradient(180deg, rgba(238, 243, 250, 0.88) 0%, rgba(238, 243, 250, 0.80) 45%, rgba(238, 243, 250, 0.92) 100%),
+                url('assets/images/app-bg.jpg');
         }
 
         /* Subtle background glow */
@@ -187,6 +204,8 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             box-shadow: var(--card-shadow);
             position: relative;
             z-index: 10;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         /* Card Header */
@@ -465,6 +484,18 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
 
         .auth-card-footer a:hover {
             text-decoration: underline;
+        }
+
+        [data-theme="light"] .terms-row a,
+        [data-theme="light"] .auth-card-footer a,
+        [data-theme="light"] .auth-step-pill {
+            color: #0284C7 !important;
+            font-weight: 700;
+        }
+
+        [data-theme="light"] .terms-row a:hover,
+        [data-theme="light"] .auth-card-footer a:hover {
+            color: #0369A1 !important;
         }
 
         @media (max-width: 480px) {

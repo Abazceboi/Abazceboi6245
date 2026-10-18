@@ -350,16 +350,16 @@ if ($actDownlines > $referralCount) {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:          #07090F;
+  --bg:          #060810;
   --surface:     #0D1117;
-  --card:        #111827;
-  --card-hover:  #161E2E;
+  --card:        rgba(17, 24, 39, 0.88);
+  --card-hover:  rgba(22, 30, 46, 0.95);
   --border:      rgba(255,255,255,0.08);
   --border-mid:  rgba(255,255,255,0.15);
   --txt:         #F0F4FA;
   --txt-2:       #8B9AB0;
   --txt-3:       #4E5F73;
-  --accent:      #3B82F6;
+  --accent:      #0284C7;
   --green:       #10B981;
   --amber:       #F59E0B;
   --red:         #EF4444;
@@ -373,21 +373,43 @@ if ($actDownlines > $referralCount) {
   --bg-input:    #0D1117;
 }
 [data-theme="light"] {
-  --bg:         #F4F6FB;
+  --bg:         #EEF2F8;
   --surface:    #FFFFFF;
   --card:       #FFFFFF;
   --card-hover: #F8FAFF;
   --border:     rgba(0,0,0,0.08);
   --border-mid: rgba(0,0,0,0.14);
   --txt:        #0D1117;
-  --txt-2:      #4B5563;
+  --txt-2:      #334155;
   --txt-3:      #64748B;
-  --accent:     #2563EB;
+  --accent:     #0284C7;
   --shadow:     0 8px 32px rgba(0,0,0,0.08);
   --bg-input:   #FFFFFF;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--txt);font-family:var(--ff);min-height:100vh;padding-bottom:120px;overflow-x:hidden;}
+body{
+  background-color: #060810;
+  background-image: 
+    linear-gradient(180deg, rgba(6, 8, 16, 0.88) 0%, rgba(6, 8, 16, 0.78) 45%, rgba(6, 8, 16, 0.92) 100%),
+    url('assets/images/app-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--txt);
+  font-family: var(--ff);
+  min-height: 100vh;
+  padding-bottom: 120px;
+  overflow-x: hidden;
+  transition: background 0.25s ease;
+}
+[data-theme="light"] body {
+  background-color: #EEF2F8;
+  background-image: 
+    linear-gradient(180deg, rgba(238, 242, 248, 0.90) 0%, rgba(238, 242, 248, 0.82) 45%, rgba(238, 242, 248, 0.94) 100%),
+    url('assets/images/app-bg.jpg');
+  color: #0D1117;
+}
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
 input,textarea,select{font-family:var(--ff);}
@@ -560,8 +582,14 @@ input,textarea,select{font-family:var(--ff);}
 
 /* Cards */
 .card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
-  padding:22px;margin-bottom:16px;
+  background:var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:22px;
+  margin-bottom:16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 .card-title{font-size:15px;font-weight:700;margin-bottom:4px;}
 .card-sub{font-size:12px;color:var(--txt-3);margin-bottom:16px;}
@@ -2153,6 +2181,55 @@ input,textarea,select{font-family:var(--ff);}
 
 [data-theme="light"] .table tbody tr:hover {
   background: #F8FAFC;
+}
+
+/* Light Mode Contrast Enhancements */
+[data-theme="light"] [style*="color:#38BDF8"],
+[data-theme="light"] [style*="color: #38BDF8"] {
+  color: #0284C7 !important;
+}
+
+[data-theme="light"] [style*="color:#F1F5F9"],
+[data-theme="light"] [style*="color: #F1F5F9"],
+[data-theme="light"] [style*="color:#F8FAFC"],
+[data-theme="light"] [style*="color: #F8FAFC"] {
+  color: #1E293B !important;
+}
+
+[data-theme="light"] [style*="color:#94A3B8"],
+[data-theme="light"] [style*="color: #94A3B8"] {
+  color: #475569 !important;
+}
+
+[data-theme="light"] [style*="background:rgba(56,189,248"],
+[data-theme="light"] [style*="background: rgba(56,189,248"] {
+  background: rgba(2, 132, 199, 0.12) !important;
+  color: #0284C7 !important;
+  border-color: rgba(2, 132, 199, 0.28) !important;
+}
+
+[data-theme="light"] [style*="background:rgba(255,255,255,0.06)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.06)"],
+[data-theme="light"] [style*="background:rgba(255,255,255,0.08)"],
+[data-theme="light"] [style*="background: rgba(255,255,255,0.08)"] {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #1E293B !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] #topEarnersMyRankBadge,
+[data-theme="light"] #topEarnersMyAvatar {
+  background: rgba(2, 132, 199, 0.12) !important;
+  color: #0284C7 !important;
+  border-color: rgba(2, 132, 199, 0.3) !important;
+}
+
+[data-theme="light"] .card-sub {
+  color: #64748B !important;
+}
+
+[data-theme="light"] .form-label {
+  color: #475569 !important;
 }
 
 /* Vendor Terminal Elements */
