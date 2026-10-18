@@ -2780,9 +2780,9 @@ html[data-theme="light"] .special-portal-card.uploader,
     <!-- Header Banner -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <div>
-        <h2 style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-0.3px;margin:0 0 4px 0;">Top Earners Leaderboard</h2>
+        <h2 style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-0.3px;margin:0 0 4px 0;">Top Earners</h2>
         <p style="font-size:12.5px;color:var(--txt-3);margin:0;max-width:650px;line-height:1.5;">
-          Rankings are calculated strictly from cumulative all-time cash earnings (including direct and indirect affiliate commissions). Points are excluded. Withdrawals never reduce your ranking.
+          Real-time member rankings based on cumulative earnings.
         </p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -2835,8 +2835,8 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div>
-          <div class="card-title" style="margin-bottom:2px;">Platform Earnings Directory</div>
-          <div class="card-sub">Ranked in real-time by total cumulative cash earnings across all network levels.</div>
+          <div class="card-title" style="margin-bottom:2px;">Earnings Directory</div>
+          <div class="card-sub">Rankings across all network levels.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <input type="text" id="topEarnersSearchInput" oninput="filterTopEarnersTable()" placeholder="Search earner..." class="form-input" style="padding:6px 12px;font-size:12px;max-width:180px;">
@@ -2849,7 +2849,7 @@ html[data-theme="light"] .special-portal-card.uploader,
             <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
               <th style="padding:12px 10px;width:70px;">Rank</th>
               <th style="padding:12px 10px;">Earner</th>
-              <th style="padding:12px 10px;text-align:right;">Cash</th>
+              <th style="padding:12px 10px;text-align:right;"></th>
             </tr>
           </thead>
           <tbody id="topEarnersTableBody">
@@ -2859,17 +2859,6 @@ html[data-theme="light"] .special-portal-card.uploader,
           </tbody>
         </table>
       </div>
-    </div>
-
-    <!-- Rules / Transparency Notice -->
-    <div style="margin-top:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:12px;color:var(--txt-3);line-height:1.6;">
-      <strong style="color:var(--txt);display:block;margin-bottom:4px;">ℹ️ Leaderboard Ranking Rules &amp; Integrity Guarantee</strong>
-      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;">
-        <li><strong>Strictly Private:</strong> This leaderboard is strictly restricted to logged-in platform members and cannot be viewed by external non-members.</li>
-        <li><strong>Cumulative Gross Cash:</strong> Rankings are calculated based on all-time cash earnings (direct referral commissions + indirect referral commissions + approved task/creator earnings).</li>
-        <li><strong>Activity Points Excluded:</strong> Task points (PTS) and survey credits are excluded from this leaderboard ranking to ensure pure cash accuracy.</li>
-        <li><strong>Protected Against Withdrawals:</strong> Withdrawing funds to your bank account never deducts from your leaderboard standing. Your cumulative gross earnings remain permanently recorded.</li>
-      </ul>
     </div>
   </div>
 
@@ -4748,13 +4737,28 @@ async function loadTopEarners() {
 
     // 2. Render Top 3 Podium
     if (podiumGrid && data.top_podium && data.top_podium.length > 0) {
-      const ranks = ['#1', '#2', '#3'];
+      const podiumThemes = [
+        {
+          border: 'rgba(56, 189, 248, 0.35)',
+          badgeHtml: '<span style="display:inline-flex;align-items:center;padding:3px 12px;border-radius:20px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);color:#38BDF8;font-weight:800;font-size:11.5px;letter-spacing:0.5px;">#1</span>'
+        },
+        {
+          border: 'rgba(255, 255, 255, 0.2)',
+          badgeHtml: '<span style="display:inline-flex;align-items:center;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#F1F5F9;font-weight:800;font-size:11.5px;letter-spacing:0.5px;">#2</span>'
+        },
+        {
+          border: 'rgba(148, 163, 184, 0.2)',
+          badgeHtml: '<span style="display:inline-flex;align-items:center;padding:3px 12px;border-radius:20px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.22);color:#94A3B8;font-weight:800;font-size:11.5px;letter-spacing:0.5px;">#3</span>'
+        }
+      ];
+
       podiumGrid.innerHTML = data.top_podium.map((p, i) => {
+        const theme = podiumThemes[i] || podiumThemes[2];
         const isMe = p.is_current_user;
         return `
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 16px;text-align:center;position:relative;">
+          <div style="background:var(--card);border:1px solid ${theme.border};border-radius:14px;padding:20px 16px;text-align:center;position:relative;">
             ${isMe ? '<span style="position:absolute;top:10px;right:10px;background:rgba(56,189,248,0.2);color:#38BDF8;border:1px solid rgba(56,189,248,0.4);font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">YOU</span>' : ''}
-            <div style="display:inline-flex;align-items:center;justify-content:center;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.06);color:var(--txt);font-weight:800;font-size:12px;margin-bottom:10px;">${ranks[i] || ('#' + (i + 1))}</div>
+            <div style="margin-bottom:10px;">${theme.badgeHtml}</div>
             <div style="font-size:15px;font-weight:800;color:var(--txt);margin-bottom:4px;">@${p.username}</div>
             <div style="font-size:20px;font-weight:800;color:var(--green);margin-top:10px;letter-spacing:-0.5px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
@@ -4762,8 +4766,8 @@ async function loadTopEarners() {
       }).join('');
     }
 
-    // 3. Render Table
-    renderTopEarnersTable(rawTopEarnersList);
+    // 3. Render Table (starts from rank 4)
+    renderTopEarnersTable(rawTopEarnersList, false);
 
   } catch(err) {
     if (tableBody) {
@@ -4772,16 +4776,31 @@ async function loadTopEarners() {
   }
 }
 
-function renderTopEarnersTable(list) {
+function renderTopEarnersTable(list, isFiltered = false) {
   const tableBody = document.getElementById('topEarnersTableBody');
   if (!tableBody) return;
-  if (!list || list.length === 0) {
-    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--txt-3);">No earners found matching your search.</td></tr>';
+
+  // When default view (not search query), omit top 3 so numbering begins strictly from rank 4
+  const displayList = (!isFiltered && list && list.length > 0)
+    ? list.filter(item => item.rank > 3)
+    : (list || []);
+
+  if (!displayList || displayList.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--txt-3);">' +
+      (isFiltered ? 'No earners found matching your search.' : 'No additional ranked earners yet.') +
+      '</td></tr>';
     return;
   }
 
-  tableBody.innerHTML = list.map(item => {
-    const rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);font-weight:800;font-size:12px;color:var(--txt-2);">${item.rank}</span>`;
+  tableBody.innerHTML = displayList.map(item => {
+    let rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);font-weight:800;font-size:12px;color:var(--txt-2);">${item.rank}</span>`;
+    if (item.rank === 1) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:12px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);color:#38BDF8;font-weight:800;font-size:11px;">#1</span>`;
+    } else if (item.rank === 2) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#F1F5F9;font-weight:800;font-size:11px;">#2</span>`;
+    } else if (item.rank === 3) {
+      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:12px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.22);color:#94A3B8;font-weight:800;font-size:11px;">#3</span>`;
+    }
 
     const rowStyle = item.is_current_user
       ? 'background:rgba(56,189,248,0.08);border-left:3px solid #38BDF8;'
@@ -4814,15 +4833,14 @@ function renderTopEarnersTable(list) {
 function filterTopEarnersTable() {
   const query = (document.getElementById('topEarnersSearchInput')?.value || '').toLowerCase().trim();
   if (!query) {
-    renderTopEarnersTable(rawTopEarnersList);
+    renderTopEarnersTable(rawTopEarnersList, false);
     return;
   }
   const filtered = rawTopEarnersList.filter(u =>
     (u.username && u.username.toLowerCase().includes(query)) ||
-    (u.full_name && u.full_name.toLowerCase().includes(query)) ||
-    (u.role_label && u.role_label.toLowerCase().includes(query))
+    (u.full_name && u.full_name.toLowerCase().includes(query))
   );
-  renderTopEarnersTable(filtered);
+  renderTopEarnersTable(filtered, true);
 }
 
 function restoreMemberActiveTab() {
