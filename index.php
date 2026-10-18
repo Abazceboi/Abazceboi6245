@@ -378,45 +378,44 @@ a {
    ========================================================================== */
 .ev-hero-section {
     position: relative;
-    padding: 150px 0 100px;
-    background: var(--ev-grad-dark);
+    min-height: 82vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 180px 0 140px;
+    background-color: #070D1A;
     text-align: center;
     overflow: hidden;
 }
 
-.ev-hero-atmosphere {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: 
-        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(2, 132, 199, 0.14), transparent 70%),
-        radial-gradient(circle 350px at 80% 40%, rgba(56, 189, 248, 0.08), transparent 60%);
-    z-index: 1;
-}
-
-.ev-hero-bg-texture {
+.ev-hero-bg-image {
     position: absolute;
     inset: 0;
     background-image: url('assets/images/hero-tech.jpg');
     background-size: cover;
-    background-position: center right;
-    opacity: 0.14;
-    mix-blend-mode: screen;
-    pointer-events: none;
-    mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, black 25%, transparent 80%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, black 25%, transparent 80%);
+    background-position: center;
+    background-repeat: no-repeat;
     z-index: 0;
 }
 
-[data-theme="light"] .ev-hero-atmosphere {
+.ev-hero-overlay {
+    position: absolute;
+    inset: 0;
     background: 
-        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(2, 132, 199, 0.07), transparent 70%),
-        radial-gradient(circle 350px at 80% 40%, rgba(56, 189, 248, 0.05), transparent 60%);
+        linear-gradient(180deg, rgba(7, 13, 26, 0.72) 0%, rgba(7, 13, 26, 0.46) 35%, rgba(7, 13, 26, 0.72) 70%, #070D1A 100%),
+        radial-gradient(ellipse 90% 70% at 50% 30%, rgba(2, 132, 199, 0.16) 0%, transparent 75%);
+    pointer-events: none;
+    z-index: 1;
 }
 
-[data-theme="light"] .ev-hero-bg-texture {
-    opacity: 0.06;
-    mix-blend-mode: multiply;
+[data-theme="light"] .ev-hero-bg-image {
+    opacity: 0.24;
+    filter: brightness(1.15) contrast(1.05);
+}
+
+[data-theme="light"] .ev-hero-overlay {
+    background: 
+        linear-gradient(180deg, rgba(248, 250, 252, 0.88) 0%, rgba(248, 250, 252, 0.72) 40%, rgba(248, 250, 252, 0.95) 100%);
 }
 
 .ev-hero-eyebrow {
@@ -427,7 +426,7 @@ a {
     gap: 8px;
     padding: 6px 16px;
     border-radius: 9999px;
-    background: rgba(2, 132, 199, 0.1);
+    background: rgba(2, 132, 199, 0.14);
     border: 1px solid var(--ev-border-accent);
     font-size: 0.78rem;
     font-weight: 600;
@@ -435,6 +434,7 @@ a {
     text-transform: uppercase;
     color: var(--color-primary);
     margin-bottom: 28px;
+    backdrop-filter: blur(8px);
 }
 
 .ev-hero-title {
@@ -448,6 +448,7 @@ a {
     line-height: 1.1;
     letter-spacing: -0.035em;
     color: var(--ev-text);
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
 }
 
 .ev-hero-lead {
@@ -458,6 +459,7 @@ a {
     font-size: clamp(1rem, 1.3vw, 1.15rem);
     line-height: 1.75;
     color: var(--ev-text-muted);
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
 }
 
 .ev-hero-cta-group {
@@ -468,96 +470,6 @@ a {
     justify-content: center;
     gap: 14px;
     flex-wrap: wrap;
-}
-
-.ev-hero-visual-wrapper {
-    position: relative;
-    z-index: 2;
-    max-width: 980px;
-    margin: 54px auto 0;
-    padding: 8px;
-    border-radius: 24px;
-    background: rgba(12, 22, 45, 0.65);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    box-shadow: 0 24px 70px -15px rgba(0, 0, 0, 0.8), 0 0 50px -10px rgba(2, 132, 199, 0.35);
-    backdrop-filter: blur(12px);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.ev-hero-visual-wrapper:hover {
-    transform: translateY(-3px);
-    border-color: rgba(56, 189, 248, 0.45);
-    box-shadow: 0 30px 90px -15px rgba(0, 0, 0, 0.9), 0 0 65px -5px rgba(56, 189, 248, 0.4);
-}
-
-.ev-hero-visual-glow {
-    position: absolute;
-    top: -40%;
-    left: 15%;
-    width: 70%;
-    height: 90%;
-    background: radial-gradient(ellipse, rgba(56, 189, 248, 0.25) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.ev-hero-visual-inner {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    background: #030712;
-    z-index: 2;
-}
-
-.ev-hero-visual-img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 18px;
-}
-
-.ev-hero-visual-badge {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
-    background: rgba(7, 13, 26, 0.85);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 9999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #BAE6FD;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-}
-
-.ev-hero-badge-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #10B981;
-    box-shadow: 0 0 8px #10B981;
-    animation: ev-pulse 2s infinite;
-}
-
-@keyframes ev-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-[data-theme="light"] .ev-hero-visual-wrapper {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(2, 132, 199, 0.22);
-    box-shadow: 0 20px 60px -15px rgba(2, 132, 199, 0.2);
-}
-
-[data-theme="light"] .ev-hero-visual-badge {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(2, 132, 199, 0.25);
-    color: #0369A1;
 }
 
 .ev-btn-light {
@@ -1003,24 +915,8 @@ a {
         padding: 0 !important;
     }
     .ev-hero-section {
-        padding: 100px 0 60px;
-    }
-    .ev-hero-visual-wrapper {
-        margin-top: 36px;
-        padding: 5px;
-        border-radius: 16px;
-    }
-    .ev-hero-visual-inner {
-        border-radius: 12px;
-    }
-    .ev-hero-visual-img {
-        border-radius: 12px;
-    }
-    .ev-hero-visual-badge {
-        bottom: 10px;
-        left: 10px;
-        padding: 5px 12px;
-        font-size: 0.72rem;
+        min-height: 70vh;
+        padding: 130px 0 80px;
     }
     .ev-stats-grid {
         grid-template-columns: 1fr;
@@ -1118,9 +1014,9 @@ a {
 
 <!-- Hero Section -->
 <section class="ev-hero-section" id="hero">
-    <div class="ev-hero-atmosphere" aria-hidden="true"></div>
-    <div class="ev-hero-bg-texture" aria-hidden="true"></div>
-    <div class="ev-container">
+    <div class="ev-hero-bg-image" aria-hidden="true"></div>
+    <div class="ev-hero-overlay" aria-hidden="true"></div>
+    <div class="ev-container" style="position:relative;z-index:2;">
         <div class="ev-hero-eyebrow">
             <i class="ri-sparkling-2-line"></i>
             <span>INNOVATIONX PLATFORM</span>
@@ -1140,18 +1036,6 @@ a {
             <a href="distributors.php" class="ev-btn-outline-light">
                 <span>Distributors</span>
             </a>
-        </div>
-
-        <!-- Hero Visual Showcase -->
-        <div class="ev-hero-visual-wrapper">
-            <div class="ev-hero-visual-glow" aria-hidden="true"></div>
-            <div class="ev-hero-visual-inner">
-                <img src="assets/images/hero-tech.jpg" alt="INNOVATIONX Spatial Analytics Dashboard" class="ev-hero-visual-img" loading="eager">
-                <div class="ev-hero-visual-badge">
-                    <span class="ev-hero-badge-dot"></span>
-                    <span>Live Spatial Intelligence</span>
-                </div>
-            </div>
         </div>
     </div>
 </section>
