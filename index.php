@@ -408,14 +408,35 @@ a {
     z-index: 1;
 }
 
+[data-theme="light"] .ev-hero-section {
+    background-color: #070D1A !important;
+}
+
 [data-theme="light"] .ev-hero-bg-image {
-    opacity: 0.24;
-    filter: brightness(1.15) contrast(1.05);
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 [data-theme="light"] .ev-hero-overlay {
     background: 
-        linear-gradient(180deg, rgba(248, 250, 252, 0.88) 0%, rgba(248, 250, 252, 0.72) 40%, rgba(248, 250, 252, 0.95) 100%);
+        linear-gradient(180deg, rgba(7, 13, 26, 0.72) 0%, rgba(7, 13, 26, 0.46) 35%, rgba(7, 13, 26, 0.72) 70%, #070D1A 100%),
+        radial-gradient(ellipse 90% 70% at 50% 30%, rgba(2, 132, 199, 0.16) 0%, transparent 75%) !important;
+}
+
+[data-theme="light"] .ev-hero-title {
+    color: #FFFFFF !important;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65) !important;
+}
+
+[data-theme="light"] .ev-hero-lead {
+    color: #94A3B8 !important;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55) !important;
+}
+
+[data-theme="light"] .ev-hero-eyebrow {
+    background: rgba(2, 132, 199, 0.14) !important;
+    border-color: rgba(56, 189, 248, 0.38) !important;
+    color: #38BDF8 !important;
 }
 
 .ev-hero-eyebrow {
@@ -761,11 +782,41 @@ a {
 }
 
 .ev-footer-card {
-    background: var(--ev-surface-card);
-    border: 1px solid var(--ev-border);
+    position: relative;
     border-radius: 20px;
     padding: 44px 36px 32px;
-    box-shadow: var(--ev-card-shadow);
+    background: #070D1A;
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    z-index: 2;
+}
+
+.ev-footer-bg-blur {
+    position: absolute;
+    inset: -30px;
+    background-image: url('assets/images/hero-tech.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(36px) saturate(1.4) brightness(0.85);
+    transform: scale(1.18);
+    opacity: 0.48;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ev-footer-overlay {
+    position: absolute;
+    inset: 0;
+    background: 
+        linear-gradient(135deg, rgba(7, 13, 26, 0.84) 0%, rgba(12, 22, 45, 0.72) 50%, rgba(7, 13, 26, 0.9) 100%),
+        radial-gradient(circle at 80% 20%, rgba(2, 132, 199, 0.16), transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.ev-footer-content {
     position: relative;
     z-index: 2;
 }
@@ -779,7 +830,7 @@ a {
 
 .ev-footer-brand-desc {
     font-size: 0.9rem;
-    color: var(--ev-text-muted);
+    color: #94A3B8;
     max-width: 380px;
     margin-top: 14px;
     line-height: 1.6;
@@ -791,7 +842,7 @@ a {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--ev-text);
+    color: #FFFFFF;
     margin-bottom: 16px;
 }
 
@@ -803,12 +854,13 @@ a {
 
 .ev-footer-link {
     font-size: 0.88rem;
-    color: var(--ev-text-muted);
+    color: #94A3B8;
     transition: color 0.15s;
+    text-decoration: none;
 }
 
 .ev-footer-link:hover {
-    color: var(--color-primary);
+    color: #38BDF8;
 }
 
 .ev-footer-bottom {
@@ -816,9 +868,9 @@ a {
     align-items: center;
     justify-content: space-between;
     padding-top: 24px;
-    border-top: 1px solid var(--ev-border);
+    border-top: 1px solid rgba(56, 189, 248, 0.16);
     font-size: 0.82rem;
-    color: var(--ev-text-dim);
+    color: #64748B;
     flex-wrap: wrap;
     gap: 12px;
 }
@@ -833,6 +885,51 @@ a {
     color: #10B981;
     font-size: 0.76rem;
     font-weight: 600;
+}
+
+/* Light Mode Overrides: Keep Footer in sleek dark blurred tech style */
+[data-theme="light"] .ev-footer-card {
+    background: #070D1A !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="light"] .ev-footer-bg-blur {
+    opacity: 0.48 !important;
+    filter: blur(36px) saturate(1.4) brightness(0.85) !important;
+}
+
+[data-theme="light"] .ev-footer-overlay {
+    background: 
+        linear-gradient(135deg, rgba(7, 13, 26, 0.84) 0%, rgba(12, 22, 45, 0.72) 50%, rgba(7, 13, 26, 0.9) 100%),
+        radial-gradient(circle at 80% 20%, rgba(2, 132, 199, 0.16), transparent 60%) !important;
+}
+
+[data-theme="light"] .ev-footer-card .ev-brand-name {
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .ev-footer-heading {
+    color: #FFFFFF !important;
+}
+
+[data-theme="light"] .ev-footer-brand-desc,
+[data-theme="light"] .ev-footer-link {
+    color: #94A3B8 !important;
+}
+
+[data-theme="light"] .ev-footer-link:hover {
+    color: #38BDF8 !important;
+}
+
+[data-theme="light"] .ev-footer-bottom {
+    border-top-color: rgba(56, 189, 248, 0.18) !important;
+    color: #64748B !important;
+}
+
+[data-theme="light"] .ev-security-pill {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10B981 !important;
 }
 
 /* ==========================================================================
@@ -1165,46 +1262,50 @@ a {
 
     <div class="ev-container">
         <div class="ev-footer-card">
-            <div class="ev-footer-grid">
-                <div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="ev-brand-badge" style="width:30px;height:30px;font-size:0.75rem;">IX</div>
-                        <span class="ev-brand-name">INNOVATIONX</span>
+            <div class="ev-footer-bg-blur" aria-hidden="true"></div>
+            <div class="ev-footer-overlay" aria-hidden="true"></div>
+            <div class="ev-footer-content">
+                <div class="ev-footer-grid">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div class="ev-brand-badge" style="width:30px;height:30px;font-size:0.75rem;">IX</div>
+                            <span class="ev-brand-name">INNOVATIONX</span>
+                        </div>
+                        <p class="ev-footer-brand-desc">
+                            A digital earning ecosystem built for modern online participation and direct bank settlements across Nigeria.
+                        </p>
                     </div>
-                    <p class="ev-footer-brand-desc">
-                        A digital earning ecosystem built for modern online participation and direct bank settlements across Nigeria.
-                    </p>
+
+                    <div>
+                        <h4 class="ev-footer-heading">Navigation</h4>
+                        <div class="ev-footer-links">
+                            <a href="#hero" class="ev-footer-link">Home</a>
+                            <a href="#ethos" class="ev-footer-link">Our Ethos</a>
+                            <a href="distributors.php" class="ev-footer-link">Distributors</a>
+                            <a href="register.php" class="ev-footer-link">Create Account</a>
+                            <a href="login.php" class="ev-footer-link">Sign In</a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="ev-footer-heading">Community</h4>
+                        <div class="ev-footer-links">
+                            <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="ev-footer-link">
+                                <i class="ri-telegram-fill"></i> Telegram Channel
+                            </a>
+                            <a href="<?= htmlspecialchars($telegramConfig['support_link']) ?>" target="_blank" rel="noopener noreferrer" class="ev-footer-link">
+                                <i class="ri-customer-service-2-line"></i> Support Desk
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <h4 class="ev-footer-heading">Navigation</h4>
-                    <div class="ev-footer-links">
-                        <a href="#hero" class="ev-footer-link">Home</a>
-                        <a href="#ethos" class="ev-footer-link">Our Ethos</a>
-                        <a href="distributors.php" class="ev-footer-link">Distributors</a>
-                        <a href="register.php" class="ev-footer-link">Create Account</a>
-                        <a href="login.php" class="ev-footer-link">Sign In</a>
-                    </div>
+                <div class="ev-footer-bottom">
+                    <span>&copy; 2026 INNOVATIONX. All rights reserved.</span>
+                    <span class="ev-security-pill">
+                        <i class="ri-shield-check-line"></i> Secure & Verified Platform
+                    </span>
                 </div>
-
-                <div>
-                    <h4 class="ev-footer-heading">Community</h4>
-                    <div class="ev-footer-links">
-                        <a href="<?= htmlspecialchars($telegramConfig['channel_link']) ?>" target="_blank" rel="noopener noreferrer" class="ev-footer-link">
-                            <i class="ri-telegram-fill"></i> Telegram Channel
-                        </a>
-                        <a href="<?= htmlspecialchars($telegramConfig['support_link']) ?>" target="_blank" rel="noopener noreferrer" class="ev-footer-link">
-                            <i class="ri-customer-service-2-line"></i> Support Desk
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ev-footer-bottom">
-                <span>&copy; 2026 INNOVATIONX. All rights reserved.</span>
-                <span class="ev-security-pill">
-                    <i class="ri-shield-check-line"></i> Secure & Verified Platform
-                </span>
             </div>
         </div>
     </div>
