@@ -928,106 +928,18 @@ input,textarea,select{font-family:var(--ff);}
           <div class="stat-value" id="kpiOverviewEcoLikes" style="color:#ef4444;">0</div>
           <div class="stat-sub">Total opportunity likes</div>
         </div>
-        <div class="stat-card" style="border:1px solid rgba(16,185,129,0.3);background:linear-gradient(180deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%);">
+        <div class="stat-card">
           <div class="stat-label" style="display:flex;align-items:center;justify-content:space-between;">
             <span>Platform Net Profit</span>
-            <span class="badge" style="background:rgba(16,185,129,0.18);color:#10B981;font-size:10px;padding:2px 6px;border:1px solid rgba(16,185,129,0.3);">₦1,800/reg</span>
+            <span class="badge" id="kpiNetProfitRateBadge" style="font-size:10.5px;padding:2px 8px;border-radius:10px;background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.25);">₦1,800/reg</span>
           </div>
-          <div class="stat-value" id="kpiNetProfit" style="color:#10B981;font-weight:800;">₦0</div>
-          <div class="stat-sub" id="kpiNetProfitSub">₦5k gross - ₦3k ref - ₦200 net fee</div>
+          <div class="stat-value" id="kpiNetProfit" style="color:var(--txt);font-weight:800;">₦0</div>
+          <div class="stat-sub" id="kpiNetProfitSub">₦1,800 net per registration</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Coupon PINs</div>
           <div class="stat-value" id="kpiOverviewCoupons" style="color:var(--purple);">0</div>
           <div class="stat-sub">Available and redeemed PINs</div>
-        </div>
-      </div>
-
-      <!-- ══ PLATFORM REVENUE & NET PROFIT ECONOMICS CARD ══ -->
-      <div class="card" style="margin-top:20px;border:1px solid rgba(16,185,129,0.25);">
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;color:#10B981;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div>
-              <div class="card-title" style="display:flex;align-items:center;gap:8px;font-size:16px;">
-                <span>Platform Net Profit &amp; Registration Economics</span>
-                <span class="badge" style="background:rgba(16,185,129,0.16);color:#10B981;border:1px solid rgba(16,185,129,0.3);font-size:11px;">Formula: ₦5k - ₦3k - ₦200 = ₦1,800</span>
-              </div>
-              <div class="card-sub">Real-time accounting of platform profit per member registration: ₦5,000 fee less ₦3,000 direct referral and ₦200 indirect referral.</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="filter-pills" style="display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;">
-              <button type="button" class="btn btn-xs active" id="btnProfitViewAll" onclick="switchProfitMode('all')" style="border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;">All Registered (<span id="profitCntAll">0</span>)</button>
-              <button type="button" class="btn btn-xs" id="btnProfitViewAct" onclick="switchProfitMode('activated')" style="border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;">Activated Only (<span id="profitCntAct">0</span>)</button>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="loadAdminOverview()">Refresh</button>
-          </div>
-        </div>
-
-        <div style="padding:16px 20px;">
-          <!-- 4-Column Breakdown Tiles -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:14px;margin-bottom:20px;">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
-              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Gross Registration</div>
-              <div style="font-size:20px;font-weight:800;color:var(--txt);margin:4px 0;" id="profitGrossRev">₦0</div>
-              <div style="font-size:11.5px;color:var(--txt-3);" id="profitGrossSub">₦5,000 per user</div>
-            </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
-              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Direct Ref Deductions</div>
-              <div style="font-size:20px;font-weight:800;color:var(--amber);margin:4px 0;" id="profitDirectDeduct">-₦0</div>
-              <div style="font-size:11.5px;color:var(--txt-3);" id="profitDirectSub">-₦3,000 per user (60%)</div>
-            </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
-              <div style="font-size:11.5px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Indirect Ref Deductions</div>
-              <div style="font-size:20px;font-weight:800;color:var(--purple);margin:4px 0;" id="profitIndirectDeduct">-₦0</div>
-              <div style="font-size:11.5px;color:var(--txt-3);" id="profitIndirectSub">-₦200 per user (4%)</div>
-            </div>
-            <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:14px;">
-              <div style="font-size:11.5px;color:#10B981;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Net Profit Retained</div>
-              <div style="font-size:22px;font-weight:900;color:#10B981;margin:4px 0;" id="profitNetRetained">₦0</div>
-              <div style="font-size:11.5px;color:var(--txt-2);" id="profitNetMarginSub">₦1,800 per user (36.0% Margin)</div>
-            </div>
-          </div>
-
-          <!-- Interactive Registration Net Profit Simulator -->
-          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-              <div>
-                <div style="font-weight:700;font-size:13.5px;color:var(--txt);">Registration Volume Net Profit Simulator</div>
-                <div style="font-size:11.5px;color:var(--txt-3);">Simulate gross revenue, total payouts, and retained net profit for target registration milestones.</div>
-              </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(50)" style="font-size:11px;">50 Regs</button>
-                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(100)" style="font-size:11px;">100 Regs</button>
-                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(500)" style="font-size:11px;">500 Regs</button>
-                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(1000)" style="font-size:11px;">1,000 Regs</button>
-                <button type="button" class="btn btn-ghost btn-xs" onclick="setProfitSimCount(5000)" style="font-size:11px;">5,000 Regs</button>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;align-items:center;">
-              <div>
-                <label class="form-label" style="font-size:11.5px;margin-bottom:6px;">Target Registrations</label>
-                <input type="number" id="profitSimInput" class="form-input" value="100" min="1" max="1000000" oninput="calculateProfitSimulation()" style="font-size:14px;font-weight:700;">
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 16px;flex-wrap:wrap;gap:12px;">
-                <div>
-                  <div style="font-size:11px;color:var(--txt-3);">Simulated Gross (5k)</div>
-                  <div style="font-size:14px;font-weight:700;color:var(--txt);" id="simGross">₦500,000</div>
-                </div>
-                <div>
-                  <div style="font-size:11px;color:var(--txt-3);">Total Deductions (3k + 200)</div>
-                  <div style="font-size:14px;font-weight:700;color:var(--danger);" id="simDeductions">-₦320,000</div>
-                </div>
-                <div style="border-left:1px solid var(--border);padding-left:14px;">
-                  <div style="font-size:11px;color:#10B981;font-weight:700;">Simulated Net Profit (1.8k)</div>
-                  <div style="font-size:16px;font-weight:900;color:#10B981;" id="simNetProfit">₦180,000</div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -4831,7 +4743,9 @@ async function loadUsersData() {
     const subEl = document.getElementById('kpiTotalSiteSub');
     if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
 
+    window.allUsersList = allUsersList;
     renderUsers(allUsersList);
+    updateNetProfitCard();
   } catch(e){
     if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--red);">Error loading users.</td></tr>';
   }
@@ -5808,6 +5722,8 @@ function updatePricingNetProfitCard() {
   if (netEl) netEl.textContent = '₦' + netProfit.toLocaleString();
   const marginEl = document.getElementById('priceUnitMarginBadge');
   if (marginEl) marginEl.textContent = `${margin}% Margin`;
+
+  updateNetProfitCard();
 }
 
 async function handleSavePricing(e) {
@@ -6999,6 +6915,7 @@ async function loadAdminOverview() {
     const d = await r.json();
     const users = Array.isArray(d.users) ? d.users : (Array.isArray(d) ? d : []);
     allUsersList = users;
+    window.allUsersList = users;
     const el = document.getElementById('kpiUsers');
     if (el) el.textContent = users.length;
 
@@ -7013,7 +6930,7 @@ async function loadAdminOverview() {
     const subEl = document.getElementById('kpiTotalSiteSub');
     if (subEl) subEl.textContent = `${totalPts.toLocaleString()} PTS in member balances`;
 
-    renderProfitEconomicsCard();
+    updateNetProfitCard();
   } catch(e) {}
 
   // Update active surveys counter
@@ -7062,98 +6979,58 @@ async function loadAdminOverview() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NET PROFIT & ECONOMICS HELPERS
+// PLATFORM NET PROFIT CALCULATION & DISPLAY
 // ═══════════════════════════════════════════════════════════════════════════
-let currentProfitViewMode = 'all';
+async function updateNetProfitCard() {
+  try {
+    // Platform unit economics: ₦5,000 registration - ₦3,000 direct ref - ₦200 indirect ref = ₦1,800 net profit
+    const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
+    const directComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
+    const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
+    const totalDeduct = directComm + indirectComm;
+    const netProfitPerReg = regFee - totalDeduct;
 
-function switchProfitMode(mode) {
-  currentProfitViewMode = mode;
-  const btnAll = document.getElementById('btnProfitViewAll');
-  const btnAct = document.getElementById('btnProfitViewAct');
-  if (btnAll) btnAll.classList.toggle('active', mode === 'all');
-  if (btnAct) btnAct.classList.toggle('active', mode === 'activated');
-  renderProfitEconomicsCard();
-}
+    // Use current in-memory users list or fetch from API
+    let users = (typeof allUsersList !== 'undefined' && Array.isArray(allUsersList) && allUsersList.length > 0)
+      ? allUsersList
+      : [];
 
-function renderProfitEconomicsCard() {
-  const users = window.allUsersList || [];
-  const totalCount = users.length;
-  let actCount = 0;
-  users.forEach(u => {
-    if (u.is_activated || u.coupon_activated || u.coupon_pin_used) actCount++;
-  });
+    if (users.length === 0 && window.allUsersList && Array.isArray(window.allUsersList) && window.allUsersList.length > 0) {
+      users = window.allUsersList;
+    }
 
-  const cntAllEl = document.getElementById('profitCntAll');
-  if (cntAllEl) cntAllEl.textContent = totalCount;
-  const cntActEl = document.getElementById('profitCntAct');
-  if (cntActEl) cntActEl.textContent = actCount;
+    if (users.length === 0) {
+      try {
+        const r = await fetch('/api/users.php?action=get_users&_t=' + Date.now(), { cache: 'no-store' });
+        const d = await r.json();
+        users = Array.isArray(d.users) ? d.users : (Array.isArray(d) ? d : []);
+        if (typeof allUsersList !== 'undefined') allUsersList = users;
+        window.allUsersList = users;
+      } catch(e) {}
+    }
 
-  const count = (currentProfitViewMode === 'activated') ? actCount : totalCount;
-  const modeLabel = (currentProfitViewMode === 'activated') ? 'activated users' : 'registered accounts';
+    const totalCount = users.length;
+    let actCount = 0;
+    users.forEach(u => {
+      if (u.is_activated || u.coupon_activated || u.coupon_pin_used || u.status === 'active') actCount++;
+    });
 
-  const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
-  const directComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
-  const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
-  const totalDeduct = directComm + indirectComm;
-  const netProfitPerUser = regFee - totalDeduct;
-  const marginPct = regFee > 0 ? ((netProfitPerUser / regFee) * 100).toFixed(1) : 0;
+    // Net profit = ₦1,800 per registration transaction across the platform
+    const totalNetProfit = totalCount * netProfitPerReg;
 
-  const grossTotal = count * regFee;
-  const directTotal = count * directComm;
-  const indirectTotal = count * indirectComm;
-  const netTotal = count * netProfitPerUser;
+    const kpiEl = document.getElementById('kpiNetProfit');
+    if (kpiEl) kpiEl.textContent = '₦' + totalNetProfit.toLocaleString();
 
-  const grossEl = document.getElementById('profitGrossRev');
-  if (grossEl) grossEl.textContent = '₦' + grossTotal.toLocaleString();
-  const grossSub = document.getElementById('profitGrossSub');
-  if (grossSub) grossSub.textContent = `₦${regFee.toLocaleString()} × ${count} ${modeLabel}`;
+    const rateBadge = document.getElementById('kpiNetProfitRateBadge');
+    if (rateBadge) rateBadge.textContent = `₦${netProfitPerReg.toLocaleString()}/reg`;
 
-  const dirEl = document.getElementById('profitDirectDeduct');
-  if (dirEl) dirEl.textContent = '-₦' + directTotal.toLocaleString();
-  const dirSub = document.getElementById('profitDirectSub');
-  if (dirSub) dirSub.textContent = `-₦${directComm.toLocaleString()} × ${count} (Direct Upline Payouts)`;
-
-  const indEl = document.getElementById('profitIndirectDeduct');
-  if (indEl) indEl.textContent = '-₦' + indirectTotal.toLocaleString();
-  const indSub = document.getElementById('profitIndirectSub');
-  if (indSub) indSub.textContent = `-₦${indirectComm.toLocaleString()} × ${count} (Tier-2 Network Payouts)`;
-
-  const netEl = document.getElementById('profitNetRetained');
-  if (netEl) netEl.textContent = '₦' + netTotal.toLocaleString();
-  const marginSub = document.getElementById('profitNetMarginSub');
-  if (marginSub) marginSub.textContent = `₦${netProfitPerUser.toLocaleString()} net profit per user (${marginPct}% Margin)`;
-
-  const kpiEl = document.getElementById('kpiNetProfit');
-  if (kpiEl) kpiEl.textContent = '₦' + (totalCount * netProfitPerUser).toLocaleString();
-  const kpiSub = document.getElementById('kpiNetProfitSub');
-  if (kpiSub) kpiSub.textContent = `₦${netProfitPerUser.toLocaleString()}/reg (${actCount} activated / ${totalCount} total)`;
-
-  calculateProfitSimulation();
-}
-
-function setProfitSimCount(n) {
-  const inp = document.getElementById('profitSimInput');
-  if (inp) {
-    inp.value = n;
-    calculateProfitSimulation();
+    const subEl = document.getElementById('kpiNetProfitSub');
+    if (subEl) {
+      subEl.textContent = `₦${netProfitPerReg.toLocaleString()} net per reg (${totalCount} registered)`;
+    }
+  } catch(e) {
+    console.warn('Error calculating net profit:', e);
   }
-}
-
-function calculateProfitSimulation() {
-  const inp = document.getElementById('profitSimInput');
-  const count = parseInt(inp ? inp.value : 100, 10) || 0;
-  const regFee = parseFloat(document.getElementById('cfgRegFee')?.value) || 5000;
-  const directComm = parseFloat(document.getElementById('cfgRefComm')?.value) || 3000;
-  const indirectComm = parseFloat(document.getElementById('cfgIndirectRefComm')?.value) || 200;
-  const deductPerUser = directComm + indirectComm;
-  const netPerUser = regFee - deductPerUser;
-
-  const simGross = document.getElementById('simGross');
-  if (simGross) simGross.textContent = '₦' + (count * regFee).toLocaleString();
-  const simDeduct = document.getElementById('simDeductions');
-  if (simDeduct) simDeduct.textContent = '-₦' + (count * deductPerUser).toLocaleString();
-  const simNet = document.getElementById('simNetProfit');
-  if (simNet) simNet.textContent = '₦' + (count * netPerUser).toLocaleString();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
