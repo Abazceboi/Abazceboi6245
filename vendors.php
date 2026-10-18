@@ -1511,14 +1511,7 @@ if (file_exists($telegramConfigFile)) {
 
             <div class="modal-group">
                 <label class="modal-label">Number of Codes Needed</label>
-                <select id="orderCodeQty" class="modal-input" onchange="updateOrderPriceSummary()">
-                    <option value="1">1 Activation Code (₦1,000)</option>
-                    <option value="2">2 Activation Codes (₦2,000)</option>
-                    <option value="5">5 Activation Codes (₦5,000)</option>
-                    <option value="10" selected>10 Activation Codes (₦10,000)</option>
-                    <option value="20">20 Activation Codes (₦20,000)</option>
-                    <option value="50">50 Activation Codes (₦50,000)</option>
-                </select>
+                <input type="number" id="orderCodeQty" class="modal-input" min="1" max="1000" value="1" placeholder="Enter number of codes" required>
             </div>
 
             <div class="modal-group">
@@ -1529,11 +1522,6 @@ if (file_exists($telegramConfigFile)) {
                     <option value="Bank Transfer">Bank Transfer (Instant)</option>
                     <option value="Kuda Bank">Kuda Bank</option>
                 </select>
-            </div>
-
-            <div class="modal-summary">
-                <span style="color:var(--v-text-muted);">Total Price:</span>
-                <strong id="orderTotalPrice" style="font-size:1.05rem;color:var(--v-color,#00D4F0);font-weight:800;">₦10,000</strong>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
@@ -1604,19 +1592,16 @@ if (file_exists($telegramConfigFile)) {
     }
 
     function updateOrderPriceSummary() {
-        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
-        const total = (qty * 1000).toLocaleString();
-        const el = document.getElementById('orderTotalPrice');
-        if (el) el.textContent = `₦${total}`;
+        // Price tag is not shown on UI; price is only calculated and displayed when sending the message on WhatsApp
     }
 
     function getOrderFormattedMessage() {
         const vendorName = document.getElementById('orderVendorName').value || 'Vendor';
         const buyerName = document.getElementById('orderBuyerName').value.trim() || 'Customer';
         const buyerPhone = document.getElementById('orderBuyerPhone').value.trim() || '';
-        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '10') || 10;
+        const qty = parseInt(document.getElementById('orderCodeQty')?.value || '1') || 1;
         const payment = document.getElementById('orderPaymentMethod')?.value || 'OPay';
-        const total = (qty * 1000).toLocaleString();
+        const total = (qty * 5000).toLocaleString();
 
         const phoneStr = buyerPhone ? ` (${buyerPhone})` : '';
         return `Hello ${vendorName}, my name is ${buyerName}${phoneStr}.\n\nI want to purchase ${qty} INNOVATIONX activation code(s) for ₦${total}.\nPayment method: ${payment}.\n\nPlease send your payment details so I can make payment and receive my code(s).`;

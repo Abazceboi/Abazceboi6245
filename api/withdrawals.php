@@ -804,4 +804,65 @@ if (($action === 'reject_request' || $action === 'reject_withdrawal') && $_SERVE
     exit;
 }
 
+if (($action === 'delete_request' || $action === 'delete_withdrawal') && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = !empty($jsonInput) ? $jsonInput : (json_decode(file_get_contents('php://input'), true) ?? $_POST);
+    $id = trim($input['id'] ?? ($input['txn_id'] ?? ''));
+    if (empty($id)) {
+        echo json_encode(['status' => 'error', 'message' => 'Transaction ID is required']);
+        exit;
+    }
+
+    // 1. Delete from withdrawals.json
+    $reqs = readStorageJson('data/withdrawals.json', []);
+    if (!is_array($reqs)) $reqs = [];
+    $reqs = array_values(array_filter($reqs, function($r) use ($id) {
+        return ($r['id'] ?? '') !== $id && ($r['txn_id'] ?? '') !== $id;
+    }));
+    writeStorageJson('data/withdrawals.json', $reqs);
+
+    // 2. Remove from users.json (activity_ledger and withdrawals)
+    $usersData = readStorageJson('data/users.json', ['users' => []]);
+    if (isset($usersData['users']) && is_array($usersData['users'])) {
+        foreach ($usersData['users'] as &$u) {
+            if (isset($u['activity_ledger']) && is_array($u['activity_ledger'])) {
+                $u['activity_ledger'] = array_values(array_filter($u['activity_ledger'], function($item) use ($id) {
+                    if (isset($item['receipt']) && is_array($item['receipt'])) {
+                        $rc = $item['receipt'];
+                        if (($rc['id'] ?? '') === $id || ($rc['txn_id'] ?? '') === $id || ($rc['receipt_no'] ?? '') === $id) {
+                            return false;
+                        }
+                    }
+                    if (($item['id'] ?? '') === $id || ($item['txn_id'] ?? '') === $id) {
+                        return false;
+                    }
+                    return true;
+                }));
+            }
+            if (isset($u['withdrawals']) && is_array($u['withdrawals'])) {
+                $u['withdrawals'] = array_values(array_filter($u['withdrawals'], function($w) use ($id) {
+                    return ($w['id'] ?? '') !== $id && ($w['txn_id'] ?? '') !== $id;
+                }));
+            }
+        }
+        unset($u);
+        writeStorageJson('data/users.json', $usersData);
+    }
+
+    // 3. Remove from receipts.json if present
+    $receiptsData = readStorageJson('data/receipts.json', []);
+    if (is_array($receiptsData)) {
+        $receiptsData = array_values(array_filter($receiptsData, function($rc) use ($id) {
+            return ($rc['id'] ?? '') !== $id && ($rc['txn_id'] ?? '') !== $id && ($rc['receipt_no'] ?? '') !== $id;
+        }));
+        writeStorageJson('data/receipts.json', $receiptsData);
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Withdrawal record deleted successfully and removed from user history.',
+        'id' => $id
+    ]);
+    exit;
+}
+
 echo json_encode(['status' => 'error', 'message' => 'Invalid action']);

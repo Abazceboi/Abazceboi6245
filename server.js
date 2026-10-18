@@ -4342,6 +4342,75 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     return;
                 }
 
+                if ((action === 'delete_request' || action === 'delete_withdrawal') && req.method === 'POST') {
+                    const targetId = (body.id || body.txn_id || '').trim();
+                    if (!targetId) {
+                        res.end(JSON.stringify({ status: 'error', message: 'Transaction ID is required' }));
+                        return;
+                    }
+
+                    // 1. Delete from withdrawals.json
+                    const reqsFile = path.join(PUBLIC_DIR, 'data', 'withdrawals.json');
+                    if (fs.existsSync(reqsFile)) {
+                        try {
+                            let reqs = JSON.parse(fs.readFileSync(reqsFile, 'utf8'));
+                            if (Array.isArray(reqs)) {
+                                reqs = reqs.filter(r => (r.id || '') !== targetId && (r.txn_id || '') !== targetId);
+                                fs.writeFileSync(reqsFile, JSON.stringify(reqs, null, 2));
+                            }
+                        } catch(e){}
+                    }
+
+                    // 2. Remove from users.json (activity_ledger and withdrawals)
+                    const usersFile = path.join(PUBLIC_DIR, 'data', 'users.json');
+                    if (fs.existsSync(usersFile)) {
+                        try {
+                            const uData = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+                            if (uData && Array.isArray(uData.users)) {
+                                uData.users.forEach(u => {
+                                    if (Array.isArray(u.activity_ledger)) {
+                                        u.activity_ledger = u.activity_ledger.filter(item => {
+                                            if (item.receipt) {
+                                                const rc = item.receipt;
+                                                if (rc.id === targetId || rc.txn_id === targetId || rc.receipt_no === targetId) {
+                                                    return false;
+                                                }
+                                            }
+                                            if (item.id === targetId || item.txn_id === targetId) {
+                                                return false;
+                                            }
+                                            return true;
+                                        });
+                                    }
+                                    if (Array.isArray(u.withdrawals)) {
+                                        u.withdrawals = u.withdrawals.filter(w => (w.id || '') !== targetId && (w.txn_id || '') !== targetId);
+                                    }
+                                });
+                                fs.writeFileSync(usersFile, JSON.stringify(uData, null, 2));
+                            }
+                        } catch(e){}
+                    }
+
+                    // 3. Remove from receipts.json if present
+                    const receiptsFile = path.join(PUBLIC_DIR, 'data', 'receipts.json');
+                    if (fs.existsSync(receiptsFile)) {
+                        try {
+                            let receipts = JSON.parse(fs.readFileSync(receiptsFile, 'utf8'));
+                            if (Array.isArray(receipts)) {
+                                receipts = receipts.filter(rc => (rc.id || '') !== targetId && (rc.txn_id || '') !== targetId && (rc.receipt_no || '') !== targetId);
+                                fs.writeFileSync(receiptsFile, JSON.stringify(receipts, null, 2));
+                            }
+                        } catch(e){}
+                    }
+
+                    res.end(JSON.stringify({
+                        status: 'success',
+                        message: 'Withdrawal record deleted successfully and removed from user history.',
+                        id: targetId
+                    }));
+                    return;
+                }
+
                 res.end(JSON.stringify({ status: 'error', message: 'Invalid action' }));
                 return;
             }

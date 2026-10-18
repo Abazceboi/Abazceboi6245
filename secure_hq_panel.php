@@ -1680,9 +1680,7 @@ input,textarea,select{font-family:var(--ff);}
                 <span class="label-hint">Tier Selection</span>
               </label>
               <select class="form-select" id="couponType">
-                <option value="AFF">Affiliate Membership PIN (₦1,000)</option>
-                <option value="UPL">Uploader License PIN (₦2,000)</option>
-                <option value="VIP">VIP Access PIN (₦5,000)</option>
+                <option value="AFF" selected>Activation Code</option>
               </select>
             </div>
             <div class="form-group">
@@ -5328,14 +5326,23 @@ function getWithdrawalStatusBadge(status) {
 function getWithdrawalActionHtml(w) {
   const st = (w.status || 'processing').toLowerCase();
   const id = esc(w.id || w.txn_id || '');
+  let actionContent = '';
   if (st === 'paid' || st === 'approved') {
-    return '<span style="color:#10B981;font-weight:700;font-size:11.5px;display:inline-flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paid</span>';
+    actionContent = '<span style="color:#10B981;font-weight:700;font-size:11.5px;display:inline-flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Paid</span>';
   } else if (st === 'rejected' || st === 'declined') {
-    return '<span style="color:#EF4444;font-size:11.5px;font-weight:600;">Declined</span>';
+    actionContent = '<span style="color:#EF4444;font-size:11.5px;font-weight:600;">Declined</span>';
+  } else {
+    actionContent = `
+      <button class="btn btn-success btn-xs" onclick="approveWithdrawal('${id}')" style="font-weight:700;padding:4px 10px;">Approve (Pay)</button>
+      <button class="btn btn-danger btn-xs" onclick="rejectWithdrawal('${id}')" style="padding:4px 8px;">Reject</button>
+    `;
   }
-  return `<div style="display:flex;gap:6px;">
-    <button class="btn btn-success btn-xs" onclick="approveWithdrawal('${id}')" style="font-weight:700;padding:4px 10px;">Approve (Pay)</button>
-    <button class="btn btn-danger btn-xs" onclick="rejectWithdrawal('${id}')" style="padding:4px 8px;">Reject</button>
+  return `<div style="display:flex;align-items:center;gap:6px;">
+    ${actionContent}
+    <button class="btn btn-danger btn-xs" onclick="deleteWithdrawal('${id}')" title="Delete record permanently" style="padding:4px 8px;display:inline-flex;align-items:center;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.28);border-radius:4px;cursor:pointer;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      <span style="margin-left:3px;font-size:11px;">Delete</span>
+    </button>
   </div>`;
 }
 
@@ -5488,6 +5495,33 @@ async function rejectWithdrawal(id) {
     }
   } catch(e) {
     toast('Network error rejecting payout', 'error');
+  }
+}
+
+async function deleteWithdrawal(id) {
+  const ok = await confirmAction({ 
+    title: 'Delete Withdrawal Record', 
+    message: 'Are you sure you want to delete this withdrawal request/transaction? It will be permanently removed from the system and erased from the user\'s transaction history and receipts.', 
+    confirmText: 'Delete Permanently', 
+    confirmClass: 'btn-danger' 
+  });
+  if (!ok) return;
+  try {
+    const r = await fetch('/api/withdrawals.php?action=delete_withdrawal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    const d = await r.json();
+    if (d.status === 'success' || d.success) {
+      toast('Withdrawal record deleted and removed from user history', 'success');
+      loadWithdrawalsData();
+      loadAdminOverview();
+    } else {
+      toast(d.message || d.error || 'Failed to delete withdrawal', 'error');
+    }
+  } catch(e) {
+    toast('Network error deleting withdrawal', 'error');
   }
 }
 

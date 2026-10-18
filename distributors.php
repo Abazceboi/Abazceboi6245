@@ -978,14 +978,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
 
                     <div class="modal-form-group">
                         <label class="modal-form-label" for="distOrderCodeQty">Number of Codes Needed</label>
-                        <select id="distOrderCodeQty" class="modal-form-input" onchange="updateDistributorPriceSummary()">
-                            <option value="1">1 Activation Code (₦1,000)</option>
-                            <option value="2">2 Activation Codes (₦2,000)</option>
-                            <option value="5">5 Activation Codes (₦5,000)</option>
-                            <option value="10" selected>10 Activation Codes (₦10,000)</option>
-                            <option value="20">20 Activation Codes (₦20,000)</option>
-                            <option value="50">50 Activation Codes (₦50,000)</option>
-                        </select>
+                        <input type="number" id="distOrderCodeQty" class="modal-form-input" min="1" max="1000" value="1" placeholder="Enter number of codes" required>
                     </div>
 
                     <div class="modal-form-group">
@@ -996,11 +989,6 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                             <option value="Bank Transfer">Bank Transfer (Instant)</option>
                             <option value="Kuda Bank">Kuda Bank</option>
                         </select>
-                    </div>
-
-                    <div class="modal-price-summary">
-                        <span style="font-size:12.5px;color:var(--text-muted);font-weight:600;">Total Price:</span>
-                        <strong id="distOrderTotalPrice" style="font-size:1.15rem;font-weight:800;color:var(--color-cyan);">₦10,000</strong>
                     </div>
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
@@ -1083,11 +1071,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
     }
 
     function updateDistributorPriceSummary() {
-        var qtyEl = document.getElementById('distOrderCodeQty');
-        var qty = parseInt(qtyEl ? qtyEl.value : '10') || 10;
-        var total = (qty * 1000).toLocaleString();
-        var priceEl = document.getElementById('distOrderTotalPrice');
-        if (priceEl) priceEl.textContent = '₦' + total;
+        // Price tag is not shown on UI; price is only calculated and displayed when sending the message on WhatsApp
     }
 
     function getDistributorFormattedMessage() {
@@ -1095,9 +1079,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         var buyerName = (document.getElementById('distOrderBuyerName').value || '').trim() || 'Customer';
         var buyerPhone = (document.getElementById('distOrderBuyerPhone').value || '').trim();
         var qtyEl = document.getElementById('distOrderCodeQty');
-        var qty = parseInt(qtyEl ? qtyEl.value : '10') || 10;
+        var qty = parseInt(qtyEl ? qtyEl.value : '1') || 1;
         var payment = document.getElementById('distOrderPaymentMethod').value || 'OPay';
-        var total = (qty * 1000).toLocaleString();
+        var total = (qty * 5000).toLocaleString();
 
         var phoneStr = buyerPhone ? (' (' + buyerPhone + ')') : '';
         return 'Hello ' + vendorName + ', my name is ' + buyerName + phoneStr + '.\n\n' +
