@@ -133,14 +133,8 @@ foreach ($userMap as $uName => $u) {
     // max(total_earned, direct_earnings + indirect_earnings, current_cash + withdrawnCash, ledgerCash)
     $allTimeCash = max($recordedTotalEarned, ($directCash + $indirectCash), ($currentCash + $withdrawnCash), $ledgerCash);
     
-    // Only include users who have earned cash, or include all members
     $role = $u['role'] ?? 'member';
-    $roleLabel = $u['role_label'] ?? 'Active Member';
-    if (in_array(strtolower($role), ['admin', 'super_admin'])) {
-        $roleLabel = 'Platform Ambassador';
-    } elseif ($uName === 'abas') {
-        $roleLabel = 'Diamond Earner';
-    }
+    $roleLabel = '';
 
     $leaderboard[] = [
         'username' => $u['username'] ?? $uName,
@@ -178,22 +172,8 @@ $rankIndex = 1;
 foreach ($leaderboard as $item) {
     $item['rank'] = $rankIndex;
     
-    if ($rankIndex === 1) {
-        $item['rank_badge'] = 'gold';
-        $item['badge_label'] = '1st Place • Champion';
-    } elseif ($rankIndex === 2) {
-        $item['rank_badge'] = 'silver';
-        $item['badge_label'] = '2nd Place • Elite';
-    } elseif ($rankIndex === 3) {
-        $item['rank_badge'] = 'bronze';
-        $item['badge_label'] = '3rd Place • Master';
-    } elseif ($rankIndex <= 10) {
-        $item['rank_badge'] = 'top10';
-        $item['badge_label'] = 'Top 10 Earner';
-    } else {
-        $item['rank_badge'] = 'member';
-        $item['badge_label'] = 'Rank #' . $rankIndex;
-    }
+    $item['badge_label'] = '#' . $rankIndex;
+    $item['rank_badge'] = ($rankIndex <= 3) ? 'top' : 'member';
     
     if (strtolower($item['username']) === $currentUsername) {
         $item['is_current_user'] = true;

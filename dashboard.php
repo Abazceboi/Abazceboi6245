@@ -2027,7 +2027,17 @@ input,textarea,select{font-family:var(--ff);}
     height: 18px;
   }
   .stats-grid{grid-template-columns:1fr 1fr;}
-  .notif-dropdown{right:-30px;width:min(320px, calc(100vw - 28px));}
+  .notif-dropdown {
+    position: fixed !important;
+    top: 60px !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: min(460px, calc(100vh - 80px)) !important;
+    border-radius: 16px !important;
+    z-index: 999999 !important;
+  }
 }
 
 /* ═══════════════════════════ LIGHT THEME & VENDOR COMPONENT ENHANCEMENTS ═══════════════════ */
@@ -2492,24 +2502,6 @@ html[data-theme="light"] .special-portal-card.uploader,
         <button class="btn btn-primary btn-sm" onclick="copyRef()">Copy Link</button>
       </div>
     </div>
-
-    <!-- Top Earners Quick Access Card -->
-    <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(56,189,248,0.05) 100%);border:1px solid rgba(245,158,11,0.25);">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:42px;height:42px;border-radius:12px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;color:#F59E0B;font-size:20px;">
-            🏆
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:var(--txt);">Top Earners Leaderboard</div>
-            <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Track the highest-earning affiliates and see your platform rank.</div>
-          </div>
-        </div>
-        <button type="button" class="btn btn-sm" onclick="switchTab('top-earners')" style="background:linear-gradient(135deg, #F59E0B, #D97706);color:#000;font-weight:700;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;">
-          View Leaderboard &rarr;
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- ══ TAB: TASKS ═══════════════════════════════════════════════════════ -->
@@ -2788,13 +2780,9 @@ html[data-theme="light"] .special-portal-card.uploader,
     <!-- Header Banner -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <div>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
-          Platform Hall of Fame
-        </div>
         <h2 style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-0.3px;margin:0 0 4px 0;">Top Earners Leaderboard</h2>
         <p style="font-size:12.5px;color:var(--txt-3);margin:0;max-width:650px;line-height:1.5;">
-          Rankings are calculated strictly from cumulative all-time cash earnings (including Tier 1 direct and Tier 2 indirect affiliate commissions). Points are excluded. Withdrawals never reduce your ranking or all-time score.
+          Rankings are calculated strictly from cumulative all-time cash earnings (including direct and indirect affiliate commissions). Points are excluded. Withdrawals never reduce your ranking.
         </p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -2806,26 +2794,25 @@ html[data-theme="light"] .special-portal-card.uploader,
     </div>
 
     <!-- Authenticated User Personal Ranking Card -->
-    <div id="topEarnersMyPositionCard" class="card" style="margin-bottom:20px;background:linear-gradient(135deg, rgba(2,132,199,0.12) 0%, rgba(56,189,248,0.06) 100%);border:1px solid rgba(56,189,248,0.3);position:relative;overflow:hidden;">
+    <div id="topEarnersMyPositionCard" class="card" style="margin-bottom:20px;background:var(--card);border:1px solid var(--border);position:relative;overflow:hidden;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
         <div style="display:flex;align-items:center;gap:14px;">
-          <div id="topEarnersMyAvatar" style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg, #0284C7, #38BDF8);color:#FFF;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(56,189,248,0.35);">
+          <div id="topEarnersMyAvatar" style="width:48px;height:48px;border-radius:12px;background:rgba(56,189,248,0.15);color:#38BDF8;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(56,189,248,0.3);">
             <?= strtoupper(substr($username, 0, 2)) ?>
           </div>
           <div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <span style="font-size:16px;font-weight:800;color:var(--txt);">@<?= htmlspecialchars($username) ?></span>
-              <span id="topEarnersMyRankBadge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(56,189,248,0.18);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);">
+              <span id="topEarnersMyRankBadge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;background:rgba(56,189,248,0.15);color:#38BDF8;border:1px solid rgba(56,189,248,0.3);">
                 Calculating Rank...
               </span>
             </div>
-            <div style="font-size:12px;color:var(--txt-3);margin-top:3px;">Your Leaderboard Standing &bull; All-Time Cash Earnings</div>
+            <div style="font-size:12px;color:var(--txt-3);margin-top:3px;">Your Leaderboard Standing</div>
           </div>
         </div>
 
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
           <div style="text-align:right;">
-            <div style="font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.5px;">All-Time Cash</div>
             <div id="topEarnersMyTotalCash" style="font-size:24px;font-weight:800;color:var(--green);letter-spacing:-0.5px;">₦0.00</div>
           </div>
         </div>
@@ -2862,7 +2849,7 @@ html[data-theme="light"] .special-portal-card.uploader,
             <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--txt-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">
               <th style="padding:12px 10px;width:70px;">Rank</th>
               <th style="padding:12px 10px;">Earner</th>
-              <th style="padding:12px 10px;text-align:right;">All-Time Cash</th>
+              <th style="padding:12px 10px;text-align:right;">Cash</th>
             </tr>
           </thead>
           <tbody id="topEarnersTableBody">
@@ -4750,24 +4737,10 @@ async function loadTopEarners() {
       const withEl = document.getElementById('topEarnersMyWithdrawn');
 
       if (rankBadge) {
-        rankBadge.textContent = u.rank <= 3 ? `Rank #${u.rank} (${u.badge_label})` : `Rank #${u.rank}`;
-        if (u.rank === 1) {
-          rankBadge.style.background = 'rgba(245,158,11,0.2)';
-          rankBadge.style.color = '#F59E0B';
-          rankBadge.style.borderColor = 'rgba(245,158,11,0.4)';
-        } else if (u.rank === 2) {
-          rankBadge.style.background = 'rgba(148,163,184,0.2)';
-          rankBadge.style.color = '#CBD5E1';
-          rankBadge.style.borderColor = 'rgba(148,163,184,0.4)';
-        } else if (u.rank === 3) {
-          rankBadge.style.background = 'rgba(217,119,6,0.2)';
-          rankBadge.style.color = '#D97706';
-          rankBadge.style.borderColor = 'rgba(217,119,6,0.4)';
-        } else {
-          rankBadge.style.background = 'rgba(56,189,248,0.18)';
-          rankBadge.style.color = '#38BDF8';
-          rankBadge.style.borderColor = 'rgba(56,189,248,0.3)';
-        }
+        rankBadge.textContent = 'Rank #' + u.rank;
+        rankBadge.style.background = 'rgba(56,189,248,0.15)';
+        rankBadge.style.color = '#38BDF8';
+        rankBadge.style.borderColor = 'rgba(56,189,248,0.3)';
       }
 
       if (totalCash) totalCash.textContent = '₦' + Number(u.all_time_cash || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -4775,26 +4748,15 @@ async function loadTopEarners() {
 
     // 2. Render Top 3 Podium
     if (podiumGrid && data.top_podium && data.top_podium.length > 0) {
-      const podiumColors = [
-        { border: 'rgba(245, 158, 11, 0.5)', bg: 'radial-gradient(circle at top, rgba(245,158,11,0.15), var(--card))', icon: '🥇', label: '1st Place Champion', color: '#F59E0B', shadow: '0 8px 24px rgba(245,158,11,0.2)' },
-        { border: 'rgba(148, 163, 184, 0.5)', bg: 'radial-gradient(circle at top, rgba(148,163,184,0.15), var(--card))', icon: '🥈', label: '2nd Place Elite', color: '#CBD5E1', shadow: '0 8px 24px rgba(148,163,184,0.15)' },
-        { border: 'rgba(217, 119, 6, 0.45)', bg: 'radial-gradient(circle at top, rgba(217,119,6,0.12), var(--card))', icon: '🥉', label: '3rd Place Master', color: '#F59E0B', shadow: '0 8px 24px rgba(217,119,6,0.15)' }
-      ];
-
+      const ranks = ['#1', '#2', '#3'];
       podiumGrid.innerHTML = data.top_podium.map((p, i) => {
-        const theme = podiumColors[i] || podiumColors[2];
         const isMe = p.is_current_user;
         return `
-          <div style="background:${theme.bg};border:1px solid ${theme.border};box-shadow:${theme.shadow};border-radius:14px;padding:22px;text-align:center;position:relative;overflow:hidden;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 16px;text-align:center;position:relative;">
             ${isMe ? '<span style="position:absolute;top:10px;right:10px;background:rgba(56,189,248,0.2);color:#38BDF8;border:1px solid rgba(56,189,248,0.4);font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">YOU</span>' : ''}
-            <div style="font-size:34px;line-height:1;margin-bottom:8px;">${theme.icon}</div>
-            <span style="display:inline-block;font-size:11px;font-weight:800;color:${theme.color};text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${theme.label}</span>
-            <div style="font-size:16px;font-weight:800;color:var(--txt);margin-bottom:2px;">@${p.username}</div>
-            <div style="font-size:11px;color:var(--txt-3);margin-bottom:12px;">${p.role_label}</div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:6px;">
-              <div style="font-size:10.5px;color:var(--txt-3);text-transform:uppercase;letter-spacing:0.4px;">All-Time Cash</div>
-              <div style="font-size:20px;font-weight:800;color:var(--green);margin-top:3px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            </div>
+            <div style="display:inline-flex;align-items:center;justify-content:center;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.06);color:var(--txt);font-weight:800;font-size:12px;margin-bottom:10px;">${ranks[i] || ('#' + (i + 1))}</div>
+            <div style="font-size:15px;font-weight:800;color:var(--txt);margin-bottom:4px;">@${p.username}</div>
+            <div style="font-size:20px;font-weight:800;color:var(--green);margin-top:10px;letter-spacing:-0.5px;">₦${Number(p.all_time_cash).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
         `;
       }).join('');
@@ -4819,14 +4781,7 @@ function renderTopEarnersTable(list) {
   }
 
   tableBody.innerHTML = list.map(item => {
-    let rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);font-weight:800;font-size:12px;color:var(--txt-2);">${item.rank}</span>`;
-    if (item.rank === 1) {
-      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,0.2);color:#F59E0B;font-weight:800;font-size:13px;border:1px solid rgba(245,158,11,0.5);">🥇</span>`;
-    } else if (item.rank === 2) {
-      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(148,163,184,0.2);color:#CBD5E1;font-weight:800;font-size:13px;border:1px solid rgba(148,163,184,0.5);">🥈</span>`;
-    } else if (item.rank === 3) {
-      rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(217,119,6,0.2);color:#D97706;font-weight:800;font-size:13px;border:1px solid rgba(217,119,6,0.5);">🥉</span>`;
-    }
+    const rankBadgeHtml = `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);font-weight:800;font-size:12px;color:var(--txt-2);">${item.rank}</span>`;
 
     const rowStyle = item.is_current_user
       ? 'background:rgba(56,189,248,0.08);border-left:3px solid #38BDF8;'
@@ -4845,7 +4800,6 @@ function renderTopEarnersTable(list) {
                 @${item.username}
                 ${item.is_current_user ? '<span style="font-size:9.5px;padding:1px 6px;border-radius:6px;background:#38BDF8;color:#000;font-weight:800;">YOU</span>' : ''}
               </div>
-              <div style="font-size:11px;color:var(--txt-3);">${item.role_label}</div>
             </div>
           </div>
         </td>

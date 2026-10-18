@@ -5767,12 +5767,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const allTimeCash = Math.max(recordedTotal, (directEarnings + indirectEarnings), (currentCash + withdrawnCash), ledgerCash);
 
                     let role = u.role || 'member';
-                    let roleLabel = u.role_label || 'Active Member';
-                    if (['admin', 'super_admin'].includes(role.toLowerCase())) {
-                        roleLabel = 'Platform Ambassador';
-                    } else if (uN === 'abas') {
-                        roleLabel = 'Diamond Earner';
-                    }
+                    let roleLabel = '';
 
                     leaderboard.push({
                         username: u.username || uN,
@@ -5803,22 +5798,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 const rankedLeaderboard = leaderboard.map((item, idx) => {
                     const rank = idx + 1;
                     item.rank = rank;
-                    if (rank === 1) {
-                        item.rank_badge = 'gold';
-                        item.badge_label = '1st Place • Champion';
-                    } else if (rank === 2) {
-                        item.rank_badge = 'silver';
-                        item.badge_label = '2nd Place • Elite';
-                    } else if (rank === 3) {
-                        item.rank_badge = 'bronze';
-                        item.badge_label = '3rd Place • Master';
-                    } else if (rank <= 10) {
-                        item.rank_badge = 'top10';
-                        item.badge_label = 'Top 10 Earner';
-                    } else {
-                        item.rank_badge = 'member';
-                        item.badge_label = 'Rank #' + rank;
-                    }
+                    item.badge_label = '#' + rank;
+                    item.rank_badge = (rank <= 3) ? 'top' : 'member';
 
                     if (item.username.toLowerCase() === authUname.toLowerCase()) {
                         item.is_current_user = true;

@@ -2671,19 +2671,19 @@ input,textarea,select{font-family:var(--ff);}
 
 <!-- One-Time Activation Pop-Up Preview Modal -->
 <div class="modal-backdrop" id="modalPreviewActPopup">
-  <div class="modal" style="max-width:500px;text-align:center;padding:32px 26px;border-radius:20px;border:1px solid rgba(16,185,129,0.3);box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 40px rgba(16,185,129,0.12);background:var(--card);">
-    <div style="width:60px;height:60px;border-radius:50%;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--green);">
+  <div class="modal" style="max-width:500px;text-align:center;padding:32px 26px;border-radius:20px;border:1px solid rgba(56,189,248,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 35px rgba(56,189,248,0.1);background:var(--card);">
+    <div style="width:60px;height:60px;border-radius:50%;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#38BDF8;">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
     </div>
-    <span style="display:inline-block;font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.8px;background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:12px;margin-bottom:10px;border:1px solid rgba(16,185,129,0.25);">One-Time Activation Notice</span>
+    <span style="display:inline-block;font-size:11px;font-weight:700;color:#38BDF8;text-transform:uppercase;letter-spacing:0.8px;background:rgba(56,189,248,0.1);padding:3px 10px;border-radius:12px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.25);">One-Time Activation Notice</span>
     <div class="modal-title" id="prevActPopupTitle" style="font-size:18px;font-weight:800;margin-bottom:10px;color:var(--txt);">Account Activated Successfully!</div>
     <div id="prevActPopupMessage" style="font-size:13.5px;color:var(--txt-2);line-height:1.6;margin-bottom:24px;white-space:pre-line;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">Congratulations on activating your account! Your member profile is now fully unlocked. Complete daily micro-tasks, take part in verified surveys, and withdraw your earnings directly to your bank account anytime.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button type="button" class="btn btn-ghost" id="prevActPopupDismissBtn" onclick="closeModal('modalPreviewActPopup')">Continue to Dashboard</button>
-      <button type="button" class="btn btn-primary" id="prevActPopupCtaBtn" style="background:linear-gradient(135deg, #10B981, #059669);border-color:#10B981;font-weight:700;">Start Earning Now</button>
+      <button type="button" class="btn btn-primary" id="prevActPopupCtaBtn">Start Earning Now</button>
     </div>
   </div>
 </div>
