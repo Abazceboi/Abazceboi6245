@@ -467,8 +467,8 @@ input,textarea,select{font-family:var(--ff);}
   flex-shrink: 0;
 }
 .brand-mark {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: transparent;
   display: flex;
@@ -476,6 +476,7 @@ input,textarea,select{font-family:var(--ff);}
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
+  filter: drop-shadow(0 2px 8px rgba(43, 175, 237, 0.45));
 }
 .brand-mark img {
   width: 100%;
@@ -486,7 +487,7 @@ input,textarea,select{font-family:var(--ff);}
 }
 .brand-text {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.3px;
   white-space: nowrap;
 }

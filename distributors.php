@@ -805,10 +805,10 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         <!-- Top bar -->
         <div class="top-bar">
             <a href="index.php" class="brand-pill">
-                <span class="brand-badge" style="background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                    <img src="assets/images/logo.png" alt="KN" style="width:26px;height:26px;object-fit:contain;border-radius:50%;">
+                <span class="brand-badge" style="width:34px;height:34px;background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(43,175,237,0.45));flex-shrink:0;">
+                    <img src="assets/images/logo.png" alt="KN" style="width:34px;height:34px;object-fit:contain;border-radius:50%;display:block;">
                 </span>
-                <span>KAIRUSNETWORK</span>
+                <span style="font-weight:800;letter-spacing:-0.02em;">KAIRUSNETWORK</span>
             </a>
             <div style="display:flex;align-items:center;gap:8px;">
                 <a href="dashboard.php" class="action-link">

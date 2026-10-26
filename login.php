@@ -256,13 +256,15 @@ if (!empty($_GET['error'])) {
         }
 
         .auth-logo-badge {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            filter: drop-shadow(0 2px 8px rgba(43, 175, 237, 0.45));
+            flex-shrink: 0;
         }
 
         .auth-logo-badge img {
@@ -274,8 +276,8 @@ if (!empty($_GET['error'])) {
 
         .auth-logo-text {
             font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 0.95rem;
+            font-weight: 800;
+            font-size: 1.05rem;
             letter-spacing: -0.02em;
             color: var(--text-main);
         }

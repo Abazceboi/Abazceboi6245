@@ -240,14 +240,15 @@ input,textarea,select{font-family:var(--ff);}
 }
 .sidebar-logo-left{display:flex;align-items:center;gap:10px;}
 .sidebar-logo-mark{
-  width:32px;height:32px;border-radius:50%;
+  width:36px;height:36px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;overflow:hidden;
+  filter:drop-shadow(0 2px 8px rgba(43, 175, 237, 0.45));
 }
 .sidebar-logo-mark img{
   width:100%;height:100%;object-fit:contain;display:block;
 }
-.sidebar-logo-name{font-weight:700;font-size:14px;letter-spacing:-0.2px;}
+.sidebar-logo-name{font-weight:800;font-size:15px;letter-spacing:-0.2px;}
 .sidebar-logo-name span{color:var(--accent);}
 
 .nav-section{padding:12px 10px 0;flex:1;overflow-y:auto;}

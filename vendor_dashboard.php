@@ -114,7 +114,8 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
         }
         .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); }
         .brand-icon {
-            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;
+            filter: drop-shadow(0 2px 8px rgba(43, 175, 237, 0.45)); flex-shrink: 0;
         }
         .brand-icon img {
             width: 100%; height: 100%; object-fit: contain; display: block;
