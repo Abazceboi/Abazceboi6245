@@ -123,13 +123,6 @@ if (!empty($_GET['error'])) {
 
         body {
             background-color: #050811;
-            background-image: 
-                linear-gradient(180deg, rgba(5, 8, 17, 0.86) 0%, rgba(5, 8, 17, 0.75) 45%, rgba(5, 8, 17, 0.90) 100%),
-                url('assets/images/app-bg.jpg');
-            background-size: cover;
-            background-position: center top;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
             color: var(--text-main);
             font-family: var(--font-sans);
             min-height: 100vh;
@@ -140,10 +133,33 @@ if (!empty($_GET['error'])) {
             padding: 30px 16px;
             position: relative;
             overflow-x: hidden;
-            transition: background 0.25s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-color: #050811;
+            background-image: 
+                linear-gradient(180deg, rgba(5, 8, 17, 0.86) 0%, rgba(5, 8, 17, 0.75) 45%, rgba(5, 8, 17, 0.90) 100%),
+                url('assets/images/app-bg.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            will-change: transform;
         }
 
         [data-theme="light"] body {
+            background-color: #EEF3FA;
+        }
+
+        [data-theme="light"] body::before {
             background-color: #EEF3FA;
             background-image: 
                 linear-gradient(180deg, rgba(238, 243, 250, 0.88) 0%, rgba(238, 243, 250, 0.80) 45%, rgba(238, 243, 250, 0.92) 100%),

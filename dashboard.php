@@ -397,6 +397,21 @@ if ($actDownlines > $referralCount) {
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
   background-color: #04060d;
+  color: var(--txt);
+  font-family: var(--ff);
+  min-height: 100vh;
+  padding-bottom: 120px;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body::before{
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #04060d;
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.28) 0%, transparent 60%),
     radial-gradient(circle at 85% 80%, rgba(14, 165, 233, 0.22) 0%, transparent 50%),
@@ -405,26 +420,22 @@ body{
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: var(--txt);
-  font-family: var(--ff);
-  min-height: 100vh;
-  padding-bottom: 120px;
-  overflow-x: hidden;
-  transition: background 0.25s ease;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
 }
 [data-theme="light"] body {
+  background-color: #EBF3FC;
+  color: #0F172A;
+}
+[data-theme="light"] body::before{
   background-color: #EBF3FC;
   background-image: 
     radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.28) 0%, transparent 60%),
     radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.22) 0%, transparent 50%),
     linear-gradient(180deg, rgba(240, 246, 253, 0.42) 0%, rgba(232, 242, 252, 0.28) 45%, rgba(240, 246, 253, 0.46) 100%),
     url('assets/images/app-bg.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: #0F172A;
 }
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
@@ -448,14 +459,14 @@ input,textarea,select{font-family:var(--ff);}
   padding: 0 16px;
   border-radius: 9999px;
   background: linear-gradient(135deg, rgba(17, 24, 39, 0.84) 0%, rgba(10, 14, 23, 0.94) 100%);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 
     0 16px 36px -6px rgba(0, 0, 0, 0.65),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset,
     0 1px 0 rgba(255, 255, 255, 0.18) inset;
-  transition: all 0.25s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-theme="light"] .top-pill-bar {
@@ -611,6 +622,7 @@ input,textarea,select{font-family:var(--ff);}
   padding:22px;
   margin-bottom:16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  contain: content;
 }
 .card-title{font-size:15px;font-weight:700;margin-bottom:4px;}
 .card-sub{font-size:12px;color:var(--txt-3);margin-bottom:16px;}
@@ -711,10 +723,11 @@ input,textarea,select{font-family:var(--ff);}
   position: fixed;
   bottom: 24px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
+  will-change: transform;
   background: linear-gradient(135deg, rgba(17, 24, 39, 0.84) 0%, rgba(10, 14, 23, 0.94) 100%);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
   height: 58px;
@@ -1238,7 +1251,14 @@ input,textarea,select{font-family:var(--ff);}
 
 /* Tab Panels */
 .tab-panel{display:none;}
-.tab-panel.active{display:block;}
+.tab-panel.active{
+  display:block;
+  animation: tabFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* Modals */
 .modal-backdrop{
@@ -4300,30 +4320,43 @@ document.addEventListener('DOMContentLoaded', () => {
   updateEcoFeeBadges();
   loadEcosystem();
 
-  // Instant Admin Upload & Balance Sync (polls every 15s and immediately when window/tab gains focus)
+  // Smart visibility-aware polling
+  let lastFocusSync = 0;
   window.addEventListener('focus', () => {
-    loadTasks();
-    loadSurveys();
-    loadNotifications();
+    const now = Date.now();
+    if (now - lastFocusSync < 10000) return;
+    lastFocusSync = now;
     syncLiveProfile();
-    syncLivePricing();
-    loadReferrals();
-    loadEcosystem();
+    loadNotifications();
+    const activeTab = document.querySelector('.tab-panel.active')?.id?.replace('tab-', '') || 'home';
+    if (activeTab === 'home' || activeTab === 'tasks') loadTasks();
+    if (activeTab === 'home' || activeTab === 'surveys') loadSurveys();
+    if (activeTab === 'referrals') loadReferrals();
+    if (activeTab === 'ecosystem') loadEcosystem();
+    if (activeTab === 'wallet') { syncLivePricing(); loadUserWithdrawalHistory(); }
   });
-  // Rapid 5-second role and balance sync so promotions and demotions reflect immediately without manual page refresh
-  setInterval(() => {
-    syncLiveProfile();
-  }, 5000);
 
+  // Role and balance sync (runs when tab is active)
   setInterval(() => {
-    loadTasks();
-    loadSurveys();
+    if (document.hidden) return;
+    syncLiveProfile();
+  }, 20000);
+
+  // Background refresh for active tab data & notifications
+  setInterval(() => {
+    if (document.hidden) return;
     loadNotifications();
-    syncLivePricing();
-    loadReferrals();
-    loadEcosystem();
-  }, 15000);
+    const activeTab = document.querySelector('.tab-panel.active')?.id?.replace('tab-', '') || 'home';
+    if (activeTab === 'home' || activeTab === 'tasks') loadTasks();
+    if (activeTab === 'home' || activeTab === 'surveys') loadSurveys();
+    if (activeTab === 'referrals') loadReferrals();
+    if (activeTab === 'ecosystem') loadEcosystem();
+    if (activeTab === 'wallet') syncLivePricing();
+  }, 30000);
+
+  // Hardware-friendly 1-second timer (updates text node only to eliminate layout recalculation)
   setInterval(() => {
+    if (document.hidden) return;
     const timerEls = document.querySelectorAll('.item-timer[data-expires]');
     if (!timerEls.length) return;
     const now = Date.now();
@@ -4331,20 +4364,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const exp = parseInt(el.dataset.expires, 10);
       if (isNaN(exp)) return;
       const diff = exp - now;
+      let span = el.querySelector('.timer-countdown-text');
+      if (!span) {
+        const svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+        el.innerHTML = `${svg}<span class="timer-countdown-text"></span>`;
+        span = el.querySelector('.timer-countdown-text');
+      }
       if (diff > 0) {
-        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Closes in ${formatMs(diff)}`;
+        const txt = `Closes in ${formatMs(diff)}`;
+        if (span.textContent !== txt) span.textContent = txt;
       } else {
-        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span style="color:var(--red);">Expired</span>`;
-        const card = el.closest('.grid-item-card');
-        if (card) {
-          const actionBtn = card.querySelector('button[onclick*="openTaskSubmission"]');
-          if (actionBtn) {
-            const expBtn = document.createElement('button');
-            expBtn.className = 'btn btn-ghost btn-sm';
-            expBtn.disabled = true;
-            expBtn.style.cssText = 'opacity:0.6;cursor:not-allowed;pointer-events:none;';
-            expBtn.textContent = 'Task Expired';
-            actionBtn.replaceWith(expBtn);
+        if (!span.innerHTML.includes('Expired')) {
+          span.innerHTML = '<span style="color:var(--red);">Expired</span>';
+          const card = el.closest('.grid-item-card');
+          if (card) {
+            const actionBtn = card.querySelector('button[onclick*="openTaskSubmission"]');
+            if (actionBtn) {
+              const expBtn = document.createElement('button');
+              expBtn.className = 'btn btn-ghost btn-sm';
+              expBtn.disabled = true;
+              expBtn.style.cssText = 'opacity:0.6;cursor:not-allowed;pointer-events:none;';
+              expBtn.textContent = 'Task Expired';
+              actionBtn.replaceWith(expBtn);
+            }
           }
         }
       }
@@ -4876,7 +4918,7 @@ function switchTab(tab, btn) {
   if (tab === 'top-earners') loadTopEarners();
   if (tab === 'ecosystem') loadEcosystem();
   if (tab === 'vendor') loadVendorTabData();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -5694,8 +5736,8 @@ function renderTasks(list) {
     `;
   }).join('');
 
-  if (container) container.innerHTML = html;
-  if (homeContainer) homeContainer.innerHTML = html;
+  if (container && container.innerHTML !== html) container.innerHTML = html;
+  if (homeContainer && homeContainer.innerHTML !== html) homeContainer.innerHTML = html;
 }
 
 let currentTaskRequiresLink = false;
@@ -6125,8 +6167,8 @@ function renderSurveys(list) {
     `;
   }).join('');
 
-  if (container) container.innerHTML = html;
-  if (homeContainer) homeContainer.innerHTML = html;
+  if (container && container.innerHTML !== html) container.innerHTML = html;
+  if (homeContainer && homeContainer.innerHTML !== html) homeContainer.innerHTML = html;
 }
 
 function startSurvey(id) {
@@ -7086,7 +7128,7 @@ function renderEcosystemList(list) {
     return;
   }
 
-  grid.innerHTML = list.map(item => {
+  const html = list.map(item => {
     const isOfficial = Boolean(item.is_official);
     const isPending = (item.status || '').toLowerCase() === 'pending';
     const isRejected = (item.status || '').toLowerCase() === 'rejected';
@@ -7174,8 +7216,8 @@ function renderEcosystemList(list) {
           </button>
         </div>
       </div>
-    `;
   }).join('');
+  if (grid.innerHTML !== html) grid.innerHTML = html;
 }
 
 async function toggleLikeEcosystem(id, e) {
