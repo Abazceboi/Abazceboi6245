@@ -2940,7 +2940,31 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const hasPrice = parsed.has_price !== undefined ? Boolean(parsed.has_price) : Boolean(parsed.price_tag && parsed.price_tag.toLowerCase() !== 'no price');
                     const priceTag = hasPrice ? (parsed.price_tag || '').trim() : '';
                     const contactLink = (parsed.contact_link || '').trim();
-                    const imageUrl = (parsed.image_url || '').trim();
+                    let imageUrl = (parsed.image_url || '').trim();
+
+                    // If user uploaded a direct image file encoded as base64, save to uploads/ecosystem/
+                    if (imageUrl.startsWith('data:image/')) {
+                        try {
+                            const matches = imageUrl.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+                            if (matches) {
+                                let ext = matches[1].toLowerCase();
+                                if (ext === 'jpeg') ext = 'jpg';
+                                if (ext.includes('svg')) ext = 'svg';
+                                const base64Data = matches[2];
+                                const buffer = Buffer.from(base64Data, 'base64');
+                                const targetDir = path.join(PUBLIC_DIR, 'uploads', 'ecosystem');
+                                if (!fs.existsSync(targetDir)) {
+                                    fs.mkdirSync(targetDir, { recursive: true });
+                                }
+                                const filename = 'eco_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex') + '.' + ext;
+                                fs.writeFileSync(path.join(targetDir, filename), buffer);
+                                imageUrl = '/uploads/ecosystem/' + filename;
+                            }
+                        } catch(err) {
+                            console.error('Failed to save ecosystem uploaded image in server.js:', err);
+                        }
+                    }
+
                     const username = (parsed.username || '').trim();
                     const payMethod = (parsed.payment_method || 'points').trim();
                     const isAdmin = Boolean(parsed.is_admin);

@@ -3393,7 +3393,7 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div class="modal-title">Post in Innovation Ecosystem</div>
       <button class="modal-close" onclick="closeModal('modalPostEcosystemItem')">&times;</button>
     </div>
-    <form onsubmit="handlePostEcosystemSubmit(event)">
+    <form id="formPostEcosystem" onsubmit="handlePostEcosystemSubmit(event)">
       <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">Opportunity / Product Title</label>
@@ -3453,8 +3453,41 @@ html[data-theme="light"] .special-portal-card.uploader,
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">Banner Image URL (Optional)</label>
-          <input type="url" class="form-input" id="postEcoImage" placeholder="https://example.com/banner.jpg">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <label class="form-label" style="margin-bottom:0;font-size:12px;font-weight:700;">Product / Showcase Image <span style="font-size:11px;font-weight:400;color:var(--txt-3);">(Optional)</span></label>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnToggleEcoUrl" onclick="toggleEcoUrlInput()" style="font-size:11px;padding:2px 8px;color:var(--txt-3);">
+              Paste link instead
+            </button>
+          </div>
+
+          <!-- Direct Photo Picker / Dropzone -->
+          <input type="file" id="postEcoImageFile" accept="image/png, image/jpeg, image/jpg, image/webp" style="display:none;" onchange="handleEcoImageFileSelect(event)">
+          <div id="postEcoDropzone" onclick="document.getElementById('postEcoImageFile').click()" style="border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:border-color 0.2s;" ondragover="event.preventDefault();this.style.borderColor='var(--accent)';" ondragleave="this.style.borderColor='var(--border)';" ondrop="handleEcoImageDrop(event)">
+            <div style="width:38px;height:38px;border-radius:50%;background:rgba(0,210,255,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 6px auto;color:var(--accent);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--txt);margin-bottom:2px;">Tap to choose product photo / flyer</div>
+            <div style="font-size:11px;color:var(--txt-3);">Supports JPG, PNG, WEBP from device or camera</div>
+          </div>
+
+          <!-- Preview Container -->
+          <div id="postEcoImagePreviewWrap" style="display:none;margin-top:8px;position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:rgba(0,0,0,0.25);">
+            <img id="postEcoImagePreview" src="" alt="Product Preview" style="width:100%;max-height:160px;object-fit:cover;display:block;">
+            <div style="position:absolute;top:6px;right:6px;display:flex;gap:6px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('postEcoImageFile').click()" style="background:rgba(0,0,0,0.7);color:#fff;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);padding:3px 8px;font-size:11px;border-radius:5px;">Change</button>
+              <button type="button" class="btn btn-danger btn-sm" onclick="clearEcoImageSelection()" style="background:rgba(239,68,68,0.85);color:#fff;backdrop-filter:blur(6px);border:none;padding:3px 8px;font-size:11px;border-radius:5px;">✕ Remove</button>
+            </div>
+            <div id="postEcoImageMeta" style="padding:5px 8px;font-size:10.5px;color:var(--txt-2);background:rgba(0,0,0,0.5);display:flex;justify-content:space-between;border-top:1px solid var(--border);">
+              <span id="postEcoImageName" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">photo.jpg</span>
+              <span id="postEcoImageSize">0 KB</span>
+            </div>
+          </div>
+
+          <!-- Optional URL fallback input -->
+          <div id="postEcoUrlWrap" style="display:none;margin-top:8px;">
+            <input type="url" class="form-input" id="postEcoImage" placeholder="https://example.com/product.jpg" oninput="handleEcoImageUrlInput(this.value)">
+            <div style="font-size:10.5px;color:var(--txt-3);margin-top:3px;">Optional: Direct image link if hosted online.</div>
+          </div>
         </div>
 
         <!-- Payment Selection -->
@@ -6993,10 +7026,10 @@ function renderEcosystemList(list) {
     const authorInitial = authorName.charAt(0).toUpperCase() || 'M';
 
     const rawImg = (item.image_url || '').trim();
-    const hasValidImg = rawImg.length > 10 &&
+    const hasValidImg = rawImg.length > 5 &&
                         !rawImg.includes('example.com') &&
                         !['undefined', 'null', 'none'].includes(rawImg.toLowerCase()) &&
-                        /^https?:\/\//i.test(rawImg);
+                        (/^https?:\/\//i.test(rawImg) || /^\/?uploads\//i.test(rawImg) || /^data:image\//i.test(rawImg));
 
     const imageHtml = hasValidImg ? `
       <div class="eco-banner-wrap" style="width:100%;height:135px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:rgba(0,0,0,0.04);display:none;">
@@ -7122,7 +7155,7 @@ async function openViewEcosystemModal(id) {
   const imgEl = document.getElementById('viewEcoImage');
   if (imgWrap && imgEl) {
     const rawModalImg = (item.image_url || '').trim();
-    if (rawModalImg.length > 10 && !rawModalImg.includes('example.com') && !['undefined', 'null', 'none'].includes(rawModalImg.toLowerCase()) && /^https?:\/\//i.test(rawModalImg)) {
+    if (rawModalImg.length > 5 && !rawModalImg.includes('example.com') && !['undefined', 'null', 'none'].includes(rawModalImg.toLowerCase()) && (/^https?:\/\//i.test(rawModalImg) || /^\/?uploads\//i.test(rawModalImg) || /^data:image\//i.test(rawModalImg))) {
       imgEl.src = rawModalImg;
       imgWrap.style.display = 'block';
     } else {
@@ -7210,8 +7243,144 @@ function setEcoPricePreset(val) {
   }
 }
 
+let ecoSelectedImageBase64 = '';
+
+function toggleEcoUrlInput() {
+  const wrap = document.getElementById('postEcoUrlWrap');
+  const btn = document.getElementById('btnToggleEcoUrl');
+  if (!wrap) return;
+  const isHidden = (wrap.style.display === 'none' || !wrap.style.display);
+  wrap.style.display = isHidden ? 'block' : 'none';
+  if (btn) btn.textContent = isHidden ? 'Hide link input' : 'Paste link instead';
+  if (isHidden) {
+    document.getElementById('postEcoImage')?.focus();
+  }
+}
+
+function handleEcoImageFileSelect(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  processEcoImageFile(file);
+}
+
+function handleEcoImageDrop(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('postEcoDropzone');
+  if (dropzone) dropzone.style.borderColor = 'var(--border)';
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+    processEcoImageFile(e.dataTransfer.files[0]);
+  }
+}
+
+function processEcoImageFile(file) {
+  if (!file.type.match(/^image\//i)) {
+    toast('Please select a valid image file (JPG, PNG, WEBP)', 'error');
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    toast('Image file is too large (max 8MB)', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const rawData = evt.target.result;
+    const img = new Image();
+    img.onload = function() {
+      try {
+        const maxDim = 1280;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const compressedData = canvas.toDataURL(mime, 0.85);
+
+        ecoSelectedImageBase64 = compressedData;
+        showEcoImagePreview(compressedData, file.name, (compressedData.length * 0.75));
+      } catch (err) {
+        // Fallback to raw data if canvas fails
+        ecoSelectedImageBase64 = rawData;
+        showEcoImagePreview(rawData, file.name, file.size);
+      }
+    };
+    img.onerror = function() {
+      toast('Failed to load image file', 'error');
+    };
+    img.src = rawData;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showEcoImagePreview(src, name, bytes) {
+  const wrap = document.getElementById('postEcoImagePreviewWrap');
+  const img = document.getElementById('postEcoImagePreview');
+  const nameEl = document.getElementById('postEcoImageName');
+  const sizeEl = document.getElementById('postEcoImageSize');
+  const dropzone = document.getElementById('postEcoDropzone');
+
+  if (img) img.src = src;
+  if (nameEl) nameEl.textContent = name || 'Uploaded Product Photo';
+  if (sizeEl) {
+    const kb = Math.round((bytes || src.length * 0.75) / 1024);
+    sizeEl.textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
+  }
+  if (wrap) wrap.style.display = 'block';
+  if (dropzone) dropzone.style.display = 'none';
+
+  // Also clear the URL input since file is active
+  const urlInp = document.getElementById('postEcoImage');
+  if (urlInp) urlInp.value = '';
+}
+
+function clearEcoImageSelection() {
+  ecoSelectedImageBase64 = '';
+  const fileInput = document.getElementById('postEcoImageFile');
+  if (fileInput) fileInput.value = '';
+  const wrap = document.getElementById('postEcoImagePreviewWrap');
+  if (wrap) wrap.style.display = 'none';
+  const img = document.getElementById('postEcoImagePreview');
+  if (img) img.src = '';
+  const dropzone = document.getElementById('postEcoDropzone');
+  if (dropzone) dropzone.style.display = 'block';
+  const urlInp = document.getElementById('postEcoImage');
+  if (urlInp) urlInp.value = '';
+  const urlWrap = document.getElementById('postEcoUrlWrap');
+  if (urlWrap) urlWrap.style.display = 'none';
+  const btnToggle = document.getElementById('btnToggleEcoUrl');
+  if (btnToggle) btnToggle.textContent = 'Paste link instead';
+}
+
+function handleEcoImageUrlInput(val) {
+  val = (val || '').trim();
+  if (val.length > 5 && !['undefined', 'null'].includes(val.toLowerCase()) && /^https?:\/\//i.test(val)) {
+    ecoSelectedImageBase64 = '';
+    const fileInput = document.getElementById('postEcoImageFile');
+    if (fileInput) fileInput.value = '';
+    showEcoImagePreview(val, 'Linked Web Image', 0);
+  } else if (!val && !ecoSelectedImageBase64) {
+    clearEcoImageSelection();
+  }
+}
+
 function openPostEcosystemModal() {
   try {
+    clearEcoImageSelection();
+    const form = document.getElementById('formPostEcosystem');
+    if (form) form.reset();
+
     const ptsBal = getUserPoints();
     const cashBal = getUserCash();
     const ptsBalEl = document.getElementById('ecoModalPtsBal');
@@ -7264,7 +7433,7 @@ async function handlePostEcosystemSubmit(e) {
   const price = hasPrice ? (document.getElementById('postEcoPrice')?.value.trim() || '') : '';
   const link = document.getElementById('postEcoLink')?.value.trim();
   const desc = document.getElementById('postEcoDesc')?.value.trim();
-  const image = document.getElementById('postEcoImage')?.value.trim();
+  const image = ecoSelectedImageBase64 || (document.getElementById('postEcoImage')?.value.trim() || '');
   const method = document.querySelector('input[name="ecoPayMethod"]:checked')?.value || 'points';
   const btn = document.getElementById('btnSubmitPostEco');
 
@@ -7295,6 +7464,8 @@ async function handlePostEcosystemSubmit(e) {
     if (d.status === 'success') {
       toast(d.message || 'Payment received! Your post is currently PENDING admin approval.', 'success');
       closeModal('modalPostEcosystemItem');
+      clearEcoImageSelection();
+      try { document.getElementById('formPostEcosystem')?.reset(); } catch(e){}
 
       if (d.item) {
         try {

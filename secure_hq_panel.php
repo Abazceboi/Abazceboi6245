@@ -2775,7 +2775,7 @@ input,textarea,select{font-family:var(--ff);}
       <div class="modal-title">Post Official Opportunity / Product</div>
       <button class="modal-close" onclick="closeModal('modalAdminPostEcosystem')">&times;</button>
     </div>
-    <form onsubmit="handleAdminPostEcoSubmit(event)">
+    <form id="formAdminPostEco" onsubmit="handleAdminPostEcoSubmit(event)">
       <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
         <div class="form-group" style="margin-bottom:0;">
           <label class="form-label">Opportunity / Product Title</label>
@@ -2833,8 +2833,41 @@ input,textarea,select{font-family:var(--ff);}
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
-          <label class="form-label">Banner Image URL (Optional)</label>
-          <input type="url" class="form-input" id="adminPostEcoImage" placeholder="https://example.com/banner.jpg">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <label class="form-label" style="margin-bottom:0;font-size:12px;font-weight:700;">Showcase / Product Image <span style="font-size:11px;font-weight:400;color:var(--txt-3);">(Optional)</span></label>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnAdminToggleEcoUrl" onclick="toggleAdminEcoUrlInput()" style="font-size:11px;padding:2px 8px;color:var(--txt-3);">
+              Paste link instead
+            </button>
+          </div>
+
+          <!-- Direct Photo Picker / Dropzone -->
+          <input type="file" id="adminPostEcoImageFile" accept="image/png, image/jpeg, image/jpg, image/webp" style="display:none;" onchange="handleAdminEcoImageFileSelect(event)">
+          <div id="adminPostEcoDropzone" onclick="document.getElementById('adminPostEcoImageFile').click()" style="border:2px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;background:rgba(255,255,255,0.02);transition:border-color 0.2s;" ondragover="event.preventDefault();this.style.borderColor='var(--accent)';" ondragleave="this.style.borderColor='var(--border)';" ondrop="handleAdminEcoImageDrop(event)">
+            <div style="width:38px;height:38px;border-radius:50%;background:rgba(0,210,255,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 6px auto;color:var(--accent);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--txt);margin-bottom:2px;">Tap to choose product photo / banner</div>
+            <div style="font-size:11px;color:var(--txt-3);">Supports JPG, PNG, WEBP from device or camera</div>
+          </div>
+
+          <!-- Preview Container -->
+          <div id="adminPostEcoImagePreviewWrap" style="display:none;margin-top:8px;position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:rgba(0,0,0,0.25);">
+            <img id="adminPostEcoImagePreview" src="" alt="Product Preview" style="width:100%;max-height:160px;object-fit:cover;display:block;">
+            <div style="position:absolute;top:6px;right:6px;display:flex;gap:6px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('adminPostEcoImageFile').click()" style="background:rgba(0,0,0,0.7);color:#fff;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);padding:3px 8px;font-size:11px;border-radius:5px;">Change</button>
+              <button type="button" class="btn btn-danger btn-sm" onclick="clearAdminEcoImageSelection()" style="background:rgba(239,68,68,0.85);color:#fff;backdrop-filter:blur(6px);border:none;padding:3px 8px;font-size:11px;border-radius:5px;">✕ Remove</button>
+            </div>
+            <div id="adminPostEcoImageMeta" style="padding:5px 8px;font-size:10.5px;color:var(--txt-2);background:rgba(0,0,0,0.5);display:flex;justify-content:space-between;border-top:1px solid var(--border);">
+              <span id="adminPostEcoImageName" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">photo.jpg</span>
+              <span id="adminPostEcoImageSize">0 KB</span>
+            </div>
+          </div>
+
+          <!-- Optional URL fallback input -->
+          <div id="adminPostEcoUrlWrap" style="display:none;margin-top:8px;">
+            <input type="url" class="form-input" id="adminPostEcoImage" placeholder="https://example.com/product.jpg" oninput="handleAdminEcoImageUrlInput(this.value)">
+            <div style="font-size:10.5px;color:var(--txt-3);margin-top:3px;">Optional: Direct image link if hosted online.</div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -6356,13 +6389,24 @@ function renderAdminEcoTable(list) {
       ? `<span style="color:var(--green);font-weight:700;background:rgba(16,185,129,0.1);padding:1px 6px;border-radius:4px;border:1px solid rgba(16,185,129,0.2);">${esc(item.price_tag)}</span>`
       : '<span style="color:var(--txt-3);font-size:11px;">No price tag</span>';
 
+    const rawImg = (item.image_url || '').trim();
+    const hasThumb = rawImg.length > 5 && !rawImg.includes('example.com') && !['undefined', 'null', 'none'].includes(rawImg.toLowerCase());
+    const thumbHtml = hasThumb ? `
+      <img src="${esc(rawImg)}" alt="" style="width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:rgba(0,0,0,0.05);" onerror="this.remove();">
+    ` : '';
+
     return `
       <tr style="${st === 'pending' ? 'background:rgba(245,158,11,0.03);' : ''}">
         <td>
-          <div style="font-weight:600;color:var(--txt);line-height:1.35;">${esc(item.title)}</div>
-          <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            ${badgeType}
-            ${priceTagHtml}
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${thumbHtml}
+            <div>
+              <div style="font-weight:600;color:var(--txt);line-height:1.35;">${esc(item.title)}</div>
+              <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                ${badgeType}
+                ${priceTagHtml}
+              </div>
+            </div>
           </div>
         </td>
         <td><span class="badge badge-neutral" style="white-space:nowrap;">${esc(item.category)}</span></td>
@@ -6425,11 +6469,13 @@ function openAdminViewEcoModal(id) {
   const imgWrap = document.getElementById('adminViewEcoImageWrap');
   const imgEl = document.getElementById('adminViewEcoImage');
   if (imgWrap && imgEl) {
-    if (item.image_url) {
-      imgEl.src = item.image_url;
+    const rawModalImg = (item.image_url || '').trim();
+    if (rawModalImg.length > 5 && !rawModalImg.includes('example.com') && !['undefined', 'null', 'none'].includes(rawModalImg.toLowerCase())) {
+      imgEl.src = rawModalImg;
       imgWrap.style.display = 'block';
     } else {
       imgWrap.style.display = 'none';
+      imgEl.src = '';
     }
   }
 
@@ -6585,7 +6631,139 @@ function setAdminEcoPricePreset(val) {
   }
 }
 
+let adminEcoSelectedImageBase64 = '';
+
+function toggleAdminEcoUrlInput() {
+  const wrap = document.getElementById('adminPostEcoUrlWrap');
+  const btn = document.getElementById('btnAdminToggleEcoUrl');
+  if (!wrap) return;
+  const isHidden = (wrap.style.display === 'none' || !wrap.style.display);
+  wrap.style.display = isHidden ? 'block' : 'none';
+  if (btn) btn.textContent = isHidden ? 'Hide link input' : 'Paste link instead';
+  if (isHidden) {
+    document.getElementById('adminPostEcoImage')?.focus();
+  }
+}
+
+function handleAdminEcoImageFileSelect(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  processAdminEcoImageFile(file);
+}
+
+function handleAdminEcoImageDrop(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('adminPostEcoDropzone');
+  if (dropzone) dropzone.style.borderColor = 'var(--border)';
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+    processAdminEcoImageFile(e.dataTransfer.files[0]);
+  }
+}
+
+function processAdminEcoImageFile(file) {
+  if (!file.type.match(/^image\//i)) {
+    toast('Please select a valid image file (JPG, PNG, WEBP)', 'error');
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    toast('Image file is too large (max 8MB)', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const rawData = evt.target.result;
+    const img = new Image();
+    img.onload = function() {
+      try {
+        const maxDim = 1280;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const compressedData = canvas.toDataURL(mime, 0.85);
+
+        adminEcoSelectedImageBase64 = compressedData;
+        showAdminEcoImagePreview(compressedData, file.name, (compressedData.length * 0.75));
+      } catch (err) {
+        adminEcoSelectedImageBase64 = rawData;
+        showAdminEcoImagePreview(rawData, file.name, file.size);
+      }
+    };
+    img.onerror = function() {
+      toast('Failed to load image file', 'error');
+    };
+    img.src = rawData;
+  };
+  reader.readAsDataURL(file);
+}
+
+function showAdminEcoImagePreview(src, name, bytes) {
+  const wrap = document.getElementById('adminPostEcoImagePreviewWrap');
+  const img = document.getElementById('adminPostEcoImagePreview');
+  const nameEl = document.getElementById('adminPostEcoImageName');
+  const sizeEl = document.getElementById('adminPostEcoImageSize');
+  const dropzone = document.getElementById('adminPostEcoDropzone');
+
+  if (img) img.src = src;
+  if (nameEl) nameEl.textContent = name || 'Uploaded Product Photo';
+  if (sizeEl) {
+    const kb = Math.round((bytes || src.length * 0.75) / 1024);
+    sizeEl.textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
+  }
+  if (wrap) wrap.style.display = 'block';
+  if (dropzone) dropzone.style.display = 'none';
+
+  const urlInp = document.getElementById('adminPostEcoImage');
+  if (urlInp) urlInp.value = '';
+}
+
+function clearAdminEcoImageSelection() {
+  adminEcoSelectedImageBase64 = '';
+  const fileInput = document.getElementById('adminPostEcoImageFile');
+  if (fileInput) fileInput.value = '';
+  const wrap = document.getElementById('adminPostEcoImagePreviewWrap');
+  if (wrap) wrap.style.display = 'none';
+  const img = document.getElementById('adminPostEcoImagePreview');
+  if (img) img.src = '';
+  const dropzone = document.getElementById('adminPostEcoDropzone');
+  if (dropzone) dropzone.style.display = 'block';
+  const urlInp = document.getElementById('adminPostEcoImage');
+  if (urlInp) urlInp.value = '';
+  const urlWrap = document.getElementById('adminPostEcoUrlWrap');
+  if (urlWrap) urlWrap.style.display = 'none';
+  const btnToggle = document.getElementById('btnAdminToggleEcoUrl');
+  if (btnToggle) btnToggle.textContent = 'Paste link instead';
+}
+
+function handleAdminEcoImageUrlInput(val) {
+  val = (val || '').trim();
+  if (val.length > 5 && !['undefined', 'null'].includes(val.toLowerCase()) && /^https?:\/\//i.test(val)) {
+    adminEcoSelectedImageBase64 = '';
+    const fileInput = document.getElementById('adminPostEcoImageFile');
+    if (fileInput) fileInput.value = '';
+    showAdminEcoImagePreview(val, 'Linked Web Image', 0);
+  } else if (!val && !adminEcoSelectedImageBase64) {
+    clearAdminEcoImageSelection();
+  }
+}
+
 function openAdminPostEcoModal() {
+  clearAdminEcoImageSelection();
+  try { document.getElementById('formAdminPostEco')?.reset(); } catch(e){}
   toggleAdminEcoPriceOption();
   openModal('modalAdminPostEcosystem');
 }
@@ -6598,7 +6776,7 @@ async function handleAdminPostEcoSubmit(e) {
   const price = hasPrice ? (document.getElementById('adminPostEcoPrice')?.value.trim() || '') : '';
   const link = document.getElementById('adminPostEcoLink')?.value.trim();
   const desc = document.getElementById('adminPostEcoDesc')?.value.trim();
-  const image = document.getElementById('adminPostEcoImage')?.value.trim();
+  const image = adminEcoSelectedImageBase64 || (document.getElementById('adminPostEcoImage')?.value.trim() || '');
   const btn = document.getElementById('btnAdminSubmitEco');
 
   if (!title || !desc || !link) {
@@ -6626,6 +6804,9 @@ async function handleAdminPostEcoSubmit(e) {
     if (d.status === 'success') {
       toast('Official opportunity published to the ecosystem!', 'success');
       closeModal('modalAdminPostEcosystem');
+      clearAdminEcoImageSelection();
+      try { document.getElementById('formAdminPostEco')?.reset(); } catch(e){}
+
       const createdItem = d.item || {
         id: 'ECO-' + Date.now(),
         title,
@@ -6652,11 +6833,6 @@ async function handleAdminPostEcoSubmit(e) {
         deleted = deleted.filter(x => x !== createdItem.id);
         localStorage.setItem('ix_deleted_eco_items', JSON.stringify(deleted));
       } catch(e){}
-      document.getElementById('adminPostEcoTitle').value = '';
-      document.getElementById('adminPostEcoPrice').value = '';
-      document.getElementById('adminPostEcoLink').value = '';
-      document.getElementById('adminPostEcoDesc').value = '';
-      document.getElementById('adminPostEcoImage').value = '';
       loadAdminEcosystem();
     } else {
       toast(d.message || 'Error creating post', 'error');

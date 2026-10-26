@@ -189,6 +189,25 @@ if ($action === 'create_item') {
     $priceTag    = $hasPrice ? trim($input['price_tag'] ?? '') : '';
     $contactLink = trim($input['contact_link'] ?? '');
     $imageUrl    = trim($input['image_url'] ?? '');
+
+    // If an image was uploaded directly as base64, save to uploads/ecosystem/
+    if (preg_match('/^data:image\/(\w+);base64,(.+)$/', $imageUrl, $matches)) {
+        $ext = strtolower($matches[1]);
+        if ($ext === 'jpeg') $ext = 'jpg';
+        $binaryData = base64_decode($matches[2]);
+        if ($binaryData !== false) {
+            $targetDir = __DIR__ . '/../uploads/ecosystem';
+            if (!is_dir($targetDir)) {
+                @mkdir($targetDir, 0777, true);
+            }
+            $filename = 'eco_' . time() . '_' . substr(md5(uniqid()), 0, 8) . '.' . $ext;
+            $filePath = $targetDir . '/' . $filename;
+            if (@file_put_contents($filePath, $binaryData) !== false) {
+                $imageUrl = '/uploads/ecosystem/' . $filename;
+            }
+        }
+    }
+
     $username    = trim($input['username'] ?? '');
     $payMethod   = trim($input['payment_method'] ?? 'points'); // 'points' | 'affiliate_balance' | 'official'
     $isAdmin     = !empty($input['is_admin']);
