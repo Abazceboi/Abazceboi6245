@@ -2,7 +2,6 @@
  * KAIRUSNETWORK — Main TypeScript Application Bootstrap
  */
 
-import { RevenueForecaster } from './modules/forecaster.js';
 import { LuckySpinWheel } from './modules/wheel.js';
 import { JobbersManager } from './modules/jobbers.js';
 import { VendorsSearchManager } from './modules/vendors.js';
@@ -336,7 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 13. Module Initializations
-    new RevenueForecaster();
     new LuckySpinWheel();
     new JobbersManager();
     new VendorsSearchManager();

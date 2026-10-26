@@ -6948,8 +6948,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     } catch(e) {}
                 }
 
-                // Protect User, Uploader, and Vendor Dashboards
-                if (['dashboard', 'uploader_dashboard', 'vendor_dashboard'].some(p => cleanUrl.includes(p))) {
+                // Protect User and Vendor Dashboards
+                if (['dashboard', 'vendor_dashboard'].some(p => cleanUrl.includes(p))) {
                     if (!u || !u.username) {
                         res.writeHead(302, { 'Location': '/login.php' });
                         res.end();

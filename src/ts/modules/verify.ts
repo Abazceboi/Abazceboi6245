@@ -49,26 +49,14 @@ export class CodeVerifier {
 
             this.resultBox.style.display = 'block';
             if (data.success) {
-                const isUploader = data.code_type === 'uploader_accreditation';
                 this.resultBox.className = 'verify-result success';
-
-                if (isUploader) {
-                    this.resultBox.innerHTML = `
-                        <div style="font-weight:800;font-size:1.05rem;color:#10B981;margin-bottom:4px">Verified: Uploader Accreditation PIN</div>
-                        <div style="font-size:0.88rem;color:var(--text-gray)">Value: <strong>₦10,000</strong> Accreditation Package. Notice: This code is strictly for upgrading to Task Uploader and cannot be used for standard registration.</div>
-                        <div style="margin-top:14px">
-                            <a href="dashboard.php" class="btn-primary" style="display:inline-flex;padding:8px 22px;font-size:0.85rem">Use in Dashboard Uploader Upgrade</a>
-                        </div>
-                    `;
-                } else {
-                    this.resultBox.innerHTML = `
-                        <div style="font-weight:800;font-size:1.05rem;color:#10B981;margin-bottom:4px">Verified: Member Registration PIN</div>
-                        <div style="font-size:0.88rem;color:var(--text-gray)">Value: <strong>₦${data.amount || 500}</strong> Lifetime Access. Ready for new member registration!</div>
-                        <div style="margin-top:14px">
-                            <a href="register.php?pin=${encodeURIComponent(code)}" class="btn-primary" style="display:inline-flex;padding:8px 22px;font-size:0.85rem">Use in Registration</a>
-                        </div>
-                    `;
-                }
+                this.resultBox.innerHTML = `
+                    <div style="font-weight:800;font-size:1.05rem;color:#10B981;margin-bottom:4px">Verified: Member Registration PIN</div>
+                    <div style="font-size:0.88rem;color:var(--text-gray)">Value: <strong>₦${data.amount || 500}</strong> Lifetime Access. Ready for new member registration!</div>
+                    <div style="margin-top:14px">
+                        <a href="register.php?pin=${encodeURIComponent(code)}" class="btn-primary" style="display:inline-flex;padding:8px 22px;font-size:0.85rem">Use in Registration</a>
+                    </div>
+                `;
             } else {
                 this.resultBox.className = 'verify-result error';
                 const headline = data.is_used ? 'Code Already Used' : 'Invalid Code';

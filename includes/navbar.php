@@ -21,7 +21,7 @@ function isActive($page, $currentPage) {
  <a href="index.php" class="<?= isActive('index', $currentPage) ?>">Home</a>
 
  <!-- 2. Products & Access Dropdown -->
- <div class="nav-item-dropdown <?= in_array($currentPage, ['membership', 'jobbers', 'forecaster', 'dashboard']) ? 'active' : '' ?>">
+ <div class="nav-item-dropdown <?= in_array($currentPage, ['membership', 'jobbers', 'dashboard']) ? 'active' : '' ?>">
  <button type="button" class="nav-dropdown-btn">
  <span>Products</span>
  <svg class="nav-dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -70,15 +70,6 @@ function isActive($page, $currentPage) {
  <div>
  <span class="nav-dropdown-title">Unlisted Tokens OTC</span>
  <span class="nav-dropdown-sub">Buy &amp; Sell VERY, RUBI &amp; Mining Tokens</span>
- </div>
- </a>
- <a href="forecaster.php" class="nav-dropdown-link" data-feature="forecaster">
- <div class="nav-dropdown-icon" style="color:var(--sky-vibrant);background:rgba(56, 189, 248, 0.15)">
- <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
- </div>
- <div>
- <span class="nav-dropdown-title">Revenue Calculator</span>
- <span class="nav-dropdown-sub">Estimate Projected Returns</span>
  </div>
  </a>
  </div>
@@ -220,9 +211,6 @@ function isActive($page, $currentPage) {
             </a>
             <a href="verify.php" class="smd-link <?= $currentPage === 'verify' ? 'active' : '' ?>">
                 <span>Verify PIN</span>
-            </a>
-            <a href="forecaster.php" class="smd-link <?= $currentPage === 'forecaster' ? 'active' : '' ?>">
-                <span>Revenue Calculator</span>
             </a>
             <a href="advertise.php" class="smd-link <?= $currentPage === 'advertise' ? 'active' : '' ?>">
                 <span>Advertise</span>

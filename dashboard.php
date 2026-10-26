@@ -2583,12 +2583,6 @@ html[data-theme="light"] .special-portal-card.uploader,
     </div>
 
     <div class="top-pill-actions">
-      <!-- Uploader Studio Quick Action -->
-      <a href="uploader_dashboard.php" id="navUploaderStudioBtn" class="btn" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>padding:5px 12px;border-radius:9999px;font-size:11.5px;font-weight:800;background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.35);text-decoration:none;align-items:center;gap:5px;" title="Creator Publishing Studio">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-        <span>Creator Studio</span>
-      </a>
-
       <!-- Notification Bell -->
       <div style="position:relative;">
         <button class="top-action-btn" id="notifBellBtn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications">
@@ -3332,18 +3326,6 @@ html[data-theme="light"] .special-portal-card.uploader,
       <button type="button" class="btn btn-sm" onclick="switchTab('vendor', document.getElementById('dockBtnVendor'))" style="background:#F59E0B;color:#000;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
         Open Vendor Tab
       </button>
-    </div>
-
-    <!-- Creator Publishing Studio Card -->
-    <div id="cardUploaderStudio" class="card special-portal-card uploader" style="<?= ($userRole === 'uploader' || $isAdmin) ? 'display:block;' : 'display:none;' ?>">
-      <div class="card-title" style="color:#10B981;display:flex;align-items:center;gap:8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-        <span>Creator Publishing Studio</span>
-      </div>
-      <div class="card-sub">You are an accredited task creator and advertiser. Access your publishing studio to launch sponsored micro-tasks, review member submissions, and monitor engagement.</div>
-      <a href="uploader_dashboard.php" class="btn btn-sm" style="background:#10B981;color:#fff;border:none;font-weight:800;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
-        Open Creator Studio ↗
-      </a>
     </div>
 
     <!-- Administrator Console Card -->
@@ -4436,12 +4418,6 @@ function updateDashboardRoleUI(newRole) {
       if (typeof switchTab === 'function') switchTab('home', homeDock);
     }
   }
-
-  const isUploader = norm === 'uploader' || ['admin', 'super_admin', 'sub_admin'].includes(norm);
-  const uNav = document.getElementById('navUploaderStudioBtn');
-  if (uNav) uNav.style.display = isUploader ? 'inline-flex' : 'none';
-  const uCard = document.getElementById('cardUploaderStudio');
-  if (uCard) uCard.style.display = isUploader ? 'block' : 'none';
 
   const isAdmin = ['admin', 'super_admin', 'sub_admin'].includes(norm);
   const aCard = document.getElementById('cardAdminConsole');
