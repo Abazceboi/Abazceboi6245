@@ -2874,7 +2874,7 @@ html[data-theme="light"] .special-portal-card.uploader,
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Edit Bank Card
           </button>
-          <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditBank'); setTimeout(function(){ var p = document.getElementById('editWithdrawalPin'); if(p){ p.focus(); } }, 200);">
+          <button class="btn btn-secondary btn-sm" onclick="openSetOrChangePinModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Set / Change PIN
           </button>
@@ -3316,8 +3316,9 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div class="card-sub">Set or update your 4-digit security PIN used to authorize bank transfers and payouts.</div>
       <form onsubmit="handleSaveWithdrawalPin(event)">
         <div class="form-group">
-          <label class="form-label">Current PIN (Leave empty if setting for the first time)</label>
+          <label class="form-label" id="labelSetOldPin"><?= $hasWithdrawalPin ? 'Current (Previous) 4-Digit PIN <span style="color:var(--red);">*</span>' : 'Current PIN (Leave empty if setting for the first time)' ?></label>
           <input type="password" class="form-input" id="setOldWithdrawalPin" inputmode="numeric" maxlength="4" placeholder="••••" style="letter-spacing:4px;font-family:var(--mono);">
+          <small style="font-size:11px;color:var(--txt-3);display:block;margin-top:3px;">Your previous PIN is strictly required to verify identity before saving a new PIN.</small>
         </div>
         <div class="form-group">
           <label class="form-label">New 4-Digit PIN</label>
@@ -3595,13 +3596,23 @@ html[data-theme="light"] .special-portal-card.uploader,
           <label class="form-label">Account Holder Name</label>
           <input type="text" class="form-input" id="editAccountName" required value="<?= htmlspecialchars($accountName) ?>" placeholder="Full account name">
         </div>
+        <div class="form-group" id="groupEditCurrentPin" style="<?= $hasWithdrawalPin ? 'display:block;' : 'display:none;' ?>">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Current (Previous) 4-Digit PIN <span style="color:var(--red);">*</span></span>
+            <span style="font-size:11px;color:var(--amber);">Required to change PIN</span>
+          </label>
+          <input type="password" class="form-input" id="editCurrentWithdrawalPin" inputmode="numeric" maxlength="4" placeholder="••••" style="letter-spacing:4px;font-family:var(--mono);">
+          <small style="font-size:11px;color:var(--txt-3);display:block;margin-top:3px;">You must enter your previous PIN before changing your security PIN.</small>
+        </div>
         <div class="form-group">
           <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;">
-            <span>4-Digit Withdrawal PIN</span>
-            <span style="font-size:11px;color:var(--text-muted);font-weight:normal;">Required for payouts</span>
+            <span id="labelNewPinTitle"><?= $hasWithdrawalPin ? 'New 4-Digit PIN (Optional)' : 'Set 4-Digit Withdrawal PIN' ?></span>
+            <span style="font-size:11px;color:var(--txt-3);font-weight:normal;"><?= $hasWithdrawalPin ? 'Leave blank to keep existing' : 'Required for payouts' ?></span>
           </label>
           <input type="password" class="form-input" id="editWithdrawalPin" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="•••• (4 digits)" style="letter-spacing:4px;font-family:var(--mono);">
-          <small style="font-size:11px;color:var(--text-muted);display:block;margin-top:4px;">Set or update your 4-digit PIN to authorize instant withdrawals.</small>
+          <small style="font-size:11px;color:var(--txt-3);display:block;margin-top:3px;">
+            <?= $hasWithdrawalPin ? 'Only enter a new PIN if you wish to change your existing PIN.' : 'Set your 4-digit security PIN used to authorize bank payouts.' ?>
+          </small>
         </div>
       </div>
       <div class="modal-footer">
@@ -4245,11 +4256,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editH) editH.value = '';
   }
 
-  // Restore cached withdrawal PIN if available
+  // Restore cached withdrawal PIN status if available
   const cachedPin = localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || localStorage.getItem('ix_withdrawal_pin') || '';
-  const editPinEl = document.getElementById('editWithdrawalPin');
-  if (editPinEl && cachedPin) {
-    editPinEl.value = cachedPin;
+  if (cachedPin) {
+    const dataHasPin = document.getElementById('dataHasPin');
+    if (dataHasPin) dataHasPin.dataset.hasPin = '1';
+    const grp = document.getElementById('groupEditCurrentPin');
+    if (grp) grp.style.display = 'block';
+    const lbl = document.getElementById('labelNewPinTitle');
+    if (lbl) lbl.textContent = 'New 4-Digit PIN (Optional)';
   }
 
   // Immediately synchronize withdrawal modal bank card display
@@ -4520,12 +4535,14 @@ async function syncLiveProfile() {
 
       if (d.withdrawal_pin) {
         localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, d.withdrawal_pin);
-        const editPin = document.getElementById('editWithdrawalPin');
-        if (editPin && !editPin.value) editPin.value = d.withdrawal_pin;
       }
-      if (d.has_pin) {
+      if (d.has_pin || d.withdrawal_pin) {
         const dataHasPin = document.getElementById('dataHasPin');
         if (dataHasPin) dataHasPin.dataset.hasPin = '1';
+        const grp = document.getElementById('groupEditCurrentPin');
+        if (grp) grp.style.display = 'block';
+        const lbl = document.getElementById('labelNewPinTitle');
+        if (lbl) lbl.textContent = 'New 4-Digit PIN (Optional)';
       }
     }
   } catch(e) {}
@@ -5132,6 +5149,18 @@ async function handleSaveWithdrawalPin(e) {
   const confPin = document.getElementById('setConfirmWithdrawalPin')?.value.trim() || '';
   const btn = document.getElementById('btnSaveWithdrawalPin');
 
+  const dataHasPin = document.getElementById('dataHasPin');
+  const hasPin = (dataHasPin?.dataset.hasPin === '1') || Boolean(localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || localStorage.getItem('ix_withdrawal_pin'));
+
+  if (hasPin && !oldPin) {
+    toast('Please enter your current (previous) 4-digit withdrawal PIN to authorize this change.', 'error');
+    document.getElementById('setOldWithdrawalPin')?.focus();
+    return;
+  }
+  if (hasPin && oldPin && oldPin === newPin) {
+    toast('New PIN cannot be the same as your current PIN.', 'error');
+    return;
+  }
   if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
     toast('New withdrawal PIN must be exactly 4 numerical digits.', 'error');
     return;
@@ -5157,7 +5186,6 @@ async function handleSaveWithdrawalPin(e) {
     if (d.success || d.status === 'success') {
       toast('Withdrawal PIN updated successfully!', 'success');
       localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, newPin);
-      const dataHasPin = document.getElementById('dataHasPin');
       if (dataHasPin) dataHasPin.dataset.hasPin = '1';
       const oldEl = document.getElementById('setOldWithdrawalPin');
       const newEl = document.getElementById('setNewWithdrawalPin');
@@ -5165,8 +5193,16 @@ async function handleSaveWithdrawalPin(e) {
       if (oldEl) oldEl.value = '';
       if (newEl) newEl.value = '';
       if (confEl) confEl.value = '';
+      const editCurPin = document.getElementById('editCurrentWithdrawalPin');
+      if (editCurPin) editCurPin.value = '';
       const editPin = document.getElementById('editWithdrawalPin');
-      if (editPin) editPin.value = newPin;
+      if (editPin) editPin.value = '';
+      const grp = document.getElementById('groupEditCurrentPin');
+      if (grp) grp.style.display = 'block';
+      const lbl = document.getElementById('labelNewPinTitle');
+      if (lbl) lbl.textContent = 'New 4-Digit PIN (Optional)';
+      const lblSetOld = document.getElementById('labelSetOldPin');
+      if (lblSetOld) lblSetOld.innerHTML = 'Current (Previous) 4-Digit PIN <span style="color:var(--red);">*</span>';
     } else {
       toast(d.error || d.message || 'Failed to update withdrawal PIN', 'error');
     }
@@ -5336,12 +5372,37 @@ function syncWithdrawalBankDetails() {
   if (cfmName) cfmName.textContent = (accHolder && accHolder !== 'CARDHOLDER NAME') ? accHolder : CURRENT_USER;
 }
 
+function openSetOrChangePinModal() {
+  const dataHasPin = document.getElementById('dataHasPin');
+  const hasPin = (dataHasPin?.dataset.hasPin === '1') || Boolean(localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || localStorage.getItem('ix_withdrawal_pin'));
+  
+  const grp = document.getElementById('groupEditCurrentPin');
+  if (grp) grp.style.display = hasPin ? 'block' : 'none';
+  const lbl = document.getElementById('labelNewPinTitle');
+  if (lbl) lbl.textContent = hasPin ? 'New 4-Digit PIN' : 'Set 4-Digit Withdrawal PIN';
+  
+  const curPinEl = document.getElementById('editCurrentWithdrawalPin');
+  if (curPinEl) curPinEl.value = '';
+  const pinEl = document.getElementById('editWithdrawalPin');
+  if (pinEl) pinEl.value = '';
+
+  openModal('modalEditBank');
+  setTimeout(() => {
+    if (hasPin && curPinEl) {
+      curPinEl.focus();
+    } else if (pinEl) {
+      pinEl.focus();
+    }
+  }, 150);
+}
+
 async function handleUpdateBank(e) {
   e.preventDefault();
   const bankName = document.getElementById('editBankName').value.trim();
   const accNum = document.getElementById('editAccountNumber').value.trim();
   const accName = document.getElementById('editAccountName').value.trim();
-  const pin = document.getElementById('editWithdrawalPin')?.value.trim();
+  const currentPin = document.getElementById('editCurrentWithdrawalPin')?.value.trim() || '';
+  const pin = document.getElementById('editWithdrawalPin')?.value.trim() || '';
   const btn = document.getElementById('btnSaveBank');
 
   if (!bankName) {
@@ -5361,6 +5422,22 @@ async function handleUpdateBank(e) {
     return;
   }
 
+  const dataHasPin = document.getElementById('dataHasPin');
+  const hasPin = (dataHasPin?.dataset.hasPin === '1') || Boolean(localStorage.getItem('ix_withdrawal_pin_' + CURRENT_USER) || localStorage.getItem('ix_withdrawal_pin'));
+
+  // If user is attempting to change / set a new withdrawal PIN while already having an existing PIN:
+  if (pin && hasPin) {
+    if (!currentPin) {
+      toast('Please enter your current (previous) 4-digit withdrawal PIN to authorize changing your PIN.', 'error');
+      document.getElementById('editCurrentWithdrawalPin')?.focus();
+      return;
+    }
+    if (currentPin === pin) {
+      toast('New PIN cannot be the same as your current PIN.', 'error');
+      return;
+    }
+  }
+
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const payload = {
@@ -5369,7 +5446,10 @@ async function handleUpdateBank(e) {
       account_number: accNum,
       account_name: accName
     };
-    if (pin) payload.withdrawal_pin = pin;
+    if (pin) {
+      payload.withdrawal_pin = pin;
+      if (currentPin) payload.old_pin = currentPin;
+    }
 
     const r = await fetch(`api/users.php?action=update_bank_details&username=${encodeURIComponent(CURRENT_USER)}`, {
       method: 'POST',
@@ -5407,9 +5487,20 @@ async function handleUpdateBank(e) {
       }
       if (pin) {
         localStorage.setItem('ix_withdrawal_pin_' + CURRENT_USER, pin);
-        const dataHasPin = document.getElementById('dataHasPin');
         if (dataHasPin) dataHasPin.dataset.hasPin = '1';
+        const grp = document.getElementById('groupEditCurrentPin');
+        if (grp) grp.style.display = 'block';
+        const lbl = document.getElementById('labelNewPinTitle');
+        if (lbl) lbl.textContent = 'New 4-Digit PIN (Optional)';
+        const lblSetOld = document.getElementById('labelSetOldPin');
+        if (lblSetOld) lblSetOld.innerHTML = 'Current (Previous) 4-Digit PIN <span style="color:var(--red);">*</span>';
       }
+
+      // Reset PIN inputs in the modal so they are never retained in plaintext
+      const curPinEl = document.getElementById('editCurrentWithdrawalPin');
+      if (curPinEl) curPinEl.value = '';
+      const pinEl = document.getElementById('editWithdrawalPin');
+      if (pinEl) pinEl.value = '';
 
       const setupEl = document.getElementById('dataBankSetup');
       if (setupEl) {

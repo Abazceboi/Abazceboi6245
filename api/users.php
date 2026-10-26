@@ -1293,7 +1293,24 @@ switch ($action) {
                 $u['account_number'] = $accNum;
                 $u['account_name'] = $accName ?: ($u['full_name'] ?? $u['username']);
                 if (!empty($pin)) {
+                    if (strlen($pin) !== 4 || !ctype_digit($pin)) {
+                        echo json_encode(['success' => false, 'error' => 'Withdrawal PIN must be exactly 4 numerical digits.']);
+                        exit;
+                    }
+                    $existingPin = trim($u['withdrawal_pin'] ?? '');
+                    if (!empty($existingPin) && $existingPin !== $pin) {
+                        $curPin = trim($input['old_pin'] ?? ($input['current_pin'] ?? ''));
+                        if (empty($curPin)) {
+                            echo json_encode(['success' => false, 'error' => 'Please enter your current (previous) 4-digit withdrawal PIN to authorize changing your PIN.']);
+                            exit;
+                        }
+                        if ($existingPin !== $curPin) {
+                            echo json_encode(['success' => false, 'error' => 'Current (previous) withdrawal PIN is incorrect.']);
+                            exit;
+                        }
+                    }
                     $u['withdrawal_pin'] = $pin;
+                    $u['pin_updated_at'] = date('c');
                 }
                 $u['bank_updated_at'] = date('c');
                 $found = true;
@@ -1385,9 +1402,19 @@ switch ($action) {
         foreach ($data['users'] as &$u) {
             if (strtolower($u['username'] ?? '') === strtolower($username)) {
                 $existingPin = trim($u['withdrawal_pin'] ?? '');
-                if (!empty($existingPin) && !empty($oldPin) && $existingPin !== $oldPin) {
-                    echo json_encode(['success' => false, 'error' => 'Current withdrawal PIN is incorrect.']);
-                    exit;
+                if (!empty($existingPin)) {
+                    if (empty($oldPin)) {
+                        echo json_encode(['success' => false, 'error' => 'Please enter your current (previous) 4-digit withdrawal PIN to authorize this change.']);
+                        exit;
+                    }
+                    if ($existingPin !== $oldPin) {
+                        echo json_encode(['success' => false, 'error' => 'Current (previous) withdrawal PIN is incorrect.']);
+                        exit;
+                    }
+                    if ($existingPin === $pin) {
+                        echo json_encode(['success' => false, 'error' => 'New PIN cannot be the same as your current PIN. Please choose a different 4-digit PIN.']);
+                        exit;
+                    }
                 }
                 $u['withdrawal_pin'] = $pin;
                 $u['pin_updated_at'] = date('c');

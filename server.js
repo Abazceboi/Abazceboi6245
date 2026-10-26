@@ -5091,20 +5091,44 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     if (!usersData.users) usersData.users = [];
                     let found = false;
-                    let targetUser = null;
+                    let pinValidationError = null;
                     usersData.users.forEach(u => {
                         if ((u.username || '').toLowerCase() === username.toLowerCase()) {
                             u.bank_name = bankName;
                             u.account_number = accNum;
                             u.account_name = accName || u.full_name || u.username;
-                            if (parsed.withdrawal_pin) {
-                                u.withdrawal_pin = String(parsed.withdrawal_pin).trim();
+                            const newPin = String(parsed.withdrawal_pin || parsed.pin || '').trim();
+                            const curPin = String(parsed.old_pin || parsed.current_pin || '').trim();
+                            if (newPin) {
+                                if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                                    pinValidationError = 'Withdrawal PIN must be exactly 4 numerical digits.';
+                                    return;
+                                }
+                                const existingPin = String(u.withdrawal_pin || '').trim();
+                                if (existingPin && existingPin !== newPin) {
+                                    if (!curPin) {
+                                        pinValidationError = 'Please enter your current (previous) 4-digit withdrawal PIN to authorize changing your PIN.';
+                                        return;
+                                    }
+                                    if (existingPin !== curPin) {
+                                        pinValidationError = 'Current (previous) withdrawal PIN is incorrect.';
+                                        return;
+                                    }
+                                }
+                                u.withdrawal_pin = newPin;
+                                u.pin_updated_at = new Date().toISOString();
                             }
                             u.bank_updated_at = new Date().toISOString();
                             found = true;
                             targetUser = u;
                         }
                     });
+
+                    if (pinValidationError) {
+                        res.writeHead(400, { 'Content-Type': 'application/json; charset=UTF-8' });
+                        res.end(JSON.stringify({ success: false, error: pinValidationError }));
+                        return;
+                    }
 
                     if (!found) {
                         const newUser = {
@@ -5173,9 +5197,19 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
 
                     const existingPin = String(targetUser.withdrawal_pin || '').trim();
-                    if (existingPin && oldPin && existingPin !== oldPin) {
-                        res.end(JSON.stringify({ success: false, error: 'Current withdrawal PIN is incorrect.' }));
-                        return;
+                    if (existingPin) {
+                        if (!oldPin) {
+                            res.end(JSON.stringify({ success: false, error: 'Please enter your current (previous) 4-digit withdrawal PIN to authorize this change.' }));
+                            return;
+                        }
+                        if (existingPin !== oldPin) {
+                            res.end(JSON.stringify({ success: false, error: 'Current (previous) withdrawal PIN is incorrect.' }));
+                            return;
+                        }
+                        if (existingPin === pin) {
+                            res.end(JSON.stringify({ success: false, error: 'New PIN cannot be the same as your current PIN. Please choose a different 4-digit PIN.' }));
+                            return;
+                        }
                     }
 
                     targetUser.withdrawal_pin = pin;
