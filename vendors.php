@@ -1269,7 +1269,7 @@ if (file_exists($telegramConfigFile)) {
         <!-- Standalone Brand Logo (Left) -->
         <div class="ev-header-side ev-header-left">
             <a href="index.php" class="ev-brand-standalone" aria-label="KAIRUSNETWORK home">
-                <div class="ev-brand-badge">KN</div>
+                <div class="ev-brand-badge" style="background:transparent;box-shadow:none;padding:0;"><img src="assets/images/logo.png" alt="KN" style="width:34px;height:34px;object-fit:contain;border-radius:50%;"></div>
                 <span class="ev-brand-name">KAIRUSNETWORK</span>
             </a>
         </div>

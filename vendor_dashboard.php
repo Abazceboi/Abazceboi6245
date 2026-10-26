@@ -41,6 +41,8 @@ if (!$isVendor) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Vendor Access Required | <?= htmlspecialchars(APP_NAME) ?></title>
+        <link rel="icon" type="image/png" href="assets/images/logo.png">
+        <link rel="apple-touch-icon" href="assets/images/logo.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
         <style>
@@ -77,6 +79,8 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -110,8 +114,10 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
         }
         .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); }
         .brand-icon {
-            width: 32px; height: 32px; border-radius: 8px; background: rgba(217,119,6,0.18);
-            color: #F59E0B; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .brand-icon img {
+            width: 100%; height: 100%; object-fit: contain; display: block;
         }
         .brand-text { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.2px; }
 
@@ -219,7 +225,7 @@ $pageTitle = 'Vendor Portal | ' . APP_NAME;
     <!-- Top Navigation -->
     <header class="top-nav">
         <a href="vendor_dashboard.php" class="nav-brand">
-            <div class="brand-icon">VP</div>
+            <div class="brand-icon"><img src="assets/images/logo.png" alt="KN"></div>
             <div class="brand-text">Vendor Portal</div>
         </a>
         <div class="nav-actions">

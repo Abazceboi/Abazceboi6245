@@ -54,6 +54,8 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -803,7 +805,9 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         <!-- Top bar -->
         <div class="top-bar">
             <a href="index.php" class="brand-pill">
-                <span class="brand-badge">KN</span>
+                <span class="brand-badge" style="background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <img src="assets/images/logo.png" alt="KN" style="width:26px;height:26px;object-fit:contain;border-radius:50%;">
+                </span>
                 <span>KAIRUSNETWORK</span>
             </a>
             <div style="display:flex;align-items:center;gap:8px;">

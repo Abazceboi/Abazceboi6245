@@ -50,6 +50,8 @@ if (!empty($_GET['error'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Access | <?= htmlspecialchars(APP_NAME) ?></title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -254,18 +256,20 @@ if (!empty($_GET['error'])) {
         }
 
         .auth-logo-badge {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #0284C7, #38BDF8);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #FFFFFF;
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 0.78rem;
-            box-shadow: 0 0 10px rgba(0, 212, 240, 0.35);
+            overflow: hidden;
+        }
+
+        .auth-logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         .auth-logo-text {
@@ -559,7 +563,7 @@ if (!empty($_GET['error'])) {
     <div class="auth-card">
         <div class="auth-card-head">
             <a href="index.php" class="auth-logo" aria-label="KAIRUSNETWORK">
-                <div class="auth-logo-badge">KN</div>
+                <div class="auth-logo-badge"><img src="assets/images/logo.png" alt="KN"></div>
                 <span class="auth-logo-text"><?= htmlspecialchars(APP_NAME) ?></span>
             </a>
 

@@ -10,7 +10,9 @@ function isActive($page, $currentPage) {
 <header class="navbar" role="banner">
  <div class="container nav-inner">
  <a href="index.php" class="logo" aria-label="KAIRUSNETWORK Home">
- <div class="logo-icon">KN</div>
+ <div class="logo-icon" style="background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+   <img src="assets/images/logo.png" alt="KN" style="width:34px;height:34px;object-fit:contain;border-radius:50%;">
+ </div>
  <span>KAIRUSNETWORK</span>
  </a>
 

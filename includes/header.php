@@ -37,6 +37,10 @@ $pageDesc = $pageDesc ?? 'Join thousands earning daily with KAIRUSNETWORK. High-
  <meta property="og:description" content="<?= htmlspecialchars($pageDesc) ?>">
  <meta property="og:type" content="website">
  
+ <!-- Favicon & App Icons -->
+ <link rel="icon" type="image/png" href="assets/images/logo.png">
+ <link rel="apple-touch-icon" href="assets/images/logo.png">
+ 
  <!-- Google Fonts & Stylesheets -->
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

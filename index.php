@@ -1039,7 +1039,9 @@ a {
 <header class="ev-header">
     <div class="ev-nav-container">
         <a href="index.php" class="ev-brand" aria-label="KAIRUSNETWORK">
-            <div class="ev-brand-badge">KN</div>
+            <div class="ev-brand-badge" style="background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:none;">
+                <img src="assets/images/logo.png" alt="KN" style="width:34px;height:34px;object-fit:contain;border-radius:50%;">
+            </div>
             <span class="ev-brand-name">KAIRUSNETWORK</span>
         </a>
 
@@ -1073,7 +1075,9 @@ a {
 <aside class="ev-drawer" id="evDrawer">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:10px;">
-            <div class="ev-brand-badge" style="width:28px;height:28px;font-size:0.75rem;">KN</div>
+            <div class="ev-brand-badge" style="width:28px;height:28px;background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:none;">
+                <img src="assets/images/logo.png" alt="KN" style="width:28px;height:28px;object-fit:contain;border-radius:50%;">
+            </div>
             <span class="ev-brand-name">KAIRUSNETWORK</span>
         </div>
         <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:var(--ev-text);font-size:1.4rem;cursor:pointer;">
@@ -1268,7 +1272,7 @@ a {
                 <div class="ev-footer-grid">
                     <div>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div class="ev-brand-badge" style="width:30px;height:30px;font-size:0.75rem;">KN</div>
+                            <div class="ev-brand-badge" style="width:32px;height:32px;background:transparent;box-shadow:none;padding:0;"><img src="assets/images/logo.png" alt="KN" style="width:32px;height:32px;object-fit:contain;border-radius:50%;"></div>
                             <span class="ev-brand-name">KAIRUSNETWORK</span>
                         </div>
                         <p class="ev-footer-brand-desc">

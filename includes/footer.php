@@ -3,7 +3,9 @@
  <footer class="footer" role="contentinfo" style="overflow-x:hidden;">
  <div class="container" style="max-width:1120px;margin:0 auto;padding:0 16px;box-sizing:border-box;">
  <div class="footer-brand">
- <div class="logo-icon" style="width:34px;height:34px;font-size:0.8rem">IX</div>
+ <div class="logo-icon" style="width:34px;height:34px;background:transparent;padding:0;overflow:hidden;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+   <img src="assets/images/logo.png" alt="KN" style="width:34px;height:34px;object-fit:contain;border-radius:50%;">
+ </div>
  <span><?= htmlspecialchars(APP_NAME) ?></span>
  </div>
  <p style="margin-bottom:8px">

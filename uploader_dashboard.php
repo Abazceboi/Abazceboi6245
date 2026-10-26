@@ -26,6 +26,8 @@ if (!$isUploader) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Uploader Accreditation Required | <?= htmlspecialchars(APP_NAME) ?></title>
+        <link rel="icon" type="image/png" href="assets/images/logo.png">
+        <link rel="apple-touch-icon" href="assets/images/logo.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap" rel="stylesheet">
         <style>
@@ -61,6 +63,8 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
@@ -91,7 +95,8 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
         }
 
         .brand-logo-area { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF; }
-        .brand-badge { width: 36px; height: 36px; border-radius: 9px; background: #10B981; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+        .brand-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .brand-badge img { width: 100%; height: 100%; object-fit: contain; display: block; }
         .brand-title { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; }
 
         .btn-dash-back {
@@ -162,7 +167,7 @@ $pageTitle = 'Uploader Publishing Studio | ' . APP_NAME;
 <body>
     <nav class="uploader-nav">
         <a href="uploader_dashboard.php" class="brand-logo-area">
-            <div class="brand-badge">UP</div>
+            <div class="brand-badge"><img src="assets/images/logo.png" alt="KN"></div>
             <div class="brand-title">UPLOADER <span>STUDIO</span></div>
         </a>
         <div style="display:flex;align-items:center;gap:12px">

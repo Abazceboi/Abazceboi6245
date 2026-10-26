@@ -111,6 +111,8 @@ if ($adminAuthStep < 2) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin 2-Step Verification | KAIRUSNETWORK</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -176,6 +178,8 @@ $adminUsername = $authUser['username'] ?? 'Admin';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Management — KairusNetwork</title>
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+<link rel="apple-touch-icon" href="assets/images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -236,9 +240,12 @@ input,textarea,select{font-family:var(--ff);}
 }
 .sidebar-logo-left{display:flex;align-items:center;gap:10px;}
 .sidebar-logo-mark{
-  width:32px;height:32px;border-radius:8px;
-  background:linear-gradient(135deg, #2563EB, #1D4ED8);display:flex;align-items:center;justify-content:center;
-  color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,0.28);
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;overflow:hidden;
+}
+.sidebar-logo-mark img{
+  width:100%;height:100%;object-fit:contain;display:block;
 }
 .sidebar-logo-name{font-weight:700;font-size:14px;letter-spacing:-0.2px;}
 .sidebar-logo-name span{color:var(--accent);}
@@ -777,9 +784,7 @@ input,textarea,select{font-family:var(--ff);}
   <div class="sidebar-logo">
     <div class="sidebar-logo-left">
       <div class="sidebar-logo-mark" title="Admin HQ">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
+        <img src="assets/images/logo.png" alt="KN">
       </div>
       <div class="sidebar-logo-name">KAIRUS<span>NETWORK</span> HQ</div>
     </div>

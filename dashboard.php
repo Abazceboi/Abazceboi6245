@@ -352,6 +352,8 @@ if ($actDownlines > $referralCount) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Member Dashboard — KairusNetwork</title>
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+<link rel="apple-touch-icon" href="assets/images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -467,16 +469,20 @@ input,textarea,select{font-family:var(--ff);}
 .brand-mark {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border-radius: 50%;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 13px;
-  color: #fff;
-  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.35);
   flex-shrink: 0;
+  overflow: hidden;
+}
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
 }
 .brand-text {
   font-size: 15px;
@@ -2558,7 +2564,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 <header class="top-pill-wrapper">
   <div class="top-pill-bar">
     <a href="dashboard.php" class="brand-pill" title="KairusNetwork Dashboard">
-      <div class="brand-mark">KN</div>
+      <div class="brand-mark"><img src="assets/images/logo.png" alt="KN"></div>
       <div class="brand-text">Kairus<span>Network</span></div>
     </a>
 
@@ -2788,7 +2794,7 @@ html[data-theme="light"] .special-portal-card.uploader,
               <span class="atm-card-type">PLATINUM DEBIT</span>
             </div>
             <div class="atm-brand-badge">
-              <span class="atm-brand-logo">KN</span>
+              <span class="atm-brand-logo" style="background:transparent;border:none;overflow:hidden;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;"><img src="assets/images/logo.png" alt="KN" style="width:24px;height:24px;object-fit:contain;border-radius:50%;"></span>
               <span class="atm-brand-title">KAIRUS<span>NETWORK</span></span>
             </div>
           </div>
@@ -3834,7 +3840,7 @@ html[data-theme="light"] .special-portal-card.uploader,
     <div class="receipt-header">
       <div class="receipt-brand-row">
         <div class="receipt-logo">
-          <span class="rcpt-logo-mark">KN</span>
+          <span class="rcpt-logo-mark" style="background:transparent;padding:0;overflow:hidden;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;"><img src="assets/images/logo.png" alt="KN" style="width:26px;height:26px;object-fit:contain;border-radius:50%;"></span>
           <span class="rcpt-logo-text">KAIRUSNETWORK</span>
         </div>
         <span class="rcpt-type-tag">Transfer Receipt</span>
