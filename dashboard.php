@@ -1142,13 +1142,75 @@ input,textarea,select{font-family:var(--ff);}
 .item-timer svg{width:13px;height:13px;}
 .item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
 
-/* Innovation Ecosystem */
+/* Innovation Ecosystem & Rebranded Cards */
 .eco-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
   padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
-  transition:transform var(--trans), border-color var(--trans);
+  transition:transform var(--trans), border-color var(--trans), box-shadow var(--trans);
+  position:relative;
 }
-.eco-card:hover{transform:translateY(-2px);border-color:rgba(59,130,246,0.35);}
+.eco-card:hover{transform:translateY(-3px);border-color:rgba(56,189,248,0.4);box-shadow:0 8px 24px -4px rgba(0,0,0,0.3);}
+.eco-card-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.eco-badge-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.eco-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
+  letter-spacing:0.2px;line-height:1.3;
+}
+.eco-badge-official{
+  background:linear-gradient(135deg, rgba(2,132,199,0.18), rgba(56,189,248,0.22));
+  color:#38BDF8;border:1px solid rgba(56,189,248,0.4);
+}
+.eco-badge-member{
+  background:rgba(16,185,129,0.12);color:#10B981;border:1px solid rgba(16,185,129,0.3);
+}
+.eco-badge-pending{
+  background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);
+}
+.eco-badge-rejected{
+  background:rgba(239,68,68,0.14);color:#EF4444;border:1px solid rgba(239,68,68,0.3);
+}
+.eco-cat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;
+  background:var(--surface);color:var(--txt-2);border:1px solid var(--border);
+}
+.eco-price-pill{
+  font-size:11.5px;font-weight:800;color:#10B981;
+  background:rgba(16,185,129,0.1);padding:3px 9px;border-radius:20px;
+  border:1px solid rgba(16,185,129,0.25);display:inline-flex;align-items:center;gap:3px;
+}
+.eco-price-free{
+  font-size:11px;font-weight:700;color:var(--accent);
+  background:rgba(56,189,248,0.08);padding:3px 9px;border-radius:20px;
+  border:1px solid rgba(56,189,248,0.2);display:inline-flex;align-items:center;gap:3px;
+}
+.eco-author-meta{
+  display:flex;align-items:center;gap:7px;margin-top:10px;font-size:11.5px;color:var(--txt-3);flex-wrap:wrap;
+}
+.eco-author-avatar{
+  width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg, #0284C7, #38BDF8);
+  color:#060F1E;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;
+  text-transform:uppercase;flex-shrink:0;
+}
+.btn-eco-connect{
+  background:linear-gradient(135deg, #0284C7, #00D4F0);
+  color:#060F1E !important;border:none;border-radius:8px;
+  font-size:12px;font-weight:800;padding:6px 14px;
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  transition:all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:0 2px 8px rgba(0,212,240,0.25);
+  text-decoration:none;
+}
+.btn-eco-connect:hover{
+  transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,240,0.4);filter:brightness(1.05);
+}
+.btn-eco-connect:active{
+  transform:translateY(0);
+}
+.eco-stat{
+  font-size:11.5px;color:var(--txt-3);display:flex;align-items:center;gap:4px;
+}
 .eco-like-btn{
   background:transparent;border:1px solid var(--border);border-radius:6px;
   padding:4px 8px;font-size:11.5px;display:flex;align-items:center;gap:5px;
@@ -2143,7 +2205,8 @@ input,textarea,select{font-family:var(--ff);}
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="light"] .item-tag {
+[data-theme="light"] .item-tag,
+[data-theme="light"] .eco-cat-tag {
   background: #F1F5F9;
   color: #475569;
   border-color: #E2E8F0;
@@ -3002,11 +3065,11 @@ html[data-theme="light"] .special-portal-card.uploader,
       <!-- Category Filter Pills -->
       <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;" id="ecoCategoryPills">
         <button type="button" class="btn btn-secondary btn-sm eco-cat-pill active" onclick="selectEcosystemCategory('all', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">All</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Business Opportunity', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Business Opportunity</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Digital Product', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Digital Product</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Gigs & Services', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Gigs & Services</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Tech & Tools', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Tech & Tools</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Crypto & Web3', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Crypto & Web3</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Business Opportunity', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">💼 Business Opportunity</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Digital Product', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">📦 Digital Product</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Gigs & Services', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">⚡ Gigs &amp; Services</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Tech & Tools', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">🛠️ Tech &amp; Tools</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Crypto & Web3', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">🌐 Crypto &amp; Web3</button>
       </div>
     </div>
 
@@ -3424,7 +3487,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 <div class="modal-backdrop" id="modalViewEcosystemItem">
   <div class="modal" style="max-width:520px;">
     <div class="modal-header">
-      <div class="modal-title" id="viewEcoModalTitle">Opportunity Details</div>
+      <div class="modal-title" id="viewEcoModalTitle">Opportunity &amp; Connect Details</div>
       <button class="modal-close" onclick="closeModal('modalViewEcosystemItem')">&times;</button>
     </div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
@@ -3433,7 +3496,7 @@ html[data-theme="light"] .special-portal-card.uploader,
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <span class="item-tag" id="viewEcoCategory" style="color:var(--accent);">Category</span>
+          <span class="eco-cat-tag" id="viewEcoCategory" style="color:var(--accent);">Category</span>
           <span id="viewEcoBadge"></span>
         </div>
         <span style="font-size:13px;font-weight:700;color:var(--green);" id="viewEcoPrice">Price</span>
@@ -3458,9 +3521,9 @@ html[data-theme="light"] .special-portal-card.uploader,
     </div>
     <div class="modal-footer" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <button type="button" class="btn btn-ghost" onclick="closeModal('modalViewEcosystemItem')">Close</button>
-      <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" id="btnConnectEcoLink" style="display:inline-flex;align-items:center;gap:6px;">
-        <span>Connect / Open Opportunity</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <a href="#" target="_blank" rel="noopener noreferrer" class="btn-eco-connect" id="btnConnectEcoLink" style="padding:9px 18px;font-size:13px;">
+        <span>Connect with Partner</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       </a>
     </div>
   </div>
@@ -6863,34 +6926,37 @@ function renderMySubmissions() {
         </div>
       ` : ''}
 
-      <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
         ${myItems.map(it => {
           const isPending = (it.status || '').toLowerCase() === 'pending';
           const isRejected = (it.status || '').toLowerCase() === 'rejected';
           let stBadge = '';
           if (isPending) {
-            stBadge = `<span class="badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-weight:700;font-size:10.5px;">Pending Admin Approval</span>`;
+            stBadge = `<span class="eco-badge eco-badge-pending">⏳ In Review</span>`;
           } else if (isRejected) {
-            stBadge = `<span class="badge" style="background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);font-weight:700;font-size:10.5px;">Rejected</span>`;
+            stBadge = `<span class="eco-badge eco-badge-rejected">✕ Declined</span>`;
           } else {
-            stBadge = `<span class="badge" style="background:rgba(16,185,129,0.15);color:#10B981;border:1px solid rgba(16,185,129,0.3);font-weight:700;font-size:10.5px;">Active &amp; Live</span>`;
+            stBadge = `<span class="eco-badge eco-badge-member">✓ Active &amp; Live</span>`;
           }
+          const catInfo = getEcoCategoryDisplay(it.category);
           return `
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border);flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);flex-wrap:wrap;">
               <div style="flex:1;min-width:200px;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                  <span style="font-weight:700;font-size:13.5px;color:var(--txt);">${esc(it.title)}</span>
+                  <span style="font-weight:700;font-size:14px;color:var(--txt);">${esc(it.title)}</span>
                   ${stBadge}
-                  ${it.price_tag && it.price_tag.trim() ? `<span style="font-size:11.5px;font-weight:700;color:var(--green);background:rgba(16,185,129,0.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.25);">${esc(it.price_tag)}</span>` : '<span style="font-size:11px;color:var(--txt-3);">No price tag</span>'}
+                  ${it.price_tag && it.price_tag.trim() ? `<span class="eco-price-pill">${esc(it.price_tag)}</span>` : '<span class="eco-price-free">Free Connect</span>'}
                 </div>
-                <div style="font-size:11.5px;color:var(--txt-3);margin-top:3px;">
-                  Category: <strong>${esc(it.category)}</strong> &bull; Submitted: ${esc(it.created_at || 'Recently')}
+                <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;">
+                  Category: <strong>${catInfo.icon} ${esc(it.category)}</strong> &bull; Submitted: ${esc(it.created_at || 'Recently')}
                   ${isPending ? ' &bull; <span style="color:#F59E0B;font-weight:600;">Visible ONLY to you until Admin approves</span>' : ''}
                   ${isRejected && it.reject_reason ? ` &bull; <span style="color:#EF4444;">Reason: ${esc(it.reject_reason)}</span>` : ''}
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="openViewEcosystemModal('${esc(it.id)}')" style="font-size:11px;padding:5px 10px;">Preview Post</button>
+                <button type="button" class="btn-eco-connect" onclick="openViewEcosystemModal('${esc(it.id)}')" style="padding:6px 12px;font-size:11.5px;">
+                  <span>Preview Details</span>
+                </button>
               </div>
             </div>
           `;
@@ -6898,6 +6964,18 @@ function renderMySubmissions() {
       </div>
     </div>
   `;
+}
+
+function getEcoCategoryDisplay(category) {
+  const cat = (category || 'Business Opportunity').trim();
+  let icon = '💼';
+  if (/business/i.test(cat)) icon = '💼';
+  else if (/digital|product/i.test(cat)) icon = '📦';
+  else if (/gig|service/i.test(cat)) icon = '⚡';
+  else if (/tech|tool/i.test(cat)) icon = '🛠️';
+  else if (/crypto|web3/i.test(cat)) icon = '🌐';
+  else icon = '🏷️';
+  return { label: cat, icon: icon };
 }
 
 function renderEcosystemList(list) {
@@ -6916,17 +6994,31 @@ function renderEcosystemList(list) {
 
     let badgeHtml = '';
     if (isOfficial) {
-      badgeHtml = '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;border-color:rgba(59,130,246,0.25);">Official Verified</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-official"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> KN Official</span>';
     } else if (isPending) {
-      badgeHtml = '<span class="item-tag" style="background:rgba(245,158,11,0.18);color:#F59E0B;font-weight:700;border-color:rgba(245,158,11,0.4);">Pending Admin Approval</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-pending">⏳ In Review</span>';
     } else if (isRejected) {
-      badgeHtml = '<span class="item-tag" style="background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;border-color:rgba(239,68,68,0.35);">Rejected</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-rejected">✕ Declined</span>';
     } else {
-      badgeHtml = '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-member"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified Member</span>';
     }
+
+    const catInfo = getEcoCategoryDisplay(item.category);
+    const catHtml = `<span class="eco-cat-tag"><span>${catInfo.icon}</span> <span>${esc(catInfo.label)}</span></span>`;
+
+    let priceHtml = '';
+    if (item.price_tag && item.price_tag.trim()) {
+      priceHtml = `<span class="eco-price-pill">${esc(item.price_tag)}</span>`;
+    } else {
+      priceHtml = `<span class="eco-price-free">Free Connect</span>`;
+    }
+
     const isLiked = Boolean(item.user_liked);
     const likesCount = item.likes_count || 0;
     const viewsCount = item.views || 0;
+
+    const authorName = (item.author || 'Member').trim();
+    const authorInitial = authorName.charAt(0).toUpperCase() || 'M';
 
     const cardStyle = isPending
       ? 'border:1.5px dashed rgba(245,158,11,0.7);background:rgba(245,158,11,0.02);'
@@ -6936,46 +7028,55 @@ function renderEcosystemList(list) {
       <div class="eco-card" id="ecoCard_${esc(item.id)}" style="${cardStyle}">
         <div>
           ${isPending ? `
-            <div style="background:rgba(245,158,11,0.12);color:#F59E0B;font-size:11px;font-weight:700;padding:5px 9px;border-radius:6px;margin-bottom:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(245,158,11,0.3);">
+            <div style="background:rgba(245,158,11,0.12);color:#F59E0B;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(245,158,11,0.3);">
               <span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:inline-block;"></span>
               <span>Pending Admin Review &bull; Only Visible to You</span>
             </div>
           ` : ''}
 
           ${item.image_url ? `
-            <div style="width:100%;height:130px;border-radius:8px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
+            <div style="width:100%;height:135px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
               <img src="${esc(item.image_url)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
             </div>
           ` : ''}
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-              <span class="item-tag">${esc(item.category)}</span>
+          <div class="eco-card-header">
+            <div class="eco-badge-row">
+              ${catHtml}
               ${badgeHtml}
             </div>
-            ${item.price_tag && item.price_tag.trim() ? `<span style="font-size:12px;font-weight:700;color:var(--green);background:rgba(16,185,129,0.1);padding:2px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.25);">${esc(item.price_tag)}</span>` : ''}
+            ${priceHtml}
           </div>
 
-          <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px;line-height:1.35;">${esc(item.title)}</div>
-          <div style="font-size:12px;color:var(--txt-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${esc(item.description)}</div>
-          <div style="font-size:11px;color:var(--txt-3);margin-top:8px;">Posted by: <strong style="color:var(--txt);">${esc(item.author)}</strong></div>
+          <div style="font-size:15px;font-weight:800;color:var(--txt);margin-bottom:6px;line-height:1.35;letter-spacing:-0.2px;">${esc(item.title)}</div>
+          <div style="font-size:12.5px;color:var(--txt-2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${esc(item.description)}</div>
+
+          <div class="eco-author-meta">
+            <span class="eco-author-avatar">${esc(authorInitial)}</span>
+            <span>Listed by <strong style="color:var(--txt);font-weight:700;">@${esc(authorName)}</strong></span>
+            <span>&bull;</span>
+            <span style="color:var(--txt-3);">${isOfficial ? 'Official Partner' : 'Community Member'}</span>
+          </div>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--border);margin-top:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:12px;border-top:1px solid var(--border);margin-top:auto;">
           <div style="display:flex;align-items:center;gap:10px;">
             <!-- View count -->
-            <span style="font-size:11.5px;color:var(--txt-3);display:flex;align-items:center;gap:4px;" title="Views">
+            <span class="eco-stat" title="Total Views">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               <span id="ecoViews_${esc(item.id)}">${viewsCount}</span>
             </span>
 
-            <!-- Like button -->
+            <!-- Like button (clicks here do not increment views) -->
             <button type="button" class="eco-like-btn ${isLiked ? 'liked' : ''}" id="ecoLikeBtn_${esc(item.id)}" onclick="toggleLikeEcosystem('${esc(item.id)}', event)" title="Like this opportunity">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               <span id="ecoLikes_${esc(item.id)}">${likesCount}</span>
             </button>
           </div>
 
-          <button class="btn btn-secondary btn-sm" onclick="openViewEcosystemModal('${esc(item.id)}')">View &amp; Connect</button>
+          <button type="button" class="btn-eco-connect" onclick="openViewEcosystemModal('${esc(item.id)}')">
+            <span>Connect</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
         </div>
       </div>
     `;
@@ -7025,23 +7126,27 @@ async function openViewEcosystemModal(id) {
   if (!item) return;
   viewingEcoItem = item;
 
-  document.getElementById('viewEcoModalTitle').textContent = item.title;
+  document.getElementById('viewEcoModalTitle').textContent = item.title || 'Opportunity & Connect Details';
   document.getElementById('viewEcoHeading').textContent = item.title;
-  document.getElementById('viewEcoCategory').textContent = item.category;
-  document.getElementById('viewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'No Price Tag (General / Free Offer)';
+  
+  const catInfo = getEcoCategoryDisplay(item.category);
+  const catEl = document.getElementById('viewEcoCategory');
+  if (catEl) catEl.innerHTML = `<span>${catInfo.icon}</span> <span>${esc(catInfo.label)}</span>`;
+
+  document.getElementById('viewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'Free Connect (Open Offer)';
   document.getElementById('viewEcoDescription').textContent = item.description;
   document.getElementById('viewEcoAuthor').textContent = item.author;
 
   const badgeEl = document.getElementById('viewEcoBadge');
   if (badgeEl) {
     if (item.is_official) {
-      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);font-weight:700;">Official Verified</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-official"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> KN Official</span>';
     } else if ((item.status || '').toLowerCase() === 'pending') {
-      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(245,158,11,0.18);color:#F59E0B;font-weight:700;border:1px solid rgba(245,158,11,0.4);">Pending Admin Approval</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-pending">⏳ In Review</span>';
     } else if ((item.status || '').toLowerCase() === 'rejected') {
-      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;border:1px solid rgba(239,68,68,0.35);">Rejected</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-rejected">✕ Declined</span>';
     } else {
-      badgeEl.innerHTML = '<span class="item-tag" style="background:rgba(16,185,129,0.1);color:var(--green);font-weight:600;border-color:rgba(16,185,129,0.25);">Member Post</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-member"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified Member</span>';
     }
   }
 
@@ -7056,8 +7161,14 @@ async function openViewEcosystemModal(id) {
     }
   }
 
+  // Count as view immediately upon clicking Connect
+  // Optimistically increment views so the user sees it instantly
+  item.views = (parseInt(item.views) || 0) + 1;
+  const vCardSpan = document.getElementById('ecoViews_' + id);
+  if (vCardSpan) vCardSpan.textContent = item.views;
+
   const viewsVal = document.getElementById('viewEcoViewsVal');
-  if (viewsVal) viewsVal.textContent = item.views || 0;
+  if (viewsVal) viewsVal.textContent = item.views;
 
   const vBtn = document.getElementById('viewEcoLikeBtn');
   const vSpan = document.getElementById('viewEcoLikesVal');
@@ -7076,7 +7187,7 @@ async function openViewEcosystemModal(id) {
 
   openModal('modalViewEcosystemItem');
 
-  // Increment views
+  // Synchronize view count to the server in background
   try {
     const r = await fetch('/api/ecosystem.php?action=increment_views', {
       method: 'POST',
@@ -7086,7 +7197,6 @@ async function openViewEcosystemModal(id) {
     const d = await r.json();
     if (d.status === 'success') {
       item.views = d.views;
-      const vCardSpan = document.getElementById('ecoViews_' + id);
       if (vCardSpan) vCardSpan.textContent = d.views;
       if (viewsVal) viewsVal.textContent = d.views;
     }
