@@ -378,27 +378,28 @@ if ($actDownlines > $referralCount) {
   --mono:        'Space Mono', monospace;
   --shadow:      0 8px 32px rgba(0,0,0,0.45);
   --trans:       0.18s ease;
-  --bg-input:    #0D1117;
+  --bg-input:    rgba(10, 15, 26, 0.85);
 }
 [data-theme="light"] {
-  --bg:         #EEF2F8;
-  --surface:    #FFFFFF;
-  --card:       #FFFFFF;
-  --card-hover: #F8FAFF;
-  --border:     rgba(0,0,0,0.08);
-  --border-mid: rgba(0,0,0,0.14);
-  --txt:        #0D1117;
+  --bg:         #EDF3FA;
+  --surface:    rgba(255, 255, 255, 0.92);
+  --card:       rgba(255, 255, 255, 0.86);
+  --card-hover: rgba(255, 255, 255, 0.96);
+  --border:     rgba(2, 132, 199, 0.12);
+  --border-mid: rgba(2, 132, 199, 0.22);
+  --txt:        #0F172A;
   --txt-2:      #334155;
   --txt-3:      #64748B;
   --accent:     #0284C7;
-  --shadow:     0 8px 32px rgba(0,0,0,0.08);
-  --bg-input:   #FFFFFF;
+  --shadow:     0 12px 36px rgba(2, 132, 199, 0.08);
+  --bg-input:   rgba(255, 255, 255, 0.95);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
   background-color: #060810;
   background-image: 
-    linear-gradient(180deg, rgba(6, 8, 16, 0.88) 0%, rgba(6, 8, 16, 0.78) 45%, rgba(6, 8, 16, 0.92) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.18) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(6, 9, 18, 0.65) 0%, rgba(8, 14, 28, 0.50) 45%, rgba(5, 8, 16, 0.72) 100%),
     url('assets/images/app-bg.jpg');
   background-size: cover;
   background-position: center top;
@@ -412,11 +413,16 @@ body{
   transition: background 0.25s ease;
 }
 [data-theme="light"] body {
-  background-color: #EEF2F8;
+  background-color: #EDF3FA;
   background-image: 
-    linear-gradient(180deg, rgba(238, 242, 248, 0.90) 0%, rgba(238, 242, 248, 0.82) 45%, rgba(238, 242, 248, 0.94) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.25) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(238, 244, 252, 0.72) 0%, rgba(225, 238, 252, 0.56) 45%, rgba(238, 244, 252, 0.78) 100%),
     url('assets/images/app-bg.jpg');
-  color: #0D1117;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #0F172A;
 }
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
@@ -2146,16 +2152,18 @@ input,textarea,select{font-family:var(--ff);}
 /* ═══════════════════════════ LIGHT THEME & VENDOR COMPONENT ENHANCEMENTS ═══════════════════ */
 [data-theme="light"] .card,
 [data-theme="light"] .stat-card {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(2, 132, 199, 0.14);
+  box-shadow: 0 10px 30px rgba(2, 132, 199, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="light"] .form-input,
 [data-theme="light"] .form-textarea,
 [data-theme="light"] select.form-input,
 [data-theme="light"] .form-select {
-  background-color: #F8FAFC;
+  background-color: rgba(255, 255, 255, 0.92);
   border-color: #CBD5E1;
   color: #0F172A;
 }
@@ -2165,8 +2173,8 @@ input,textarea,select{font-family:var(--ff);}
 [data-theme="light"] select.form-input:focus,
 [data-theme="light"] .form-select:focus {
   background-color: #FFFFFF;
-  border-color: #2563EB;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #0284C7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
 }
 
 [data-theme="light"] .form-input::placeholder,
@@ -2180,7 +2188,7 @@ input,textarea,select{font-family:var(--ff);}
 }
 
 [data-theme="light"] .btn-secondary {
-  background: #F1F5F9;
+  background: rgba(241, 245, 249, 0.9);
   border-color: #CBD5E1;
   color: #1E293B;
 }
@@ -2201,22 +2209,25 @@ input,textarea,select{font-family:var(--ff);}
 }
 
 [data-theme="light"] .ref-box {
-  background: #F8FAFC;
+  background: rgba(248, 250, 252, 0.9);
   border-color: #CBD5E1;
 }
 
 [data-theme="light"] .grid-item-card,
 [data-theme="light"] .eco-card {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(2, 132, 199, 0.16);
+  box-shadow: 0 10px 24px rgba(2, 132, 199, 0.08);
 }
 
 [data-theme="light"] .item-tag,
 [data-theme="light"] .eco-cat-tag {
-  background: #F1F5F9;
-  color: #475569;
-  border-color: #E2E8F0;
+  background: rgba(2, 132, 199, 0.08);
+  color: #0284C7;
+  border-color: rgba(2, 132, 199, 0.20);
+  font-weight: 700;
 }
 
 [data-theme="light"] .item-pts {
@@ -6981,14 +6992,22 @@ function renderEcosystemList(list) {
     const authorName = (item.author || 'Member').trim();
     const authorInitial = authorName.charAt(0).toUpperCase() || 'M';
 
+    const rawImg = (item.image_url || '').trim();
+    const hasValidImg = rawImg.length > 10 &&
+                        !rawImg.includes('example.com') &&
+                        !['undefined', 'null', 'none'].includes(rawImg.toLowerCase()) &&
+                        /^https?:\/\//i.test(rawImg);
+
+    const imageHtml = hasValidImg ? `
+      <div class="eco-banner-wrap" style="width:100%;height:135px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:rgba(0,0,0,0.04);display:none;">
+        <img src="${esc(rawImg)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;display:block;" onload="if(this.naturalWidth>1){this.parentElement.style.display='block';}else{this.parentElement.remove();}" onerror="this.parentElement.remove();">
+      </div>
+    ` : '';
+
     return `
       <div class="eco-card" id="ecoCard_${esc(item.id)}">
         <div>
-          ${item.image_url ? `
-            <div style="width:100%;height:135px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
-              <img src="${esc(item.image_url)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
-            </div>
-          ` : ''}
+          ${imageHtml}
           <div class="eco-card-header">
             <div class="eco-badge-row">
               ${catHtml}
@@ -7102,11 +7121,13 @@ async function openViewEcosystemModal(id) {
   const imgWrap = document.getElementById('viewEcoImageWrapper');
   const imgEl = document.getElementById('viewEcoImage');
   if (imgWrap && imgEl) {
-    if (item.image_url) {
-      imgEl.src = item.image_url;
+    const rawModalImg = (item.image_url || '').trim();
+    if (rawModalImg.length > 10 && !rawModalImg.includes('example.com') && !['undefined', 'null', 'none'].includes(rawModalImg.toLowerCase()) && /^https?:\/\//i.test(rawModalImg)) {
+      imgEl.src = rawModalImg;
       imgWrap.style.display = 'block';
     } else {
       imgWrap.style.display = 'none';
+      imgEl.src = '';
     }
   }
 
