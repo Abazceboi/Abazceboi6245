@@ -358,10 +358,10 @@ if ($actDownlines > $referralCount) {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:          #060810;
+  --bg:          #050814;
   --surface:     #0D1117;
-  --card:        rgba(17, 24, 39, 0.88);
-  --card-hover:  rgba(22, 30, 46, 0.95);
+  --card:        rgba(13, 20, 36, 0.74);
+  --card-hover:  rgba(18, 27, 48, 0.88);
   --border:      rgba(255,255,255,0.08);
   --border-mid:  rgba(255,255,255,0.15);
   --txt:         #F0F4FA;
@@ -381,12 +381,12 @@ if ($actDownlines > $referralCount) {
   --bg-input:    rgba(10, 15, 26, 0.85);
 }
 [data-theme="light"] {
-  --bg:         #EDF3FA;
+  --bg:         #EBF3FC;
   --surface:    rgba(255, 255, 255, 0.92);
-  --card:       rgba(255, 255, 255, 0.86);
-  --card-hover: rgba(255, 255, 255, 0.96);
-  --border:     rgba(2, 132, 199, 0.12);
-  --border-mid: rgba(2, 132, 199, 0.22);
+  --card:       rgba(255, 255, 255, 0.78);
+  --card-hover: rgba(255, 255, 255, 0.92);
+  --border:     rgba(2, 132, 199, 0.14);
+  --border-mid: rgba(2, 132, 199, 0.24);
   --txt:        #0F172A;
   --txt-2:      #334155;
   --txt-3:      #64748B;
@@ -396,10 +396,11 @@ if ($actDownlines > $referralCount) {
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
-  background-color: #060810;
+  background-color: #04060d;
   background-image: 
-    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.18) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(6, 9, 18, 0.65) 0%, rgba(8, 14, 28, 0.50) 45%, rgba(5, 8, 16, 0.72) 100%),
+    radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.28) 0%, transparent 60%),
+    radial-gradient(circle at 85% 80%, rgba(14, 165, 233, 0.22) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(6, 9, 18, 0.28) 0%, rgba(8, 14, 28, 0.16) 45%, rgba(4, 7, 16, 0.40) 100%),
     url('assets/images/app-bg.jpg');
   background-size: cover;
   background-position: center top;
@@ -413,10 +414,11 @@ body{
   transition: background 0.25s ease;
 }
 [data-theme="light"] body {
-  background-color: #EDF3FA;
+  background-color: #EBF3FC;
   background-image: 
-    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.25) 0%, transparent 55%),
-    linear-gradient(180deg, rgba(238, 244, 252, 0.72) 0%, rgba(225, 238, 252, 0.56) 45%, rgba(238, 244, 252, 0.78) 100%),
+    radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.28) 0%, transparent 60%),
+    radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.22) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(240, 246, 253, 0.42) 0%, rgba(232, 242, 252, 0.28) 45%, rgba(240, 246, 253, 0.46) 100%),
     url('assets/images/app-bg.jpg');
   background-size: cover;
   background-position: center top;
@@ -1155,7 +1157,7 @@ input,textarea,select{font-family:var(--ff);}
 .item-timer svg{width:13px;height:13px;}
 .item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
 
-/* Innovation Ecosystem & Rebranded Cards */
+/* Kairus Ecosystem & Rebranded Cards */
 .eco-card{
   background:var(--card);border:1px solid var(--border);border-radius:14px;
   padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;
@@ -3020,12 +3022,12 @@ html[data-theme="light"] .special-portal-card.uploader,
     </div>
   </div>
 
-  <!-- ══ TAB: INNOVATION ECOSYSTEM ═════════════════════════════════════════ -->
+  <!-- ══ TAB: KAIRUS ECOSYSTEM ═════════════════════════════════════════════ -->
   <div id="tab-ecosystem" class="tab-panel">
     <!-- Header banner -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <div>
-        <div style="font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-0.3px;">Innovation Ecosystem</div>
+        <div style="font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-0.3px;">Kairus Ecosystem</div>
         <div style="font-size:12.5px;color:var(--txt-3);margin-top:2px;">Discover verified opportunities, products, and services or promote your offer to active members.</div>
       </div>
       <button class="btn btn-primary btn-sm" onclick="openPostEcosystemModal()" style="display:inline-flex;align-items:center;gap:6px;">
@@ -3373,7 +3375,7 @@ html[data-theme="light"] .special-portal-card.uploader,
   <button class="dock-item" onclick="switchTab('top-earners', this)" id="dockBtnTopEarners" title="Top Earners">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
   </button>
-  <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Innovation Ecosystem">
+  <button class="dock-item" onclick="switchTab('ecosystem', this)" id="dockBtnEcosystem" title="Kairus Ecosystem">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
   </button>
   <button class="dock-item" onclick="switchTab('vendor', this)" id="dockBtnVendor" title="Vendor Portal" style="<?= ($userRole === 'vendor' || $isAdmin) ? 'display:inline-flex;' : 'display:none;' ?>">
@@ -3390,7 +3392,7 @@ html[data-theme="light"] .special-portal-card.uploader,
 <div class="modal-backdrop" id="modalPostEcosystemItem">
   <div class="modal" style="max-width:480px;">
     <div class="modal-header">
-      <div class="modal-title">Post in Innovation Ecosystem</div>
+      <div class="modal-title">Post in Kairus Ecosystem</div>
       <button class="modal-close" onclick="closeModal('modalPostEcosystemItem')">&times;</button>
     </div>
     <form id="formPostEcosystem" onsubmit="handlePostEcosystemSubmit(event)">
@@ -6807,7 +6809,7 @@ function viewUserReceiptById(id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// INNOVATION ECOSYSTEM (OPPORTUNITIES, PRODUCTS, VIEWS, LIKES)
+// KAIRUS ECOSYSTEM (OPPORTUNITIES, PRODUCTS, VIEWS, LIKES)
 // ═══════════════════════════════════════════════════════════════════════════
 let allEcosystemItems = [];
 let ecosystemSettings = <?= json_encode($ecoSettings) ?>;

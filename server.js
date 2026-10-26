@@ -2811,7 +2811,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                 return;
             }
 
-            // Innovation Ecosystem API
+            // Kairus Ecosystem API
             if (cleanUrl.includes('ecosystem.php')) {
                 const ecoFile = path.join(PUBLIC_DIR, 'data', 'ecosystem.json');
                 const ecoSettingsFile = path.join(PUBLIC_DIR, 'data', 'ecosystem_settings.json');
@@ -3079,7 +3079,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
 
                     const isLive = (newItem.status === 'active');
                     const msg = isLive
-                        ? 'Official opportunity published to the Innovation Ecosystem successfully!'
+                        ? 'Official opportunity published to the Kairus Ecosystem successfully!'
                         : 'Payment received! Your post is currently PENDING admin review and approval. Once an admin verifies it to prevent scams, your post will go live to all members.';
 
                     res.end(JSON.stringify({

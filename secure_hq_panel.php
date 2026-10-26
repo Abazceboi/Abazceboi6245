@@ -810,7 +810,7 @@ input,textarea,select{font-family:var(--ff);}
     </button>
     <button class="nav-item" data-perm="ecosystem" onclick="switchAdminTab('ecosystem', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      <span>Innovation Ecosystem</span>
+      <span>Kairus Ecosystem</span>
       <span class="badge" id="navEcoPendingBadge" style="display:none;background:#F59E0B;color:#000;font-size:10px;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:auto;">0</span>
     </button>
     <button class="nav-item" data-perm="users" onclick="switchAdminTab('users', this)">
@@ -1496,7 +1496,7 @@ input,textarea,select{font-family:var(--ff);}
       <!-- Top header with actions -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
         <div>
-          <div style="font-size:18px;font-weight:700;color:var(--txt);">Innovation Ecosystem</div>
+          <div style="font-size:18px;font-weight:700;color:var(--txt);">Kairus Ecosystem</div>
           <div style="font-size:12px;color:var(--txt-3);margin-top:2px;">Publish official opportunities, moderate submissions, and manage listing fees.</div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -2994,7 +2994,7 @@ input,textarea,select{font-family:var(--ff);}
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
               <input type="checkbox" id="subPermEcosystem" checked>
-              <span>Innovation Ecosystem</span>
+              <span>Kairus Ecosystem</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);cursor:pointer;">
               <input type="checkbox" id="subPermUsers">
@@ -3215,7 +3215,7 @@ function switchAdminTab(tab, btn) {
     overview: 'Overview',
     surveys: 'Surveys',
     tasks: 'Tasks & Gigs',
-    ecosystem: 'Innovation Ecosystem',
+    ecosystem: 'Kairus Ecosystem',
     users: 'Users',
     coupons: 'Coupon PINs',
     vendors: 'Vendors Activity & Stocks',
@@ -6192,7 +6192,7 @@ async function handleClearAllNotifications() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// INNOVATION ECOSYSTEM CONTROL
+// KAIRUS ECOSYSTEM CONTROL
 // ═══════════════════════════════════════════════════════════════════════════
 let adminEcoItems = [];
 let adminEcoSettings = { points_fee: 150, cash_fee: 300, auto_approve: true, allow_member_posts: true };
@@ -6502,7 +6502,7 @@ async function rejectCurrentAdminEcoItem() {
 async function approveAdminEcoItem(id) {
   const ok = await confirmAction({
     title: 'Approve Ecosystem Listing',
-    message: 'Are you sure you want to approve this listing and publish it live in the member Innovation Ecosystem?',
+    message: 'Are you sure you want to approve this listing and publish it live in the member Kairus Ecosystem?',
     confirmText: 'Approve & Publish',
     confirmClass: 'btn-primary'
   });

@@ -1,6 +1,6 @@
 <?php
 /**
- * KAIRUSNETWORK — Innovation Ecosystem API
+ * KAIRUSNETWORK — Kairus Ecosystem API
  * Handles opportunities, products, views, likes, listing fees, and admin moderation.
  */
 header('Content-Type: application/json; charset=UTF-8');
@@ -336,7 +336,7 @@ if ($action === 'create_item') {
 
     $isLive = ($newItem['status'] === 'active');
     $msg = $isLive
-        ? 'Official opportunity published to the Innovation Ecosystem successfully!'
+        ? 'Official opportunity published to the Kairus Ecosystem successfully!'
         : 'Payment received! Your post is currently PENDING admin review and approval. Once an admin verifies it to prevent scams, your post will go live to all members.';
 
     echo json_encode([
