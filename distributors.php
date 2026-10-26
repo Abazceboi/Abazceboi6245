@@ -845,11 +845,42 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
         </div>
 
         <!-- Distributor Cards Grid -->
-        <?php foreach ($distributors as $idx => $d): 
+        <?php
+        if (!function_exists('maskDistributorPhone')) {
+            function maskDistributorPhone($phone) {
+                $clean = preg_replace('/[^0-9]/', '', (string)$phone);
+                if (strlen($clean) >= 10) {
+                    $start = substr($clean, 0, 4);
+                    $end = substr($clean, -3);
+                    return '+' . $start . ' ••• •' . $end;
+                }
+                return '••••••••';
+            }
+        }
+        if (!function_exists('maskDistributorTelegram')) {
+            function maskDistributorTelegram($tg) {
+                if (!$tg) return '';
+                $clean = trim((string)$tg);
+                $clean = preg_replace('#^https?://t\.me/#i', '', $clean);
+                $clean = preg_replace('#^t\.me/#i', '', $clean);
+                $clean = ltrim($clean, '@');
+                $clean = trim($clean, '/');
+                if (strlen($clean) <= 2) {
+                    return '@' . substr($clean, 0, 1) . '•••';
+                }
+                $first = substr($clean, 0, 2);
+                $last = substr($clean, -1);
+                return '@' . $first . '••••' . $last;
+            }
+        }
+
+        foreach ($distributors as $idx => $d): 
             $dName = htmlspecialchars($d['name'] ?? 'Verified Distributor');
             $dHandle = htmlspecialchars(!empty($d['username']) ? ('@' . strtoupper($d['username'])) : '@DISTRIBUTOR');
             $dPhone = preg_replace('/[^0-9]/', '', $d['phone'] ?? '');
             $dTel = htmlspecialchars($d['telegram'] ?? '');
+            $dPhoneMasked = htmlspecialchars(maskDistributorPhone($dPhone));
+            $dTelMasked = htmlspecialchars(maskDistributorTelegram($d['telegram'] ?? ''));
             $dPhoto = !empty($d['photo']) ? htmlspecialchars($d['photo']) : '';
             $dNote = htmlspecialchars(!empty($d['custom_note']) ? $d['custom_note'] : ('HELLO ' . strtoupper($d['name'] ?? '') . ' I NEED ACCESS KEY'));
             
@@ -895,7 +926,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">WHATSAPP ORDER</span>
-                        <span class="contact-val">+<?= $dPhone ?></span>
+                        <span class="contact-val"><?= $dPhoneMasked ?></span>
                     </div>
                     <span class="contact-action-badge"><i class="ri-arrow-right-up-line"></i> Contact</span>
                 </button>
@@ -908,7 +939,7 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">TELEGRAM ORDER</span>
-                        <span class="contact-val"><?= $dTel ?></span>
+                        <span class="contact-val"><?= $dTelMasked ?></span>
                     </div>
                     <span class="contact-action-badge"><i class="ri-arrow-right-up-line"></i> Contact</span>
                 </button>
@@ -1047,12 +1078,10 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             phoneInput.value = currentUserPhone || '';
         }
 
-        var contactSubtitle = 'Verified Distributor';
-        if (dist.phone) contactSubtitle = 'Phone: +' + dist.phone;
-        if (dist.telegram) contactSubtitle += (dist.phone ? ' • ' : '') + 'Telegram: ' + dist.telegram;
+        var contactSubtitle = 'Verified Official Distributor &bull; Direct Key Dispatch';
 
         document.getElementById('modalDistributorTitle').textContent = 'Order from ' + (dist.name || 'Distributor');
-        document.getElementById('modalDistributorSub').textContent = contactSubtitle;
+        document.getElementById('modalDistributorSub').innerHTML = contactSubtitle;
         updateDistributorPriceSummary();
 
         // Highlight preferred channel button if specified

@@ -212,7 +212,11 @@ function renderPhpFile(filePath, context = {}) {
                     const dName = d.name || 'Verified Distributor';
                     const dHandle = d.username ? ('@' + String(d.username).toUpperCase()) : '@DISTRIBUTOR';
                     const dPhone = String(d.phone || '').replace(/[^0-9]/g, '');
+                    const dPhoneMasked = dPhone.length >= 10 ? ('+' + dPhone.substring(0, 4) + ' ••• •' + dPhone.substring(dPhone.length - 3)) : '••••••••';
                     const dTel = d.telegram || '';
+                    const rawTel = String(d.telegram || '').trim();
+                    const cleanTg = rawTel.replace(/^https?:\/\/t\.me\//i, '').replace(/^t\.me\//i, '').replace(/^@/, '').replace(/\/$/, '');
+                    const dTelMasked = cleanTg ? (cleanTg.length <= 2 ? ('@' + cleanTg.substring(0, 1) + '•••') : ('@' + cleanTg.substring(0, 2) + '••••' + cleanTg.substring(cleanTg.length - 1))) : '';
                     const dPhoto = d.photo || '';
                     const dNote = d.custom_note || ('HELLO ' + String(d.name || '').toUpperCase() + ' I NEED ACCESS KEY');
                     const waMsg = `Hello ${d.name || 'Distributor'}, I am @${context.username || 'member'} from KAIRUSNETWORK and I need an activation key.`;
@@ -248,7 +252,7 @@ function renderPhpFile(filePath, context = {}) {
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">WHATSAPP</span>
-                        <span class="contact-val">+${dPhone}</span>
+                        <span class="contact-val">${dPhoneMasked}</span>
                     </div>
                 </a>` : ''}
 
@@ -259,7 +263,7 @@ function renderPhpFile(filePath, context = {}) {
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">TELEGRAM</span>
-                        <span class="contact-val">${dTel}</span>
+                        <span class="contact-val">${dTelMasked}</span>
                     </div>
                 </a>` : ''}
             </div>

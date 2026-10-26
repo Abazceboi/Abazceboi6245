@@ -1165,7 +1165,7 @@ input,textarea,select{font-family:var(--ff);}
   background:rgba(16,185,129,0.12);color:#10B981;border:1px solid rgba(16,185,129,0.3);
 }
 .eco-badge-pending{
-  background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.35);
+  background:rgba(2,132,199,0.1);color:var(--accent);border:1px solid rgba(2,132,199,0.25);
 }
 .eco-badge-rejected{
   background:rgba(239,68,68,0.14);color:#EF4444;border:1px solid rgba(239,68,68,0.3);
@@ -3065,11 +3065,11 @@ html[data-theme="light"] .special-portal-card.uploader,
       <!-- Category Filter Pills -->
       <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;" id="ecoCategoryPills">
         <button type="button" class="btn btn-secondary btn-sm eco-cat-pill active" onclick="selectEcosystemCategory('all', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">All</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Business Opportunity', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">💼 Business Opportunity</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Digital Product', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">📦 Digital Product</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Gigs & Services', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">⚡ Gigs &amp; Services</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Tech & Tools', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">🛠️ Tech &amp; Tools</button>
-        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Crypto & Web3', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">🌐 Crypto &amp; Web3</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Business Opportunity', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Business Opportunity</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Digital Product', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Digital Product</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Gigs & Services', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Gigs &amp; Services</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Tech & Tools', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Tech &amp; Tools</button>
+        <button type="button" class="btn btn-secondary btn-sm eco-cat-pill" onclick="selectEcosystemCategory('Crypto & Web3', this)" style="white-space:nowrap;font-size:11.5px;padding:4px 10px;border-radius:20px;">Crypto &amp; Web3</button>
       </div>
     </div>
 
@@ -6903,7 +6903,7 @@ function renderMySubmissions() {
   const pendingCount = myItems.filter(it => (it.status || '').toLowerCase() === 'pending').length;
 
   container.innerHTML = `
-    <div style="background:var(--card);border:1px solid ${pendingCount > 0 ? 'rgba(245,158,11,0.45)' : 'var(--border)'};border-radius:var(--radius-lg);padding:14px 18px;box-shadow:0 4px 18px rgba(0,0,0,0.06);">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:0 4px 18px rgba(0,0,0,0.06);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="width:30px;height:30px;border-radius:8px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent);">
@@ -6912,19 +6912,12 @@ function renderMySubmissions() {
           <div>
             <div style="font-size:14px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px;">
               <span>Your Ecosystem Submissions</span>
-              ${pendingCount > 0 ? `<span class="badge" style="background:rgba(245,158,11,0.18);color:#F59E0B;border:1px solid rgba(245,158,11,0.4);font-size:11px;font-weight:800;padding:2px 8px;">${pendingCount} Pending Approval</span>` : ''}
+              ${pendingCount > 0 ? `<span class="badge" style="background:rgba(2,132,199,0.1);color:var(--accent);font-size:11px;font-weight:700;padding:2px 8px;border:1px solid rgba(2,132,199,0.25);">${pendingCount} In Review</span>` : ''}
             </div>
           </div>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="openPostEcosystemModal()" style="font-size:11.5px;padding:5px 12px;">+ Post New Opportunity</button>
       </div>
-
-      ${pendingCount > 0 ? `
-        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12px;color:#D97706;display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span><strong>Anti-Scam Verification:</strong> Your newly paid post has been submitted and is PENDING admin approval. To avoid scams, other members cannot see it until verified and approved by admin.</span>
-        </div>
-      ` : ''}
 
       <div style="display:flex;flex-direction:column;gap:10px;">
         ${myItems.map(it => {
@@ -6932,13 +6925,12 @@ function renderMySubmissions() {
           const isRejected = (it.status || '').toLowerCase() === 'rejected';
           let stBadge = '';
           if (isPending) {
-            stBadge = `<span class="eco-badge eco-badge-pending">⏳ In Review</span>`;
+            stBadge = `<span class="eco-badge eco-badge-pending">In Review</span>`;
           } else if (isRejected) {
-            stBadge = `<span class="eco-badge eco-badge-rejected">✕ Declined</span>`;
+            stBadge = `<span class="eco-badge eco-badge-rejected">Declined</span>`;
           } else {
-            stBadge = `<span class="eco-badge eco-badge-member">✓ Active &amp; Live</span>`;
+            stBadge = `<span class="eco-badge eco-badge-member">Active</span>`;
           }
-          const catInfo = getEcoCategoryDisplay(it.category);
           return `
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);flex-wrap:wrap;">
               <div style="flex:1;min-width:200px;">
@@ -6948,8 +6940,7 @@ function renderMySubmissions() {
                   ${it.price_tag && it.price_tag.trim() ? `<span class="eco-price-pill">${esc(it.price_tag)}</span>` : '<span class="eco-price-free">Free Connect</span>'}
                 </div>
                 <div style="font-size:11.5px;color:var(--txt-3);margin-top:4px;">
-                  Category: <strong>${catInfo.icon} ${esc(it.category)}</strong> &bull; Submitted: ${esc(it.created_at || 'Recently')}
-                  ${isPending ? ' &bull; <span style="color:#F59E0B;font-weight:600;">Visible ONLY to you until Admin approves</span>' : ''}
+                  Category: <strong>${esc(it.category)}</strong> &bull; Submitted: ${esc(it.created_at || 'Recently')}
                   ${isRejected && it.reject_reason ? ` &bull; <span style="color:#EF4444;">Reason: ${esc(it.reject_reason)}</span>` : ''}
                 </div>
               </div>
@@ -6964,18 +6955,6 @@ function renderMySubmissions() {
       </div>
     </div>
   `;
-}
-
-function getEcoCategoryDisplay(category) {
-  const cat = (category || 'Business Opportunity').trim();
-  let icon = '💼';
-  if (/business/i.test(cat)) icon = '💼';
-  else if (/digital|product/i.test(cat)) icon = '📦';
-  else if (/gig|service/i.test(cat)) icon = '⚡';
-  else if (/tech|tool/i.test(cat)) icon = '🛠️';
-  else if (/crypto|web3/i.test(cat)) icon = '🌐';
-  else icon = '🏷️';
-  return { label: cat, icon: icon };
 }
 
 function renderEcosystemList(list) {
@@ -6994,17 +6973,16 @@ function renderEcosystemList(list) {
 
     let badgeHtml = '';
     if (isOfficial) {
-      badgeHtml = '<span class="eco-badge eco-badge-official"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> KN Official</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-official">KN Official</span>';
     } else if (isPending) {
-      badgeHtml = '<span class="eco-badge eco-badge-pending">⏳ In Review</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-pending">In Review</span>';
     } else if (isRejected) {
-      badgeHtml = '<span class="eco-badge eco-badge-rejected">✕ Declined</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-rejected">Declined</span>';
     } else {
-      badgeHtml = '<span class="eco-badge eco-badge-member"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified Member</span>';
+      badgeHtml = '<span class="eco-badge eco-badge-member">Verified Member</span>';
     }
 
-    const catInfo = getEcoCategoryDisplay(item.category);
-    const catHtml = `<span class="eco-cat-tag"><span>${catInfo.icon}</span> <span>${esc(catInfo.label)}</span></span>`;
+    const catHtml = `<span class="eco-cat-tag">${esc(item.category || 'General')}</span>`;
 
     let priceHtml = '';
     if (item.price_tag && item.price_tag.trim()) {
@@ -7020,20 +6998,9 @@ function renderEcosystemList(list) {
     const authorName = (item.author || 'Member').trim();
     const authorInitial = authorName.charAt(0).toUpperCase() || 'M';
 
-    const cardStyle = isPending
-      ? 'border:1.5px dashed rgba(245,158,11,0.7);background:rgba(245,158,11,0.02);'
-      : '';
-
     return `
-      <div class="eco-card" id="ecoCard_${esc(item.id)}" style="${cardStyle}">
+      <div class="eco-card" id="ecoCard_${esc(item.id)}">
         <div>
-          ${isPending ? `
-            <div style="background:rgba(245,158,11,0.12);color:#F59E0B;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;border:1px solid rgba(245,158,11,0.3);">
-              <span style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:inline-block;"></span>
-              <span>Pending Admin Review &bull; Only Visible to You</span>
-            </div>
-          ` : ''}
-
           ${item.image_url ? `
             <div style="width:100%;height:135px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);background:var(--surface);">
               <img src="${esc(item.image_url)}" alt="${esc(item.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.display='none'">
@@ -7129,9 +7096,8 @@ async function openViewEcosystemModal(id) {
   document.getElementById('viewEcoModalTitle').textContent = item.title || 'Opportunity & Connect Details';
   document.getElementById('viewEcoHeading').textContent = item.title;
   
-  const catInfo = getEcoCategoryDisplay(item.category);
   const catEl = document.getElementById('viewEcoCategory');
-  if (catEl) catEl.innerHTML = `<span>${catInfo.icon}</span> <span>${esc(catInfo.label)}</span>`;
+  if (catEl) catEl.textContent = item.category || 'General';
 
   document.getElementById('viewEcoPrice').textContent = (item.price_tag && item.price_tag.trim()) ? item.price_tag : 'Free Connect (Open Offer)';
   document.getElementById('viewEcoDescription').textContent = item.description;
@@ -7140,13 +7106,13 @@ async function openViewEcosystemModal(id) {
   const badgeEl = document.getElementById('viewEcoBadge');
   if (badgeEl) {
     if (item.is_official) {
-      badgeEl.innerHTML = '<span class="eco-badge eco-badge-official"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> KN Official</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-official">KN Official</span>';
     } else if ((item.status || '').toLowerCase() === 'pending') {
-      badgeEl.innerHTML = '<span class="eco-badge eco-badge-pending">⏳ In Review</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-pending">In Review</span>';
     } else if ((item.status || '').toLowerCase() === 'rejected') {
-      badgeEl.innerHTML = '<span class="eco-badge eco-badge-rejected">✕ Declined</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-rejected">Declined</span>';
     } else {
-      badgeEl.innerHTML = '<span class="eco-badge eco-badge-member"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Verified Member</span>';
+      badgeEl.innerHTML = '<span class="eco-badge eco-badge-member">Verified Member</span>';
     }
   }
 
