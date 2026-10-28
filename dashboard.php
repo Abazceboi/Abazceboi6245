@@ -421,9 +421,6 @@ body::before{
   background-position: center top;
   background-repeat: no-repeat;
   pointer-events: none;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  will-change: transform;
 }
 [data-theme="light"] body {
   background-color: #EBF3FC;
@@ -622,7 +619,6 @@ input,textarea,select{font-family:var(--ff);}
   padding:22px;
   margin-bottom:16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  contain: content;
 }
 .card-title{font-size:15px;font-weight:700;margin-bottom:4px;}
 .card-sub{font-size:12px;color:var(--txt-3);margin-bottom:16px;}
@@ -1253,11 +1249,11 @@ input,textarea,select{font-family:var(--ff);}
 .tab-panel{display:none;}
 .tab-panel.active{
   display:block;
-  animation: tabFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: tabFadeIn 0.2s ease both;
 }
 @keyframes tabFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Modals */
@@ -4059,6 +4055,7 @@ html[data-theme="light"] .special-portal-card.uploader,
       <a href="https://t.me/kairusnetwork_official" target="_blank" style="color:var(--txt-3);text-decoration:none;">Telegram Community</a>
     </div>
   </div>
+</div>
 <?php endif; ?>
 
 <!-- One-Time New User Account Activation Pop-Up Modal -->
@@ -7216,6 +7213,7 @@ function renderEcosystemList(list) {
           </button>
         </div>
       </div>
+    `;
   }).join('');
   if (grid.innerHTML !== html) grid.innerHTML = html;
 }
