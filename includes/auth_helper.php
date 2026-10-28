@@ -299,7 +299,7 @@ function authenticateUserCredentials(string $username, string $password): array 
             $uEmail = $u['email'] ?? '';
             if (strtolower($uName) === $lowerUser || (!empty($uEmail) && strtolower($uEmail) === $lowerUser)) {
                 $uRole = strtolower($u['role'] ?? 'member');
-                $isAdminUser = $isPotentialAdmin || in_array(strtolower($uName), $adminUsernames) || in_array($uRole, ['admin', 'super_admin']);
+                $isAdminUser = $isPotentialAdmin || (strtolower($uName) === $adminEnvUser) || in_array($uRole, ['admin', 'super_admin']);
                 
                 $storedPass = $u['password'] ?? $u['password_hash'] ?? $u['passwordHash'] ?? '';
                 $passMatches = false;
@@ -313,10 +313,10 @@ function authenticateUserCredentials(string $username, string $password): array 
                 }
 
                 if ($isAdminUser) {
-                    if (!empty($adminMasterPass)) {
-                        $authSuccess = ($password === $adminMasterPass);
-                    } else {
-                        $authSuccess = (in_array($password, $fallbackAdminPasswords) || $passMatches);
+                    if (!empty($adminMasterPass) && $password === $adminMasterPass) {
+                        $authSuccess = true;
+                    } elseif ($passMatches) {
+                        $authSuccess = true;
                     }
                 } elseif ($passMatches || $password === '123456') {
                     $authSuccess = true;
@@ -378,7 +378,7 @@ function authenticateUserCredentials(string $username, string $password): array 
 
                 if (!empty($dbHash) && password_verify($password, $dbHash)) {
                     $authSuccess = true;
-                } elseif ($isAdminUser && in_array($password, $fallbackAdminPasswords)) {
+                } elseif ($isAdminUser && !empty($adminMasterPass) && $password === $adminMasterPass) {
                     $authSuccess = true;
                 } elseif ($password === ($dbUser['password'] ?? '')) {
                     $authSuccess = true;
