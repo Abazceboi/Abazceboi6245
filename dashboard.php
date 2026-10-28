@@ -2108,7 +2108,31 @@ input,textarea,select{font-family:var(--ff);}
   border-radius: 10px;
 }
 
+.vendor-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.vendor-columns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
 @media(max-width:640px){
+  .app-container {
+    padding: 12px 10px 110px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .card {
+    padding: 16px 14px !important;
+    border-radius: 14px !important;
+    margin-bottom: 12px !important;
+  }
   .top-pill-wrapper {
     top: 8px;
     padding: 0 10px;
@@ -2158,7 +2182,37 @@ input,textarea,select{font-family:var(--ff);}
     width: 18px;
     height: 18px;
   }
-  .stats-grid{grid-template-columns:1fr 1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr; gap:10px !important;}
+  .vendor-kpi-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .vendor-kpi-grid .card {
+    padding: 12px 6px !important;
+    text-align: center;
+  }
+  .vendor-kpi-grid .v-kpi-val {
+    font-size: 18px !important;
+    margin-top: 2px !important;
+  }
+  .vendor-kpi-grid .v-kpi-label {
+    font-size: 9.5px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vendor-kpi-grid .v-kpi-sub {
+    font-size: 9px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vendor-columns-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
   .notif-dropdown {
     position: fixed !important;
     top: 60px !important;
@@ -2169,6 +2223,17 @@ input,textarea,select{font-family:var(--ff);}
     max-height: min(460px, calc(100vh - 80px)) !important;
     border-radius: 16px !important;
     z-index: 999999 !important;
+  }
+}
+
+@media(max-width: 380px) {
+  .vendor-kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .vendor-kpi-grid .card {
+    padding: 12px 14px !important;
+    text-align: left;
   }
 }
 
@@ -3141,26 +3206,26 @@ html[data-theme="light"] .special-portal-card.uploader,
     </div>
 
     <!-- KPI Grid -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:14px;">
-      <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Available Codes</div>
-        <div id="vTabKpiAvailable" style="font-size:24px;font-weight:800;color:#10B981;margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Unused codes ready for sale</div>
+    <div class="vendor-kpi-grid">
+      <div class="card" style="margin-bottom:0;">
+        <div class="v-kpi-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Available Codes</div>
+        <div id="vTabKpiAvailable" class="v-kpi-val" style="font-size:24px;font-weight:800;color:#10B981;margin-top:4px;">0</div>
+        <div class="v-kpi-sub" style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Unused codes ready</div>
       </div>
-      <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Codes Sold</div>
-        <div id="vTabKpiSold" style="font-size:24px;font-weight:800;color:#38BDF8;margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Activated by members</div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="v-kpi-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Codes Sold</div>
+        <div id="vTabKpiSold" class="v-kpi-val" style="font-size:24px;font-weight:800;color:#38BDF8;margin-top:4px;">0</div>
+        <div class="v-kpi-sub" style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">Activated by members</div>
       </div>
-      <div class="card" style="padding:16px;margin-bottom:0;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Total Codes</div>
-        <div id="vTabKpiTotal" style="font-size:24px;font-weight:800;color:var(--txt);margin-top:4px;">0</div>
-        <div style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">All-time assigned to you</div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="v-kpi-label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--txt-3);letter-spacing:0.5px;">Total Codes</div>
+        <div id="vTabKpiTotal" class="v-kpi-val" style="font-size:24px;font-weight:800;color:var(--txt);margin-top:4px;">0</div>
+        <div class="v-kpi-sub" style="font-size:11.5px;color:var(--txt-3);margin-top:2px;">All-time assigned</div>
       </div>
     </div>
 
     <!-- Two Column Grid: Directory Profile & Buyer Dispatch -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:14px;margin-bottom:14px;">
+    <div class="vendor-columns-grid">
       <!-- Card: Directory Profile & Handles -->
       <div class="card" style="margin-bottom:0;">
         <div class="card-title" style="display:flex;align-items:center;gap:8px;">
