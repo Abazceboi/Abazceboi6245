@@ -269,7 +269,7 @@ $minCashWd   = floatval($pricing['min_cash_withdrawal'] ?? ($pricing['min_withdr
 $minTaskWd   = floatval($pricing['min_points_withdrawal'] ?? ($wdSettings['task']['min_amount'] ?? 1000));
 $appMinWd    = $minCashWd;
 
-$isAdmin     = in_array(strtolower($username), ['admin','abas6245','abazceboi']) || in_array($userRole, ['admin','super_admin']);
+$isAdmin     = (strtolower($username) === strtolower(getenv('ADMIN_USERNAME') ?: 'admin')) || in_array($userRole, ['admin','super_admin']);
 $reqProto    = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
 $reqHost     = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
 if (!empty($reqHost) && !str_contains($reqHost, 'localhost:5050')) {

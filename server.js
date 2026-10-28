@@ -560,12 +560,8 @@ const server = http.createServer((req, res) => {
 
                     const lower = username.toLowerCase();
                     const adminEnvUser = (process.env.ADMIN_USERNAME || 'admin').toLowerCase();
-                    const adminUsernames = Array.from(new Set(['admin', 'abas6245', 'abazceboi', adminEnvUser]));
-                    const isPotentialAdmin = adminUsernames.includes(lower);
                     const adminMasterPass = process.env.ADMIN_PASSWORD || '';
-                    const fallbackAdminPasswords = adminMasterPass
-                        ? [adminMasterPass]
-                        : ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
+                    const isPotentialAdmin = (lower === adminEnvUser);
 
                     // Check sub-admins
                     const subAdminsFile = path.join(PUBLIC_DIR, 'data', 'sub_admins.json');
@@ -620,29 +616,26 @@ const server = http.createServer((req, res) => {
 
                     if (matched) {
                         const uRole = (matched.role || 'member').toLowerCase();
-                        isAdmin = isPotentialAdmin || adminUsernames.includes((matched.username || '').toLowerCase()) || ['admin', 'super_admin'].includes(uRole);
+                        isAdmin = isPotentialAdmin || ['admin', 'super_admin'].includes(uRole);
                         const stored = matched.password || '';
 
                         if (isAdmin) {
-                            if (adminMasterPass) {
-                                authSuccess = (password === adminMasterPass);
-                            } else {
-                                if (fallbackAdminPasswords.includes(password) || stored === password) {
-                                    authSuccess = true;
-                                }
+                            if (adminMasterPass && password === adminMasterPass) {
+                                authSuccess = true;
+                            } else if (stored && stored === password) {
+                                authSuccess = true;
                             }
                         } else {
-                            if (stored === password || password === '123456' || password === 'password' || (stored && password.length >= 4) || (!stored && password.length >= 4)) {
+                            if (stored === password || (stored && password.length >= 4) || (!stored && password.length >= 4)) {
                                 authSuccess = true;
                             }
                         }
-                    } else if (isPotentialAdmin && (adminMasterPass ? password === adminMasterPass : fallbackAdminPasswords.includes(password))) {
+                    } else if (isPotentialAdmin && adminMasterPass && password === adminMasterPass) {
                         authSuccess = true;
                         isAdmin = true;
-                        const canon = (lower === 'admin') ? 'admin' : (lower === 'abas6245' ? 'Abas6245' : 'Abazceboi');
                         matched = {
                             id: 'adm-' + lower,
-                            username: canon,
+                            username: adminEnvUser,
                             full_name: 'System Super Admin',
                             email: 'admin@kairusnetwork.com',
                             phone: '08123456789',
@@ -3239,7 +3232,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     }
 
                     const lower = username.toLowerCase();
-                    if (['admin', 'abas6245', 'abazceboi'].includes(lower)) {
+                    if (lower === (process.env.ADMIN_USERNAME || 'admin').toLowerCase()) {
                         res.end(JSON.stringify({ status: 'error', message: 'This username is reserved for master administration' }));
                         return;
                     }
@@ -4771,10 +4764,6 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                         res.end(JSON.stringify({ success: false, error: 'Target username is required' }));
                         return;
                     }
-                    if (targetUsername.toLowerCase() === 'admin') {
-                        res.end(JSON.stringify({ success: false, error: 'Cannot delete primary admin account' }));
-                        return;
-                    }
                     usersData.users = usersData.users.filter(u => (u.username || '').toLowerCase() !== targetUsername.toLowerCase());
                     fs.writeFileSync(usersFile, JSON.stringify(usersData, null, 2));
 
@@ -5291,7 +5280,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     const finalEmail = email || targetUser.email || '';
                     const finalPhone = phone || targetUser.phone || '';
                     const finalRole = targetUser.role || 'member';
-                    const isAdmin = ['admin', 'super_admin'].includes(finalRole.toLowerCase()) || ['admin', 'abas6245', 'abazceboi'].includes(username.toLowerCase());
+                    const isAdmin = ['admin', 'super_admin'].includes(finalRole.toLowerCase()) || (process.env.ADMIN_USERNAME && username.toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase());
                     const updatedCookie = createSessionCookie(targetUser.id || username, username, isAdmin, finalEmail, finalPhone, finalFullName, finalRole, isAdmin ? 2 : 0);
 
                     res.writeHead(200, {
@@ -5755,9 +5744,8 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             res.end(JSON.stringify({ status: 'error', message: 'Your account has been suspended or blocked by administration. Please contact support.' }));
                             return;
                         }
-                        // Accept matching password, or universal dev fallback
-                        if (!user.password || user.password === password || password === '123456') {
-                            const isAdmin = user.role === 'super_admin' || user.role === 'admin' || ['admin', 'abas6245', 'abazceboi'].includes((user.username || '').toLowerCase());
+                        if (!user.password || user.password === password) {
+                            const isAdmin = user.role === 'super_admin' || user.role === 'admin' || (process.env.ADMIN_USERNAME && (user.username || '').toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase());
                             res.end(JSON.stringify({
                                 status: 'success',
                                 username: user.username,
@@ -6921,7 +6909,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                     context.userRole = u.role;
                     const uAdminCheck = Boolean(u.is_admin)
                         || ['admin', 'super_admin'].includes((u.role || '').toLowerCase())
-                        || ['admin', 'abas6245', 'abazceboi'].includes((u.username || '').toLowerCase());
+                        || (process.env.ADMIN_USERNAME && (u.username || '').toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase());
                     context.isAdmin = uAdminCheck;
                     context.adminAuthStep = u.admin_auth_step !== undefined ? Number(u.admin_auth_step) : (context.isAdmin ? 1 : 0);
 
@@ -6933,7 +6921,7 @@ function generateTopicQuestionsJs(topic, count = 5, style = 'feedback', slots = 
                             const userRecord = users.find(x => (x.username && x.username.toLowerCase() === u.username.toLowerCase()) || x.id == u.user_id);
                             if (userRecord) {
                                 const recAdminCheck = ['admin', 'super_admin'].includes((userRecord.role || '').toLowerCase())
-                                    || ['admin', 'abas6245', 'abazceboi'].includes((userRecord.username || '').toLowerCase());
+                                    || (process.env.ADMIN_USERNAME && (userRecord.username || '').toLowerCase() === process.env.ADMIN_USERNAME.toLowerCase());
                                 if (recAdminCheck) {
                                     context.isAdmin = true;
                                     if (u.admin_auth_step !== undefined) {

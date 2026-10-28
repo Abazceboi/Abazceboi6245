@@ -92,8 +92,8 @@ if ($action === 'create_sub_admin') {
         }
     }
 
-    // Check against master admin usernames
-    if (in_array($lowerUser, ['admin', 'abas6245', 'abazceboi'])) {
+    // Check against master admin username
+    if ($lowerUser === strtolower(getenv('ADMIN_USERNAME') ?: 'admin')) {
         echo json_encode(['status' => 'error', 'message' => 'This username is reserved for master administration']);
         exit;
     }

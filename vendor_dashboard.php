@@ -14,7 +14,7 @@ if (!$authUser) {
 
 $username = $authUser['username'] ?? $_SESSION['username'] ?? 'Vendor';
 $userRole = strtolower($authUser['role'] ?? $_SESSION['role'] ?? 'member');
-$isAdmin = in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']) || in_array($userRole, ['admin', 'super_admin']);
+$isAdmin = (strtolower($username) === strtolower(getenv('ADMIN_USERNAME') ?: 'admin')) || in_array($userRole, ['admin', 'super_admin']);
 
 // Dynamically check live user role from data/users.json
 require_once __DIR__ . '/includes/storage_helper.php';

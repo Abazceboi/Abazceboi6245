@@ -879,11 +879,6 @@ switch ($action) {
             exit;
         }
 
-        if (strtolower($targetUsername) === 'admin' || strtolower($targetUsername) === strtolower(getenv('ADMIN_USERNAME') ?: 'admin')) {
-            echo json_encode(['success' => false, 'error' => 'Super Administrator account cannot be deleted']);
-            exit;
-        }
-
         // Delete from database
         if ($pdo) {
             try {
@@ -1531,7 +1526,7 @@ switch ($action) {
         if (function_exists('setAuthCookie')) {
             $uId = $_SESSION['user_id'] ?? ($foundUser['id'] ?? $username);
             $uRole = $_SESSION['role'] ?? ($foundUser['role'] ?? 'member');
-            $isAdmin = !empty($_SESSION['is_admin']) || in_array(strtolower($uRole), ['admin', 'super_admin']) || in_array(strtolower($username), ['admin', 'abas6245', 'abazceboi']);
+            $isAdmin = !empty($_SESSION['is_admin']) || in_array(strtolower($uRole), ['admin', 'super_admin']) || (strtolower($username) === strtolower(getenv('ADMIN_USERNAME') ?: 'admin'));
             $isActivated = !empty($_SESSION['is_activated']) || !empty($foundUser['is_activated']) || $isAdmin;
             setAuthCookie(
                 $uId,

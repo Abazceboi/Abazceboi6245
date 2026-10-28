@@ -63,66 +63,6 @@
       ]
     },
     {
-      "id": "adm-super-02",
-      "username": "Abas6245",
-      "full_name": "Abas Lead Admin",
-      "email": "abas@kairusnetwork.ng",
-      "phone": "08123456789",
-      "role": "super_admin",
-      "role_label": "Super Admin",
-      "remaining_cash": 250000,
-      "remaining_pts": 50000,
-      "total_earned": 250000,
-      "referral_code": "KN-ABAS6245",
-      "referral_count": 0,
-      "referral_earnings": 0,
-      "status": "active",
-      "password": "",
-      "created_at": "2026-09-01T00:00:00+01:00",
-      "role_updated_at": "2026-09-01T00:00:00+01:00",
-      "updated_at": "2026-09-29T00:00:00+01:00",
-      "role_history": [],
-      "pointsBalance": 50000,
-      "activity_ledger": [
-        {
-          "time": "17/10/2026, 11:48",
-          "type": "Ecosystem Listing Fee",
-          "desc": "Submitted ecosystem opportunity: Test Free Community Group (Pending Admin Review)",
-          "reward_type": "points",
-          "reward_value": -150
-        },
-        {
-          "time": "17/10/2026, 11:47",
-          "type": "Ecosystem Listing Fee",
-          "desc": "Submitted ecosystem opportunity: Test Web Design Gig (Pending Admin Review)",
-          "reward_type": "points",
-          "reward_value": -150
-        }
-      ]
-    },
-    {
-      "id": "adm-super-03",
-      "username": "Abazceboi",
-      "full_name": "Abaz CeBoi Lead",
-      "email": "admin@kairusnetwork.ng",
-      "phone": "08123456789",
-      "role": "super_admin",
-      "role_label": "Super Admin",
-      "remaining_cash": 50000,
-      "remaining_pts": 15000,
-      "total_earned": 50000,
-      "bank_name": "OPay",
-      "account_number": "8123456789",
-      "account_name": "Abaz CeBoi",
-      "referral_code": "KN-ABAZCEBOI",
-      "referral_count": 0,
-      "referral_earnings": 0,
-      "status": "active",
-      "password": "",
-      "created_at": "2026-09-01T00:00:00+01:00",
-      "updated_at": "2026-09-29T00:00:00+01:00"
-    },
-    {
       "id": "usr-abas",
       "username": "abas",
       "full_name": "Abas Chief Earner",

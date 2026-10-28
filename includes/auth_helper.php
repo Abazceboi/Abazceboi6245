@@ -101,12 +101,10 @@ function getAuthenticatedUser(): ?array {
     // 1. Check PHP Session memory first
     if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
         $uNameLower = strtolower($_SESSION['username']);
-        $isHardcodedAdmin = in_array($uNameLower, ['admin', 'abas6245', 'abazceboi']);
-        $uRole = $_SESSION['role'] ?? ($isHardcodedAdmin ? 'super_admin' : 'member');
+        $uRole = $_SESSION['role'] ?? 'member';
         
         // Dynamically check live role from users.json so promotions and demotions take effect immediately
-        if (!$isHardcodedAdmin) {
-            require_once __DIR__ . '/storage_helper.php';
+        require_once __DIR__ . '/storage_helper.php';
             $uJson = readStorageJson('data/users.json', ['users' => []]);
             $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
             foreach ($uList as $chkU) {
@@ -172,8 +170,8 @@ function getAuthenticatedUser(): ?array {
             }
             $data = $decodedJson ? json_decode($decodedJson, true) : null;
             if ($data && !empty($data['username'])) {
-                $uName = strtolower($data['username']);
-                $isSystemAdmin = in_array($uName, ['admin', 'abas6245', 'abazceboi'])
+                $adminEnvUser = strtolower(getenv('ADMIN_USERNAME') ?: 'admin');
+                $isSystemAdmin = ($uName === $adminEnvUser)
                     || in_array(strtolower($data['role'] ?? ''), ['admin', 'super_admin'])
                     || !empty($data['is_admin']);
 
@@ -182,8 +180,7 @@ function getAuthenticatedUser(): ?array {
                     $uRole = $data['role'] ?? ($isAdmin ? 'super_admin' : 'member');
 
                     // Synchronize live role from users.json
-                    if (!$isSystemAdmin) {
-                        require_once __DIR__ . '/storage_helper.php';
+                    require_once __DIR__ . '/storage_helper.php';
                         $uJson = readStorageJson('data/users.json', ['users' => []]);
                         $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
                         foreach ($uList as $chkU) {
@@ -236,16 +233,10 @@ function authenticateUserCredentials(string $username, string $password): array 
 
     $lowerUser = strtolower($username);
     $adminEnvUser = strtolower(getenv('ADMIN_USERNAME') ?: ($_ENV['ADMIN_USERNAME'] ?? ($_SERVER['ADMIN_USERNAME'] ?? 'admin')));
-    $adminUsernames = array_unique(['admin', 'abas6245', 'abazceboi', $adminEnvUser]);
-    $isPotentialAdmin = in_array($lowerUser, $adminUsernames);
+    $isPotentialAdmin = ($lowerUser === $adminEnvUser);
 
-    // Retrieve Admin Password from Vercel / Server Environment
+    // Retrieve Admin Password from Environment
     $adminMasterPass = getenv('ADMIN_PASSWORD') ?: ($_ENV['ADMIN_PASSWORD'] ?? ($_SERVER['ADMIN_PASSWORD'] ?? ''));
-
-    // If ADMIN_PASSWORD is set on Vercel, ONLY that password is valid (no hardcoded passwords)
-    $fallbackAdminPasswords = !empty($adminMasterPass)
-        ? [$adminMasterPass]
-        : ['admin', '9999', 'password', '123456', 'UpdatedSecretPass123!', 'Abas6245'];
 
     $matchedUser = null;
     $authSuccess = false;
@@ -348,16 +339,15 @@ function authenticateUserCredentials(string $username, string $password): array 
         }
     }
 
-    // 2. Fallback for super-admin credentials if not yet stored in DB/JSON
-    if (!$authSuccess && $isPotentialAdmin && in_array($password, $fallbackAdminPasswords)) {
+    // 2. Fallback for environment master admin credentials if configured
+    if (!$authSuccess && $isPotentialAdmin && !empty($adminMasterPass) && $password === $adminMasterPass) {
         $authSuccess = true;
-        $canonicalUsername = ($lowerUser === 'admin') ? 'admin' : (($lowerUser === 'abas6245') ? 'Abas6245' : 'Abazceboi');
         $matchedUser = [
             'id' => 'adm-' . $lowerUser,
-            'username' => $canonicalUsername,
+            'username' => $adminEnvUser,
             'email' => 'admin@kairusnetwork.ng',
-            'phone' => '08123456789',
-            'fullName' => 'System Super Admin',
+            'phone' => '',
+            'fullName' => 'System Administrator',
             'role' => 'super_admin',
             'is_admin' => true
         ];

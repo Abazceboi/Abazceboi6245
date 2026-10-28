@@ -37,7 +37,7 @@ $isSubAdmin = ($userRole === 'sub_admin') || !empty($_SESSION['is_sub_admin']) |
 
 $isAuthorizedAdmin = !empty($_SESSION['is_admin'])
     || !empty($authUser['is_admin'])
-    || in_array($currentUsername, [strtolower($adminUser), 'admin', 'abas6245', 'abazceboi'])
+    || in_array($currentUsername, [strtolower($adminUser), 'admin'])
     || in_array($userRole, ['admin', 'super_admin', 'sub_admin'])
     || $isSubAdmin;
 
@@ -3048,6 +3048,7 @@ input,textarea,select{font-family:var(--ff);}
 <div id="toast-stack"></div>
 
 <script>
+const CURRENT_LOGGED_IN_ADMIN = '<?= strtolower(addslashes($currentUsername ?? '')) ?>';
 // Keep admin session active in localStorage across all reloads
 (function(){
   try {
@@ -4798,7 +4799,7 @@ function renderUsers(list) {
   tbody.innerHTML = list.filter(Boolean).map(u => {
     const uName = (u.username || '').trim();
     if (!uName) return '';
-    const isProtected = ['admin','abas6245','abazceboi'].includes(uName.toLowerCase());
+    const isSelf = (uName.toLowerCase() === CURRENT_LOGGED_IN_ADMIN);
     const regRaw = u.created_at || u.createdAt || u.join_date_formatted || u.role_updated_at || u.updated_at || '';
     let regFormatted = '-';
     if (regRaw) {
@@ -4829,7 +4830,9 @@ function renderUsers(list) {
       <td>${statusBadge}</td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="openEditUser('${esc(u.username)}')">Edit</button>
-        ${!isProtected ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteUser('${esc(u.username)}')">Delete</button>` : ''}
+        ${!isSelf 
+          ? `<button class="btn btn-danger btn-sm" onclick="handleDeleteUser('${esc(u.username)}')">Delete</button>` 
+          : `<button class="btn btn-danger btn-sm" onclick="handleDeleteUser('${esc(u.username)}', true)" title="Delete your own active account">Delete</button> <span style="font-size:11px;color:var(--accent);font-weight:700;">(You)</span>`}
       </td>
     </tr>`;
   }).join('');
@@ -4933,10 +4936,14 @@ async function saveUserChanges() {
   }
 }
 
-async function handleDeleteUser(username) {
+async function handleDeleteUser(username, isCurrentSelf = false) {
+  const msg = isCurrentSelf 
+    ? `⚠️ CAUTION: You are currently logged in as @${username}. Permanently deleting this account will remove all its admin privileges, delete all records, and immediately log you out. Are you sure you want to continue?`
+    : `Are you sure you want to permanently delete @${username}? This will remove all their records and prevent the account from returning.`;
+
   const ok = await confirmAction({
-    title: 'Delete Member Account',
-    message: `Are you sure you want to permanently delete ${username}? This will remove all their records and prevent the account from returning.`,
+    title: isCurrentSelf ? 'Delete Current Admin Account' : 'Delete Member Account',
+    message: msg,
     confirmText: 'Permanently Delete',
     confirmClass: 'btn-danger'
   });
@@ -4945,7 +4952,8 @@ async function handleDeleteUser(username) {
   // Optimistic UI removal
   allUsersList = allUsersList.filter(u => u.username.toLowerCase() !== username.toLowerCase());
   renderUsers(allUsersList);
-  document.getElementById('kpiUsers').textContent = allUsersList.length;
+  const elUsers = document.getElementById('kpiUsers');
+  if (elUsers) elUsers.textContent = allUsersList.length;
 
   try {
     const r = await fetch('/api/users.php?action=delete_user', {
@@ -4955,7 +4963,10 @@ async function handleDeleteUser(username) {
     });
     const d = await r.json();
     if (d.success || d.status === 'success') {
-      toast(`User ${username} deleted permanently`, 'success');
+      toast(`User @${username} deleted permanently`, 'success');
+      if (isCurrentSelf) {
+        setTimeout(() => { window.location.href = 'logout.php'; }, 1000);
+      }
     } else {
       toast(d.error || 'Failed to delete user', 'error');
       loadUsersData(); // reload on error

