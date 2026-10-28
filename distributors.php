@@ -723,6 +723,205 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             color: #0F172A;
         }
 
+        /* Universal Dark Modern Select & Options */
+        select, select.modal-form-input, select.form-input {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background-color: #0C1527 !important;
+            color: #F8FAFC !important;
+            border: 1px solid rgba(56, 189, 248, 0.28) !important;
+            border-radius: 12px !important;
+            padding: 11px 40px 11px 14px !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300D4F0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 14px center !important;
+            background-size: 16px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            outline: none !important;
+        }
+
+        select option {
+            background-color: #080E1C !important;
+            color: #F8FAFC !important;
+            padding: 12px 16px !important;
+            font-size: 13.5px !important;
+        }
+
+        /* Fancy Custom Glassmorphism Dropdown */
+        .fancy-select-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .fancy-select-trigger {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(12, 21, 39, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+            outline: none;
+            text-align: left;
+            box-sizing: border-box;
+        }
+
+        .fancy-select-trigger:hover,
+        .fancy-select-wrap.open .fancy-select-trigger {
+            border-color: #00D4F0;
+            background: rgba(16, 28, 52, 0.95);
+            box-shadow: 0 0 16px rgba(0, 212, 240, 0.25);
+        }
+
+        .fancy-select-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .fancy-select-arrow {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00D4F0;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .fancy-select-wrap.open .fancy-select-arrow {
+            transform: rotate(180deg);
+        }
+
+        .fancy-select-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 16, 30, 0.98);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 212, 240, 0.35);
+            border-radius: 14px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 212, 240, 0.15);
+            padding: 6px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px) scale(0.98);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .fancy-select-wrap.open .fancy-select-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .fancy-select-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--text-main);
+            border: 1px solid transparent;
+        }
+
+        .fancy-select-option:hover {
+            background: rgba(0, 212, 240, 0.12);
+            color: #00D4F0;
+            transform: translateX(3px);
+            border-color: rgba(0, 212, 240, 0.25);
+        }
+
+        .fancy-select-option.selected {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(0, 212, 240, 0.18));
+            border-color: rgba(0, 212, 240, 0.4);
+            color: #00D4F0;
+        }
+
+        .fancy-opt-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fancy-opt-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .fancy-opt-texts {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .fancy-opt-title {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .fancy-opt-sub {
+            font-size: 10.5px;
+            color: var(--text-dim);
+            line-height: 1.2;
+        }
+
+        .fancy-opt-check {
+            font-size: 16px;
+            color: #00D4F0;
+            display: none;
+        }
+
+        .fancy-select-option.selected .fancy-opt-check {
+            display: block;
+        }
+
+        [data-theme="light"] .fancy-select-trigger {
+            background: #FFFFFF;
+            border-color: #CBD5E1;
+            color: #0F172A;
+        }
+
+        [data-theme="light"] .fancy-select-menu {
+            background: #FFFFFF;
+            border-color: rgba(2, 132, 199, 0.35);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="light"] .fancy-select-option {
+            color: #0F172A;
+        }
+
         .modal-price-summary {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--card-border);
@@ -1004,13 +1203,74 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                     </div>
 
                     <div class="modal-form-group">
-                        <label class="modal-form-label" for="distOrderPaymentMethod">Payment Method</label>
-                        <select id="distOrderPaymentMethod" class="modal-form-input">
+                        <label class="modal-form-label">Payment Method</label>
+                        <!-- Hidden native select keeps 100% JS and form compatibility -->
+                        <select id="distOrderPaymentMethod" style="display:none;">
                             <option value="OPay" selected>OPay</option>
                             <option value="PalmPay">PalmPay</option>
                             <option value="Bank Transfer">Bank Transfer (Instant)</option>
                             <option value="Kuda Bank">Kuda Bank</option>
                         </select>
+
+                        <!-- Fancy Custom Glassmorphism Dropdown -->
+                        <div class="fancy-select-wrap" id="fancyPayDropdown">
+                            <button type="button" class="fancy-select-trigger" onclick="toggleFancyDropdown('fancyPayDropdown')">
+                                <div class="fancy-select-value" id="fancyPayCurrentVal">
+                                    <span class="fancy-opt-icon" style="background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);"><i class="ri-wallet-3-fill"></i></span>
+                                    <div class="fancy-opt-texts">
+                                        <span class="fancy-opt-title" style="color:var(--text-main);">OPay</span>
+                                        <span class="fancy-opt-sub">Instant Wallet / Transfer</span>
+                                    </div>
+                                </div>
+                                <span class="fancy-select-arrow"><i class="ri-arrow-down-s-line"></i></span>
+                            </button>
+
+                            <div class="fancy-select-menu">
+                                <div class="fancy-select-option selected" data-value="OPay" onclick="selectFancyPayment('OPay', 'OPay', 'Instant Wallet / Transfer', 'ri-wallet-3-fill', '#10B981', 'rgba(16,185,129,0.18)')">
+                                    <div class="fancy-opt-left">
+                                        <span class="fancy-opt-icon" style="background:rgba(16,185,129,0.18);color:#10B981;border:1px solid rgba(16,185,129,0.35);"><i class="ri-wallet-3-fill"></i></span>
+                                        <div class="fancy-opt-texts">
+                                            <span class="fancy-opt-title">OPay</span>
+                                            <span class="fancy-opt-sub">Instant Wallet / Transfer</span>
+                                        </div>
+                                    </div>
+                                    <i class="ri-check-line fancy-opt-check"></i>
+                                </div>
+
+                                <div class="fancy-select-option" data-value="PalmPay" onclick="selectFancyPayment('PalmPay', 'PalmPay', 'Fast Mobile Settlement', 'ri-flashlight-fill', '#8B5CF6', 'rgba(139,92,246,0.18)')">
+                                    <div class="fancy-opt-left">
+                                        <span class="fancy-opt-icon" style="background:rgba(139,92,246,0.18);color:#8B5CF6;border:1px solid rgba(139,92,246,0.35);"><i class="ri-flashlight-fill"></i></span>
+                                        <div class="fancy-opt-texts">
+                                            <span class="fancy-opt-title">PalmPay</span>
+                                            <span class="fancy-opt-sub">Fast Mobile Settlement</span>
+                                        </div>
+                                    </div>
+                                    <i class="ri-check-line fancy-opt-check"></i>
+                                </div>
+
+                                <div class="fancy-select-option" data-value="Bank Transfer" onclick="selectFancyPayment('Bank Transfer', 'Bank Transfer', 'Direct Bank Account Credit', 'ri-bank-card-fill', '#00D4F0', 'rgba(0,212,240,0.18)')">
+                                    <div class="fancy-opt-left">
+                                        <span class="fancy-opt-icon" style="background:rgba(0,212,240,0.18);color:#00D4F0;border:1px solid rgba(0,212,240,0.35);"><i class="ri-bank-card-fill"></i></span>
+                                        <div class="fancy-opt-texts">
+                                            <span class="fancy-opt-title">Bank Transfer</span>
+                                            <span class="fancy-opt-sub">Direct Bank Account Credit</span>
+                                        </div>
+                                    </div>
+                                    <i class="ri-check-line fancy-opt-check"></i>
+                                </div>
+
+                                <div class="fancy-select-option" data-value="Kuda Bank" onclick="selectFancyPayment('Kuda Bank', 'Kuda Bank', 'Digital Banking Transfer', 'ri-secure-payment-fill', '#A855F7', 'rgba(168,85,247,0.18)')">
+                                    <div class="fancy-opt-left">
+                                        <span class="fancy-opt-icon" style="background:rgba(168,85,247,0.18);color:#A855F7;border:1px solid rgba(168,85,247,0.35);"><i class="ri-secure-payment-fill"></i></span>
+                                        <div class="fancy-opt-texts">
+                                            <span class="fancy-opt-title">Kuda Bank</span>
+                                            <span class="fancy-opt-sub">Digital Banking Transfer</span>
+                                        </div>
+                                    </div>
+                                    <i class="ri-check-line fancy-opt-check"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
@@ -1318,6 +1578,47 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 '</div>' +
             '</div>';
     }
+
+    function toggleFancyDropdown(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var isOpen = el.classList.contains('open');
+        document.querySelectorAll('.fancy-select-wrap.open').forEach(function(d) {
+            if (d !== el) d.classList.remove('open');
+        });
+        el.classList.toggle('open', !isOpen);
+    }
+
+    function selectFancyPayment(val, title, sub, iconClass, iconColor, iconBg) {
+        var nativeSelect = document.getElementById('distOrderPaymentMethod');
+        if (nativeSelect) {
+            nativeSelect.value = val;
+            try { nativeSelect.dispatchEvent(new Event('change')); } catch(e) {}
+        }
+        var currentBox = document.getElementById('fancyPayCurrentVal');
+        if (currentBox) {
+            currentBox.innerHTML = '<span class="fancy-opt-icon" style="background:' + iconBg + ';color:' + iconColor + ';border:1px solid ' + iconColor + '55;"><i class="' + iconClass + '"></i></span>' +
+                                   '<div class="fancy-opt-texts">' +
+                                   '<span class="fancy-opt-title" style="color:var(--text-main);">' + title + '</span>' +
+                                   '<span class="fancy-opt-sub">' + sub + '</span>' +
+                                   '</div>';
+        }
+        var wrap = document.getElementById('fancyPayDropdown');
+        if (wrap) {
+            wrap.querySelectorAll('.fancy-select-option').forEach(function(opt) {
+                opt.classList.toggle('selected', opt.getAttribute('data-value') === val);
+            });
+            wrap.classList.remove('open');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.fancy-select-wrap')) {
+            document.querySelectorAll('.fancy-select-wrap.open').forEach(function(d) {
+                d.classList.remove('open');
+            });
+        }
+    });
 
     document.getElementById('modalDistributorOrder').addEventListener('click', function(e) {
         if (e.target === this) {

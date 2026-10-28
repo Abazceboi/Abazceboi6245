@@ -679,12 +679,17 @@ input,textarea,select{font-family:var(--ff);}
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22);
 }
-.form-select option, select.form-input option, select option {
-  background-color: #0F172A;
-  color: #F8FAFC;
-  padding: 12px;
-  font-size: 13px;
+.form-select option, select.form-input option, select option, select optgroup {
+  background-color: #080E1C !important;
+  color: #F8FAFC !important;
+  padding: 12px 14px !important;
+  font-size: 13.5px !important;
 }
+.form-select option:checked, select option:checked {
+  background-color: #0284C7 !important;
+  color: #FFFFFF !important;
+}
+
 
 [data-theme="light"] .form-select,
 [data-theme="light"] select.form-input,

@@ -326,6 +326,30 @@ setcookie('ix_account_activated', '', time() - 3600, '/');
             transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
         }
 
+        select.form-input {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            background-color: var(--input-bg) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300D4F0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            padding-right: 36px !important;
+            cursor: pointer !important;
+        }
+
+        select.form-input option {
+            background-color: #080E1C !important;
+            color: #F8FAFC !important;
+            padding: 12px 14px !important;
+            font-size: 13.5px !important;
+        }
+
+        select.form-input option:checked {
+            background-color: #0284C7 !important;
+            color: #FFFFFF !important;
+        }
+
         .form-input::placeholder {
             color: var(--text-dim);
             font-size: 0.86rem;
