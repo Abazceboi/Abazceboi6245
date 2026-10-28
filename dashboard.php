@@ -2731,12 +2731,10 @@ html[data-theme="light"] .special-portal-card.uploader,
       <div class="stat-card">
         <div class="stat-label">KRN Balance</div>
         <div class="stat-value" id="statPtsOverview" style="color:var(--accent);"><?= number_format($userPoints) ?></div>
-        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">KRN task points &amp; platform credits</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Cash Balance</div>
         <div class="stat-value" id="statCashOverview" style="color:var(--green);">₦<?= number_format($userCash, 2) ?></div>
-        <div style="font-size:11px;color:var(--txt-3);margin-top:4px;">Affiliate commissions &amp; cash wallet</div>
       </div>
     </div>
 
