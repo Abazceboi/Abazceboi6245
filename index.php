@@ -1080,18 +1080,15 @@ a {
             </div>
             <span class="ev-brand-name" style="font-weight:800;letter-spacing:-0.02em;">KAIRUSNETWORK</span>
         </div>
-        <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:var(--ev-text);font-size:1.4rem;cursor:pointer;">
-            <i class="ri-close-line"></i>
-        </button>
-    </div>
-
-    <!-- Mobile Theme Switcher Bar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:var(--ev-pill-bg);border:1px solid var(--ev-border);margin-bottom:20px;">
-        <span style="font-size:0.86rem;font-weight:600;color:var(--ev-text);">Theme Mode</span>
-        <button type="button" class="ev-theme-btn" onclick="handleThemeToggle(event)" title="Toggle Theme" aria-label="Toggle Light/Dark Theme">
-            <i class="ri-sun-line theme-icon-sun"></i>
-            <i class="ri-moon-line theme-icon-moon"></i>
-        </button>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" class="ev-theme-btn" onclick="handleThemeToggle(event)" title="Toggle Theme" aria-label="Toggle Light/Dark Theme">
+                <i class="ri-sun-line theme-icon-sun"></i>
+                <i class="ri-moon-line theme-icon-moon"></i>
+            </button>
+            <button type="button" onclick="toggleEvermoreDrawer()" style="background:none;border:none;color:var(--ev-text);font-size:1.4rem;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
