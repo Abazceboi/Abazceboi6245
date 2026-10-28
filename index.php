@@ -1119,8 +1119,8 @@ a {
     <div class="ev-hero-overlay" aria-hidden="true"></div>
     <div class="ev-container" style="position:relative;z-index:2;">
         <div class="ev-hero-eyebrow">
-            <i class="ri-sparkling-2-line"></i>
-            <span>KAIRUSNETWORK PLATFORM</span>
+            <img src="assets/images/logo.png" alt="Kairus Network" style="width:20px;height:20px;border-radius:4px;object-fit:contain;flex-shrink:0;">
+            <span>Kairus Network</span>
         </div>
 
         <h1 class="ev-hero-title">Exist Beyond the Moment</h1>
