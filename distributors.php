@@ -540,18 +540,24 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--card-border);
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
         }
 
         .contact-row:hover {
-            border-color: rgba(0, 212, 240, 0.35);
-            background: rgba(0, 212, 240, 0.05);
+            border-color: rgba(0, 212, 240, 0.45);
+            background: rgba(0, 212, 240, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
         }
 
         .contact-icon-box {
@@ -918,49 +924,30 @@ $isNewReg = !empty($_GET['new_reg']) || !empty($_GET['registered']);
                 </div>
             </div>
 
-            <div class="distributor-prompt-box">
-                <?= $dNote ?>
-            </div>
-
             <div class="distributor-contact-list">
                 <?php if ($dPhone): ?>
-                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'whatsapp')">
+                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'whatsapp')" title="Click to Order via WhatsApp">
                     <div class="contact-icon-box whatsapp">
                         <i class="ri-whatsapp-fill"></i>
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">WHATSAPP ORDER</span>
-                        <span class="contact-val"><?= $dPhoneMasked ?></span>
+                        <span class="contact-val">Click to Order via WhatsApp</span>
                     </div>
                     <span class="contact-action-badge"><i class="ri-arrow-right-up-line"></i> Contact</span>
                 </button>
                 <?php endif; ?>
 
                 <?php if ($dTel): ?>
-                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'telegram')">
+                <button type="button" class="contact-row contact-row-direct" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'telegram')" title="Click to Order via Telegram">
                     <div class="contact-icon-box telegram">
                         <i class="ri-telegram-fill"></i>
                     </div>
                     <div class="contact-info">
                         <span class="contact-label">TELEGRAM ORDER</span>
-                        <span class="contact-val"><?= $dTelMasked ?></span>
+                        <span class="contact-val">Click to Order via Telegram</span>
                     </div>
                     <span class="contact-action-badge"><i class="ri-arrow-right-up-line"></i> Contact</span>
-                </button>
-                <?php endif; ?>
-            </div>
-
-            <div style="display:grid;grid-template-columns:<?= ($dPhone && $dTel) ? '1fr 1fr' : '1fr' ?>;gap:8px;">
-                <?php if ($dPhone): ?>
-                <button type="button" class="btn-select-distributor" id="btn-select-wa-<?= $idx ?>" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'whatsapp')" style="justify-content:center;">
-                    <i class="ri-whatsapp-line"></i>
-                    <span>Order via WhatsApp</span>
-                </button>
-                <?php endif; ?>
-                <?php if ($dTel): ?>
-                <button type="button" class="btn-select-distributor" id="btn-select-tg-<?= $idx ?>" onclick="openDistributorOrderModal(<?= $dDataJson ?>, 'telegram')" style="background:rgba(2,132,199,0.18);border:1px solid rgba(2,132,199,0.45);color:#38BDF8;justify-content:center;">
-                    <i class="ri-telegram-fill"></i>
-                    <span>Order via Telegram</span>
                 </button>
                 <?php endif; ?>
             </div>
