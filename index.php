@@ -244,9 +244,10 @@ a {
 
 .ev-nav-actions {
     pointer-events: auto;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 /* Theme Toggle Button */
@@ -266,6 +267,7 @@ a {
     font-size: 1.05rem;
     box-shadow: var(--ev-card-shadow);
     transition: transform 0.18s, border-color 0.18s, color 0.18s, background 0.18s;
+    flex-shrink: 0;
 }
 
 .ev-theme-btn:hover {
@@ -289,12 +291,18 @@ a {
 }
 
 .ev-btn-signin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex-shrink: 0;
     padding: 7px 16px;
     border-radius: 9999px;
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--ev-text);
     transition: color 0.15s;
+    line-height: 1;
 }
 
 .ev-btn-signin:hover {
@@ -304,6 +312,9 @@ a {
 .ev-btn-primary {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex-shrink: 0;
     gap: 6px;
     padding: 8px 18px;
     border-radius: 9999px;
@@ -313,6 +324,7 @@ a {
     font-weight: 700;
     box-shadow: 0 4px 18px rgba(2, 132, 199, 0.3);
     transition: transform 0.15s, opacity 0.15s;
+    line-height: 1;
 }
 
 .ev-btn-primary:hover {
@@ -935,6 +947,51 @@ a {
 /* ==========================================================================
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
+/* Tablet Optimization (iPad Air, iPad: 769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .ev-header {
+        padding: 0 12px;
+    }
+    .ev-nav-container {
+        gap: 8px;
+    }
+    .ev-brand {
+        padding: 6px 12px 6px 6px;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .ev-brand-name {
+        font-size: 0.88rem;
+    }
+    .ev-nav-capsule {
+        gap: 2px;
+        padding: 3px 6px;
+        flex-shrink: 1;
+    }
+    .ev-nav-link {
+        padding: 5px 10px;
+        font-size: 0.78rem;
+    }
+    .ev-nav-actions {
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .ev-theme-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+    .ev-btn-signin {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    .ev-btn-primary {
+        padding: 7px 14px;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+}
+
 @media (max-width: 960px) {
     .ev-ed-grid {
         grid-template-columns: 1fr;
