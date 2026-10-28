@@ -105,21 +105,21 @@ function getAuthenticatedUser(): ?array {
         
         // Dynamically check live role from users.json so promotions and demotions take effect immediately
         require_once __DIR__ . '/storage_helper.php';
-            $uJson = readStorageJson('data/users.json', ['users' => []]);
-            $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
-            foreach ($uList as $chkU) {
-                if (strtolower($chkU['username'] ?? '') === $uNameLower) {
-                    if (!empty($chkU['role'])) {
-                        $uRole = strtolower($chkU['role']);
-                        $_SESSION['role'] = $uRole;
-                    }
-                    break;
+        $uJson = readStorageJson('data/users.json', ['users' => []]);
+        $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
+        foreach ($uList as $chkU) {
+            if (strtolower($chkU['username'] ?? '') === $uNameLower) {
+                if (!empty($chkU['role'])) {
+                    $uRole = strtolower($chkU['role']);
+                    $_SESSION['role'] = $uRole;
                 }
+                break;
             }
         }
 
+        $adminEnvUser = strtolower(getenv('ADMIN_USERNAME') ?: 'admin');
         $isAdmin = !empty($_SESSION['is_admin']) 
-            || $isHardcodedAdmin
+            || ($uNameLower === $adminEnvUser)
             || in_array(strtolower($uRole), ['admin', 'super_admin', 'sub_admin']);
         return [
             'user_id' => $_SESSION['user_id'],
@@ -170,6 +170,7 @@ function getAuthenticatedUser(): ?array {
             }
             $data = $decodedJson ? json_decode($decodedJson, true) : null;
             if ($data && !empty($data['username'])) {
+                $uName = strtolower($data['username']);
                 $adminEnvUser = strtolower(getenv('ADMIN_USERNAME') ?: 'admin');
                 $isSystemAdmin = ($uName === $adminEnvUser)
                     || in_array(strtolower($data['role'] ?? ''), ['admin', 'super_admin'])
@@ -181,15 +182,14 @@ function getAuthenticatedUser(): ?array {
 
                     // Synchronize live role from users.json
                     require_once __DIR__ . '/storage_helper.php';
-                        $uJson = readStorageJson('data/users.json', ['users' => []]);
-                        $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
-                        foreach ($uList as $chkU) {
-                            if (strtolower($chkU['username'] ?? '') === $uName) {
-                                if (!empty($chkU['role'])) {
-                                    $uRole = strtolower($chkU['role']);
-                                }
-                                break;
+                    $uJson = readStorageJson('data/users.json', ['users' => []]);
+                    $uList = $uJson['users'] ?? (is_array($uJson) ? $uJson : []);
+                    foreach ($uList as $chkU) {
+                        if (strtolower($chkU['username'] ?? '') === $uName) {
+                            if (!empty($chkU['role'])) {
+                                $uRole = strtolower($chkU['role']);
                             }
+                            break;
                         }
                     }
 
