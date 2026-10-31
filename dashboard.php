@@ -409,7 +409,13 @@ body{
 body::before{
   content: '';
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+  min-height: -webkit-fill-available;
   z-index: -1;
   background-color: #04060d;
   background-image: 
@@ -421,6 +427,12 @@ body::before{
   background-position: center top;
   background-repeat: no-repeat;
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: strict;
 }
 [data-theme="light"] body {
   background-color: #EBF3FC;
@@ -433,6 +445,9 @@ body::before{
     radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.22) 0%, transparent 50%),
     linear-gradient(180deg, rgba(240, 246, 253, 0.42) 0%, rgba(232, 242, 252, 0.28) 45%, rgba(240, 246, 253, 0.46) 100%),
     url('assets/images/app-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 a{color:inherit;text-decoration:none;}
 button{cursor:pointer;font-family:var(--ff);}
